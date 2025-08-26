@@ -40,7 +40,7 @@
 #include "../just_say_gno/sjis_gnu.c"
 #endif
 
-INTERNAL int u_sjis_int_test(const unsigned int u, unsigned int *dest);
+INTERNAL int zint_test_u_sjis_int(const unsigned int u, unsigned int *dest);
 
 /* As control convert to Shift JIS using simple table generated from
    https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/SHIFTJIS.TXT plus simple processing
@@ -53,7 +53,8 @@ static int u_sjis_int2(unsigned int u, unsigned int *dest) {
         return 1;
     }
     /* Shortcut */
-    if ((u > 0x00F7 && u < 0x0391) || (u > 0x0451 && u < 0x2010) || (u > 0x9FA0 && u < 0xE000) || (u > 0xE757 && u < 0xFF01) || u > 0xFFE5) {
+    if ((u > 0x00F7 && u < 0x0391) || (u > 0x0451 && u < 0x2010) || (u > 0x9FA0 && u < 0xE000)
+            || (u > 0xE757 && u < 0xFF01) || u > 0xFFE5) {
         return 0;
     }
     if (u >= 0xE000 && u <= 0xE757) { /* PUA mappings, not in SHIFTJIS.TXT */
@@ -130,9 +131,10 @@ static void test_u_sjis_int(const testCtx *const p_ctx) {
         }
         if (testContinue(p_ctx, i)) continue;
         val = val2 = 0;
-        ret = u_sjis_int_test(i, &val);
+        ret = zint_test_u_sjis_int(i, &val);
         ret2 = u_sjis_int2(i, &val2);
-        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n",
+                    (int) i, i, ret, ret2, val, val2);
         if (ret2) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
@@ -146,7 +148,7 @@ static void test_u_sjis_int(const testCtx *const p_ctx) {
                     val = val2 = 0;
 
                     start = clock();
-                    ret = u_sjis_int_test(i, &val);
+                    ret = zint_test_u_sjis_int(i, &val);
                     total += clock() - start;
 
                     start = clock();
@@ -155,7 +157,8 @@ static void test_u_sjis_int(const testCtx *const p_ctx) {
                 }
             }
 
-            assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
+            assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n",
+                        (int) i, i, ret, ret2, val, val2);
             if (ret2) {
                 assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
             }
@@ -222,13 +225,15 @@ static void test_sjis_utf8(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        ret = sjis_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, jisdata);
+        ret = zint_sjis_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, jisdata);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
             int j;
-            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
+            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n",
+                        i, ret_length, data[i].ret_length);
             for (j = 0; j < ret_length; j++) {
-                assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] %04X != %04X\n", i, j, jisdata[j], data[i].expected_jisdata[j]);
+                assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] %04X != %04X\n",
+                            i, j, jisdata[j], data[i].expected_jisdata[j]);
             }
         }
     }
@@ -314,13 +319,16 @@ static void test_sjis_utf8_to_eci(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        ret = sjis_utf8_to_eci(data[i].eci, (unsigned char *) data[i].data, &ret_length, jisdata, data[i].full_multibyte);
+        ret = zint_sjis_utf8_to_eci(data[i].eci, (unsigned char *) data[i].data, &ret_length, jisdata,
+                                    data[i].full_multibyte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             int j;
-            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
+            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n",
+                        i, ret_length, data[i].ret_length);
             for (j = 0; j < ret_length; j++) {
-                assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] 0x%04X != 0x%04X\n", i, j, jisdata[j], data[i].expected_jisdata[j]);
+                assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] 0x%04X != 0x%04X\n",
+                            i, j, jisdata[j], data[i].expected_jisdata[j]);
             }
         }
     }
@@ -367,10 +375,11 @@ static void test_sjis_cpy(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        sjis_cpy((unsigned char *) data[i].data, &ret_length, jisdata, data[i].full_multibyte);
+        zint_sjis_cpy((unsigned char *) data[i].data, &ret_length, jisdata, data[i].full_multibyte);
         assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
         for (j = 0; j < ret_length; j++) {
-            assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] %04X != %04X\n", i, j, jisdata[j], data[i].expected_jisdata[j]);
+            assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] %04X != %04X\n",
+                        i, j, jisdata[j], data[i].expected_jisdata[j]);
         }
     }
 
@@ -420,7 +429,9 @@ static void test_perf(const testCtx *const p_ctx) {
         return;
     }
 
-    for (i = 0; i < data_size; i++) if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+    for (i = 0; i < data_size; i++) {
+        if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+    }
 
     printf("Iterations %d\n", TEST_PERF_ITERATIONS);
 
@@ -437,7 +448,7 @@ static void test_perf(const testCtx *const p_ctx) {
             ret_length = length;
 
             start = clock();
-            ret = sjis_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, ddata);
+            ret = zint_sjis_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, ddata);
             diff += clock() - start;
 
 #ifdef TEST_JUST_SAY_GNO

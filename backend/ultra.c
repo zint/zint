@@ -306,8 +306,8 @@ static float ult_look_ahead_ascii(unsigned char source[], const int length, cons
         /* Check for double digits */
         done = 0;
         if (i + 1 < length) {
-            first_digit = posn(ult_digit, source[i]);
-            second_digit = posn(ult_digit, source[i + 1]);
+            first_digit = z_posn(ult_digit, source[i]);
+            second_digit = z_posn(ult_digit, source[i + 1]);
             if ((first_digit != -1) && (second_digit != -1)) {
                 /* Double digit can be encoded */
                 if ((first_digit >= 0) && (first_digit <= 9) && (second_digit >= 0) && (second_digit <= 9)) {
@@ -395,10 +395,10 @@ static int ult_c43_should_latch_other(const unsigned char source[], const int le
             }
             i += fraglen - 1;
         } else {
-            if (posn(set, source[i]) != -1) {
+            if (z_posn(set, source[i]) != -1) {
                 cnt++;
             }
-            if (posn(alt_set, source[i]) != -1) {
+            if (z_posn(alt_set, source[i]) != -1) {
                 alt_cnt++;
             }
         }
@@ -416,21 +416,21 @@ static int ult_get_subset(const unsigned char source[], const int length, const 
     if ((fragno != -1) && (fragno != 26)) {
         subset = 3;
     } else if (current_subset == 2) {
-        if (posn(ult_c43_set2, source[in_locn]) != -1) {
+        if (z_posn(ult_c43_set2, source[in_locn]) != -1) {
             subset = 2;
-        } else if (posn(ult_c43_set1, source[in_locn]) != -1) {
+        } else if (z_posn(ult_c43_set1, source[in_locn]) != -1) {
             subset = 1;
         }
     } else {
-        if (posn(ult_c43_set1, source[in_locn]) != -1) {
+        if (z_posn(ult_c43_set1, source[in_locn]) != -1) {
             subset = 1;
-        } else if (posn(ult_c43_set2, source[in_locn]) != -1) {
+        } else if (z_posn(ult_c43_set2, source[in_locn]) != -1) {
             subset = 2;
         }
     }
 
     if (subset == 0) {
-        if (posn(ult_c43_set3, source[in_locn]) != -1) {
+        if (z_posn(ult_c43_set3, source[in_locn]) != -1) {
             subset = 3;
         }
     }
@@ -537,7 +537,7 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
             } else {
                 subcw[subcodeword_count] = 40; /* Shift to other C43 set for 1 char */
                 subcodeword_count++;
-                subcw[subcodeword_count] = posn(new_subset == 1 ? ult_c43_set1 : ult_c43_set2, source[sublocn]);
+                subcw[subcodeword_count] = z_posn(new_subset == 1 ? ult_c43_set1 : ult_c43_set2, source[sublocn]);
                 subcodeword_count++;
                 sublocn++;
                 continue;
@@ -547,11 +547,11 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
         subset = new_subset;
 
         if (subset == 1) {
-            subcw[subcodeword_count] = posn(ult_c43_set1, source[sublocn]);
+            subcw[subcodeword_count] = z_posn(ult_c43_set1, source[sublocn]);
             subcodeword_count++;
             sublocn++;
         } else if (subset == 2) {
-            subcw[subcodeword_count] = posn(ult_c43_set2, source[sublocn]);
+            subcw[subcodeword_count] = z_posn(ult_c43_set2, source[sublocn]);
             subcodeword_count++;
             sublocn++;
         } else if (subset == 3) {
@@ -571,7 +571,7 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
                 }
             } else {
                 /* C43 Set 3 codewords 19 to 35 */
-                subcw[subcodeword_count] = posn(ult_c43_set3, source[sublocn]) + 19;
+                subcw[subcodeword_count] = z_posn(ult_c43_set3, source[sublocn]) + 19;
                 subcodeword_count++;
                 sublocn++;
             }
@@ -906,15 +906,15 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
     codeword_count = ult_generate_codewords(symbol, source, length, 0 /*eci*/, gs1, symbol_mode, &current_mode,
                                             codewords, codeword_count);
 
-    if (raw_text && (rt_init_segs(symbol, seg_count) || rt_cpy_seg(symbol, 0, &segs[0]))) {
-        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` & `rt_cpy_seg()` only fail with OOM */
+    if (raw_text && (z_rt_init_segs(symbol, seg_count) || z_rt_cpy_seg(symbol, 0, &segs[0]))) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` & `z_rt_cpy_seg()` only fail with OOM */
     }
 
     for (i = 1; i < seg_count; i++) {
         codeword_count = ult_generate_codewords(symbol, segs[i].source, segs[i].length, segs[i].eci, gs1, symbol_mode,
                                                 &current_mode, codewords, codeword_count);
-        if (raw_text && rt_cpy_seg(symbol, i, &segs[i])) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
+        if (raw_text && z_rt_cpy_seg(symbol, i, &segs[i])) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
         }
     }
 
@@ -923,7 +923,7 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
     return 0;
 }
 
-INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+INTERNAL int zint_ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int data_cw_count = 0;
     int acc, qcc;
     int scr[3] = {0}, scr_cw_count = 0; /* Symbol Control Region (only if have Structured Append) */
@@ -946,7 +946,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     char *pattern;
 
     if (symbol->eci > 811799) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 590, "ECI code '%d' out of range (0 to 811799)",
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 590, "ECI code '%d' out of range (0 to 811799)",
                         symbol->eci);
     }
 
@@ -954,13 +954,13 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         int link2 = 2; /* Draft Table 7, Structured Append Group (SAG) with no File Number */
 
         if (symbol->structapp.count < 2 || symbol->structapp.count > 8) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 596,
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 596,
                             "Structured Append count '%d' out of range (2 to 8)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 597,
-                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                                symbol->structapp.index, symbol->structapp.count);
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 597,
+                                    "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                    symbol->structapp.index, symbol->structapp.count);
         }
         scr_cw_count = 1;
 
@@ -970,16 +970,16 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
             for (id_len = 1; id_len < 6 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 5) { /* 282 * 283 + 282 = 80088 */
-                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 593,
+                return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 593,
                                 "Structured Append ID length %d too long (5 digit maximum)", id_len);
             }
 
-            id = to_int((const unsigned char *) symbol->structapp.id, id_len);
+            id = z_to_int(ZCUCP(symbol->structapp.id), id_len);
             if (id == -1) {
-                return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 594, "Invalid Structured Append ID (digits only)");
+                return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 594, "Invalid Structured Append ID (digits only)");
             }
             if (id > 80088) {
-                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 595,
+                return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 595,
                                 "Structured Append ID value '%d' out of range (1 to 80088)", id);
             }
             if (id) {
@@ -993,7 +993,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         scr[0] = link2 * 70 + (symbol->structapp.count - 1) * 8 + symbol->structapp.index - 1;
     }
 
-    cw_alloc = segs_length(segs, seg_count) * 2;
+    cw_alloc = z_segs_length(segs, seg_count) * 2;
     if (cw_alloc < 283) {
         cw_alloc = 283;
     }
@@ -1016,7 +1016,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     if (symbol->option_2 > 0) {
         if (symbol->option_2 > 2) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 592, "Revision '%d' out of range (1 or 2 only)",
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 592, "Revision '%d' out of range (1 or 2 only)",
                             symbol->option_2);
         }
         if (symbol->option_2 == 2) { /* Revision 2, swop and inversion of DCCU/DCCL tiles */
@@ -1068,9 +1068,9 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     total_cws = data_cw_count + qcc + 3; /* 3 == TCC pattern + RSEC pattern + QCC pattern */
     if (total_cws - 3 > 282) {
         static const int max_data_cws_by_ecc[6] = { 279, 266, 255, 237, 223, 205 };
-        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 591,
-                            "Input too long for ECC level EC%1$d, requires %2$d codewords (maximum %3$d)",
-                            ecc_level, data_cw_count, max_data_cws_by_ecc[ecc_level]);
+        return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 591,
+                                "Input too long for ECC level EC%1$d, requires %2$d codewords (maximum %3$d)",
+                                ecc_level, data_cw_count, max_data_cws_by_ecc[ecc_level]);
     }
 
     rows = 5;
@@ -1147,7 +1147,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump_int(symbol, codeword, locn);
+        z_debug_test_codeword_dump_int(symbol, codeword, locn);
     }
 #endif
 
@@ -1256,7 +1256,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     for (i = 0; i < total_height; i++) {
         symbol->row_height[i] = 1;
         for (j = 0; j < total_width; j++) {
-            set_module_colour(symbol, i, j, posn(ult_colour, pattern[(i * total_width) + j]));
+            z_set_module_colour(symbol, i, j, z_posn(ult_colour, pattern[(i * total_width) + j]));
         }
     }
     symbol->height = total_height;

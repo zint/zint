@@ -34,9 +34,9 @@
 #include "output.h"
 #include "zfiletypes.h"
 
-INTERNAL int ps_plot(struct zint_symbol *symbol);
-INTERNAL int svg_plot(struct zint_symbol *symbol);
-INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle);
+INTERNAL int zint_ps_plot(struct zint_symbol *symbol);
+INTERNAL int zint_svg_plot(struct zint_symbol *symbol);
+INTERNAL int zint_emf_plot(struct zint_symbol *symbol, int rotate_angle);
 
 static int vector_add_rect(struct zint_symbol *symbol, const float x, const float y, const float width,
             const float height, struct zint_vector_rect **last_rect) {
@@ -45,7 +45,7 @@ static int vector_add_rect(struct zint_symbol *symbol, const float x, const floa
     if (!(rect = (struct zint_vector_rect *) malloc(sizeof(struct zint_vector_rect)))) {
         /* NOTE: clang-tidy-20 gets confused about return value of function returning a function unfortunately,
            so put on 2 lines (see also "postal.c" `postnet_enc()` & `planet_enc()`, same issue) */
-        errtxt(0, symbol, 691, "Insufficient memory for vector rectangle");
+        z_errtxt(0, symbol, 691, "Insufficient memory for vector rectangle");
         return 0;
     }
 #ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
@@ -74,7 +74,7 @@ static int vector_add_hexagon(struct zint_symbol *symbol, const float x, const f
     struct zint_vector_hexagon *hexagon;
 
     if (!(hexagon = (struct zint_vector_hexagon *) malloc(sizeof(struct zint_vector_hexagon)))) {
-        return errtxt(0, symbol, 692, "Insufficient memory for vector hexagon");
+        return z_errtxt(0, symbol, 692, "Insufficient memory for vector hexagon");
     }
 #ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
     memset(hexagon, 0, sizeof(struct zint_vector_hexagon));
@@ -100,7 +100,7 @@ static int vector_add_circle(struct zint_symbol *symbol, const float x, const fl
     struct zint_vector_circle *circle;
 
     if (!(circle = (struct zint_vector_circle *) malloc(sizeof(struct zint_vector_circle)))) {
-        return errtxt(0, symbol, 693, "Insufficient memory for vector circle");
+        return z_errtxt(0, symbol, 693, "Insufficient memory for vector circle");
     }
 #ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
     memset(circle, 0, sizeof(struct zint_vector_circle));
@@ -128,7 +128,7 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
     struct zint_vector_string *string;
 
     if (!(string = (struct zint_vector_string *) malloc(sizeof(struct zint_vector_string)))) {
-        return errtxt(0, symbol, 694, "Insufficient memory for vector string");
+        return z_errtxt(0, symbol, 694, "Insufficient memory for vector string");
     }
 #ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
     memset(string, 0, sizeof(struct zint_vector_string));
@@ -138,12 +138,12 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
     string->y = y;
     string->width = width;
     string->fsize = fsize;
-    string->length = length == -1 ? (int) ustrlen(text) : length;
+    string->length = length == -1 ? (int) z_ustrlen(text) : length;
     string->rotation = 0;
     string->halign = halign;
     if (!(string->text = (unsigned char *) malloc(string->length + 1))) {
         free(string);
-        return errtxt(0, symbol, 695, "Insufficient memory for vector string text");
+        return z_errtxt(0, symbol, 695, "Insufficient memory for vector string text");
     }
 #ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
     memset(string->text, 0, string->length + 1);
@@ -161,7 +161,7 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
     return 1;
 }
 
-INTERNAL void vector_free(struct zint_symbol *symbol) {
+INTERNAL void zint_vector_free(struct zint_symbol *symbol) {
     if (symbol->vector != NULL) {
         struct zint_vector_rect *rect;
         struct zint_vector_hexagon *hex;
@@ -223,41 +223,41 @@ static void vector_scale(struct zint_symbol *symbol, const int file_type) {
         scale *= 20;
     }
 
-    symbol->vector->width = stripf(symbol->vector->width * scale);
-    symbol->vector->height = stripf(symbol->vector->height * scale);
+    symbol->vector->width = z_stripf(symbol->vector->width * scale);
+    symbol->vector->height = z_stripf(symbol->vector->height * scale);
 
     rect = symbol->vector->rectangles;
     while (rect) {
-        rect->x = stripf(rect->x * scale);
-        rect->y = stripf(rect->y * scale);
-        rect->height = stripf(rect->height * scale);
-        rect->width = stripf(rect->width * scale);
+        rect->x = z_stripf(rect->x * scale);
+        rect->y = z_stripf(rect->y * scale);
+        rect->height = z_stripf(rect->height * scale);
+        rect->width = z_stripf(rect->width * scale);
         rect = rect->next;
     }
 
     hex = symbol->vector->hexagons;
     while (hex) {
-        hex->x = stripf(hex->x * scale);
-        hex->y = stripf(hex->y * scale);
-        hex->diameter = stripf(hex->diameter * scale);
+        hex->x = z_stripf(hex->x * scale);
+        hex->y = z_stripf(hex->y * scale);
+        hex->diameter = z_stripf(hex->diameter * scale);
         hex = hex->next;
     }
 
     circle = symbol->vector->circles;
     while (circle) {
-        circle->x = stripf(circle->x * scale);
-        circle->y = stripf(circle->y * scale);
-        circle->diameter = stripf(circle->diameter * scale);
-        circle->width = stripf(circle->width * scale);
+        circle->x = z_stripf(circle->x * scale);
+        circle->y = z_stripf(circle->y * scale);
+        circle->diameter = z_stripf(circle->diameter * scale);
+        circle->width = z_stripf(circle->width * scale);
         circle = circle->next;
     }
 
     string = symbol->vector->strings;
     while (string) {
-        string->x = stripf(string->x * scale);
-        string->y = stripf(string->y * scale);
-        string->width = stripf(string->width * scale);
-        string->fsize = stripf(string->fsize * scale);
+        string->x = z_stripf(string->x * scale);
+        string->y = z_stripf(string->y * scale);
+        string->width = z_stripf(string->width * scale);
+        string->fsize = z_stripf(string->fsize * scale);
         string = string->next;
     }
 }
@@ -279,18 +279,18 @@ static void vector_rotate(struct zint_symbol *symbol, const int rotate_angle) {
     while (rect) {
         if (rotate_angle == 90) {
             temp = rect->x;
-            rect->x = stripf(symbol->vector->height - (rect->y + rect->height));
+            rect->x = z_stripf(symbol->vector->height - (rect->y + rect->height));
             rect->y = temp;
             temp = rect->width;
             rect->width = rect->height;
             rect->height = temp;
         } else if (rotate_angle == 180) {
-            rect->x = stripf(symbol->vector->width - (rect->x + rect->width));
-            rect->y = stripf(symbol->vector->height - (rect->y + rect->height));
+            rect->x = z_stripf(symbol->vector->width - (rect->x + rect->width));
+            rect->y = z_stripf(symbol->vector->height - (rect->y + rect->height));
         } else if (rotate_angle == 270) {
             temp = rect->x;
             rect->x = rect->y;
-            rect->y = stripf(symbol->vector->width - (temp + rect->width));
+            rect->y = z_stripf(symbol->vector->width - (temp + rect->width));
             temp = rect->width;
             rect->width = rect->height;
             rect->height = temp;
@@ -302,17 +302,17 @@ static void vector_rotate(struct zint_symbol *symbol, const int rotate_angle) {
     while (hex) {
         if (rotate_angle == 90) {
             temp = hex->x;
-            hex->x = stripf(symbol->vector->height - hex->y);
+            hex->x = z_stripf(symbol->vector->height - hex->y);
             hex->y = temp;
             hex->rotation = 90;
         } else if (rotate_angle == 180) {
-            hex->x = stripf(symbol->vector->width - hex->x);
-            hex->y = stripf(symbol->vector->height - hex->y);
+            hex->x = z_stripf(symbol->vector->width - hex->x);
+            hex->y = z_stripf(symbol->vector->height - hex->y);
             hex->rotation = 180;
         } else if (rotate_angle == 270) {
             temp = hex->x;
             hex->x = hex->y;
-            hex->y = stripf(symbol->vector->width - temp);
+            hex->y = z_stripf(symbol->vector->width - temp);
             hex->rotation = 270;
         }
         hex = hex->next;
@@ -322,15 +322,15 @@ static void vector_rotate(struct zint_symbol *symbol, const int rotate_angle) {
     while (circle) {
         if (rotate_angle == 90) {
             temp = circle->x;
-            circle->x = stripf(symbol->vector->height - circle->y);
+            circle->x = z_stripf(symbol->vector->height - circle->y);
             circle->y = temp;
         } else if (rotate_angle == 180) {
-            circle->x = stripf(symbol->vector->width - circle->x);
-            circle->y = stripf(symbol->vector->height - circle->y);
+            circle->x = z_stripf(symbol->vector->width - circle->x);
+            circle->y = z_stripf(symbol->vector->height - circle->y);
         } else if (rotate_angle == 270) {
             temp = circle->x;
             circle->x = circle->y;
-            circle->y = stripf(symbol->vector->width - temp);
+            circle->y = z_stripf(symbol->vector->width - temp);
         }
         circle = circle->next;
     }
@@ -339,17 +339,17 @@ static void vector_rotate(struct zint_symbol *symbol, const int rotate_angle) {
     while (string) {
         if (rotate_angle == 90) {
             temp = string->x;
-            string->x = stripf(symbol->vector->height - string->y);
+            string->x = z_stripf(symbol->vector->height - string->y);
             string->y = temp;
             string->rotation = 90;
         } else if (rotate_angle == 180) {
-            string->x = stripf(symbol->vector->width - string->x);
-            string->y = stripf(symbol->vector->height - string->y);
+            string->x = z_stripf(symbol->vector->width - string->x);
+            string->y = z_stripf(symbol->vector->height - string->y);
             string->rotation = 180;
         } else if (rotate_angle == 270) {
             temp = string->x;
             string->x = string->y;
-            string->y = stripf(symbol->vector->width - temp);
+            string->y = z_stripf(symbol->vector->width - temp);
             string->rotation = 270;
         }
         string = string->next;
@@ -373,7 +373,7 @@ static void vector_reduce_rectangles(struct zint_symbol *symbol) {
 
         while (target) {
             if ((rect->x == target->x) && (rect->width == target->width)
-                    && (stripf(rect->y + rect->height) == target->y) && (rect->colour == target->colour)) {
+                    && (z_stripf(rect->y + rect->height) == target->y) && (rect->colour == target->colour)) {
                 rect->height += target->height;
                 prev->next = target->next;
                 free(target);
@@ -387,7 +387,7 @@ static void vector_reduce_rectangles(struct zint_symbol *symbol) {
     }
 }
 
-INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
+INTERNAL int zint_plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     int error_number, warn_number = 0;
     int main_width;
     int comp_xoffset = 0;
@@ -444,20 +444,20 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     memset(first_row_rects, 0, sizeof(struct zint_vector_rect *) * (symbol->rows + 1));
 
     /* Free any previous rendering structures */
-    vector_free(symbol);
+    zint_vector_free(symbol);
 
     /* Sanity check colours */
-    error_number = out_check_colour_options(symbol);
+    error_number = zint_out_check_colour_options(symbol);
     if (error_number != 0) {
         return error_number;
     }
     if (symbol->rows <= 0) {
-        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 697, "No rows");
+        return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 697, "No rows");
     }
 
     /* Allocate memory */
     if (!(vector = symbol->vector = (struct zint_vector *) malloc(sizeof(struct zint_vector)))) {
-        return errtxt(ZINT_ERROR_MEMORY, symbol, 696, "Insufficient memory for vector header");
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 696, "Insufficient memory for vector header");
     }
 #ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
     memset(vector, 0, sizeof(struct zint_vector));
@@ -467,28 +467,28 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     vector->circles = NULL;
     vector->strings = NULL;
 
-    large_bar_height = out_large_bar_height(symbol, 0 /*si (scale and round)*/, NULL /*row_heights_si*/,
+    large_bar_height = zint_out_large_bar_height(symbol, 0 /*si (scale and round)*/, NULL /*row_heights_si*/,
                         NULL /*symbol_height_si*/);
 
     main_width = symbol->width;
 
-    if (is_composite(symbol->symbology)) {
-        while (!module_is_set(symbol, symbol->rows - 1, comp_xoffset)) {
+    if (z_is_composite(symbol->symbology)) {
+        while (!z_module_is_set(symbol, symbol->rows - 1, comp_xoffset)) {
             comp_xoffset++;
         }
     }
-    if (is_upcean(symbol->symbology)) {
-        upceanflag = out_process_upcean(symbol, comp_xoffset, &main_width, addon, &addon_len, &addon_gap);
-    } else if (is_composite(symbol->symbology)) {
+    if (z_is_upcean(symbol->symbology)) {
+        upceanflag = zint_out_process_upcean(symbol, comp_xoffset, &main_width, addon, &addon_len, &addon_gap);
+    } else if (z_is_composite(symbol->symbology)) {
         int x;
-        for (x = symbol->width - 1; x && !module_is_set(symbol, symbol->rows - 1, x); comp_roffset++, x--);
+        for (x = symbol->width - 1; x && !z_module_is_set(symbol, symbol->rows - 1, x); comp_roffset++, x--);
         main_width -= comp_xoffset + comp_roffset;
     }
 
     hide_text = !symbol->show_hrt || symbol->text_length == 0;
 
-    out_set_whitespace_offsets(symbol, hide_text, comp_xoffset, &xoffset, &yoffset, &roffset, &boffset, &qz_right,
-        0 /*scaler*/, NULL, NULL, NULL, NULL, NULL);
+    zint_out_set_whitespace_offsets(symbol, hide_text, comp_xoffset, &xoffset, &yoffset, &roffset, &boffset,
+        &qz_right, 0 /*scaler*/, NULL, NULL, NULL, NULL, NULL);
 
     xoffset_comp = xoffset + comp_xoffset;
 
@@ -528,7 +528,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     if (hide_text) {
         textoffset = guard_descent;
     } else {
-        textoffset = font_height + stripf(text_gap + antialias_fudge);
+        textoffset = font_height + z_stripf(text_gap + antialias_fudge);
         if (upceanflag) {
             if (textoffset < guard_descent) {
                 textoffset = guard_descent;
@@ -575,7 +575,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             const float hex_yposn = r * yposn_offset + hex_yradius + yoffset;
             const float xposn_offset = (odd_row ? hex_diameter : hex_radius) + xoffset;
             for (i = 0; i < symbol->width - odd_row; i++) {
-                if (module_is_set(symbol, r, i)) {
+                if (z_module_is_set(symbol, r, i)) {
                     const float hex_xposn = i * hex_diameter + xposn_offset;
                     if (!vector_add_hexagon(symbol, hex_xposn, hex_yposn, hex_diameter, &last_hexagon))
                             return ZINT_ERROR_MEMORY;
@@ -586,7 +586,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     } else if (symbol->output_options & BARCODE_DOTTY_MODE) {
         for (r = 0; r < symbol->rows; r++) {
             for (i = 0; i < symbol->width; i++) {
-                if (module_is_set(symbol, r, i)) {
+                if (z_module_is_set(symbol, r, i)) {
                     if (!vector_add_circle(symbol, i + dot_offset + xoffset, r + dot_offset + yoffset,
                             symbol->dot_size, 0, 0, &last_circle)) return ZINT_ERROR_MEMORY;
                 }
@@ -599,14 +599,14 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             const float row_height = symbol->row_height[r];
 
             for (i = 0; i < symbol->width; i += block_width) {
-                const int fill = module_colour_is_set(symbol, r, i);
+                const int fill = z_module_colour_is_set(symbol, r, i);
                 for (block_width = 1; (i + block_width < symbol->width)
-                                        && module_colour_is_set(symbol, r, i + block_width) == fill; block_width++);
+                                        && z_module_colour_is_set(symbol, r, i + block_width) == fill; block_width++);
                 if (fill) {
                     /* a colour block */
                     if (!vector_add_rect(symbol, i + xoffset, yposn, block_width, row_height, &last_rect))
                             return ZINT_ERROR_MEMORY;
-                    last_rect->colour = module_colour_is_set(symbol, r, i);
+                    last_rect->colour = z_module_colour_is_set(symbol, r, i);
                 }
             }
             yposn += row_height;
@@ -619,9 +619,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             last_row_start = rect_count;
 
             for (i = 0; i < symbol->width; i += block_width) {
-                const int fill = module_is_set(symbol, r, i);
+                const int fill = z_module_is_set(symbol, r, i);
                 for (block_width = 1; (i + block_width < symbol->width)
-                                        && module_is_set(symbol, r, i + block_width) == fill; block_width++);
+                                        && z_module_is_set(symbol, r, i + block_width) == fill; block_width++);
 
                 if ((r == (symbol->rows - 1)) && (i > main_width) && (addon_latch == 0)) {
                     addon_text_yposn = yposn + font_height - digit_ascender;
@@ -662,9 +662,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             const float row_height = symbol->row_height[r] ? symbol->row_height[r] : large_bar_height;
 
             for (i = 0; i < symbol->width; i += block_width) {
-                const int fill = module_is_set(symbol, r, i);
+                const int fill = z_module_is_set(symbol, r, i);
                 for (block_width = 1; (i + block_width < symbol->width)
-                                        && module_is_set(symbol, r, i + block_width) == fill; block_width++);
+                                        && z_module_is_set(symbol, r, i + block_width) == fill; block_width++);
                 if (fill) {
                     /* a bar */
                     if (!vector_add_rect(symbol, i + xoffset, yposn, block_width, row_height, &last_rect))
@@ -921,7 +921,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     }
 
     /* Separator binding for stacked barcodes */
-    if ((symbol->output_options & BARCODE_BIND) && symbol->rows > 1 && is_bindable(symbol->symbology)) {
+    if ((symbol->output_options & BARCODE_BIND) && symbol->rows > 1 && z_is_bindable(symbol->symbology)) {
         float sep_xoffset = xoffset;
         float sep_width = symbol->width;
         float sep_height = 1.0f, sep_yoffset, sep_half_height;
@@ -967,7 +967,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 
     /* Bind/box */
     if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP))) {
-        const int horz_outside = is_fixed_ratio(symbol->symbology);
+        const int horz_outside = z_is_fixed_ratio(symbol->symbology);
         float ybind_top = yoffset - symbol->border_width;
         /* Following equivalent to yoffset + symbol->height + dot_overspill except for BARCODE_MAXICODE */
         float ybind_bot = vector->height - textoffset - boffset;
@@ -1027,13 +1027,13 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 
     switch (file_type) {
         case OUT_EPS_FILE:
-            error_number = ps_plot(symbol);
+            error_number = zint_ps_plot(symbol);
             break;
         case OUT_SVG_FILE:
-            error_number = svg_plot(symbol);
+            error_number = zint_svg_plot(symbol);
             break;
         case OUT_EMF_FILE:
-            error_number = emf_plot(symbol, rotate_angle);
+            error_number = zint_emf_plot(symbol, rotate_angle);
             break;
         /* case OUT_BUFFER: No more work needed */
     }

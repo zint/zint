@@ -156,17 +156,20 @@ static void test_encoding(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        rs_init_gf(&rs, data[i].prime_poly);
-        rs_init_code(&rs, data[i].nsym, data[i].index);
-        rs_encode(&rs, data[i].datalen, data[i].data, res);
+        zint_rs_init_gf(&rs, data[i].prime_poly);
+        zint_rs_init_code(&rs, data[i].nsym, data[i].index);
+        zint_rs_encode(&rs, data[i].datalen, data[i].data, res);
 
         if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
-            fprintf(stderr, "res "); for (j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d, ", res[j]); fprintf(stderr, "\n");
-            fprintf(stderr, "exp "); for (j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d, ", data[i].expected[j]); fprintf(stderr, "\n");
+            fprintf(stderr, "res "); for (j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d, ", res[j]);
+            fprintf(stderr, "\n");
+            fprintf(stderr, "exp "); for (j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d, ", data[i].expected[j]);
+            fprintf(stderr, "\n");
         }
         for (j = 0; j < data[i].nsym; j++) {
             int k = data[i].nsym - 1 - j;
-            assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n", i, k, res[k], j, data[i].expected[j]);
+            assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n",
+                        i, k, res[k], j, data[i].expected[j]);
         }
     }
 
@@ -219,17 +222,20 @@ static void test_encoding_uint(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        rs_init_gf(&rs, data[i].prime_poly);
-        rs_init_code(&rs, data[i].nsym, data[i].index);
-        rs_encode_uint(&rs, data[i].datalen, data[i].data, res);
+        zint_rs_init_gf(&rs, data[i].prime_poly);
+        zint_rs_init_code(&rs, data[i].nsym, data[i].index);
+        zint_rs_encode_uint(&rs, data[i].datalen, data[i].data, res);
 
         if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
-            fprintf(stderr, "res "); for (j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d, ", res[j]); fprintf(stderr, "\n");
-            fprintf(stderr, "exp "); for (j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d, ", data[i].expected[j]); fprintf(stderr, "\n");
+            fprintf(stderr, "res "); for (j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d, ", res[j]);
+            fprintf(stderr, "\n");
+            fprintf(stderr, "exp "); for (j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d, ", data[i].expected[j]);
+            fprintf(stderr, "\n");
         }
         for (j = 0; j < data[i].nsym; j++) {
             int k = data[i].nsym - 1 - j;
-            assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n", i, k, res[k], j, data[i].expected[j]);
+            assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n",
+                        i, k, res[k], j, data[i].expected[j]);
         }
     }
 
@@ -268,30 +274,36 @@ static void test_uint_encoding(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        assert_nonzero(rs_uint_init_gf(&rs_uint, data[i].prime_poly, data[i].logmod), "i:%d rs_uint_init_gf() == 0\n", i);
-        rs_uint_init_code(&rs_uint, data[i].nsym, data[i].index);
-        rs_uint_encode(&rs_uint, data[i].datalen, data[i].data, res);
-        rs_uint_free(&rs_uint);
+        assert_nonzero(zint_rs_uint_init_gf(&rs_uint, data[i].prime_poly, data[i].logmod),
+                        "i:%d zint_rs_uint_init_gf() == 0\n", i);
+        zint_rs_uint_init_code(&rs_uint, data[i].nsym, data[i].index);
+        zint_rs_uint_encode(&rs_uint, data[i].datalen, data[i].data, res);
+        zint_rs_uint_free(&rs_uint);
 
         if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
-            fprintf(stderr, "res "); for (j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d, ", res[j]); fprintf(stderr, "\n");
-            fprintf(stderr, "exp "); for (j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d, ", data[i].expected[j]); fprintf(stderr, "\n");
+            fprintf(stderr, "res "); for (j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d, ", res[j]);
+            fprintf(stderr, "\n");
+            fprintf(stderr, "exp "); for (j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d, ", data[i].expected[j]);
+            fprintf(stderr, "\n");
         }
         for (j = 0; j < data[i].nsym; j++) {
             int k = data[i].nsym - 1 - j;
-            assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n", i, k, (int) res[k], j, (int) data[i].expected[j]);
+            assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n",
+                        i, k, (int) res[k], j, (int) data[i].expected[j]);
         }
 
-        /* Simulate rs_uint_init_gf() malloc() failure and rs_uint_init_gf()'s return val not being checked */
-        assert_nonzero(rs_uint_init_gf(&rs_uint, data[i].prime_poly, data[i].logmod), "i:%d rs_uint_init_gf() == 0\n", i);
+        /* Simulate zint_rs_uint_init_gf() malloc() failure and zint_rs_uint_init_gf()'s return val not being
+           checked */
+        assert_nonzero(zint_rs_uint_init_gf(&rs_uint, data[i].prime_poly, data[i].logmod),
+                        "i:%d zint_rs_uint_init_gf() == 0\n", i);
         free(rs_uint.logt);
         rs_uint.logt = NULL;
         free(rs_uint.alog);
         rs_uint.alog = NULL;
 
-        rs_uint_init_code(&rs_uint, data[i].nsym, data[i].index);
-        rs_uint_encode(&rs_uint, data[i].datalen, data[i].data, res);
-        rs_uint_free(&rs_uint);
+        zint_rs_uint_init_code(&rs_uint, data[i].nsym, data[i].index);
+        zint_rs_uint_encode(&rs_uint, data[i].datalen, data[i].data, res);
+        zint_rs_uint_free(&rs_uint);
 
         for (j = 0; j < data[i].nsym; j++) {
             int k = data[i].nsym - 1 - j;

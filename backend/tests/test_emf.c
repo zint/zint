@@ -233,7 +233,7 @@ static void test_print(const testCtx *const p_ctx) {
     testFinish();
 }
 
-INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle);
+INTERNAL int zint_emf_plot(struct zint_symbol *symbol, int rotate_angle);
 
 static void test_outfile(const testCtx *const p_ctx) {
     int ret;
@@ -257,13 +257,13 @@ static void test_outfile(const testCtx *const p_ctx) {
         static char expected_errtxt[] = "640: Could not open EMF output file (";
 
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
-        assert_nonzero(testUtilCreateROFile(symbol.outfile), "emf_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
+        assert_nonzero(testUtilCreateROFile(symbol.outfile), "zint_emf_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
                     symbol.outfile, errno, strerror(errno));
 
-        ret = emf_plot(&symbol, 0);
-        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "emf_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
+        ret = zint_emf_plot(&symbol, 0);
+        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "zint_emf_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
                     ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
-        assert_zero(testUtilRmROFile(symbol.outfile), "emf_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
+        assert_zero(testUtilRmROFile(symbol.outfile), "zint_emf_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
                     symbol.outfile, errno, strerror(errno));
         assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n",
                     symbol.errtxt, expected_errtxt);
@@ -272,13 +272,13 @@ static void test_outfile(const testCtx *const p_ctx) {
     symbol.output_options |= BARCODE_STDOUT;
 
     printf("<<<Begin ignore (EMF to stdout)\n"); fflush(stdout);
-    ret = emf_plot(&symbol, 0);
+    ret = zint_emf_plot(&symbol, 0);
     printf("\n<<<End ignore (EMF to stdout)\n"); fflush(stdout);
-    assert_zero(ret, "emf_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
+    assert_zero(ret, "zint_emf_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
 
     symbol.vector = NULL;
-    ret = emf_plot(&symbol, 0);
-    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "emf_plot ret %d != ZINT_ERROR_INVALID_DATA (%d) (%s)\n",
+    ret = zint_emf_plot(&symbol, 0);
+    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "zint_emf_plot ret %d != ZINT_ERROR_INVALID_DATA (%d) (%s)\n",
                 ret, ZINT_ERROR_INVALID_DATA, symbol.errtxt);
 
     testFinish();

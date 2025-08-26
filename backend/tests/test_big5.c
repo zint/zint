@@ -39,12 +39,12 @@
 #include "../just_say_gno/big5_gnu.h"
 #endif
 
-INTERNAL int u_big5_test(const unsigned int u, unsigned char *dest);
+INTERNAL int zint_test_u_big5(const unsigned int u, unsigned char *dest);
 
 /* Version of `u_big5()` taking unsigned int destination for backward-compatible testing */
 static int u_big5_int(unsigned int u, unsigned int *d) {
     unsigned char dest[2] = {0}; /* Suppress clang -fsanitize=memory false positive */
-    int ret = u_big5_test(u, dest);
+    int ret = zint_test_u_big5(u, dest);
     if (ret) {
         *d = ret == 1 ? dest[0] : ((dest[0] << 8) | dest[1]);
     }
@@ -111,7 +111,8 @@ static void test_u_big5_int(const testCtx *const p_ctx) {
         val = val2 = 0;
         ret = u_big5_int(i, &val);
         ret2 = u_big5_int2(i, &val2);
-        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n",
+                    (int) i, i, ret, ret2, val, val2);
         if (ret2) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
@@ -133,7 +134,8 @@ static void test_u_big5_int(const testCtx *const p_ctx) {
             }
         }
 
-        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n",
+                    (int) i, i, ret, ret2, val, val2);
         if (ret2) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
@@ -159,7 +161,7 @@ static int big5_utf8(struct zint_symbol *symbol, const unsigned char source[], i
 
     memset(utfdata, 0, sizeof(unsigned int) * (*p_length + 1)); /* Suppress clang -fsanitize=memory false positive */
 
-    error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 0 /*disallow_4byte*/);
+    error_number = z_utf8_to_unicode(symbol, source, utfdata, p_length, 0 /*disallow_4byte*/);
     if (error_number != 0) {
         return error_number;
     }
@@ -213,9 +215,11 @@ static void test_big5_utf8(const testCtx *const p_ctx) {
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
             int j;
-            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
+            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n",
+                        i, ret_length, data[i].ret_length);
             for (j = 0; j < ret_length; j++) {
-                assert_equal(b5data[j], data[i].expected_b5data[j], "i:%d b5data[%d] %04X != %04X\n", i, j, b5data[j], data[i].expected_b5data[j]);
+                assert_equal(b5data[j], data[i].expected_b5data[j], "i:%d b5data[%d] %04X != %04X\n",
+                            i, j, b5data[j], data[i].expected_b5data[j]);
             }
         }
     }

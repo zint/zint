@@ -341,7 +341,7 @@ static void test_hrt(const testCtx *const p_ctx) {
 
             if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
                 if (data[i].symbology == BARCODE_HIBC_128
-                        && not_sane(IS_NUM_F | IS_UPR_F | IS_SPC_F | IS_PLS_F | IS_MNS_F | IS_SIL_F, (const unsigned char *) data[i].data, length)) {
+                        && z_not_sane(IS_NUM_F | IS_UPR_F | IS_SPC_F | IS_PLS_F | IS_MNS_F | IS_SIL_F, ZCUCP(data[i].data), length)) {
                     if (debug & ZINT_DEBUG_TEST_PRINT) {
                         printf("i:%d %s not BWIPP compatible (%s)\n",
                                 i, testUtilBarcodeName(symbol->symbology), "BWIPP does not uppercase input");
@@ -835,14 +835,14 @@ static void test_gs1_128_input(const testCtx *const p_ctx) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
                             i, symbol->width, data[i].expected_width, data[i].data);
                 if (ret == ZINT_WARN_HRT_TRUNCATED) {
-                    assert_nonzero((int) ustrlen(symbol->text) < (int) strlen(data[i].data),
+                    assert_nonzero((int) z_ustrlen(symbol->text) < (int) strlen(data[i].data),
                         "i:%d len symbol->text(%s) %d >= %d (%s) (%s)\n",
-                        i, symbol->text, (int) ustrlen(symbol->text), (int) strlen(data[i].data), data[i].data,
+                        i, symbol->text, (int) z_ustrlen(symbol->text), (int) strlen(data[i].data), data[i].data,
                         symbol->errtxt);
                 } else {
-                    assert_equal((int) ustrlen(symbol->text), (int) strlen(data[i].data),
+                    assert_equal((int) z_ustrlen(symbol->text), (int) strlen(data[i].data),
                                 "i:%d len symbol->text(%s) %d != %d (%s, %s) (%s)\n",
-                                i, symbol->text, (int) ustrlen(symbol->text), (int) strlen(data[i].data),
+                                i, symbol->text, (int) z_ustrlen(symbol->text), (int) strlen(data[i].data),
                                 testUtilErrorName(ret), data[i].data, symbol->errtxt);
                 }
 

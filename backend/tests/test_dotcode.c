@@ -44,14 +44,22 @@ static void test_large(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { 200, '0', 2940, 0, "" }, /* 2940 largest Code Set C data that fits in 200x199 HxW */
-        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol height '201' is too large (maximum 200)" },
+        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)" },
         /*  2*/ { 200, '9', 200, 0, "" }, /* Changes a number of mask scores re pre-Rev. 4 version, but best score still the same (7) */
-        /*  3*/ { 200, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol height '203' is too large (maximum 200)" }, /* Width > 200 also */
+        /*  3*/ { 200, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '203' is too large (maximum 200)" }, /* Width > 200 also */
         /*  4*/ { 200, 'A', 1470, 0, "" },
-        /*  5*/ { 200, 'A', 1471, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol height '201' is too large (maximum 200)" },
+        /*  5*/ { 200, 'A', 1471, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)" },
         /*  6*/ { 200, '\240', 1225, 0, "" },
-        /*  7*/ { 200, '\240', 1226, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol height '201' is too large (maximum 200)" },
-        /*  8*/ { 30, '\001', 71, 0, "" }, /* Codeword length 72, ECC length 39, for ND + 1 == 112 */
+        /*  7*/ { 200, '\240', 1226, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)" },
+        /*  8*/ { 200, '0', 1, 0, "" }, /* Padding codewords 35 - probably max */
+        /*  9*/ { 200, '0', 2, 0, "" }, /* Padding codewords 35 */
+        /* 10*/ { 30, '\001', 71, 0, "" }, /* Codeword length 72, ECC length 39, for ND + 1 == 112 */
+        /* 11*/ { -1, '0', 1968, 0, "" },
+        /* 12*/ { -1, '0', 1969, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)" },
+        /* 13*/ { -1, 'A', 984, 0, "" },
+        /* 14*/ { -1, 'A', 985, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)" },
+        /* 15*/ { -1, '\240', 820, 0, "" },
+        /* 16*/ { -1, '\240', 821, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1523,9 +1531,9 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
-            int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
-            int length1 = data[i].segs[1].length == -1 ? (int) ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
-            int length2 = data[i].segs[2].length == -1 ? (int) ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
+            int length = data[i].segs[0].length == -1 ? (int) z_ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1 ? (int) z_ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1 ? (int) z_ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
             printf("        /*%3d*/ { %s, %d, %s, { %d, %d, \"%s\" }, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_2,
                     testUtilOption3Name(BARCODE_DOTCODE, data[i].option_3),

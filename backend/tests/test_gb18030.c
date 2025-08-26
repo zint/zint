@@ -42,7 +42,7 @@
 #include "../just_say_gno/gb2312_gnu.c"
 #endif
 
-INTERNAL int u_gb18030_int_test(const unsigned int u, unsigned int *dest1, unsigned int *dest2);
+INTERNAL int zint_test_u_gb18030_int(const unsigned int u, unsigned int *dest1, unsigned int *dest2);
 
 /* As control convert to GB 18030 using table generated from GB18030.TXT plus simple processing.
    The version of GB18030.TXT is jdk-1.4.2/GB18030.TXT taken from
@@ -187,9 +187,11 @@ static void test_u_gb18030_int(const testCtx *const p_ctx) {
         }
         if (testContinue(p_ctx, i)) continue;
         val1_1 = val1_2 = val2_1 = val2_2 = 0;
-        ret = u_gb18030_int_test(i, &val1_1, &val1_2);
+        ret = zint_test_u_gb18030_int(i, &val1_1, &val1_2);
         ret2 = u_gb18030_int2(i, &val2_1, &val2_2);
-        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val1_1 0x%04X, val2_1 0x%04X, val1_2 0x%04X, val2_2 0x%04X\n", (int) i, i, ret, ret2, val1_1, val2_1, val1_2, val2_2);
+        assert_equal(ret, ret2,
+                    "i:%d 0x%04X ret %d != ret2 %d, val1_1 0x%04X, val2_1 0x%04X, val1_2 0x%04X, val2_2 0x%04X\n",
+                    (int) i, i, ret, ret2, val1_1, val2_1, val1_2, val2_2);
         if (ret2) {
             assert_equal(val1_1, val2_1, "i:%d 0x%04X val1_1 0x%04X != val2_1 0x%04X\n", (int) i, i, val1_1, val2_1);
             assert_equal(val1_2, val2_2, "i:%d 0x%04X val1_2 0x%04X != val2_2 0x%04X\n", (int) i, i, val1_2, val2_2);
@@ -203,7 +205,7 @@ static void test_u_gb18030_int(const testCtx *const p_ctx) {
                 val1_1 = val1_2 = val2_1 = val2_2 = 0;
 
                 start = clock();
-                ret = u_gb18030_int_test(i, &val1_1, &val1_2);
+                ret = zint_test_u_gb18030_int(i, &val1_1, &val1_2);
                 total += clock() - start;
 
                 start = clock();
@@ -212,7 +214,9 @@ static void test_u_gb18030_int(const testCtx *const p_ctx) {
             }
         }
 
-        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val1_1 0x%04X, val2_1 0x%04X, val1_2 0x%04X, val2_2 0x%04X\n", (int) i, i, ret, ret2, val1_1, val2_1, val1_2, val2_2);
+        assert_equal(ret, ret2,
+                    "i:%d 0x%04X ret %d != ret2 %d, val1_1 0x%04X, val2_1 0x%04X, val1_2 0x%04X, val2_2 0x%04X\n",
+                    (int) i, i, ret, ret2, val1_1, val2_1, val1_2, val2_2);
         if (ret2) {
             assert_equal(val1_1, val2_1, "i:%d 0x%04X val1_1 0x%04X != val2_1 0x%04X\n", (int) i, i, val1_1, val2_1);
             assert_equal(val1_2, val2_2, "i:%d 0x%04X val1_2 0x%04X != val2_2 0x%04X\n", (int) i, i, val1_2, val2_2);
@@ -222,14 +226,16 @@ static void test_u_gb18030_int(const testCtx *const p_ctx) {
 
     /* u_gb18030() assumes valid Unicode so now returns a nonsense value here */
     val1_1 = val1_2 = 0;
-    ret = u_gb18030_int_test(0x110000, &val1_1, &val1_2); /* Invalid Unicode codepoint */
+    ret = zint_test_u_gb18030_int(0x110000, &val1_1, &val1_2); /* Invalid Unicode codepoint */
     assert_equal(ret, 4, "0x110000 ret %d != 4, val1_1 0x%04X, val1_2 0x%04X\n", ret, val1_1, val1_2);
 
     for (i = 0; i < ARRAY_SIZE(nonpua_nonbmp); i++) {
         val1_1 = val1_2 = 0;
-        ret = u_gb18030_int_test(nonpua_nonbmp[i], &val1_1, &val1_2);
-        assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val1_1 0x%04X, val1_2 0x%04X\n", (int) i, nonpua_nonbmp[i], ret, val1_1, val1_2);
-        assert_equal(val1_1, nonpua_nonbmp_vals[i], "i:%d 0x%04X val1_1 0x%04X != 0x%04X\n", (int) i, nonpua_nonbmp[i], val1_1, nonpua_nonbmp_vals[i]);
+        ret = zint_test_u_gb18030_int(nonpua_nonbmp[i], &val1_1, &val1_2);
+        assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val1_1 0x%04X, val1_2 0x%04X\n",
+                    (int) i, nonpua_nonbmp[i], ret, val1_1, val1_2);
+        assert_equal(val1_1, nonpua_nonbmp_vals[i], "i:%d 0x%04X val1_1 0x%04X != 0x%04X\n",
+                    (int) i, nonpua_nonbmp[i], val1_1, nonpua_nonbmp_vals[i]);
         assert_zero(val1_2, "i:%d 0x%04X val1_2 0x%04X != 0\n", (int) i, nonpua_nonbmp[i], val1_2);
     }
 
@@ -294,13 +300,15 @@ static void test_gb18030_utf8(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        ret = gb18030_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, gbdata);
+        ret = zint_gb18030_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, gbdata);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
             int j;
-            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
+            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n",
+                        i, ret_length, data[i].ret_length);
             for (j = 0; j < (int) ret_length; j++) {
-                assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] 0x%04X != 0x%04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
+                assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] 0x%04X != 0x%04X\n",
+                            i, j, gbdata[j], data[i].expected_gbdata[j]);
             }
         }
     }
@@ -411,13 +419,16 @@ static void test_gb18030_utf8_to_eci(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        ret = gb18030_utf8_to_eci(data[i].eci, (unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
+        ret = zint_gb18030_utf8_to_eci(data[i].eci, (unsigned char *) data[i].data, &ret_length, gbdata,
+                                        data[i].full_multibyte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             int j;
-            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
+            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n",
+                        i, ret_length, data[i].ret_length);
             for (j = 0; j < (int) ret_length; j++) {
-                assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] 0x%04X != 0x%04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
+                assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] 0x%04X != 0x%04X\n",
+                            i, j, gbdata[j], data[i].expected_gbdata[j]);
             }
         }
     }
@@ -425,7 +436,7 @@ static void test_gb18030_utf8_to_eci(const testCtx *const p_ctx) {
     testFinish();
 }
 
-INTERNAL void gb18030_cpy_test(const unsigned char source[], int *p_length, unsigned int *ddata,
+INTERNAL void zint_test_gb18030_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte);
 
 static void test_gb18030_cpy(const testCtx *const p_ctx) {
@@ -468,17 +479,18 @@ static void test_gb18030_cpy(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        gb18030_cpy_test((unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
+        zint_test_gb18030_cpy((unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
         for (j = 0; j < (int) ret_length; j++) {
-            assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
+            assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n",
+                        i, j, gbdata[j], data[i].expected_gbdata[j]);
         }
     }
 
     testFinish();
 }
 
-INTERNAL int u_gbk_int_test(const unsigned int u, unsigned int *dest);
+INTERNAL int zint_test_u_gbk_int(const unsigned int u, unsigned int *dest);
 
 /* Control for GBK */
 static int u_gbk_int2(unsigned int u, unsigned int *dest) {
@@ -517,9 +529,10 @@ static void test_u_gbk_int(const testCtx *const p_ctx) {
         if (testContinue(p_ctx, i)) continue;
 
         val = val2 = 0;
-        ret = u_gbk_int_test(i, &val);
+        ret = zint_test_u_gbk_int(i, &val);
         ret2 = u_gbk_int2(i, &val2);
-        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n",
+                    (int) i, i, ret, ret2, val, val2);
         if (ret2) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
@@ -574,7 +587,9 @@ static void test_perf(const testCtx *const p_ctx) {
         return;
     }
 
-    for (i = 0; i < data_size; i++) if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+    for (i = 0; i < data_size; i++) {
+        if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+    }
 
     printf("Iterations %d\n", TEST_PERF_ITERATIONS);
 
@@ -591,7 +606,7 @@ static void test_perf(const testCtx *const p_ctx) {
             ret_length = length;
 
             start = clock();
-            ret = gb18030_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, ddata);
+            ret = zint_gb18030_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, ddata);
             diff += clock() - start;
 
 #ifdef TEST_JUST_SAY_GNO
@@ -603,20 +618,22 @@ static void test_perf(const testCtx *const p_ctx) {
             ret_length = length;
 
             start = clock();
-            (void)utf8_to_eci(32, (unsigned char *) data[i].data, dest, &ret_length);
+            (void)zint_utf8_to_eci(32, (unsigned char *) data[i].data, dest, &ret_length);
             diff_eci += clock() - start;
         }
         assert_equal(ret, ret2, "i:%d ret %d != ret2 %d\n", (int) i, ret, ret2);
 
         printf("%*s: new % 8gms, gno % 8gms ratio % 9g, eci %gms\n", comment_max, data[i].comment,
-                TEST_PERF_TIME(diff), TEST_PERF_TIME(diff_gno), TEST_PERF_RATIO(diff, diff_gno), TEST_PERF_TIME(diff_eci));
+                TEST_PERF_TIME(diff), TEST_PERF_TIME(diff_gno), TEST_PERF_RATIO(diff, diff_gno),
+                TEST_PERF_TIME(diff_eci));
 
         total += diff;
         total_gno += diff_gno;
     }
     if (p_ctx->index == -1) {
         printf("%*s: new % 8gms, gno % 8gms ratio % 9g, eci %gms\n", comment_max, "totals",
-                TEST_PERF_TIME(total), TEST_PERF_TIME(total_gno), TEST_PERF_RATIO(total, total_gno), TEST_PERF_TIME(total_eci));
+                TEST_PERF_TIME(total), TEST_PERF_TIME(total_gno), TEST_PERF_RATIO(total, total_gno),
+                TEST_PERF_TIME(total_eci));
     }
 }
 

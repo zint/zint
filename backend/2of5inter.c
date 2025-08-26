@@ -43,7 +43,7 @@ static const char C25InterTable[10][5] = {
 };
 
 /* Common to Interleaved, and to ITF-14, DP Leitcode, DP Identcode */
-INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
+INTERNAL int zint_c25_inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
                 const int checkdigit_option, const int dont_set_height) {
     int i, j, error_number = 0;
     char dest[638]; /* 4 + (125 + 1) * 5 + 3 + 1 = 638 */
@@ -53,10 +53,10 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 125) { /* 4 + (125 + 1) * 9 + 5 = 1143 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 309, "Input length %d too long (maximum 125)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 309, "Input length %d too long (maximum 125)", length);
     }
-    if ((i = not_sane(NEON_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 310,
+    if ((i = z_not_sane(NEON_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 310,
                         "Invalid character at position %d in input (digits only)", i);
     }
 
@@ -72,7 +72,7 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
 
     if (have_checkdigit) {
         /* Add standard GS1 check digit */
-        local_source[length] = gs1_check_digit(local_source, length);
+        local_source[length] = zint_gs1_check_digit(local_source, length);
         length++;
     }
 
@@ -96,7 +96,7 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
     memcpy(d, "311", 3);
     d += 3;
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
     if (!dont_set_height) {
         if (symbol->output_options & COMPLIANT_HEIGHT) {
@@ -105,31 +105,32 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
                width = (P(4N + 6) + N + 6)X = (length / 2) * 18 + 9 */
             /* Taking min X = 0.330mm from Annex D.3.1 (application specification) */
             const float min_height_min = 15.151515f; /* 5.0 / 0.33 */
-            float min_height = stripf((18.0f * (length / 2) + 9.0f) * 0.15f);
+            float min_height = z_stripf((18.0f * (length / 2) + 9.0f) * 0.15f);
             if (min_height < min_height_min) {
                 min_height = min_height_min;
             }
             /* Using 50 as default as none recommended */
-            error_number = set_height(symbol, min_height, min_height > 50.0f ? min_height : 50.0f, 0.0f,
+            error_number = z_set_height(symbol, min_height, min_height > 50.0f ? min_height : 50.0f, 0.0f,
                                         0 /*no_errtxt*/);
         } else {
-            (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+            (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
         }
     }
 
     /* Exclude check digit from HRT if hidden */
-    hrt_cpy_nochk(symbol, local_source, length - (symbol->option_2 == 2));
+    z_hrt_cpy_nochk(symbol, local_source, length - (symbol->option_2 == 2));
 
-    if (raw_text && rt_cpy(symbol, local_source, length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
     }
 
     return error_number;
 }
 
 /* Code 2 of 5 Interleaved ISO/IEC 16390:2007 */
-INTERNAL int c25inter(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_inter_common(symbol, source, length, symbol->option_2 /*checkdigit_option*/, 0 /*dont_set_height*/);
+INTERNAL int zint_c25inter(struct zint_symbol *symbol, unsigned char source[], int length) {
+    return zint_c25_inter_common(symbol, source, length, symbol->option_2 /*checkdigit_option*/,
+                                0 /*dont_set_height*/);
 }
 
 /* vim: set ts=4 sw=4 et : */

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -40,9 +40,9 @@ extern "C" {
 #define C128_MAX    256
 #define C128_MAX_S  "256" /* String version of above */
 
-INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int zint_code128(struct zint_symbol *symbol, unsigned char source[], int length);
 
-INTERNAL_DATA_EXTERN const char C128Table[107][6];
+INTERNAL_DATA_EXTERN const char zint_C128Table[107][6];
 
 #ifdef __cplusplus
 }

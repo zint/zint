@@ -32,7 +32,7 @@
 #include "testcommon.h"
 #include <sys/stat.h>
 
-INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
+INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 
 /* For overview when debugging: ./test_tiff -f pixel_plot -d 5 */
 static void test_pixel_plot(const testCtx *const p_ctx) {
@@ -117,7 +117,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         symbol->debug |= debug;
 
         size = data[i].width * data[i].height;
-        assert_nonzero(size < (int) sizeof(data_buf), "i:%d tif_pixel_plot size %d >= sizeof(data_buf) %d\n",
+        assert_nonzero(size < (int) sizeof(data_buf), "i:%d zint_tif_pixel_plot size %d >= sizeof(data_buf) %d\n",
                     i, size, (int) sizeof(data_buf));
 
         if (data[i].repeat) {
@@ -125,13 +125,13 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         } else {
             strcpy(data_buf, data[i].pattern);
         }
-        assert_equal(size, (int) strlen(data_buf), "i:%d tif_pixel_plot size %d != strlen(data_buf) %d\n",
+        assert_equal(size, (int) strlen(data_buf), "i:%d zint_tif_pixel_plot size %d != strlen(data_buf) %d\n",
                     i, size, (int) strlen(data_buf));
 
         symbol->bitmap = (unsigned char *) data_buf;
 
-        ret = tif_pixel_plot(symbol, (unsigned char *) data_buf);
-        assert_equal(ret, data[i].ret, "i:%d tif_pixel_plot ret %d != %d (%s)\n",
+        ret = zint_tif_pixel_plot(symbol, (unsigned char *) data_buf);
+        assert_equal(ret, data[i].ret, "i:%d zint_tif_pixel_plot ret %d != %d (%s)\n",
                     i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
@@ -372,13 +372,13 @@ static void test_outfile(const testCtx *const p_ctx) {
 
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
         assert_nonzero(testUtilCreateROFile(symbol.outfile),
-                    "tif_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
+                    "zint_tif_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
                     symbol.outfile, errno, strerror(errno));
 
-        ret = tif_pixel_plot(&symbol, data);
-        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "tif_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
+        ret = zint_tif_pixel_plot(&symbol, data);
+        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "zint_tif_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
                     ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
-        assert_zero(testUtilRmROFile(symbol.outfile), "tif_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
+        assert_zero(testUtilRmROFile(symbol.outfile), "zint_tif_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
                     symbol.outfile, errno, strerror(errno));
         assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n",
                     symbol.errtxt, expected_errtxt);
@@ -387,9 +387,9 @@ static void test_outfile(const testCtx *const p_ctx) {
     symbol.output_options |= BARCODE_STDOUT;
 
     printf("<<<Begin ignore (TIF to stdout)\n"); fflush(stdout);
-    ret = tif_pixel_plot(&symbol, data);
+    ret = zint_tif_pixel_plot(&symbol, data);
     printf("\n<<<End ignore (TIF to stdout)\n"); fflush(stdout);
-    assert_zero(ret, "tif_pixel_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
+    assert_zero(ret, "zint_tif_pixel_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
 
     testFinish();
 }

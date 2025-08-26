@@ -58,19 +58,19 @@
 
 #include "composite.h"
 
-INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
+INTERNAL int zint_gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
                 const int cc_rows);
 
-INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
-INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[], const int length,
+INTERNAL int zint_eanx_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
+INTERNAL int zint_ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[], const int length,
                 unsigned char local_source[], int *p_with_addon, unsigned char *zfirst_part,
                 unsigned char *zsecond_part);
 
-INTERNAL int dbar_omnstk_set_height(struct zint_symbol *symbol, const int first_row);
-INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
-INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
-INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
-INTERNAL int dbar_exp_date(const unsigned char source[], const int length, const int position);
+INTERNAL int zint_dbar_omnstk_set_height(struct zint_symbol *symbol, const int first_row);
+INTERNAL int zint_dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
+INTERNAL int zint_dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
+INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
+INTERNAL int zint_dbar_exp_date(const unsigned char source[], const int length, const int position);
 
 static int cc_min(const int first, const int second) {
 
@@ -218,35 +218,35 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
         k = i * cc_width;
         /* Copy the data into codebarre */
         if (cc_width != 3) {
-            bp = bin_append_posn(pdf_rap_side[LeftRAP - 1], 10, pattern, bp);
+            bp = z_bin_append_posn(zint_pdf_rap_side[LeftRAP - 1], 10, pattern, bp);
         }
-        bp = bin_append_posn(pdf_bitpattern[offset + codeWords[k]], 16, pattern, bp);
+        bp = z_bin_append_posn(zint_pdf_bitpattern[offset + codeWords[k]], 16, pattern, bp);
         pattern[bp++] = '0';
         if (cc_width >= 2) {
             if (cc_width == 3) {
-                bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
+                bp = z_bin_append_posn(zint_pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
             }
-            bp = bin_append_posn(pdf_bitpattern[offset + codeWords[k + 1]], 16, pattern, bp);
+            bp = z_bin_append_posn(zint_pdf_bitpattern[offset + codeWords[k + 1]], 16, pattern, bp);
             pattern[bp++] = '0';
             if (cc_width >= 3) {
                 if (cc_width == 4) {
-                    bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
+                    bp = z_bin_append_posn(zint_pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
                 }
-                bp = bin_append_posn(pdf_bitpattern[offset + codeWords[k + 2]], 16, pattern, bp);
+                bp = z_bin_append_posn(zint_pdf_bitpattern[offset + codeWords[k + 2]], 16, pattern, bp);
                 pattern[bp++] = '0';
                 if (cc_width == 4) {
-                    bp = bin_append_posn(pdf_bitpattern[offset + codeWords[k + 3]], 16, pattern, bp);
+                    bp = z_bin_append_posn(zint_pdf_bitpattern[offset + codeWords[k + 3]], 16, pattern, bp);
                     pattern[bp++] = '0';
                 }
             }
         }
-        bp = bin_append_posn(pdf_rap_side[RightRAP - 1], 10, pattern, bp);
+        bp = z_bin_append_posn(zint_pdf_rap_side[RightRAP - 1], 10, pattern, bp);
         pattern[bp++] = '1'; /* Stop */
 
         /* So now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
         for (loop = 0; loop < bp; loop++) {
             if (pattern[loop] == '1') {
-                set_module(symbol, i, loop);
+                z_set_module(symbol, i, loop);
             }
         }
         symbol->row_height[i] = 2;
@@ -307,7 +307,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     /* "the CC-B component shall have codeword 920 in the first symbol character position" (section 9a) */
     chainemc[mclength++] = 920;
 
-    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0);
+    zint_pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0);
 
     /* Now figure out which variant of the symbol to use and load values accordingly */
 
@@ -380,12 +380,12 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     /* Now we have the variant we can load the data - from here on the same as MicroPDF417 code */
     variant--;
     assert(variant >= 0);
-    columns = pdf_MicroVariants[variant]; /* columns */
-    symbol->rows = pdf_MicroVariants[variant + 34]; /* rows */
-    k = pdf_MicroVariants[variant + 68]; /* Number of EC CWs */
+    columns = zint_pdf_MicroVariants[variant]; /* columns */
+    symbol->rows = zint_pdf_MicroVariants[variant + 34]; /* rows */
+    k = zint_pdf_MicroVariants[variant + 68]; /* Number of EC CWs */
     longueur = (columns * symbol->rows) - k; /* Number of non-EC CWs */
     i = longueur - mclength; /* Amount of padding required */
-    offset = pdf_MicroVariants[variant + 102]; /* Coefficient offset */
+    offset = zint_pdf_MicroVariants[variant + 102]; /* Coefficient offset */
 
     /* Binary input padded to target length so no padding should be necessary */
     while (i > 0) {
@@ -399,9 +399,10 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
         total = (chainemc[i] + mccorrection[k - 1]) % 929;
         for (j = k - 1; j >= 0; j--) {
             if (j == 0) {
-                mccorrection[j] = (929 - (total * pdf_Microcoeffs[offset + j]) % 929) % 929;
+                mccorrection[j] = (929 - (total * zint_pdf_Microcoeffs[offset + j]) % 929) % 929;
             } else {
-                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * pdf_Microcoeffs[offset + j]) % 929) % 929;
+                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * zint_pdf_Microcoeffs[offset + j]) % 929)
+                                    % 929;
             }
         }
     }
@@ -417,10 +418,10 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     }
 
     /* Now get the RAP (Row Address Pattern) start values */
-    LeftRAPStart = pdf_RAPTable[variant];
-    CentreRAPStart = pdf_RAPTable[variant + 34];
-    RightRAPStart = pdf_RAPTable[variant + 68];
-    StartCluster = pdf_RAPTable[variant + 102] / 3;
+    LeftRAPStart = zint_pdf_RAPTable[variant];
+    CentreRAPStart = zint_pdf_RAPTable[variant + 34];
+    RightRAPStart = zint_pdf_RAPTable[variant + 68];
+    StartCluster = zint_pdf_RAPTable[variant + 102] / 3;
 
     /* That's all values loaded, get on with the encoding */
 
@@ -435,34 +436,34 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
         offset = 929 * Cluster;
         k = i * columns;
         /* Copy the data into codebarre */
-        bp = bin_append_posn(pdf_rap_side[LeftRAP - 1], 10, pattern, bp);
-        bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k]], 16, pattern, bp);
+        bp = z_bin_append_posn(zint_pdf_rap_side[LeftRAP - 1], 10, pattern, bp);
+        bp = z_bin_append_posn(zint_pdf_bitpattern[offset + chainemc[k]], 16, pattern, bp);
         pattern[bp++] = '0';
         if (cc_width >= 2) {
             if (cc_width == 3) {
-                bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
+                bp = z_bin_append_posn(zint_pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
             }
-            bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 1]], 16, pattern, bp);
+            bp = z_bin_append_posn(zint_pdf_bitpattern[offset + chainemc[k + 1]], 16, pattern, bp);
             pattern[bp++] = '0';
             if (cc_width >= 3) {
                 if (cc_width == 4) {
-                    bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
+                    bp = z_bin_append_posn(zint_pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
                 }
-                bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 2]], 16, pattern, bp);
+                bp = z_bin_append_posn(zint_pdf_bitpattern[offset + chainemc[k + 2]], 16, pattern, bp);
                 pattern[bp++] = '0';
                 if (cc_width == 4) {
-                    bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 3]], 16, pattern, bp);
+                    bp = z_bin_append_posn(zint_pdf_bitpattern[offset + chainemc[k + 3]], 16, pattern, bp);
                     pattern[bp++] = '0';
                 }
             }
         }
-        bp = bin_append_posn(pdf_rap_side[RightRAP - 1], 10, pattern, bp);
+        bp = z_bin_append_posn(zint_pdf_rap_side[RightRAP - 1], 10, pattern, bp);
         pattern[bp++] = '1'; /* Stop */
 
         /* So now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
         for (loop = 0; loop < bp; loop++) {
             if (pattern[loop] == '1') {
-                set_module(symbol, i, loop);
+                z_set_module(symbol, i, loop);
             }
         }
         symbol->row_height[i] = 2;
@@ -521,7 +522,7 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     chainemc[mclength++] = 0; /* Space for length descriptor */
     chainemc[mclength++] = 920; /* CC-C identifier */
 
-    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0);
+    zint_pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0);
 
     chainemc[0] = mclength;
 
@@ -554,9 +555,9 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
         total = (chainemc[i] + mccorrection[k - 1]) % 929;
         for (j = k - 1; j >= 0; j--) {
             if (j == 0) {
-                mccorrection[j] = (929 - (total * pdf_coefrs[offset + j]) % 929) % 929;
+                mccorrection[j] = (929 - (total * zint_pdf_coefrs[offset + j]) % 929) % 929;
             } else {
-                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * pdf_coefrs[offset + j]) % 929) % 929;
+                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * zint_pdf_coefrs[offset + j]) % 929) % 929;
             }
         }
     }
@@ -601,17 +602,17 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
                 break;
         }
         bp = 0;
-        bp = bin_append_posn(0x1FEA8, 17, pattern, bp); /* Row start */
+        bp = z_bin_append_posn(0x1FEA8, 17, pattern, bp); /* Row start */
 
         for (j = 0; j <= cc_width + 1; j++) {
-            bp = bin_append_posn(pdf_bitpattern[offset + dummy[j]], 16, pattern, bp);
+            bp = z_bin_append_posn(zint_pdf_bitpattern[offset + dummy[j]], 16, pattern, bp);
             pattern[bp++] = '0';
         }
-        bp = bin_append_posn(0x3FA29, 18, pattern, bp); /* Row Stop */
+        bp = z_bin_append_posn(0x3FA29, 18, pattern, bp); /* Row Stop */
 
         for (loop = 0; loop < bp; loop++) {
             if (pattern[loop] == '1') {
-                set_module(symbol, i, loop);
+                z_set_module(symbol, i, loop);
             }
         }
         symbol->row_height[i] = 3;
@@ -754,11 +755,11 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     alpha_pad = 0;
     *p_ecc_level = 0;
     target_bitsize = 0;
-    mode = NUMERIC;
+    mode = GF_NUMERIC;
 
     if (length > 1 && source[0] == '1' && (source[1] == '0' || source[1] == '1' || source[1] == '7')) {
         /* Source starts (10), (11) or (17) */
-        if (source[1] == '0' || dbar_exp_date(source, length, 2) >= 0) { /* Check date valid if (11) or (17) */
+        if (source[1] == '0' || zint_dbar_exp_date(source, length, 2) >= 0) { /* Check date valid if (11) or (17) */
             encoding_method = 2;
         }
     } else if (length > 1 && source[0] == '9' && source[1] == '0') {
@@ -773,17 +774,17 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     } else if (encoding_method == 2) {
         /* Encoding Method field "10" - date and lot number */
 
-        bp = bin_append_posn(2, 2, binary_string, bp); /* "10" */
+        bp = z_bin_append_posn(2, 2, binary_string, bp); /* "10" */
 
         if (source[1] == '0') {
             /* No date data */
-            bp = bin_append_posn(3, 2, binary_string, bp); /* "11" */
+            bp = z_bin_append_posn(3, 2, binary_string, bp); /* "11" */
             read_posn = 2;
         } else {
             /* Production Date (11) or Expiration Date (17) */
-            assert(length >= 8); /* Due to `dbar_exp_date()` check above */
+            assert(length >= 8); /* Due to `zint_dbar_exp_date()` check above */
 
-            bp = bin_append_posn(dbar_exp_date(source, length, 2), 16, binary_string, bp);
+            bp = z_bin_append_posn(zint_dbar_exp_date(source, length, 2), 16, binary_string, bp);
 
             if (source[1] == '1') {
                 /* Production Date AI 11 */
@@ -806,7 +807,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
                 /* So still need FNC1 character but can't do single FNC1 in numeric mode, so insert alphanumeric latch
                    "0000" and alphanumeric FNC1 "01111" (this implementation detail taken from BWIPP
                    https://github.com/bwipp/postscriptbarcode Copyright (c) 2004-2019 Terry Burton) */
-                bp = bin_append_posn(15, 9, binary_string, bp); /* "000001111" */
+                bp = z_bin_append_posn(15, 9, binary_string, bp); /* "000001111" */
                 /* Note an alphanumeric FNC1 is also a numeric latch, so now in numeric mode */
             }
         }
@@ -873,7 +874,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             int numeric_value;
             int table3_letter;
             /* Encodation method "11" can be used */
-            bp = bin_append_posn(3, 2, binary_string, bp); /* "11" */
+            bp = z_bin_append_posn(3, 2, binary_string, bp); /* "11" */
 
             numeric -= alpha_posn;
             alpha--;
@@ -883,11 +884,11 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
             if (alphanum == 0 && alpha > numeric) {
                 /* Alpha mode */
-                bp = bin_append_posn(3, 2, binary_string, bp); /* "11" */
+                bp = z_bin_append_posn(3, 2, binary_string, bp); /* "11" */
                 ai90_mode = 2;
             } else if (alphanum == 0 && alpha == 0) {
                 /* Numeric mode */
-                bp = bin_append_posn(2, 2, binary_string, bp); /* "10" */
+                bp = z_bin_append_posn(2, 2, binary_string, bp); /* "10" */
                 ai90_mode = 3;
             } else {
                 /* Note if first 4 are digits then it would be shorter to go into NUMERIC mode first; not
@@ -895,7 +896,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
                 /* Alphanumeric mode */
                 binary_string[bp++] = '0';
                 ai90_mode = 1;
-                mode = ALPHANUMERIC;
+                mode = GF_ALPHANUMERIC;
             }
 
             next_ai_posn = 2 + ninety_len;
@@ -918,37 +919,37 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
                     binary_string[bp++] = '0';
                     break;
                 case 1:
-                    bp = bin_append_posn(2, 2, binary_string, bp); /* "10" */
+                    bp = z_bin_append_posn(2, 2, binary_string, bp); /* "10" */
                     ai_crop_posn = next_ai_posn + 1;
                     break;
                 case 3:
-                    bp = bin_append_posn(3, 2, binary_string, bp); /* "11" */
+                    bp = z_bin_append_posn(3, 2, binary_string, bp); /* "11" */
                     ai_crop_posn = next_ai_posn + 1;
                     break;
             }
 
-            numeric_value = alpha_posn ? to_int(ninety, alpha_posn) : 0;
+            numeric_value = alpha_posn ? z_to_int(ninety, alpha_posn) : 0;
 
             table3_letter = -1;
             if (numeric_value < 31) {
-                table3_letter = posn("BDHIJKLNPQRSTVWZ", ninety[alpha_posn]);
+                table3_letter = z_posn("BDHIJKLNPQRSTVWZ", ninety[alpha_posn]);
             }
 
             if (table3_letter != -1) {
                 /* Encoding can be done according to 5.3.2 c) 2) */
                 /* five bit binary string representing value before letter */
-                bp = bin_append_posn(numeric_value, 5, binary_string, bp);
+                bp = z_bin_append_posn(numeric_value, 5, binary_string, bp);
 
                 /* Followed by four bit representation of letter from Table 3 */
-                bp = bin_append_posn(table3_letter, 4, binary_string, bp);
+                bp = z_bin_append_posn(table3_letter, 4, binary_string, bp);
             } else {
                 /* Encoding is done according to 5.3.2 c) 3) */
-                bp = bin_append_posn(31, 5, binary_string, bp);
+                bp = z_bin_append_posn(31, 5, binary_string, bp);
                 /* ten bit representation of number */
-                bp = bin_append_posn(numeric_value, 10, binary_string, bp);
+                bp = z_bin_append_posn(numeric_value, 10, binary_string, bp);
 
                 /* five bit representation of ASCII character */
-                bp = bin_append_posn(ninety[alpha_posn] - 65, 5, binary_string, bp);
+                bp = z_bin_append_posn(ninety[alpha_posn] - 65, 5, binary_string, bp);
             }
 
             read_posn = alpha_posn + 3; /* +2 for 90 and +1 to go beyond alpha position */
@@ -958,13 +959,13 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
                 /* Alpha encodation (section 5.3.3) */
                 do {
                     if (z_isupper(source[read_posn])) {
-                        bp = bin_append_posn(source[read_posn] - 65, 5, binary_string, bp);
+                        bp = z_bin_append_posn(source[read_posn] - 65, 5, binary_string, bp);
 
                     } else if (z_isdigit(source[read_posn])) {
-                        bp = bin_append_posn(source[read_posn] + 4, 6, binary_string, bp);
+                        bp = z_bin_append_posn(source[read_posn] + 4, 6, binary_string, bp);
 
                     } else if (source[read_posn] == '\x1D') {
-                        bp = bin_append_posn(31, 5, binary_string, bp);
+                        bp = z_bin_append_posn(31, 5, binary_string, bp);
                     }
 
                     read_posn++;
@@ -1008,16 +1009,16 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
     if (debug_print) {
         printf("Mode %s, General Field: %.40s%s\n",
-                mode == NUMERIC ? "NUMERIC" : mode == ALPHANUMERIC ? "ALPHANUMERIC" : "ISO646",
+                mode == GF_NUMERIC ? "NUMERIC" : mode == GF_ALPHANUMERIC ? "ALPHANUMERIC" : "ISO646",
                 general_field, j > 40 ? "..." : "");
     }
 
     if (j != 0) { /* If general field not empty */
         alpha_pad = 0;
 
-        if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
+        if (!zint_general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
             /* Invalid character in input data */
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 441, "Invalid character in input (2D component)");
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 441, "Invalid character in input (2D component)");
         }
     }
 
@@ -1034,7 +1035,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     }
 
     if (target_bitsize == 0) {
-        return errtxt(ZINT_ERROR_TOO_LONG, symbol, 442, "Input too long (2D component)");
+        return z_errtxt(ZINT_ERROR_TOO_LONG, symbol, 442, "Input too long (2D component)");
     }
 
     remainder = target_bitsize - bp;
@@ -1045,14 +1046,14 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
         if (remainder >= 4 && remainder <= 6) {
             /* ISO/IEC 24723:2010 5.4.1 c) 2) "If four to six bits remain, add 1 to the digit value and encode the
                result in the next four bits. ..." */
-            bp = bin_append_posn(ctoi(last_digit) + 1, 4, binary_string, bp);
+            bp = z_bin_append_posn(z_ctoi(last_digit) + 1, 4, binary_string, bp);
             if (remainder > 4) {
                 /* "... The fifth and sixth bits, if present, shall be “0”s." (Covered by adding truncated
                    alphanumeric latch below but do explicitly anyway) */
-                bp = bin_append_posn(0, remainder - 4, binary_string, bp);
+                bp = z_bin_append_posn(0, remainder - 4, binary_string, bp);
             }
         } else {
-            bp = bin_append_posn((11 * ctoi(last_digit)) + 18, 7, binary_string, bp);
+            bp = z_bin_append_posn(11 * z_ctoi(last_digit) + 18, 7, binary_string, bp);
             /* This may push the symbol up to the next size */
         }
     }
@@ -1064,22 +1065,22 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     }
 
     if (target_bitsize == 0) {
-        return errtxt(ZINT_ERROR_TOO_LONG, symbol, 444, "Input too long (2D component)");
+        return z_errtxt(ZINT_ERROR_TOO_LONG, symbol, 444, "Input too long (2D component)");
     }
 
     if (bp < target_bitsize) {
         /* Now add padding to binary string */
         if (alpha_pad == 1) {
-            bp = bin_append_posn(31, 5, binary_string, bp); /* "11111" */
+            bp = z_bin_append_posn(31, 5, binary_string, bp); /* "11111" */
             /* Extra FNC1 character required after Alpha encodation (section 5.3.3) */
         }
 
-        if (mode == NUMERIC) {
-            bp = bin_append_posn(0, 4, binary_string, bp); /* "0000" */
+        if (mode == GF_NUMERIC) {
+            bp = z_bin_append_posn(0, 4, binary_string, bp); /* "0000" */
         }
 
         while (bp < target_bitsize) {
-            bp = bin_append_posn(4, 5, binary_string, bp); /* "00100" */
+            bp = z_bin_append_posn(4, 5, binary_string, bp); /* "00100" */
         }
     }
     binary_string[target_bitsize] = '\0';
@@ -1102,20 +1103,21 @@ static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source
     dummy.option_1 = -1;
     dummy.input_mode = symbol->input_mode;
     dummy.debug = symbol->debug;
-    error_number = gs1_128_cc(&dummy, source, *p_length, 3 /*cc_mode*/, 0 /*cc_rows*/);
+    error_number = zint_gs1_128_cc(&dummy, source, *p_length, 3 /*cc_mode*/, 0 /*cc_rows*/);
     linear_width = dummy.width;
     if (error_number >= ZINT_ERROR || (symbol->debug & ZINT_DEBUG_TEST)) {
-        (void) errtxt(0, symbol, -1, dummy.errtxt);
+        (void) z_errtxt(0, symbol, -1, dummy.errtxt);
     }
 
     if (error_number >= ZINT_ERROR) {
         return 0;
     }
-    *p_length = (int) ustrlen(source); /* May have changed if ESCAPE_MODE & GS1PARENS_MODE and escaped parentheses */
+    /* May have changed if ESCAPE_MODE & GS1PARENS_MODE and escaped parentheses */
+    *p_length = (int) z_ustrlen(source);
     return linear_width;
 }
 
-INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0, warn_number = 0;
     int cc_mode, cc_width = 0, ecc_level = 0;
     int j, i, k;
@@ -1135,21 +1137,21 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     /* Perform sanity checks on input options first */
     primary_len = (int) strlen(symbol->primary);
     if (primary_len == 0) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 445, "No primary (linear component)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 445, "No primary (linear component)");
     }
     if (primary_len >= (int) sizeof(symbol->primary)) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 854,
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 854,
                         "Invalid primary (linear component), must be NUL-terminated");
     }
     if (length > 2990) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 446,
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 446,
                         "2D component input too long, requires %d characters (maximum 2990)", length);
     }
 
     cc_mode = symbol->option_1;
     if (cc_mode == 3 && symbol->symbology != BARCODE_GS1_128_CC) {
         /* CC-C can only be used with a GS1-128 linear part */
-        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 447,
+        return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 447,
                         "Invalid mode (CC-C only valid with GS1-128 linear component)");
     }
 
@@ -1160,7 +1162,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         /* Do a test run of encoding the linear component to establish its width */
         linear_width = cc_linear_dummy_run(symbol, primary, &primary_len); /* Length can change */
         if (linear_width == 0) {
-            return errtxt_adj(ZINT_ERROR_INVALID_DATA, symbol, "%1$s%2$s", " (linear component)");
+            return z_errtxt_adj(ZINT_ERROR_INVALID_DATA, symbol, "%1$s%2$s", " (linear component)");
         }
         if (debug_print) {
             printf("GS1-128 linear width: %d\n", linear_width);
@@ -1176,10 +1178,10 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 int padded_primary_len;
                 int with_addon;
                 unsigned char padded_primary[21];
-                if (!ean_leading_zeroes(symbol, primary, primary_len, padded_primary, &with_addon, NULL, NULL)) {
-                    return errtxt_adj(ZINT_ERROR_TOO_LONG, symbol, "%1$s%2$s", " (linear component)");
+                if (!zint_ean_leading_zeroes(symbol, primary, primary_len, padded_primary, &with_addon, NULL, NULL)) {
+                    return z_errtxt_adj(ZINT_ERROR_TOO_LONG, symbol, "%1$s%2$s", " (linear component)");
                 }
-                padded_primary_len = (int) ustrlen(padded_primary);
+                padded_primary_len = (int) z_ustrlen(padded_primary);
                 if (padded_primary_len <= 7 || symbol->symbology == BARCODE_EAN8_CC) { /* EAN-8 */
                     cc_width = 3;
                 } else {
@@ -1201,7 +1203,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 }
             }
             if (cc_width == 0) {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 449, "Input length %d wrong (linear component)",
+                return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 449, "Input length %d wrong (linear component)",
                                 primary_len);
             }
             break;
@@ -1263,7 +1265,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     if (symbol->option_1 >= 1 && symbol->option_1 <= 3 && symbol->option_1 != cc_mode) {
-        warn_number = ZEXT errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 443,
+        warn_number = ZEXT z_errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 443,
                                     "Composite type changed from CC-%1$c to CC-%2$c",
                                     'A' + (symbol->option_1 - 1), 'A' + (cc_mode - 1));
     }
@@ -1293,40 +1295,40 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         case BARCODE_EANX_CC:
         case BARCODE_EAN8_CC:
         case BARCODE_EAN13_CC:
-            error_number = eanx_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_eanx_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_GS1_128_CC:
             /* GS1-128 needs to know which type of 2D component is used */
-            error_number = gs1_128_cc(linear, primary, primary_len, cc_mode, symbol->rows);
+            error_number = zint_gs1_128_cc(linear, primary, primary_len, cc_mode, symbol->rows);
             break;
         case BARCODE_DBAR_OMN_CC:
-            error_number = dbar_omn_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_omn_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_LTD_CC:
-            error_number = dbar_ltd_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_ltd_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_EXP_CC:
-            error_number = dbar_exp_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_exp_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_UPCA_CC:
-            error_number = eanx_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_eanx_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_UPCE_CC:
-            error_number = eanx_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_eanx_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_STK_CC:
-            error_number = dbar_omn_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_omn_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_OMNSTK_CC:
-            error_number = dbar_omn_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_omn_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_EXPSTK_CC:
-            error_number = dbar_exp_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_exp_cc(linear, primary, primary_len, symbol->rows);
             break;
     }
 
     if (error_number) {
-        ZEXT errtxtf(0, symbol, -1, "%1$s%2$s", linear->errtxt, " (linear component)");
+        ZEXT z_errtxtf(0, symbol, -1, "%1$s%2$s", linear->errtxt, " (linear component)");
         if (error_number >= ZINT_ERROR) {
             ZBarcode_Delete(linear);
             return error_number;
@@ -1395,7 +1397,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             }
             break;
         case BARCODE_DBAR_EXP_CC:
-            for (k = 1; !module_is_set(linear, 1, k - 1) && module_is_set(linear, 1, k); k++);
+            for (k = 1; !z_module_is_set(linear, 1, k - 1) && z_module_is_set(linear, 1, k); k++);
             top_shift = k;
             break;
         case BARCODE_UPCA_CC:
@@ -1411,7 +1413,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             top_shift = 1;
             break;
         case BARCODE_DBAR_EXPSTK_CC:
-            for (k = 1; !module_is_set(linear, 1, k - 1) && module_is_set(linear, 1, k); k++);
+            for (k = 1; !z_module_is_set(linear, 1, k - 1) && z_module_is_set(linear, 1, k); k++);
             top_shift = k;
             break;
     }
@@ -1424,14 +1426,14 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         /* Move the 2D component of the symbol horizontally */
         for (i = 0; i < symbol->rows; i++) {
             for (j = (symbol->width + top_shift); j >= top_shift; j--) {
-                if (module_is_set(symbol, i, j - top_shift)) {
-                    set_module(symbol, i, j);
+                if (z_module_is_set(symbol, i, j - top_shift)) {
+                    z_set_module(symbol, i, j);
                 } else {
-                    unset_module(symbol, i, j);
+                    z_unset_module(symbol, i, j);
                 }
             }
             for (j = 0; j < top_shift; j++) {
-                unset_module(symbol, i, j);
+                z_unset_module(symbol, i, j);
             }
         }
     }
@@ -1440,10 +1442,10 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     for (i = 0; i < linear->rows; i++) {
         symbol->row_height[symbol->rows + i] = linear->row_height[i];
         for (j = 0; j <= linear->width; j++) {
-            if (module_is_set(linear, i, j)) {
-                set_module(symbol, i + symbol->rows, j + bottom_shift);
+            if (z_module_is_set(linear, i, j)) {
+                z_set_module(symbol, i + symbol->rows, j + bottom_shift);
             } else {
-                unset_module(symbol, i + symbol->rows, j + bottom_shift);
+                z_unset_module(symbol, i + symbol->rows, j + bottom_shift);
             }
         }
     }
@@ -1456,43 +1458,43 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         if (symbol->symbology == BARCODE_DBAR_STK_CC) {
             /* Databar Stacked needs special treatment due to asymmetric rows */
-            error_number = dbar_omnstk_set_height(symbol, symbol->rows - linear->rows + 1 /*first_row*/);
+            error_number = zint_dbar_omnstk_set_height(symbol, symbol->rows - linear->rows + 1 /*first_row*/);
         } else if (symbol->symbology == BARCODE_DBAR_EXP_CC || symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
             /* If symbol->height given then min row height was returned, else default height */
             if (error_number == 0) { /* Avoid overwriting any `gs1_verify()` warning */
-                error_number = set_height(symbol, symbol->height ? linear->height : 0.0f,
+                error_number = z_set_height(symbol, symbol->height ? linear->height : 0.0f,
                                             symbol->height ? 0.0f : linear->height, 0.0f, 0 /*no_errtxt*/);
             } else {
-                (void) set_height(symbol, symbol->height ? linear->height : 0.0f,
+                (void) z_set_height(symbol, symbol->height ? linear->height : 0.0f,
                                     symbol->height ? 0.0f : linear->height, 0.0f, 1 /*no_errtxt*/);
             }
         } else {
             /* If symbol->height given then min row height was returned, else default height */
             if (error_number == 0) { /* Avoid overwriting any previous warning (e.g. EAN-8 with add-on) */
-                error_number = set_height(symbol, symbol->height ? linear->height : 0.0f,
+                error_number = z_set_height(symbol, symbol->height ? linear->height : 0.0f,
                                             symbol->height ? 0.0f : linear->height, 0.0f, 0 /*no_errtxt*/);
             } else {
-                (void) set_height(symbol, symbol->height ? linear->height : 0.0f,
+                (void) z_set_height(symbol, symbol->height ? linear->height : 0.0f,
                                             symbol->height ? 0.0f : linear->height, 0.0f, 1 /*no_errtxt*/);
             }
         }
     } else {
         if (symbol->symbology == BARCODE_DBAR_STK_CC) {
-            (void) dbar_omnstk_set_height(symbol, symbol->rows - linear->rows + 1 /*first_row*/);
+            (void) zint_dbar_omnstk_set_height(symbol, symbol->rows - linear->rows + 1 /*first_row*/);
         } else {
-            (void) set_height(symbol, symbol->height ? linear->height : 0.0f, symbol->height ? 0.0f : linear->height,
-                                0.0f, 1 /*no_errtxt*/);
+            (void) z_set_height(symbol, symbol->height ? linear->height : 0.0f,
+                                symbol->height ? 0.0f : linear->height, 0.0f, 1 /*no_errtxt*/);
         }
     }
 
-    hrt_cpy_nochk(symbol, linear->text, linear->text_length);
+    z_hrt_cpy_nochk(symbol, linear->text, linear->text_length);
 
     if (raw_text) {
         assert(linear->raw_segs && linear->raw_segs[0].source);
         /* First linear, then pipe '|' separator (following BWIPP), then composite */
-        if (rt_cpy_cat(symbol, linear->raw_segs[0].source, linear->raw_segs[0].length, '|', source, length)) {
+        if (z_rt_cpy_cat(symbol, linear->raw_segs[0].source, linear->raw_segs[0].length, '|', source, length)) {
             ZBarcode_Delete(linear);
-            return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
         }
     }
 

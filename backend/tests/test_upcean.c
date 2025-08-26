@@ -1437,6 +1437,8 @@ static void test_hrt(const testCtx *const p_ctx) {
     testFinish();
 }
 
+INTERNAL void zint_vector_free(struct zint_symbol *symbol); /* Free vector structures */
+
 static void test_vector_same(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -1494,7 +1496,7 @@ static void test_vector_same(const testCtx *const p_ctx) {
         for (j = 0; j < vectors_size; j++) {
             struct zint_symbol symbol_vector = {0}; /* Suppress clang -fsanitize=memory false positive */
             symbol_vector.vector = vectors[j];
-            vector_free(&symbol_vector);
+            zint_vector_free(&symbol_vector);
         }
     }
 

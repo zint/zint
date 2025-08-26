@@ -1,7 +1,7 @@
 /* pdf417_tabs.h - PDF417 tables and coefficients */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
 
     Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* PDF417 error correction coefficients from Grand Zebu */
-INTERNAL_DATA const unsigned short pdf_coefrs[1022] = {
+INTERNAL_DATA const unsigned short zint_pdf_coefrs[1022] = {
     /* k = 2 */
      27, 917,
 
@@ -130,7 +130,7 @@ INTERNAL_DATA const unsigned short pdf_coefrs[1022] = {
      63, 310, 863, 251, 366, 304, 282, 738, 675, 410, 389, 244,  31, 121, 303, 263
 };
 
-INTERNAL_DATA const unsigned short pdf_bitpattern[2787] = {
+INTERNAL_DATA const unsigned short zint_pdf_bitpattern[2787] = {
     0xEAE0, 0xF578, 0xFABE, 0xEA70, 0xF53C, 0xFA9F, 0xD460, 0xEA38, 0xD430, 0xA820,
     0xD418, 0xA810, 0xD6E0, 0xEB78, 0xF5BE, 0xD670, 0xEB3C, 0xF59F, 0xAC60, 0xD638,
     0xAC30, 0xAEE0, 0xD778, 0xEBBE, 0xAE70, 0xD73C, 0xEB9F, 0xAE38, 0xD71E, 0xAF78,
@@ -413,7 +413,7 @@ INTERNAL_DATA const unsigned short pdf_bitpattern[2787] = {
 };
 
 /* MicroPDF417 coefficients from ISO/IEC 24728:2006 Annex F */
-INTERNAL_DATA const unsigned short pdf_Microcoeffs[344] = {
+INTERNAL_DATA const unsigned short zint_pdf_Microcoeffs[344] = {
     /* k = 7 */
      76, 925, 537, 597, 784, 691, 437,
 
@@ -478,7 +478,7 @@ INTERNAL_DATA const unsigned short pdf_Microcoeffs[344] = {
 };
 
 /* rows, columns, error codewords, k-offset of valid MicroPDF417 sizes from ISO/IEC 24728:2006 */
-INTERNAL_DATA const unsigned short pdf_MicroVariants[136] = { /*34*4*/
+INTERNAL_DATA const unsigned short zint_pdf_MicroVariants[136] = { /*34*4*/
      1,  1,  1,  1,  1,  1, 2,  2,  2,  2,  2,  2,  2,  3,  3,  3,   3,   3,   3,   3,   3,   3,   3,  4,  4,  4,  4,   4,   4,   4,   4,   4,   4,   4,
     11, 14, 17, 20, 24, 28, 8, 11, 14, 17, 20, 23, 26,  6,  8, 10,  12,  15,  20,  26,  32,  38,  44,  4,  6,  8, 10,  12,  15,  20,  26,  32,  38,  44,
      7,  7,  7,  8,  8,  8, 8,  9,  9, 10, 11, 13, 15, 12, 14, 16,  18,  21,  26,  32,  38,  44,  50,  8, 12, 14, 16,  18,  21,  26,  32,  38,  44,  50,
@@ -487,7 +487,7 @@ INTERNAL_DATA const unsigned short pdf_MicroVariants[136] = { /*34*4*/
 /* rows, columns, error codewords, k-offset */
 
 /* following is Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 24728:2006 tables 10, 11 and 12 */
-INTERNAL_DATA const char pdf_RAPTable[136] = { /*34*4*/
+INTERNAL_DATA const char zint_pdf_RAPTable[136] = { /*34*4*/
      1,  8, 36, 19,  9, 25, 1,  1,  8, 36, 19,  9, 27,  1,  7, 15,  25,  37,   1,   1,  21,  15,   1, 47,  1,  7, 15,  25,  37,   1,   1,  21,  15,   1,
      0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  1,  7, 15,  25,  37,  17,   9,  29,  31,  25, 19,  1,  7, 15,  25,  37,  17,   9,  29,  31,  25,
      9,  8, 36, 19, 17, 33, 1,  9,  8, 36, 19, 17, 35,  1,  7, 15,  25,  37,  33,  17,  37,  47,  49, 43,  1,  7, 15,  25,  37,  33,  17,  37,  47,  49,
@@ -495,7 +495,7 @@ INTERNAL_DATA const char pdf_RAPTable[136] = { /*34*4*/
 };
 
 /* Left and Right Row Address Pattern from Table 2 */
-INTERNAL_DATA const unsigned short pdf_rap_side[52] = {
+INTERNAL_DATA const unsigned short zint_pdf_rap_side[52] = {
     0x322, 0x3A2, 0x3B2, 0x332, 0x372, 0x37A, 0x33A, 0x3BA, 0x39A, 0x3DA,
     0x3CA, 0x38A, 0x30A, 0x31A, 0x312, 0x392, 0x3D2, 0x3D6, 0x3D4, 0x394,
     0x3B4, 0x3A4, 0x3A6, 0x3AE, 0x3AC, 0x3A8, 0x328, 0x32C, 0x32E, 0x326,
@@ -505,7 +505,7 @@ INTERNAL_DATA const unsigned short pdf_rap_side[52] = {
 };
 
 /* Centre Row Address Pattern from Table 2 */
-INTERNAL_DATA const unsigned short pdf_rap_centre[52] = {
+INTERNAL_DATA const unsigned short zint_pdf_rap_centre[52] = {
     0x2CE, 0x24E, 0x26E, 0x22E, 0x226, 0x236, 0x216, 0x212, 0x21A, 0x23A,
     0x232, 0x222, 0x262, 0x272, 0x27A, 0x2FA, 0x2F2, 0x2F6, 0x276, 0x274,
     0x264, 0x266, 0x246, 0x242, 0x2C2, 0x2E2, 0x2E6, 0x2E4, 0x2EC, 0x26C,

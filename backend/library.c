@@ -91,7 +91,7 @@ struct zint_symbol *ZBarcode_Create(void) {
     return symbol;
 }
 
-INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures */
+INTERNAL void zint_vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
 /* Free any output buffers that may have been created and initialize output fields */
 void ZBarcode_Clear(struct zint_symbol *symbol) {
@@ -126,10 +126,10 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     }
     symbol->memfile_size = 0;
 
-    rt_free_segs(symbol);
+    z_rt_free_segs(symbol);
 
     /* If there is a rendered version, ensure its memory is released */
-    vector_free(symbol);
+    zint_vector_free(symbol);
 }
 
 /* Free any output buffers that may have been created and reset all fields to defaults */
@@ -143,8 +143,8 @@ void ZBarcode_Reset(struct zint_symbol *symbol) {
     if (symbol->memfile != NULL)
         free(symbol->memfile);
 
-    rt_free_segs(symbol);
-    vector_free(symbol);
+    z_rt_free_segs(symbol);
+    zint_vector_free(symbol);
 
     memset(symbol, 0, sizeof(*symbol));
     set_symbol_defaults(symbol);
@@ -161,102 +161,98 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
     if (symbol->memfile != NULL)
         free(symbol->memfile);
 
-    rt_free_segs(symbol);
-    vector_free(symbol);
+    z_rt_free_segs(symbol);
+    zint_vector_free(symbol);
 
     free(symbol);
 }
 
 /* Symbology handlers */
-INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN system barcodes */
-INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 3 from 9 (or Code 39) */
-INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmazentral Nummer (PZN) */
-/* Extended Code 3 from 9 (or Code 39+) */
-INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int length);
-/* Codabar - a simple substitution cipher */
-INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int length);
-/* Code 2 of 5 Standard (& Matrix) */
-INTERNAL int c25standard(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int c25ind(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Industrial */
-INTERNAL int c25iata(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 IATA */
-INTERNAL int c25inter(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Interleaved */
-INTERNAL int c25logic(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Data Logic */
-INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int length); /* ITF-14 */
-INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length); /* Deutsche Post Leitcode */
-INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int length); /* Deutsche Post Identcode */
-/* Code 93 - a re-working of Code 39+, generates 2 check digits */
-INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 128 and NVE-18 */
-INTERNAL int gs1_128(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-128 (GS1-128) */
-INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 11 */
-INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length); /* MSI Plessey */
-INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int length); /* Telepen ASCII */
-INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int length); /* Telepen Numeric */
-INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int length); /* Plessey Code */
-INTERNAL int pharma(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmacode One Track */
-INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length); /* Flattermarken */
-INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length); /* Facing Identification Mark */
-INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmacode Two Track */
-INTERNAL int postnet(struct zint_symbol *symbol, unsigned char source[], int length); /* Postnet */
-INTERNAL int planet(struct zint_symbol *symbol, unsigned char source[], int length); /* PLANET */
-/* Intelligent Mail (aka USPS OneCode) */
-INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int length); /* RM4SCC */
-INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int length); /* Australia Post 4-state */
-INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 16k */
-INTERNAL int pdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* PDF417 */
-INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Micro PDF417 */
-INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Maxicode */
-INTERNAL int dbar_omn(struct zint_symbol *symbol, unsigned char source[], int length); /* DataBar Omnidirectional */
-INTERNAL int dbar_ltd(struct zint_symbol *symbol, unsigned char source[], int length); /* DataBar Limited */
-INTERNAL int dbar_exp(struct zint_symbol *symbol, unsigned char source[], int length); /* DataBar Expanded */
-INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length); /* Composite Symbology */
-INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length); /* TNT KIX Code */
-INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Aztec Code */
-INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int length); /* Italian Pharmacode */
-INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length); /* DAFT Code */
-INTERNAL int ean14(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-14 */
-INTERNAL int nve18(struct zint_symbol *symbol, unsigned char source[], int length); /* NVE-18 */
-INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int length); /* Micro QR Code */
-INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int length); /* Aztec Runes */
-INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int length); /* Korea Post */
-INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int length); /* Japanese Post */
-INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 49 */
-INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int length); /* Channel Code */
-INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Code One */
-INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Grid Matrix */
-INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Han Xin */
-INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* DotCode */
-INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int length); /* Codablock */
-INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int length); /* UPNQR */
-INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* QR Code */
-/* Data Matrix (IEC16022) */
-INTERNAL int datamatrix(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
-/* VIN Code (Vehicle Identification Number) */
-INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length);
-/* Royal Mail 2D Mailmark */
-INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int length);
-/* Royal Mail 4-state Mailmark */
-INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int length); /* Universal Postal Union S10 */
-INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Ultracode */
-INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* rMQR */
-INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
-INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int length); /* BC412 */
-INTERNAL int dxfilmedge(struct zint_symbol *symbol, unsigned char source[], int length); /* DX Film Edge Barcode */
+
+/* Declaration shorthands (adapted from ZXing-C++ "core/src/libzint/stubs.c") */
+#define LIB_DECL_FUNC_SRC(fn) int fn(struct zint_symbol *symbol, unsigned char source[], int length)
+#define LIB_DECL_FUNC_SEG(fn) int fn(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count)
+
+INTERNAL LIB_DECL_FUNC_SRC(zint_code11); /* Code 11 */
+INTERNAL LIB_DECL_FUNC_SRC(zint_c25standard); /* Code 2 of 5 Standard (& Matrix) */
+INTERNAL LIB_DECL_FUNC_SRC(zint_c25inter); /* Code 2 of 5 Interleaved */
+INTERNAL LIB_DECL_FUNC_SRC(zint_c25iata); /* Code 2 of 5 IATA */
+INTERNAL LIB_DECL_FUNC_SRC(zint_c25logic); /* Code 2 of 5 Data Logic */
+INTERNAL LIB_DECL_FUNC_SRC(zint_c25ind); /* Code 2 of 5 Industrial */
+INTERNAL LIB_DECL_FUNC_SRC(zint_code39); /* Code 3 from 9 (or Code 39) */
+INTERNAL LIB_DECL_FUNC_SRC(zint_excode39); /* Extended Code 3 from 9 (or Code 39+) */
+INTERNAL LIB_DECL_FUNC_SRC(zint_eanx); /* EAN system barcodes */
+INTERNAL LIB_DECL_FUNC_SRC(zint_gs1_128); /* EAN-128 (GS1-128) */
+INTERNAL LIB_DECL_FUNC_SRC(zint_codabar); /* Codabar - a simple substitution cipher */
+INTERNAL LIB_DECL_FUNC_SRC(zint_code128); /* Code 128 and NVE-18 */
+INTERNAL LIB_DECL_FUNC_SRC(zint_dpleit); /* Deutsche Post Leitcode */
+INTERNAL LIB_DECL_FUNC_SRC(zint_dpident); /* Deutsche Post Identcode */
+INTERNAL LIB_DECL_FUNC_SRC(zint_code16k); /* Code 16k */
+INTERNAL LIB_DECL_FUNC_SRC(zint_code49); /* Code 49 */
+INTERNAL LIB_DECL_FUNC_SRC(zint_code93); /* Code 93 - a re-working of Code 39+, generates 2 check digits */
+INTERNAL LIB_DECL_FUNC_SRC(zint_flat); /* Flattermarken */
+INTERNAL LIB_DECL_FUNC_SRC(zint_dbar_omn); /* DataBar Omnidirectional */
+INTERNAL LIB_DECL_FUNC_SRC(zint_dbar_ltd); /* DataBar Limited */
+INTERNAL LIB_DECL_FUNC_SRC(zint_dbar_exp); /* DataBar Expanded */
+INTERNAL LIB_DECL_FUNC_SRC(zint_telepen); /* Telepen ASCII */
+INTERNAL LIB_DECL_FUNC_SRC(zint_postnet); /* Postnet */
+INTERNAL LIB_DECL_FUNC_SRC(zint_msi_plessey); /* MSI Plessey */
+INTERNAL LIB_DECL_FUNC_SRC(zint_fim); /* Facing Identification Mark */
+INTERNAL LIB_DECL_FUNC_SRC(zint_pharma); /* Pharmacode One Track */
+INTERNAL LIB_DECL_FUNC_SRC(zint_pzn); /* Pharmazentral Nummer (PZN) */
+INTERNAL LIB_DECL_FUNC_SRC(zint_pharma_two); /* Pharmacode Two Track */
+INTERNAL LIB_DECL_FUNC_SEG(zint_pdf417); /* PDF417 */
+INTERNAL LIB_DECL_FUNC_SEG(zint_maxicode); /* Maxicode */
+INTERNAL LIB_DECL_FUNC_SEG(zint_qrcode); /* QR Code */
+INTERNAL LIB_DECL_FUNC_SRC(zint_auspost); /* Australia Post 4-state */
+INTERNAL LIB_DECL_FUNC_SRC(zint_rm4scc); /* RM4SCC */
+INTERNAL LIB_DECL_FUNC_SEG(zint_datamatrix); /* Data Matrix (IEC16022) */
+INTERNAL LIB_DECL_FUNC_SRC(zint_ean14); /* EAN-14 */
+INTERNAL LIB_DECL_FUNC_SRC(zint_vin); /* VIN Code (Vehicle Identification Number) */
+INTERNAL LIB_DECL_FUNC_SRC(zint_codablockf); /* Codablock */
+INTERNAL LIB_DECL_FUNC_SRC(zint_nve18); /* NVE-18 */
+INTERNAL LIB_DECL_FUNC_SRC(zint_japanpost); /* Japanese Post */
+INTERNAL LIB_DECL_FUNC_SRC(zint_koreapost); /* Korea Post */
+INTERNAL LIB_DECL_FUNC_SRC(zint_planet); /* PLANET */
+INTERNAL LIB_DECL_FUNC_SEG(zint_micropdf417); /* Micro PDF417 */
+INTERNAL LIB_DECL_FUNC_SRC(zint_usps_imail); /* Intelligent Mail (aka USPS OneCode) */
+INTERNAL LIB_DECL_FUNC_SRC(zint_plessey); /* Plessey Code */
+INTERNAL LIB_DECL_FUNC_SRC(zint_telepen_num); /* Telepen Numeric */
+INTERNAL LIB_DECL_FUNC_SRC(zint_itf14); /* ITF-14 */
+INTERNAL LIB_DECL_FUNC_SRC(zint_kix); /* TNT KIX Code */
+INTERNAL LIB_DECL_FUNC_SEG(zint_aztec); /* Aztec Code */
+INTERNAL LIB_DECL_FUNC_SRC(zint_daft); /* DAFT Code */
+INTERNAL LIB_DECL_FUNC_SRC(zint_dpd); /* DPD Code */
+INTERNAL LIB_DECL_FUNC_SRC(zint_microqr); /* Micro QR Code */
+INTERNAL LIB_DECL_FUNC_SEG(zint_dotcode); /* DotCode */
+INTERNAL LIB_DECL_FUNC_SEG(zint_hanxin); /* Han Xin */
+INTERNAL LIB_DECL_FUNC_SRC(zint_mailmark_2d); /* Royal Mail 2D Mailmark */
+INTERNAL LIB_DECL_FUNC_SRC(zint_upu_s10); /* Universal Postal Union S10 */
+INTERNAL LIB_DECL_FUNC_SRC(zint_mailmark_4s); /* Royal Mail 4-state Mailmark */
+INTERNAL LIB_DECL_FUNC_SRC(zint_azrune); /* Aztec Runes */
+INTERNAL LIB_DECL_FUNC_SRC(zint_code32); /* Italian Pharmacode */
+INTERNAL LIB_DECL_FUNC_SRC(zint_composite); /* Composite Symbology */
+INTERNAL LIB_DECL_FUNC_SRC(zint_channel); /* Channel Code */
+INTERNAL LIB_DECL_FUNC_SEG(zint_codeone); /* Code One */
+INTERNAL LIB_DECL_FUNC_SEG(zint_gridmatrix); /* Grid Matrix */
+INTERNAL LIB_DECL_FUNC_SRC(zint_upnqr); /* UPNQR */
+INTERNAL LIB_DECL_FUNC_SEG(zint_ultra); /* Ultracode */
+INTERNAL LIB_DECL_FUNC_SEG(zint_rmqr); /* rMQR */
+INTERNAL LIB_DECL_FUNC_SRC(zint_bc412); /* BC412 */
+INTERNAL LIB_DECL_FUNC_SRC(zint_dxfilmedge); /* DX Film Edge Barcode */
 
 /* Output handlers */
 /* Plot to BMP/GIF/PCX/PNG/TIF */
-INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type);
+INTERNAL int zint_plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type);
 /* Plot to EMF/EPS/SVG */
-INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type);
+INTERNAL int zint_plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type);
 
 /* Prefix error message with Error/Warning */
 static int error_tag(int error_number, struct zint_symbol *symbol, const int err_id, const char *error_string) {
 
     if (error_number != 0) {
         if (error_string) {
-            errtxt(0, symbol, err_id, error_string);
+            z_errtxt(0, symbol, err_id, error_string);
         }
         if (error_number < ZINT_ERROR && symbol->warn_level == WARN_FAIL_ALL) {
             /* Convert to error equivalent */
@@ -274,9 +270,9 @@ static int error_tag(int error_number, struct zint_symbol *symbol, const int err
             }
         }
         if (error_number >= ZINT_ERROR) {
-            errtxt_adj(0, symbol, "Error %s", NULL);
+            z_errtxt_adj(0, symbol, "Error %s", NULL);
         } else {
-            errtxt_adj(0, symbol, "Warning %s", NULL);
+            z_errtxt_adj(0, symbol, "Warning %s", NULL);
         }
     }
 
@@ -284,7 +280,7 @@ static int error_tag(int error_number, struct zint_symbol *symbol, const int err
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int error_tag_test(int error_number, struct zint_symbol *symbol, const int err_id,
+INTERNAL int zint_test_error_tag(int error_number, struct zint_symbol *symbol, const int err_id,
                 const char *error_string) {
     return error_tag(error_number, symbol, err_id, error_string);
 }
@@ -302,12 +298,12 @@ static int dump_plot(struct zint_symbol *symbol) {
         f = stdout;
     } else {
 #ifdef _WIN32
-        f = out_win_fopen(symbol->outfile, "w");
+        f = zint_out_win_fopen(symbol->outfile, "w");
 #else
         f = fopen(symbol->outfile, "w");
 #endif
         if (!f) {
-            return errtxt(ZINT_ERROR_FILE_ACCESS, symbol, 201, "Could not open output file");
+            return z_errtxt(ZINT_ERROR_FILE_ACCESS, symbol, 201, "Could not open output file");
         }
     }
 
@@ -316,11 +312,11 @@ static int dump_plot(struct zint_symbol *symbol) {
         for (i = 0; i < symbol->width; i++) {
             byt = byt << 1;
             if (symbol->symbology == BARCODE_ULTRA) {
-                if (module_colour_is_set(symbol, r, i)) {
+                if (z_module_colour_is_set(symbol, r, i)) {
                     byt += 1;
                 }
             } else {
-                if (module_is_set(symbol, r, i)) {
+                if (z_module_is_set(symbol, r, i)) {
                     byt += 1;
                 }
             }
@@ -344,7 +340,7 @@ static int dump_plot(struct zint_symbol *symbol) {
     }
 
     if (ferror(f)) {
-        ZEXT errtxtf(0, symbol, 795, "Incomplete write to output (%1$d: %2$s)", errno, strerror(errno));
+        ZEXT z_errtxtf(0, symbol, 795, "Incomplete write to output (%1$d: %2$s)", errno, strerror(errno));
         if (!output_to_stdout) {
             (void) fclose(f);
         }
@@ -353,13 +349,13 @@ static int dump_plot(struct zint_symbol *symbol) {
 
     if (output_to_stdout) {
         if (fflush(f) != 0) {
-            return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 796, "Incomplete flush to output (%1$d: %2$s)",
-                                errno, strerror(errno));
+            return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 796, "Incomplete flush to output (%1$d: %2$s)",
+                                    errno, strerror(errno));
         }
     } else {
         if (fclose(f) != 0) {
-            return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 792, "Failure on closing output file (%1$d: %2$s)",
-                                errno, strerror(errno));
+            return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 792, "Failure on closing output file (%1$d: %2$s)",
+                                    errno, strerror(errno));
         }
     }
 
@@ -381,12 +377,12 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
 
     /* without "+" and check: max 110 characters in HIBC 2.6 */
     if (length > 110) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 202, "Input length %d too long for HIBC LIC (maximum 110)",
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 202, "Input length %d too long for HIBC LIC (maximum 110)",
                         length);
     }
-    to_upper(source, length);
-    if ((i = not_sane_lookup(TECHNETIUM, sizeof(TECHNETIUM) - 1, source, length, posns))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 203,
+    z_to_upper(source, length);
+    if ((i = z_not_sane_lookup(TECHNETIUM, sizeof(TECHNETIUM) - 1, source, length, posns))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 203,
                         "Invalid character at position %d in input (alphanumerics, space and \"-.$/+%%\" only)", i);
     }
 
@@ -409,35 +405,35 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
     /* HIBC uses same `raw_text` as base symbologies */
     switch (symbol->symbology) {
         case BARCODE_HIBC_128:
-            error_number = code128(symbol, segs[0].source, segs[0].length);
-            hrt_cpy_chr(symbol, '*');
-            hrt_cat_nochk(symbol, segs[0].source, segs[0].length);
-            hrt_cat_chr_nochk(symbol, '*');
+            error_number = zint_code128(symbol, segs[0].source, segs[0].length);
+            z_hrt_cpy_chr(symbol, '*');
+            z_hrt_cat_nochk(symbol, segs[0].source, segs[0].length);
+            z_hrt_cat_chr_nochk(symbol, '*');
             break;
         case BARCODE_HIBC_39:
             symbol->option_2 = 0;
-            error_number = code39(symbol, segs[0].source, segs[0].length);
-            hrt_cpy_chr(symbol, '*');
-            hrt_cat_nochk(symbol, segs[0].source, segs[0].length);
-            hrt_cat_chr_nochk(symbol, '*');
+            error_number = zint_code39(symbol, segs[0].source, segs[0].length);
+            z_hrt_cpy_chr(symbol, '*');
+            z_hrt_cat_nochk(symbol, segs[0].source, segs[0].length);
+            z_hrt_cat_chr_nochk(symbol, '*');
             break;
         case BARCODE_HIBC_DM:
-            error_number = datamatrix(symbol, segs, seg_count);
+            error_number = zint_datamatrix(symbol, segs, seg_count);
             break;
         case BARCODE_HIBC_QR:
-            error_number = qrcode(symbol, segs, seg_count);
+            error_number = zint_qrcode(symbol, segs, seg_count);
             break;
         case BARCODE_HIBC_PDF:
-            error_number = pdf417(symbol, segs, seg_count);
+            error_number = zint_pdf417(symbol, segs, seg_count);
             break;
         case BARCODE_HIBC_MICPDF:
-            error_number = micropdf417(symbol, segs, seg_count);
+            error_number = zint_micropdf417(symbol, segs, seg_count);
             break;
         case BARCODE_HIBC_AZTEC:
-            error_number = aztec(symbol, segs, seg_count);
+            error_number = zint_aztec(symbol, segs, seg_count);
             break;
         case BARCODE_HIBC_BLOCKF:
-            error_number = codablockf(symbol, segs[0].source, segs[0].length);
+            error_number = zint_codablockf(symbol, segs[0].source, segs[0].length);
             break;
     }
 
@@ -457,7 +453,7 @@ static int check_force_gs1(const int symbology) {
             break;
     }
 
-    return is_composite(symbology);
+    return z_is_composite(symbology);
 }
 
 /* Returns 1 if symbology supports GS1 data */
@@ -510,7 +506,7 @@ static int supports_eci(const int symbology) {
 /* Returns 1 if symbology supports HRT */
 static int has_hrt(const int symbology) {
 
-    if (is_fixed_ratio(symbology)) {
+    if (z_is_fixed_ratio(symbology)) {
         return 0;
     }
 
@@ -562,61 +558,61 @@ typedef int (*barcode_seg_func_t)(struct zint_symbol *, struct zint_seg[], const
 /* Used for dispatching `barcode_src_func_t` barcodes */
 /* Also used, with `barcode_seg_funcs` below, for testing whether symbol id valid in `ZBarcode_ValidID()` */
 static const barcode_src_func_t barcode_src_funcs[BARCODE_LAST + 1] = {
-          NULL,      code11, c25standard,    c25inter,     c25iata, /*0-4*/
-          NULL,    c25logic,      c25ind,      code39,    excode39, /*5-9*/
-          eanx,        eanx,        eanx,        eanx,        eanx, /*10-14*/
-          eanx,     gs1_128,        NULL,     codabar,        NULL, /*15-19*/
-       code128,      dpleit,     dpident,     code16k,      code49, /*20-24*/
-        code93,        NULL,        NULL,        flat,    dbar_omn, /*25-29*/
-      dbar_ltd,    dbar_exp,     telepen,        NULL,        eanx, /*30-34*/
-          eanx,        NULL,        eanx,        eanx,        NULL, /*35-39*/
-       postnet,        NULL,        NULL,        NULL,        NULL, /*40-44*/
-          NULL,        NULL, msi_plessey,        NULL,         fim, /*45-49*/
-        code39,      pharma,         pzn,  pharma_two,     postnet, /*50-54*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*55-59*/
-       code128,        NULL,        NULL,     auspost,        NULL, /*60-64*/
-          NULL,     auspost,     auspost,     auspost,        eanx, /*65-69*/
-        rm4scc,        NULL,       ean14,         vin,  codablockf, /*70-74*/
-         nve18,   japanpost,   koreapost,        NULL,    dbar_omn, /*75-79*/
-      dbar_omn,    dbar_exp,      planet,        NULL,        NULL, /*80-84*/
-    usps_imail,     plessey, telepen_num,        NULL,       itf14, /*85-89*/
-           kix,        NULL,        NULL,        daft,        NULL, /*90-94*/
-          NULL,         dpd,     microqr,        NULL,        NULL, /*95-99*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*100-104*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*105-109*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*110-114*/
-          NULL,        NULL,        NULL,        NULL, mailmark_2d, /*115-119*/
-       upu_s10, mailmark_4s,        NULL,        NULL,        NULL, /*120-124*/
-          NULL,        NULL,        NULL,      azrune,      code32, /*125-129*/
-     composite,   composite,   composite,   composite,   composite, /*130-134*/
-     composite,   composite,   composite,   composite,   composite, /*135-139*/
-       channel,        NULL,        NULL,       upnqr,        NULL, /*140-144*/
-          NULL,       bc412,  dxfilmedge,   composite,   composite, /*145-149*/
+               NULL,      zint_code11, zint_c25standard,    zint_c25inter,     zint_c25iata, /*0-4*/
+               NULL,    zint_c25logic,      zint_c25ind,      zint_code39,    zint_excode39, /*5-9*/
+          zint_eanx,        zint_eanx,        zint_eanx,        zint_eanx,        zint_eanx, /*10-14*/
+          zint_eanx,     zint_gs1_128,             NULL,     zint_codabar,             NULL, /*15-19*/
+       zint_code128,      zint_dpleit,     zint_dpident,     zint_code16k,      zint_code49, /*20-24*/
+        zint_code93,             NULL,             NULL,        zint_flat,    zint_dbar_omn, /*25-29*/
+      zint_dbar_ltd,    zint_dbar_exp,     zint_telepen,             NULL,        zint_eanx, /*30-34*/
+          zint_eanx,             NULL,        zint_eanx,        zint_eanx,             NULL, /*35-39*/
+       zint_postnet,             NULL,             NULL,             NULL,             NULL, /*40-44*/
+               NULL,             NULL, zint_msi_plessey,             NULL,         zint_fim, /*45-49*/
+        zint_code39,      zint_pharma,         zint_pzn,  zint_pharma_two,     zint_postnet, /*50-54*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*55-59*/
+       zint_code128,             NULL,             NULL,     zint_auspost,             NULL, /*60-64*/
+               NULL,     zint_auspost,     zint_auspost,     zint_auspost,        zint_eanx, /*65-69*/
+        zint_rm4scc,             NULL,       zint_ean14,         zint_vin,  zint_codablockf, /*70-74*/
+         zint_nve18,   zint_japanpost,   zint_koreapost,             NULL,    zint_dbar_omn, /*75-79*/
+      zint_dbar_omn,    zint_dbar_exp,      zint_planet,             NULL,             NULL, /*80-84*/
+    zint_usps_imail,     zint_plessey, zint_telepen_num,             NULL,       zint_itf14, /*85-89*/
+           zint_kix,             NULL,             NULL,        zint_daft,             NULL, /*90-94*/
+               NULL,         zint_dpd,     zint_microqr,             NULL,             NULL, /*95-99*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*100-104*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*105-109*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*110-114*/
+               NULL,             NULL,             NULL,             NULL, zint_mailmark_2d, /*115-119*/
+       zint_upu_s10, zint_mailmark_4s,             NULL,             NULL,             NULL, /*120-124*/
+               NULL,             NULL,             NULL,      zint_azrune,      zint_code32, /*125-129*/
+     zint_composite,   zint_composite,   zint_composite,   zint_composite,   zint_composite, /*130-134*/
+     zint_composite,   zint_composite,   zint_composite,   zint_composite,   zint_composite, /*135-139*/
+       zint_channel,             NULL,             NULL,       zint_upnqr,             NULL, /*140-144*/
+               NULL,       zint_bc412,  zint_dxfilmedge,   zint_composite,   zint_composite, /*145-149*/
 };
 
 #define LIB_SEG_FUNCS_START 55
 
 /* Used for dispatching `barcode_seg_func_t` barcodes */
 static const barcode_seg_func_t barcode_seg_funcs[BARCODE_LAST + 1 - LIB_SEG_FUNCS_START] = {
-        pdf417,      pdf417,    maxicode,      qrcode,        NULL, /*55-59*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*60-64*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*65-69*/
-          NULL,  datamatrix,        NULL,        NULL,        NULL, /*70-74*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*75-79*/
-          NULL,        NULL,        NULL,        NULL, micropdf417, /*80-84*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*85-89*/
-          NULL,        NULL,       aztec,        NULL,        NULL, /*90-94*/
-          NULL,        NULL,        NULL,        hibc,        hibc, /*95-99*/
-          NULL,        NULL,        hibc,        NULL,        hibc, /*100-104*/
-          NULL,        hibc,        NULL,        hibc,        NULL, /*105-109*/
-          hibc,        NULL,        hibc,        NULL,        NULL, /*110-114*/
-       dotcode,      hanxin,        NULL,        NULL,        NULL, /*115-119*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*120-124*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*125-129*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*130-134*/
-          NULL,        NULL,        NULL,        NULL,        NULL, /*135-139*/
-          NULL,     codeone,  gridmatrix,        NULL,       ultra, /*140-144*/
-          rmqr,        NULL,        NULL,        NULL,        NULL, /*145-149*/
+        zint_pdf417,      zint_pdf417,    zint_maxicode,      zint_qrcode,             NULL, /*55-59*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*60-64*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*65-69*/
+               NULL,  zint_datamatrix,             NULL,             NULL,             NULL, /*70-74*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*75-79*/
+               NULL,             NULL,             NULL,             NULL, zint_micropdf417, /*80-84*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*85-89*/
+               NULL,             NULL,       zint_aztec,             NULL,             NULL, /*90-94*/
+               NULL,             NULL,             NULL,             hibc,             hibc, /*95-99*/
+               NULL,             NULL,             hibc,             NULL,             hibc, /*100-104*/
+               NULL,             hibc,             NULL,             hibc,             NULL, /*105-109*/
+               hibc,             NULL,             hibc,             NULL,             NULL, /*110-114*/
+       zint_dotcode,      zint_hanxin,             NULL,             NULL,             NULL, /*115-119*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*120-124*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*125-129*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*130-134*/
+               NULL,             NULL,             NULL,             NULL,             NULL, /*135-139*/
+               NULL,     zint_codeone,  zint_gridmatrix,             NULL,       zint_ultra, /*140-144*/
+          zint_rmqr,             NULL,             NULL,             NULL,             NULL, /*145-149*/
 };
 
 static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
@@ -653,24 +649,24 @@ static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], c
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
     int *convertible = (int *) z_alloca(sizeof(int) * seg_count);
 
-    if ((symbol->input_mode & 0x07) == UNICODE_MODE && is_eci_convertible_segs(segs, seg_count, convertible)) {
+    if ((symbol->input_mode & 0x07) == UNICODE_MODE && zint_is_eci_convertible_segs(segs, seg_count, convertible)) {
         unsigned char *preprocessed;
-        const int eci_length_segs = get_eci_length_segs(segs, seg_count);
+        const int eci_length_segs = zint_get_eci_length_segs(segs, seg_count);
         unsigned char *preprocessed_buf = (unsigned char *) z_alloca(eci_length_segs + seg_count);
 
         /* Prior check ensures ECI only set for those that support it */
-        segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
+        z_segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
         preprocessed = preprocessed_buf;
         for (i = 0; i < seg_count; i++) {
             if (convertible[i]) {
-                error_number = utf8_to_eci(local_segs[i].eci, local_segs[i].source, preprocessed,
+                error_number = zint_utf8_to_eci(local_segs[i].eci, local_segs[i].source, preprocessed,
                                             &local_segs[i].length);
                 if (error_number != 0) {
                     if (local_segs[i].eci) {
-                        return errtxtf(error_number, symbol, 244, "Invalid character in input for ECI '%d'",
+                        return z_errtxtf(error_number, symbol, 244, "Invalid character in input for ECI '%d'",
                                         local_segs[i].eci);
                     }
-                    return errtxt(error_number, symbol, 204, "Invalid character in input (ISO/IEC 8859-1 only)");
+                    return z_errtxt(error_number, symbol, 204, "Invalid character in input (ISO/IEC 8859-1 only)");
                 }
                 local_segs[i].source = preprocessed;
                 preprocessed += local_segs[i].length + 1;
@@ -689,7 +685,7 @@ static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], c
         } else {
             assert(symbol->symbology >= LIB_SEG_FUNCS_START); /* Suppress clang-tidy-19 warning */
             assert(barcode_seg_funcs[symbol->symbology - LIB_SEG_FUNCS_START]); /* Suppress clang-tidy-19 warning */
-            segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
+            z_segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
             error_number = barcode_seg_funcs[symbol->symbology - LIB_SEG_FUNCS_START](symbol, local_segs, seg_count);
         }
     }
@@ -712,7 +708,7 @@ static void strip_bom(unsigned char *source, int *input_length) {
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL void strip_bom_test(unsigned char *source, int *input_length) {
+INTERNAL void zint_test_strip_bom(unsigned char *source, int *input_length) {
     strip_bom(source, input_length);
 }
 #endif
@@ -725,17 +721,17 @@ static int esc_base(struct zint_symbol *symbol, const unsigned char *input_strin
     int val = -1;
 
     if (in_posn + min_len > length) {
-        return errtxtf(-1, symbol, 232, "Incomplete '\\%c' escape sequence in input", base);
+        return z_errtxtf(-1, symbol, 232, "Incomplete '\\%c' escape sequence in input", base);
     }
-    c1 = ctoi(input_string[in_posn]);
-    c2 = ctoi(input_string[in_posn + 1]);
+    c1 = z_ctoi(input_string[in_posn]);
+    c2 = z_ctoi(input_string[in_posn + 1]);
     if (base == 'd') {
-        c3 = ctoi(input_string[in_posn + 2]);
+        c3 = z_ctoi(input_string[in_posn + 2]);
         if ((c1 >= 0 && c1 <= 9) && (c2 >= 0 && c2 <= 9) && (c3 >= 0 && c3 <= 9)) {
             val = c1 * 100 + c2 * 10 + c3;
         }
     } else if (base == 'o') {
-        c3 = ctoi(input_string[in_posn + 2]);
+        c3 = z_ctoi(input_string[in_posn + 2]);
         if ((c1 >= 0 && c1 <= 7) && (c2 >= 0 && c2 <= 7) && (c3 >= 0 && c3 <= 7)) {
             val = (c1 << 6) | (c2 << 3) | c3;
         }
@@ -746,16 +742,16 @@ static int esc_base(struct zint_symbol *symbol, const unsigned char *input_strin
     }
 
     if (val == -1) {
-        return ZEXT errtxtf(-1, symbol, 238,
-                            "Invalid character in escape sequence '%2$.*1$s' in input (%3$s only)",
-                            base == 'x' ? 4 : 5, input_string + in_posn - 2,
-                            base == 'd' ? "decimal" : base == 'o' ? "octal" : "hexadecimal");
+        return ZEXT z_errtxtf(-1, symbol, 238,
+                                "Invalid character in escape sequence '%2$.*1$s' in input (%3$s only)",
+                                base == 'x' ? 4 : 5, input_string + in_posn - 2,
+                                base == 'd' ? "decimal" : base == 'o' ? "octal" : "hexadecimal");
     }
     if (val > 255) {
         assert(base != 'x');
-        return ZEXT errtxtf(-1, symbol, 237,
-                            "Value of escape sequence '%1$.5s' in input out of range (000 to %2$s)",
-                            input_string + in_posn - 2, base == 'd' ? "255" : "377");
+        return ZEXT z_errtxtf(-1, symbol, 237,
+                                "Value of escape sequence '%1$.5s' in input out of range (000 to %2$s)",
+                                input_string + in_posn - 2, base == 'd' ? "255" : "377");
     }
 
     return val;
@@ -780,7 +776,7 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
     do {
         if (input_string[in_posn] == '\\') {
             if (in_posn + 1 >= length) {
-                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 236, "Incomplete escape character in input");
+                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 236, "Incomplete escape character in input");
             }
             ch = input_string[in_posn + 1];
             /* NOTE: if add escape character, must also update regex in "frontend_qt/datawindow.php" */
@@ -798,12 +794,12 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
                 case 'G':
                 case 'R':
                 case '\\':
-                    if (escaped_string) escaped_string[out_posn] = vals[posn(escs, ch)];
+                    if (escaped_string) escaped_string[out_posn] = vals[z_posn(escs, ch)];
                     in_posn += 2;
                     break;
                 case '^': /* CODE128 specific */
                     if (!extra_escape_mode) {
-                        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 798,
+                        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 798,
                                         "Escape '\\^' only valid for Code 128 in extra escape mode");
                     }
                     /* Pass thru unaltered */
@@ -826,7 +822,7 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
                 case '(':
                 case ')':
                     if (!escape_parens) {
-                        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 853,
+                        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 853,
                                         "Escaped parentheses only valid in GS1 mode with GS1 parentheses flag");
                     }
                     /* Pass through unaltered */
@@ -850,15 +846,15 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
                 case 'u':
                 case 'U':
                     if (in_posn + 6 > length || (ch == 'U' && in_posn + 8 > length)) {
-                        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 209,
+                        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 209,
                                         "Incomplete '\\%c' escape sequence in input", ch);
                     }
                     unicode = 0;
                     for (i = 0; i < 6; i++) {
-                        if ((val = ctoi(input_string[in_posn + i + 2])) == -1) {
-                            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 211,
-                                    "Invalid character for '\\%c' escape sequence in input (hexadecimal only)",
-                                    ch);
+                        if ((val = z_ctoi(input_string[in_posn + i + 2])) == -1) {
+                            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 211,
+                                        "Invalid character for '\\%c' escape sequence in input (hexadecimal only)",
+                                        ch);
                         }
                         unicode = (unicode << 4) | val;
                         if (i == 3 && ch == 'u') {
@@ -867,7 +863,7 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
                     }
                     /* Exclude reversed BOM and surrogates and out-of-range */
                     if (unicode == 0xfffe || (unicode >= 0xd800 && unicode < 0xe000) || unicode > 0x10ffff) {
-                        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 246,
+                        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 246,
                                         "Value of escape sequence '%.*s' in input out of range",
                                         ch == 'u' ? 6 : 8, input_string + in_posn);
                     }
@@ -901,7 +897,7 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
                     in_posn += 6 + (ch == 'U') * 2;
                     break;
                 default:
-                    return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 234,
+                    return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 234,
                                     "Unrecognised escape character '\\%c' in input", ch);
                     break;
             }
@@ -921,8 +917,8 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing (also used by `testUtilZXingCPPCmp()` in "tests/testcommon.c") */
-INTERNAL int escape_char_process_test(struct zint_symbol *symbol, const unsigned char *input_string, int *p_length,
-                unsigned char *escaped_string) {
+INTERNAL int zint_test_escape_char_process(struct zint_symbol *symbol, const unsigned char *input_string,
+                int *p_length, unsigned char *escaped_string) {
     return escape_char_process(symbol, input_string, p_length, escaped_string);
 }
 #endif
@@ -1052,24 +1048,24 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     for (i = 0; i < seg_count; i++) {
         local_segs[i] = segs[i];
         if (local_segs[i].source == NULL) {
-            errtxtf(0, symbol, 772, "Input segment %d source NULL", i);
+            z_errtxtf(0, symbol, 772, "Input segment %d source NULL", i);
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
         if (local_segs[i].length <= 0) {
-            local_segs[i].length = (int) ustrlen(local_segs[i].source);
+            local_segs[i].length = (int) z_ustrlen(local_segs[i].source);
         }
         if (local_segs[i].length <= 0) {
             if (i == 0) {
-                if (is_composite(symbol->symbology)
+                if (z_is_composite(symbol->symbology)
                         && ((symbol->input_mode & 0x07) == GS1_MODE || check_force_gs1(symbol->symbology))) {
-                    errtxt(0, symbol, 779, "No composite data (2D component)");
+                    z_errtxt(0, symbol, 779, "No composite data (2D component)");
                 } else if (supports_eci(symbol->symbology)) {
-                    errtxt(0, symbol, 228, "No input data (segment 0 empty)");
+                    z_errtxt(0, symbol, 228, "No input data (segment 0 empty)");
                 } else {
-                    errtxt(0, symbol, 778, "No input data");
+                    z_errtxt(0, symbol, 778, "No input data");
                 }
             } else {
-                errtxtf(0, symbol, 773, "Input segment %d empty", i);
+                z_errtxtf(0, symbol, 773, "Input segment %d empty", i);
             }
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
@@ -1102,8 +1098,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         char name[32];
         char source[151], primary[151]; /* 30*5 + 1 = 151 */
         (void) ZBarcode_BarcodeName(symbol->symbology, name);
-        debug_print_escape(local_segs[0].source, len > 30 ? 30 : len, source);
-        debug_print_escape(ZCUCP(symbol->primary), primary_len > 30 ? 30 : primary_len, primary);
+        z_debug_print_escape(local_segs[0].source, len > 30 ? 30 : len, source);
+        z_debug_print_escape(ZCUCP(symbol->primary), primary_len > 30 ? 30 : primary_len, primary);
         printf("\nZBarcode_Encode_Segs: %s (%d), input_mode: 0x%X, ECI: %d, option_1/2/3: (%d, %d, %d)\n"
                 "                      scale: %g, output_options: 0x%X, fg: %s, bg: %s, seg_count: %d,\n"
                 "                      %ssource%s (%d): \"%s\",\n"
@@ -1122,8 +1118,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     /* Reconcile symbol ECI and first segment ECI if both set */
     if (symbol->eci != local_segs[0].eci) {
         if (symbol->eci && local_segs[0].eci) {
-            ZEXT errtxtf(0, symbol, 774, "Symbol ECI '%1$d' must match segment zero ECI '%2$d'",
-                        symbol->eci, local_segs[0].eci);
+            ZEXT z_errtxtf(0, symbol, 774, "Symbol ECI '%1$d' must match segment zero ECI '%2$d'",
+                            symbol->eci, local_segs[0].eci);
             return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, -1, NULL);
         }
         if (symbol->eci) {
@@ -1145,8 +1141,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             }
             if (local_segs[i].eci < 0 || local_segs[i].eci == 1 || local_segs[i].eci == 2 || local_segs[i].eci == 14
                     || local_segs[i].eci == 19 || local_segs[i].eci > 999999) {
-                errtxtf(0, symbol, 218, "ECI code '%d' out of range (0 to 999999, excluding 1, 2, 14 and 19)",
-                        local_segs[i].eci);
+                z_errtxtf(0, symbol, 218, "ECI code '%d' out of range (0 to 999999, excluding 1, 2, 14 and 19)",
+                            local_segs[i].eci);
                 return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, -1, NULL);
             }
         } else {
@@ -1228,7 +1224,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
 
     if ((symbol->input_mode & 0x07) == UNICODE_MODE) {
         for (i = 0; i < seg_count; i++) {
-            if (!is_valid_utf8(local_segs[i].source, local_segs[i].length)) {
+            if (!z_is_valid_utf8(local_segs[i].source, local_segs[i].length)) {
                 return error_tag(ZINT_ERROR_INVALID_DATA, symbol, 245, "Invalid UTF-8 in input");
             }
         }
@@ -1240,15 +1236,16 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         if (gs1_compliant(symbol->symbology)) {
             /* Reduce input for composite and non-forced symbologies, others (GS1_128 and DBAR_EXP based) will
                handle it themselves */
-            const int have_composite = is_composite(symbol->symbology);
+            const int have_composite = z_is_composite(symbol->symbology);
             if (have_composite || !check_force_gs1(symbol->symbology)) {
                 const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
                 unsigned char *reduced = (unsigned char *) z_alloca(local_segs[0].length + 1);
                 int source_len = local_segs[0].length;
-                error_number = gs1_verify(symbol, local_segs[0].source, &source_len, reduced, &local_segs[0].length);
+                error_number = zint_gs1_verify(symbol, local_segs[0].source, &source_len, reduced,
+                                                &local_segs[0].length);
                 if (error_number) {
                     if (have_composite) {
-                        errtxt_adj(0, symbol, "%1$s%2$s", " (2D component)");
+                        z_errtxt_adj(0, symbol, "%1$s%2$s", " (2D component)");
                     }
                     error_number = error_tag(error_number, symbol, -1, NULL);
                     if (error_number >= ZINT_ERROR) {
@@ -1258,8 +1255,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                 }
                 memcpy(local_segs[0].source, reduced, local_segs[0].length + 1); /* Include terminating NUL */
                 /* Set raw text for non-composites (composites set their own raw text) */
-                if (!have_composite && raw_text && rt_cpy(symbol, reduced, local_segs[0].length)) {
-                    return error_tag(ZINT_ERROR_MEMORY, symbol, -1, NULL); /* `rt_cpy()` only fails with OOM */
+                if (!have_composite && raw_text && z_rt_cpy(symbol, reduced, local_segs[0].length)) {
+                    return error_tag(ZINT_ERROR_MEMORY, symbol, -1, NULL); /* `z_rt_cpy()` only fails with OOM */
                 }
             }
         } else {
@@ -1272,13 +1269,13 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if ((error_number == ZINT_ERROR_INVALID_DATA) && have_zero_eci && supports_eci(symbol->symbology)
             && (symbol->input_mode & 0x07) == UNICODE_MODE) {
         /* Try another ECI mode */
-        const int first_eci_set = get_best_eci_segs(symbol, local_segs, seg_count);
+        const int first_eci_set = zint_get_best_eci_segs(symbol, local_segs, seg_count);
         error_number = extended_or_reduced_charset(symbol, local_segs, seg_count);
         /* Inclusion of ECI more noteworthy than other warnings, so overwrite (if any) */
         if (error_number < ZINT_ERROR) {
             error_number = ZINT_WARN_USES_ECI;
             if (!(symbol->debug & ZINT_DEBUG_TEST)) {
-                errtxtf(0, symbol, 222, "Encoded data includes ECI %d", first_eci_set);
+                z_errtxtf(0, symbol, 222, "Encoded data includes ECI %d", first_eci_set);
             }
             if (symbol->debug & ZINT_DEBUG_PRINT) printf("Added ECI %d\n", first_eci_set);
         }
@@ -1292,7 +1289,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
 
     if (error_number < ZINT_ERROR) {
         if (symbol->height < 0.5f) { /* Absolute minimum */
-            (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+            (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
         }
         assert(!(symbol->output_options & BARCODE_RAW_TEXT) || (symbol->raw_segs && symbol->raw_seg_count));
     }
@@ -1316,7 +1313,7 @@ static int check_output_args(struct zint_symbol *symbol, int rotate_angle) {
             break;
     }
 
-    if ((symbol->output_options & BARCODE_DOTTY_MODE) && !(is_dotty(symbol->symbology))) {
+    if ((symbol->output_options & BARCODE_DOTTY_MODE) && !z_is_dotty(symbol->symbology)) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 224, "Selected symbology cannot be rendered as dots");
     }
 
@@ -1338,7 +1335,7 @@ static int filetype_idx(const char *extension) {
         return -1;
     }
     memcpy(uc_extension, extension, 3);
-    to_upper(ZUCP(uc_extension), 3);
+    z_to_upper(ZUCP(uc_extension), 3);
 
     for (i = 0; i < ARRAY_SIZE(filetypes); i++) {
         if (strcmp(uc_extension, filetypes[i].extension) == 0) {
@@ -1367,9 +1364,9 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
         if (i >= 0) {
             if (filetypes[i].filetype) {
                 if (filetypes[i].is_raster) {
-                    error_number = plot_raster(symbol, rotate_angle, filetypes[i].filetype);
+                    error_number = zint_plot_raster(symbol, rotate_angle, filetypes[i].filetype);
                 } else {
-                    error_number = plot_vector(symbol, rotate_angle, filetypes[i].filetype);
+                    error_number = zint_plot_vector(symbol, rotate_angle, filetypes[i].filetype);
                 }
             } else {
                 error_number = dump_plot(symbol);
@@ -1392,7 +1389,7 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
         return error_number; /* Already tagged */
     }
 
-    error_number = plot_raster(symbol, rotate_angle, OUT_BUFFER);
+    error_number = zint_plot_raster(symbol, rotate_angle, OUT_BUFFER);
     return error_tag(error_number, symbol, -1, NULL);
 }
 
@@ -1404,7 +1401,7 @@ int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
         return error_number; /* Already tagged */
     }
 
-    error_number = plot_vector(symbol, rotate_angle, OUT_BUFFER);
+    error_number = zint_plot_vector(symbol, rotate_angle, OUT_BUFFER);
     return error_tag(error_number, symbol, -1, NULL);
 }
 
@@ -1518,19 +1515,19 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
         fileLen = ZINT_MAX_DATA_LEN;
     } else {
 #ifdef _WIN32
-        file = out_win_fopen(filename, "rb");
+        file = zint_out_win_fopen(filename, "rb");
 #else
         file = fopen(filename, "rb");
 #endif
         if (!file) {
-            ZEXT errtxtf(0, symbol, 229, "Unable to read input file (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT z_errtxtf(0, symbol, 229, "Unable to read input file (%1$d: %2$s)", errno, strerror(errno));
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
         file_opened = 1;
 
         /* Get file length */
         if (fseek(file, 0, SEEK_END) != 0) {
-            ZEXT errtxtf(0, symbol, 797, "Unable to seek input file (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT z_errtxtf(0, symbol, 797, "Unable to seek input file (%1$d: %2$s)", errno, strerror(errno));
             (void) fclose(file);
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
@@ -1548,7 +1545,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
         }
 
         if (fseek(file, 0, SEEK_SET) != 0) {
-            ZEXT errtxtf(0, symbol, 793, "Unable to seek input file (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT z_errtxtf(0, symbol, 793, "Unable to seek input file (%1$d: %2$s)", errno, strerror(errno));
             (void) fclose(file);
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
@@ -1568,7 +1565,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
     do {
         n = fread(buffer + nRead, 1, fileLen - nRead, file);
         if (ferror(file)) {
-            ZEXT errtxtf(0, symbol, 241, "Input file read error (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT z_errtxtf(0, symbol, 241, "Input file read error (%1$d: %2$s)", errno, strerror(errno));
             free(buffer);
             if (file_opened) {
                 (void) fclose(file);
@@ -1580,7 +1577,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
 
     if (file_opened) {
         if (fclose(file) != 0) {
-            ZEXT errtxtf(0, symbol, 794, "Failure on closing input file (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT z_errtxtf(0, symbol, 794, "Failure on closing input file (%1$d: %2$s)", errno, strerror(errno));
             free(buffer);
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
@@ -1706,7 +1703,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
     if ((cap_flag & ZINT_CAP_HRT) && has_hrt(symbol_id)) {
         result |= ZINT_CAP_HRT;
     }
-    if ((cap_flag & ZINT_CAP_STACKABLE) && is_bindable(symbol_id)) {
+    if ((cap_flag & ZINT_CAP_STACKABLE) && z_is_bindable(symbol_id)) {
         switch (symbol_id) {
             case BARCODE_CODE16K: /* Stacked are not stackable */
             case BARCODE_CODE49:
@@ -1718,10 +1715,10 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
                 break;
         }
     }
-    if ((cap_flag & ZINT_CAP_EANUPC) && is_upcean(symbol_id)) {
+    if ((cap_flag & ZINT_CAP_EANUPC) && z_is_upcean(symbol_id)) {
         result |= ZINT_CAP_EANUPC;
     }
-    if ((cap_flag & ZINT_CAP_COMPOSITE) && is_composite(symbol_id)) {
+    if ((cap_flag & ZINT_CAP_COMPOSITE) && z_is_composite(symbol_id)) {
         result |= ZINT_CAP_COMPOSITE;
     }
     if ((cap_flag & ZINT_CAP_ECI) && supports_eci(symbol_id)) {
@@ -1730,7 +1727,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
     if ((cap_flag & ZINT_CAP_GS1) && gs1_compliant(symbol_id)) {
         result |= ZINT_CAP_GS1;
     }
-    if ((cap_flag & ZINT_CAP_DOTTY) && is_dotty(symbol_id)) {
+    if ((cap_flag & ZINT_CAP_DOTTY) && z_is_dotty(symbol_id)) {
         result |= ZINT_CAP_DOTTY;
     }
     if (cap_flag & ZINT_CAP_QUIET_ZONES) {
@@ -1760,7 +1757,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
                 break;
         }
     }
-    if ((cap_flag & ZINT_CAP_FIXED_RATIO) && is_fixed_ratio(symbol_id)) {
+    if ((cap_flag & ZINT_CAP_FIXED_RATIO) && z_is_fixed_ratio(symbol_id)) {
         result |= ZINT_CAP_FIXED_RATIO;
     }
     if (cap_flag & ZINT_CAP_READER_INIT) {
@@ -1828,7 +1825,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
                 break;
         }
     }
-    if ((cap_flag & ZINT_CAP_COMPLIANT_HEIGHT) && !is_fixed_ratio(symbol_id)) {
+    if ((cap_flag & ZINT_CAP_COMPLIANT_HEIGHT) && !z_is_fixed_ratio(symbol_id)) {
         switch (symbol_id) {
             /* These don't have a compliant height defined */
             case BARCODE_CODE11: /* TODO: Find doc */
@@ -1858,7 +1855,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
                 break;
         }
     }
-    if ((cap_flag & ZINT_CAP_BINDABLE) && is_bindable(symbol_id)) {
+    if ((cap_flag & ZINT_CAP_BINDABLE) && z_is_bindable(symbol_id)) {
         result |= ZINT_CAP_BINDABLE;
     }
 
@@ -1997,7 +1994,7 @@ float ZBarcode_Default_Xdim(int symbol_id) {
 
         /* Application defined (and hence pretty arbitrary) */
         default:
-            if (is_fixed_ratio(symbol_id)) {
+            if (z_is_fixed_ratio(symbol_id)) {
                 /* GS1 General Standards 22.0 Section 5.12.3 Table 1 (general retail) */
                 x_dim_mm = 0.625f;
             } else {
@@ -2035,7 +2032,7 @@ float ZBarcode_Scale_From_XdimDp(int symbol_id, float x_dim_mm, float dpmm, cons
         i = filetype_idx("GIF"); /* Default to raster */
     }
 
-    scale = stripf(stripf(x_dim_mm) * stripf(dpmm));
+    scale = z_stripf(z_stripf(x_dim_mm) * z_stripf(dpmm));
 
     if (symbol_id == BARCODE_MAXICODE) {
         if (filetypes[i].is_raster) {
@@ -2052,7 +2049,7 @@ float ZBarcode_Scale_From_XdimDp(int symbol_id, float x_dim_mm, float dpmm, cons
             scale /= 2.0f;
         }
     }
-    scale = stripf(scale);
+    scale = z_stripf(scale);
 
     if (scale > 200.0f) {
         scale = 200.0f;
@@ -2109,7 +2106,7 @@ float ZBarcode_XdimDp_From_Scale(int symbol_id, float scale, float xdim_mm_or_dp
         scale *= 2.0f;
     }
 
-    xdim_mm_or_dpmm = stripf(stripf(scale) / stripf(xdim_mm_or_dpmm));
+    xdim_mm_or_dpmm = z_stripf(z_stripf(scale) / z_stripf(xdim_mm_or_dpmm));
 
     if (xdim_mm_or_dpmm > 1000.0f) { /* Note if X-dimension sought needs to be further bound to <= 10 on return */
         xdim_mm_or_dpmm = 1000.0f;
@@ -2138,9 +2135,9 @@ int ZBarcode_UTF8_To_ECI(int eci, const unsigned char *source, int length, unsig
         return ZINT_ERROR_INVALID_OPTION;
     }
     if (length <= 0) {
-        length = (int) ustrlen(source); /* Note `zueci_utf8_to_eci()` doesn't do this */
+        length = (int) z_ustrlen(source); /* Note `zueci_utf8_to_eci()` doesn't do this */
     }
-    if (!is_valid_utf8(source, length)) {
+    if (!z_is_valid_utf8(source, length)) {
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -2151,7 +2148,7 @@ int ZBarcode_UTF8_To_ECI(int eci, const unsigned char *source, int length, unsig
     }
 
     /* Only set `p_dest_length` on success, for libzueci compatibility */
-    if ((error_number = utf8_to_eci(eci, source, dest, &length)) == 0) {
+    if ((error_number = zint_utf8_to_eci(eci, source, dest, &length)) == 0) {
         *p_dest_length = length;
     }
     return error_number; /* 0 or ZINT_ERROR_INVALID_DATA */
@@ -2169,12 +2166,12 @@ int ZBarcode_Dest_Len_ECI(int eci, const unsigned char *source, int length, int 
         return ZINT_ERROR_INVALID_OPTION;
     }
     if (length <= 0) {
-        length = (int) ustrlen(source); /* Note `zueci_dest_len_eci()` doesn't do this */
+        length = (int) z_ustrlen(source); /* Note `zueci_dest_len_eci()` doesn't do this */
     }
-    if (!is_valid_utf8(source, length)) {
+    if (!z_is_valid_utf8(source, length)) {
         return ZINT_ERROR_INVALID_DATA;
     }
-    *p_dest_length = get_eci_length(eci, source, length);
+    *p_dest_length = zint_get_eci_length(eci, source, length);
 
     return 0;
 }

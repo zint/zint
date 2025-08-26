@@ -45,7 +45,7 @@
 /* Code 128 tables checked against ISO/IEC 15417:2007 */
 
 /* Code 128 character encodation - Table 1 (with final CODE16K-only character in place of Stop character) */
-INTERNAL_DATA const char C128Table[107][6] = { /* Used by CODABLOCKF and CODE16K also */
+INTERNAL_DATA const char zint_C128Table[107][6] = { /* Used by CODABLOCKF and CODE16K also */
     {'2','1','2','2','2','2'}, {'2','2','2','1','2','2'}, {'2','2','2','2','2','1'}, {'1','2','1','2','2','3'},
     {'1','2','1','3','2','2'}, {'1','3','1','2','2','2'}, {'1','2','2','2','1','3'}, {'1','2','2','3','1','2'},
     {'1','3','2','2','1','2'}, {'2','2','1','2','1','3'}, {'2','2','1','3','1','2'}, {'2','3','1','2','1','2'},
@@ -303,16 +303,16 @@ static void c128_expand(struct zint_symbol *symbol, int values[C128_VALUES_MAX],
     int i;
 
     /* Destination setting and check digit calculation */
-    memcpy(d, C128Table[values[0]], 6);
+    memcpy(d, zint_C128Table[values[0]], 6);
     d += 6;
     total_sum = values[0];
 
     for (i = 1; i < glyph_count; i++, d += 6) {
-        memcpy(d, C128Table[values[i]], 6);
+        memcpy(d, zint_C128Table[values[i]], 6);
         total_sum += values[i] * i; /* Note can't overflow as 106 * C128_SYMBOL_MAX * C128_SYMBOL_MAX = 1102824 */
     }
     total_sum %= 103;
-    memcpy(d, C128Table[total_sum], 6);
+    memcpy(d, zint_C128Table[total_sum], 6);
     d += 6;
     values[glyph_count++] = total_sum; /* For debug/test */
 
@@ -332,11 +332,11 @@ static void c128_expand(struct zint_symbol *symbol, int values[C128_VALUES_MAX],
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump_int(symbol, values, glyph_count);
+        z_debug_test_codeword_dump_int(symbol, values, glyph_count);
     }
 #endif
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 }
 
 /* Helper to set `priority` array based on flags */
@@ -367,7 +367,7 @@ static void c128_set_priority(char priority[C128_STATES], const int have_a, cons
 }
 
 /* Handle Code 128, 128AB and HIBC 128 */
-INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_code128(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i;
     int error_number;
     char manuals[C128_MAX] = {0};
@@ -388,7 +388,8 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
            resulting barcode depends on the type of data, so this is trapped later */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 340, "Input length %d too long (maximum " C128_MAX_S ")", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 340, "Input length %d too long (maximum " C128_MAX_S ")",
+                        length);
     }
 
     /* Detect special Code Set escapes for Code 128 in extra escape mode only */
@@ -422,7 +423,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
         if (j != length) {
             length = j;
             if (length == 0) {
-                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 842, "No input data");
+                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 842, "No input data");
             }
             src = src_buf;
             src[length] = '\0';
@@ -468,13 +469,13 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Data (%d): %.*s", length, length >= 100 ? 1 : length >= 10 ? 2 : 3, " ");
-        debug_print_escape(src, length, NULL);
+        z_debug_print_escape(src, length, NULL);
         printf("\nGlyphs:    %d\n", glyph_count);
     }
 
     /* Now we know how long the barcode is - stop it from being too long */
     if (glyph_count > C128_SYMBOL_MAX) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 341,
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 341,
                         "Input too long, requires %d symbol characters (maximum " C128_SYMBOL_MAX_S ")", glyph_count);
     }
 
@@ -494,17 +495,17 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
         }
         length = j;
     }
-    error_number = hrt_cpy_iso8859_1(symbol, src, length); /* Returns warning only */
+    error_number = z_hrt_cpy_iso8859_1(symbol, src, length); /* Returns warning only */
 
-    if (raw_text && rt_cpy(symbol, src, length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, src, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
     }
 
     return error_number;
 }
 
 /* Handle GS1-128 (formerly known as EAN-128), and composite version if `cc_mode` set */
-INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
+INTERNAL int zint_gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
                 const int cc_rows) {
     int i;
     int error_number;
@@ -522,7 +523,8 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
            resulting barcode depends on the type of data, so this is trapped later */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 342, "Input length %d too long (maximum " C128_MAX_S ")", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 342, "Input length %d too long (maximum " C128_MAX_S ")",
+                        length);
     }
 
     /* If part of a composite symbol make room for the separator pattern */
@@ -531,7 +533,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         symbol->row_height[separator_row] = 1;
     }
 
-    error_number = gs1_verify(symbol, source, &length, reduced, &reduced_length);
+    error_number = zint_gs1_verify(symbol, source, &length, reduced, &reduced_length);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
@@ -546,14 +548,14 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Data (%d): %.*s", reduced_length, reduced_length >= 100 ? 1 : reduced_length >= 10 ? 2 : 3, " ");
-        debug_print_escape(reduced, reduced_length, NULL);
+        z_debug_print_escape(reduced, reduced_length, NULL);
         printf("\nGlyphs:    %d\n", glyph_count);
     }
 
     /* Now we can calculate how long the barcode is going to be - and stop it from
        being too long */
     if (glyph_count + (cc_mode != 0) > C128_SYMBOL_MAX) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 344,
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 344,
                         "Input too long, requires %d symbol characters (maximum " C128_SYMBOL_MAX_S ")",
                         glyph_count + (cc_mode != 0));
     }
@@ -595,15 +597,15 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     /* Add the separator pattern for composite symbols */
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         for (i = 0; i < symbol->width; i++) {
-            if (!(module_is_set(symbol, separator_row + 1, i))) {
-                set_module(symbol, separator_row, i);
+            if (!(z_module_is_set(symbol, separator_row + 1, i))) {
+                z_set_module(symbol, separator_row, i);
             }
         }
     }
 
     if (reduced_length > 48) { /* GS1 General Specifications 5.4.4.3 */
-        if (error_number == 0) { /* Don't overwrite any `gs1_verify()` warning */
-            error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 843,
+        if (error_number == 0) { /* Don't overwrite any `zint_gs1_verify()` warning */
+            error_number = z_errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 843,
                                     "Input too long, requires %d characters (maximum 48)", reduced_length);
         }
     }
@@ -618,10 +620,10 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
             /* Pass back via temporary linear structure */
             symbol->height = symbol->height ? min_height : default_height;
         } else {
-            if (error_number == 0) { /* Don't overwrite any `gs1_verify()` warning */
-                error_number = set_height(symbol, min_height, default_height, 0.0f, 0 /*no_errtxt*/);
+            if (error_number == 0) { /* Don't overwrite any `zint_gs1_verify()` warning */
+                error_number = z_set_height(symbol, min_height, default_height, 0.0f, 0 /*no_errtxt*/);
             } else {
-                (void) set_height(symbol, min_height, default_height, 0.0f, 1 /*no_errtxt*/);
+                (void) z_set_height(symbol, min_height, default_height, 0.0f, 1 /*no_errtxt*/);
             }
         }
     } else {
@@ -629,33 +631,33 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         if (symbol->symbology == BARCODE_GS1_128_CC) {
             symbol->height = height - cc_rows * (cc_mode == 3 ? 3 : 2) - 1.0f;
         } else {
-            (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+            (void) z_set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
         }
     }
 
     /* If no other warnings flag use of READER_INIT in GS1_MODE */
     if (error_number == 0 && (symbol->output_options & READER_INIT)) {
-        error_number = errtxt(ZINT_WARN_INVALID_OPTION, symbol, 845,
+        error_number = z_errtxt(ZINT_WARN_INVALID_OPTION, symbol, 845,
                                 "Cannot use Reader Initialisation in GS1 mode, ignoring");
     }
 
     /* Note won't overflow `text` buffer due to symbol character maximum restricted to C128_SYMBOL_MAX */
     if (symbol->input_mode & GS1PARENS_MODE) {
-        hrt_cpy_nochk(symbol, source, length);
+        z_hrt_cpy_nochk(symbol, source, length);
     } else {
-        hrt_conv_gs1_brackets_nochk(symbol, source, length);
+        z_hrt_conv_gs1_brackets_nochk(symbol, source, length);
     }
 
-    if (raw_text && rt_cpy(symbol, reduced, reduced_length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, reduced, reduced_length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
     }
 
     return error_number;
 }
 
 /* Handle GS1-128 (formerly known as EAN-128) */
-INTERNAL int gs1_128(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return gs1_128_cc(symbol, source, length, 0 /*cc_mode*/, 0 /*cc_rows*/);
+INTERNAL int zint_gs1_128(struct zint_symbol *symbol, unsigned char source[], int length) {
+    return zint_gs1_128_cc(symbol, source, length, 0 /*cc_mode*/, 0 /*cc_rows*/);
 }
 
 /* vim: set ts=4 sw=4 et : */

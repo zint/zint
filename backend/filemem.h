@@ -1,7 +1,7 @@
 /*  filemem.h - write to file/memory abstraction */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2023-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2023-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -50,50 +50,50 @@ struct filemem {
     unsigned char *mem;
     size_t memsize;     /* Size of `mem` buffer (capacity) */
     size_t mempos;      /* Current position */
-    size_t memend;      /* For use by `fm_seek()`, points to highest `mempos` reached */
+    size_t memend;      /* For use by `zint_fm_seek()`, points to highest `mempos` reached */
     int flags;          /* BARCODE_MEMORY_FILE or BARCODE_STDOUT */
-    int err;            /* `errno` values, reset only on `fm_open()` */
+    int err;            /* `errno` values, reset only on `zint_fm_open()` */
 #ifdef FM_NO_VSNPRINTF
     FILE *fp_null;      /* Only used for BARCODE_MEMORY_FILE */
 #endif
 };
 
 /* `fopen()` if file, setup memory buffer if BARCODE_MEMORY_FILE, returning 1 on success, 0 on failure */
-INTERNAL int fm_open(struct filemem *restrict const fmp, struct zint_symbol *symbol, const char *mode);
+INTERNAL int zint_fm_open(struct filemem *restrict const fmp, struct zint_symbol *symbol, const char *mode);
 
 /* `fwrite()` to file or memory, returning 1 on success, 0 on failure */
-INTERNAL int fm_write(const void *restrict ptr, const size_t size, const size_t nitems,
+INTERNAL int zint_fm_write(const void *restrict ptr, const size_t size, const size_t nitems,
                     struct filemem *restrict const fmp);
 
 /* `fputc()` to file or memory, returning 1 on success, 0 on failure */
-INTERNAL int fm_putc(const int ch, struct filemem *restrict const fmp);
+INTERNAL int zint_fm_putc(const int ch, struct filemem *restrict const fmp);
 
 /* `fputs()` to file or memory, returning 1 on success, 0 on failure */
-INTERNAL int fm_puts(const char *str, struct filemem *restrict const fmp);
+INTERNAL int zint_fm_puts(const char *str, struct filemem *restrict const fmp);
 
 /* `fprintf()` to file or memory, returning 1 on success, 0 on failure */
-INTERNAL int fm_printf(struct filemem *restrict const fmp, const char *format, ...) ZINT_FORMAT_PRINTF(2, 3);
+INTERNAL int zint_fm_printf(struct filemem *restrict const fmp, const char *format, ...) ZINT_FORMAT_PRINTF(2, 3);
 
 /* Output float without trailing zeroes to `fmp` with decimal pts `dp` (precision), returning 1 on success, 0 on
    failure */
-INTERNAL int fm_putsf(const char *prefix, const int dp, const float arg, struct filemem *restrict const fmp);
+INTERNAL int zint_fm_putsf(const char *prefix, const int dp, const float arg, struct filemem *restrict const fmp);
 
 /* `fclose()` if file, set `symbol->memfile` & `symbol->memfile_size` if memory, returning 1 on success, 0 on
    failure */
-INTERNAL int fm_close(struct filemem *restrict const fmp, struct zint_symbol *symbol);
+INTERNAL int zint_fm_close(struct filemem *restrict const fmp, struct zint_symbol *symbol);
 
 /* `fseek()` to file/memory offset, returning 1 on success, 0 on failure */
-INTERNAL int fm_seek(struct filemem *restrict const fmp, const long offset, const int whence);
+INTERNAL int zint_fm_seek(struct filemem *restrict const fmp, const long offset, const int whence);
 
 /* `ftell()` returns current file/memory offset if successful, -1 on failure */
-INTERNAL long fm_tell(struct filemem *restrict const fmp);
+INTERNAL long zint_fm_tell(struct filemem *restrict const fmp);
 
 /* Return `err`, which uses `errno` values; if file and `err` not set, test `ferror()` also */
-INTERNAL int fm_error(struct filemem *restrict const fmp);
+INTERNAL int zint_fm_error(struct filemem *restrict const fmp);
 
 /* `fflush()` if file, no-op if memory, returning 1 on success, 0 on failure
    NOTE: don't use, included only for libpng compatibility */
-INTERNAL int fm_flush(struct filemem *restrict const fmp);
+INTERNAL int zint_fm_flush(struct filemem *restrict const fmp);
 
 #ifdef __cplusplus
 }

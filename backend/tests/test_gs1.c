@@ -1584,7 +1584,7 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
 
         length = (int) strlen(data[i].data);
 
-        ret = gs1_verify(symbol, ZUCP(data[i].data), &length, ZUCP(reduced), &reduced_length);
+        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), &length, ZUCP(reduced), &reduced_length);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, \"%s\", \"%s\" },\n",
@@ -2294,7 +2294,7 @@ static void test_gs1_lint(const testCtx *const p_ctx) {
 
         length = (int) strlen(data[i].data);
 
-        ret = gs1_verify(symbol, ZUCP(data[i].data), &length, ZUCP(reduced), &reduced_length);
+        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), &length, ZUCP(reduced), &reduced_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") (%s)\n",
                     i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
 

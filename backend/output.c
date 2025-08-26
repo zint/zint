@@ -52,12 +52,12 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
     if ((comma1 = strchr(colour, ',')) == NULL) {
         const int len = (int) strlen(colour);
         if (len != 6 && len != 8) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 880, "Malformed %s RGB colour (6 or 8 characters only)",
-                            name);
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 880,
+                            "Malformed %s RGB colour (6 or 8 characters only)", name);
         }
-        if (not_sane(OUT_SSET_F, ZCUCP(colour), len)) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 881,
-                                "Malformed %1$s RGB colour '%2$s' (hexadecimal only)", name, colour);
+        if (z_not_sane(OUT_SSET_F, ZCUCP(colour), len)) {
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 881,
+                                    "Malformed %1$s RGB colour '%2$s' (hexadecimal only)", name, colour);
         }
 
         return 0;
@@ -66,28 +66,28 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
     /* CMYK comma-separated percentages */
     if ((comma2 = strchr(comma1 + 1, ',')) == NULL || (comma3 = strchr(comma2 + 1, ',')) == NULL
             || strchr(comma3 + 1, ',') != NULL) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 882,
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 882,
                         "Malformed %s CMYK colour (4 decimal numbers, comma-separated)", name);
     }
     if (comma1 - colour > 3 || comma2 - (comma1 + 1) > 3 || comma3 - (comma2 + 1) > 3 || strlen(comma3 + 1) > 3) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 883,
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 883,
                         "Malformed %s CMYK colour (3 digit maximum per number)", name);
     }
 
-    if ((val = to_int(ZCUCP(colour), (int) (comma1 - colour))) == -1 || val > 100) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 884, "Malformed %s CMYK colour C (decimal 0 to 100 only)",
+    if ((val = z_to_int(ZCUCP(colour), (int) (comma1 - colour))) == -1 || val > 100) {
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 884, "Malformed %s CMYK colour C (decimal 0 to 100 only)",
                         name);
     }
-    if ((val = to_int(ZCUCP(comma1 + 1), (int) (comma2 - (comma1 + 1)))) == -1 || val > 100) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 885, "Malformed %s CMYK colour M (decimal 0 to 100 only)",
+    if ((val = z_to_int(ZCUCP(comma1 + 1), (int) (comma2 - (comma1 + 1)))) == -1 || val > 100) {
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 885, "Malformed %s CMYK colour M (decimal 0 to 100 only)",
                         name);
     }
-    if ((val = to_int(ZCUCP(comma2 + 1), (int) (comma3 - (comma2 + 1)))) == -1 || val > 100) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 886, "Malformed %s CMYK colour Y (decimal 0 to 100 only)",
+    if ((val = z_to_int(ZCUCP(comma2 + 1), (int) (comma3 - (comma2 + 1)))) == -1 || val > 100) {
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 886, "Malformed %s CMYK colour Y (decimal 0 to 100 only)",
                         name);
     }
-    if ((val = to_int(ZCUCP(comma3 + 1), (int) strlen(comma3 + 1))) == -1 || val > 100) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 887, "Malformed %s CMYK colour K (decimal 0 to 100 only)",
+    if ((val = z_to_int(ZCUCP(comma3 + 1), (int) strlen(comma3 + 1))) == -1 || val > 100) {
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 887, "Malformed %s CMYK colour K (decimal 0 to 100 only)",
                         name);
     }
 
@@ -95,7 +95,7 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
 }
 
 /* Check colour options are good (`symbol->fgcolour`, `symbol->bgcolour`) */
-INTERNAL int out_check_colour_options(struct zint_symbol *symbol) {
+INTERNAL int zint_out_check_colour_options(struct zint_symbol *symbol) {
 
     if (out_check_colour(symbol, symbol->fgcolour, "foreground") != 0) {
         return ZINT_ERROR_INVALID_OPTION;
@@ -108,17 +108,17 @@ INTERNAL int out_check_colour_options(struct zint_symbol *symbol) {
 }
 
 /* Return RGB(A) from (well-formed) colour string. Returns 0 if RGB or converted CMYK, 1 if RGBA */
-INTERNAL int out_colour_get_rgb(const char *colour, unsigned char *red, unsigned char *green, unsigned char *blue,
-                unsigned char *alpha) {
+INTERNAL int zint_out_colour_get_rgb(const char *colour, unsigned char *red, unsigned char *green,
+                unsigned char *blue, unsigned char *alpha) {
     const char *comma1, *comma2, *comma3;
     int black, val;
 
     if ((comma1 = strchr(colour, ',')) == NULL) {
-        *red = (unsigned char) (16 * ctoi(colour[0]) + ctoi(colour[1]));
-        *green = (unsigned char) (16 * ctoi(colour[2]) + ctoi(colour[3]));
-        *blue = (unsigned char) (16 * ctoi(colour[4]) + ctoi(colour[5]));
+        *red = (unsigned char) (16 * z_ctoi(colour[0]) + z_ctoi(colour[1]));
+        *green = (unsigned char) (16 * z_ctoi(colour[2]) + z_ctoi(colour[3]));
+        *blue = (unsigned char) (16 * z_ctoi(colour[4]) + z_ctoi(colour[5]));
         if (alpha) {
-            *alpha = (unsigned char) (colour[6] ? 16 * ctoi(colour[6]) + ctoi(colour[7]) : 0xFF);
+            *alpha = (unsigned char) (colour[6] ? 16 * z_ctoi(colour[6]) + z_ctoi(colour[7]) : 0xFF);
             return colour[6] ? 1 : 0;
         }
         return 0;
@@ -126,15 +126,15 @@ INTERNAL int out_colour_get_rgb(const char *colour, unsigned char *red, unsigned
     comma2 = strchr(comma1 + 1, ',');
     comma3 = strchr(comma2 + 1, ',');
 
-    black = 100 - to_int(ZCUCP(comma3 + 1), (int) strlen(comma3 + 1));
+    black = 100 - z_to_int(ZCUCP(comma3 + 1), (int) strlen(comma3 + 1));
 
-    val = 100 - to_int(ZCUCP(colour), (int) (comma1 - colour)); /* Cyan */
+    val = 100 - z_to_int(ZCUCP(colour), (int) (comma1 - colour)); /* Cyan */
     *red = (unsigned char) round((0xFF * val * black) / 10000.0);
 
-    val = 100 - to_int(ZCUCP(comma1 + 1), (int) (comma2 - (comma1 + 1))); /* Magenta */
+    val = 100 - z_to_int(ZCUCP(comma1 + 1), (int) (comma2 - (comma1 + 1))); /* Magenta */
     *green = (unsigned char) round((0xFF * val * black) / 10000.0);
 
-    val = 100 - to_int(ZCUCP(comma2 + 1), (int) (comma3 - (comma2 + 1))); /* Yellow */
+    val = 100 - z_to_int(ZCUCP(comma2 + 1), (int) (comma3 - (comma2 + 1))); /* Yellow */
     *blue = (unsigned char) round((0xFF * val * black) / 10000.0);
 
     if (alpha) {
@@ -145,7 +145,7 @@ INTERNAL int out_colour_get_rgb(const char *colour, unsigned char *red, unsigned
 }
 
 /* Return CMYK from (well-formed) colour string. Returns 0 if CMYK, 1 if converted RBG, 2 if converted RGBA */
-INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, int *yellow, int *black,
+INTERNAL int zint_out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, int *yellow, int *black,
                 unsigned char *rgb_alpha) {
     const char *comma1;
     unsigned char red, green, blue, alpha;
@@ -154,16 +154,16 @@ INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, in
     if ((comma1 = strchr(colour, ',')) != NULL) {
         const char *const comma2 = strchr(comma1 + 1, ',');
         const char *const comma3 = strchr(comma2 + 1, ',');
-        *cyan = to_int(ZCUCP(colour), (int) (comma1 - colour));
-        *magenta = to_int(ZCUCP(comma1 + 1), (int) (comma2 - (comma1 + 1)));
-        *yellow = to_int(ZCUCP(comma2 + 1), (int) (comma3 - (comma2 + 1)));
-        *black = to_int(ZCUCP(comma3 + 1), (int) strlen(comma3 + 1));
+        *cyan = z_to_int(ZCUCP(colour), (int) (comma1 - colour));
+        *magenta = z_to_int(ZCUCP(comma1 + 1), (int) (comma2 - (comma1 + 1)));
+        *yellow = z_to_int(ZCUCP(comma2 + 1), (int) (comma3 - (comma2 + 1)));
+        *black = z_to_int(ZCUCP(comma3 + 1), (int) strlen(comma3 + 1));
         if (rgb_alpha) {
             *rgb_alpha = 0xFF;
         }
         return 0;
     }
-    have_alpha = out_colour_get_rgb(colour, &red, &green, &blue, &alpha);
+    have_alpha = zint_out_colour_get_rgb(colour, &red, &green, &blue, &alpha);
 
     k = red;
     if (green > k) {
@@ -190,7 +190,7 @@ INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, in
 }
 
 /* Convert internal colour chars "WCBMRYGK" to RGB */
-INTERNAL int out_colour_char_to_rgb(const unsigned char ch, unsigned char *red, unsigned char *green,
+INTERNAL int zint_out_colour_char_to_rgb(const unsigned char ch, unsigned char *red, unsigned char *green,
                 unsigned char *blue) {
     static const char chars[] = "WCBMRYGK";
     static const unsigned char colours[8][3] = {
@@ -203,7 +203,7 @@ INTERNAL int out_colour_char_to_rgb(const unsigned char ch, unsigned char *red, 
         {    0, 0xff,    0, }, /* Green */
         {    0,    0,    0, }, /* Black */
     };
-    int i = posn(chars, (const char) ch);
+    int i = z_posn(chars, (const char) ch);
     int ret = i != -1;
 
     if (i == -1) {
@@ -411,11 +411,11 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
                 int comp_roffset = 0; /* Right offset of linear */
                 int min_qz; /* Minimum quiet zone - 1X for CC-A/B, 2X for CC-C */
                 int x;
-                for (x = symbol->width - 1; x >= 0 && !module_is_set(symbol, symbol->rows - 1, x); x--) {
+                for (x = symbol->width - 1; x >= 0 && !z_module_is_set(symbol, symbol->rows - 1, x); x--) {
                     comp_roffset++;
                 }
                 /* Determine if CC-C by counting initial start pattern */
-                for (x = 0; x < 8 && module_is_set(symbol, 0, x); x++);
+                for (x = 0; x < 8 && z_module_is_set(symbol, 0, x); x++);
                 min_qz = x == 8 ? 2 : 1;
                 *left = comp_xoffset >= 10 - min_qz ? min_qz : 10.0f - comp_xoffset;
                 *right = comp_roffset >= 10 - min_qz ? min_qz : 10.0f - comp_roffset;
@@ -693,14 +693,14 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hide_text, const int comp_xoffset,
+INTERNAL int zint_test_out_quiet_zones(const struct zint_symbol *symbol, const int hide_text, const int comp_xoffset,
                             float *left, float *right, float *top, float *bottom) {
     return out_quiet_zones(symbol, hide_text, comp_xoffset, left, right, top, bottom);
 }
 #endif
 
 /* Set left (x), top (y), right and bottom offsets for whitespace, also right quiet zone */
-INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
+INTERNAL void zint_out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
                 const int comp_xoffset, float *p_xoffset, float *p_yoffset, float *p_roffset, float *p_boffset,
                 float *p_qz_right, const float scaler, int *p_xoffset_si, int *p_yoffset_si, int *p_roffset_si,
                 int *p_boffset_si, int *p_qz_right_si) {
@@ -749,7 +749,7 @@ INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const
 
 /* Set composite offset and main width excluding add-on (for start of add-on calc) and add-on text, returning
    EAN/UPC type */
-INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp_xoffset, int *p_main_width,
+INTERNAL int zint_out_process_upcean(const struct zint_symbol *symbol, const int comp_xoffset, int *p_main_width,
                 unsigned char addon[6], int *p_addon_len, int *p_addon_gap) {
     int main_width; /* Width of main linear symbol, excluding add-on */
     int upceanflag; /* EAN/UPC type flag */
@@ -769,7 +769,7 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp
     }
     addon[j] = '\0';
     if (latch) {
-        *p_addon_len = (int) ustrlen(addon);
+        *p_addon_len = (int) z_ustrlen(addon);
         if (symbol->symbology == BARCODE_UPCA || symbol->symbology == BARCODE_UPCA_CHK
                 || symbol->symbology == BARCODE_UPCA_CC) {
             *p_addon_gap = symbol->option_2 >= 9 && symbol->option_2 <= 12 ? symbol->option_2 : 9;
@@ -780,7 +780,7 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp
 
     upceanflag = 0;
     main_width = symbol->width;
-    if (is_ean(symbol->symbology)) {
+    if (z_is_ean(symbol->symbology)) {
         switch (symbol->text_length) {
             case 13: /* EAN-13 */
             case 16: /* EAN-13 + EAN-2 */
@@ -819,7 +819,7 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp
 /* Calculate large bar height i.e. linear bars with zero row height that respond to the symbol height.
    If scaler `si` non-zero (raster), then large_bar_height if non-zero or else row heights will be rounded
    to nearest pixel and symbol height adjusted */
-INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, int *row_heights_si,
+INTERNAL float zint_out_large_bar_height(struct zint_symbol *symbol, const int si, int *row_heights_si,
                 int *symbol_height_si) {
     float fixed_height = 0.0f;
     int zero_count = 0;
@@ -831,7 +831,7 @@ INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, in
         for (i = 0; i < symbol->rows; i++) {
             if (symbol->row_height[i]) {
                 fixed_height += symbol->row_height[i];
-                if (!round_rows && !isfintf(symbol->row_height[i] * si)) {
+                if (!round_rows && !z_isfintf(symbol->row_height[i] * si)) {
                     round_rows = 1;
                 }
             } else {
@@ -840,23 +840,23 @@ INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, in
         }
 
         if (zero_count) {
-            large_bar_height = stripf((symbol->height - fixed_height) / zero_count);
-            assert(large_bar_height >= 0.5f); /* Min row height as set by `set_height()` */
-            if (!isfintf(large_bar_height * si)) {
-                large_bar_height = stripf(roundf(large_bar_height * si) / si);
+            large_bar_height = z_stripf((symbol->height - fixed_height) / zero_count);
+            assert(large_bar_height >= 0.5f); /* Min row height as set by `z_set_height()` */
+            if (!z_isfintf(large_bar_height * si)) {
+                large_bar_height = z_stripf(roundf(large_bar_height * si) / si);
             }
-            symbol->height = stripf(large_bar_height * zero_count + fixed_height);
+            symbol->height = z_stripf(large_bar_height * zero_count + fixed_height);
             /* Note should never happen that have both zero_count and round_rows */
         } else {
             if (round_rows) {
                 float total_height = 0.0f;
                 for (i = 0; i < symbol->rows; i++) {
-                    if (!isfintf(symbol->row_height[i] * si)) {
+                    if (!z_isfintf(symbol->row_height[i] * si)) {
                         symbol->row_height[i] = roundf(symbol->row_height[i] * si) / si;
                     }
                     total_height += symbol->row_height[i];
                 }
-                symbol->height = stripf(total_height);
+                symbol->height = z_stripf(total_height);
             }
         }
 
@@ -881,9 +881,9 @@ INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, in
             }
         }
         if (zero_count) {
-            large_bar_height = stripf((symbol->height - fixed_height) / zero_count);
-            assert(large_bar_height >= 0.5f); /* Min row height as set by `set_height()` */
-            symbol->height = stripf(large_bar_height * zero_count + fixed_height);
+            large_bar_height = z_stripf((symbol->height - fixed_height) / zero_count);
+            assert(large_bar_height >= 0.5f); /* Min row height as set by `z_set_height()` */
+            symbol->height = z_stripf(large_bar_height * zero_count + fixed_height);
         }
     }
 
@@ -901,7 +901,7 @@ INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, in
     }
 
 /* Do `fopen()` on Windows, assuming `filename` is UTF-8 encoded. Ticket #288, props Marcel */
-INTERNAL FILE *out_win_fopen(const char *filename, const char *mode) {
+INTERNAL FILE *zint_out_win_fopen(const char *filename, const char *mode) {
     wchar_t *filenameW, *modeW;
 
     utf8_to_wide(filename, filenameW, NULL /*fail return*/);
@@ -955,11 +955,11 @@ static int out_maybe_mkdir(const char *path) {
 }
 
 /* Create output file, creating sub-directories if necessary. Returns `fopen()` FILE pointer */
-INTERNAL FILE *out_fopen(const char filename[256], const char *mode) {
+INTERNAL FILE *zint_out_fopen(const char filename[256], const char *mode) {
     FILE *outfile;
 
 #ifdef _WIN32
-    if (!(outfile = out_win_fopen(filename, mode))) {
+    if (!(outfile = zint_out_win_fopen(filename, mode))) {
 #else
     if (!(outfile = fopen(filename, mode))) {
 #endif
@@ -999,7 +999,7 @@ INTERNAL FILE *out_fopen(const char filename[256], const char *mode) {
             }
         }
 #ifdef _WIN32
-        outfile = out_win_fopen(filename, mode);
+        outfile = zint_out_win_fopen(filename, mode);
 #else
         outfile = fopen(filename, mode);
 #endif

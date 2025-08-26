@@ -174,7 +174,7 @@ static void test_print(const testCtx *const p_ctx) {
     testFinish();
 }
 
-INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
+INTERNAL int zint_pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 
 static void test_outfile(const testCtx *const p_ctx) {
     int ret;
@@ -200,13 +200,13 @@ static void test_outfile(const testCtx *const p_ctx) {
 
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
         assert_nonzero(testUtilCreateROFile(symbol.outfile),
-                    "pcx_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
+                    "zint_pcx_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
                     symbol.outfile, errno, strerror(errno));
 
-        ret = pcx_pixel_plot(&symbol, data);
-        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "pcx_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
+        ret = zint_pcx_pixel_plot(&symbol, data);
+        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "zint_pcx_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
                     ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
-        assert_zero(testUtilRmROFile(symbol.outfile), "pcx_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
+        assert_zero(testUtilRmROFile(symbol.outfile), "zint_pcx_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
                     symbol.outfile, errno, strerror(errno));
         assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n",
                     symbol.errtxt, expected_errtxt);
@@ -214,9 +214,9 @@ static void test_outfile(const testCtx *const p_ctx) {
 
     symbol.output_options |= BARCODE_STDOUT;
 
-    ret = pcx_pixel_plot(&symbol, data);
+    ret = zint_pcx_pixel_plot(&symbol, data);
     printf(" - ignore (PCX to stdout)\n"); fflush(stdout);
-    assert_zero(ret, "pcx_pixel_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
+    assert_zero(ret, "zint_pcx_pixel_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
 
     testFinish();
 }

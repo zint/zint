@@ -4,7 +4,7 @@
 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -59,17 +59,17 @@ typedef struct {
     int zero; /* Set if poly has a zero coeff */
 } rs_uint_t;
 
-INTERNAL void rs_init_gf(rs_t *rs, const unsigned int prime_poly);
-INTERNAL void rs_init_code(rs_t *rs, const int nsym, int index);
-INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *data, unsigned char *res);
-INTERNAL void rs_encode_uint(const rs_t *rs, const int datalen, const unsigned int *data, unsigned int *res);
+INTERNAL void zint_rs_init_gf(rs_t *rs, const unsigned int prime_poly);
+INTERNAL void zint_rs_init_code(rs_t *rs, const int nsym, int index);
+INTERNAL void zint_rs_encode(const rs_t *rs, const int datalen, const unsigned char *data, unsigned char *res);
+INTERNAL void zint_rs_encode_uint(const rs_t *rs, const int datalen, const unsigned int *data, unsigned int *res);
 /* No free needed as log tables static */
 
-INTERNAL int rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly, const int logmod);
-INTERNAL void rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int index);
-INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const unsigned int *data,
+INTERNAL int zint_rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly, const int logmod);
+INTERNAL void zint_rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int index);
+INTERNAL void zint_rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const unsigned int *data,
                 unsigned int *res);
-INTERNAL void rs_uint_free(rs_uint_t *rs_uint);
+INTERNAL void zint_rs_uint_free(rs_uint_t *rs_uint);
 
 #ifdef __cplusplus
 }

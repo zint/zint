@@ -78,7 +78,7 @@ static void test_to_int(const testCtx *const p_ctx) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = to_int((const unsigned char *) data[i].data, length);
+        ret = z_to_int(ZCUCP(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
     }
 
@@ -116,7 +116,7 @@ static void test_to_upper(const testCtx *const p_ctx) {
         memcpy(buf, data[i].data, length);
         buf[length] = '\0';
 
-        to_upper(buf, length);
+        z_to_upper(buf, length);
         assert_zero(strcmp((const char *) buf, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, buf, data[i].expected);
     }
@@ -149,7 +149,7 @@ static void test_chr_cnt(const testCtx *const p_ctx) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = chr_cnt((const unsigned char *) data[i].data, length, data[i].c);
+        ret = z_chr_cnt(ZCUCP(data[i].data), length, data[i].c);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
     }
 
@@ -183,7 +183,7 @@ static void test_is_chr(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        ret = is_chr(data[i].flg, data[i].c);
+        ret = z_is_chr(data[i].flg, data[i].c);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
     }
 
@@ -299,7 +299,7 @@ static void test_not_sane(const testCtx *const p_ctx) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = not_sane(data[i].flg, (const unsigned char *) data[i].data, length);
+        ret = z_not_sane(data[i].flg, (const unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
 
         if (data[i].orig_test[0]) {
@@ -313,12 +313,12 @@ static void test_not_sane(const testCtx *const p_ctx) {
 
         ret = 0;
         for (j = 0; j < length; j++) {
-            if (!is_chr(data[i].flg, data[i].data[j])) {
+            if (!z_is_chr(data[i].flg, data[i].data[j])) {
                 ret = j + 1;
                 break;
             }
         }
-        assert_equal(ret, data[i].ret, "i:%d is_chr() ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d z_is_chr() ret %d != %d\n", i, ret, data[i].ret);
     }
 
     testFinish();
@@ -354,7 +354,8 @@ static void test_not_sane_lookup(const testCtx *const p_ctx) {
         test_length = data[i].test_length == -1 ? (int) strlen(data[i].test_string) : data[i].test_length;
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = not_sane_lookup(data[i].test_string, test_length, (const unsigned char *) data[i].data, length, posns);
+        ret = z_not_sane_lookup(data[i].test_string, test_length, (const unsigned char *) data[i].data, length,
+                                posns);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
 
         if (ret == 0) {
@@ -407,7 +408,7 @@ static void test_errtxt(const testCtx *const p_ctx) {
         memset(symbol, 0, sizeof(*symbol));
         if (data[i].debug_test) symbol->debug |= ZINT_DEBUG_TEST;
 
-        ret = errtxt(data[i].error_number, symbol, data[i].err_id, data[i].msg);
+        ret = z_errtxt(data[i].error_number, symbol, data[i].err_id, data[i].msg);
         assert_equal(ret, data[i].error_number, "i:%d ret %d != %d\n", i, ret, data[i].error_number);
         assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->errtxt, data[i].expected);
@@ -542,37 +543,37 @@ static void test_errtxtf(const testCtx *const p_ctx) {
         if (data[i].debug_test) symbol->debug |= ZINT_DEBUG_TEST;
 
         if (data[i].num_args == 0) {
-            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt,
+            ret = z_errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt,
                             NULL /*suppress -Wformat-security*/);
         } else if (data[i].num_args == 1) {
             if (data[i].i_arg != -1) {
-                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg);
+                ret = z_errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg);
             } else if (data[i].s_arg != NULL) {
-                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].s_arg);
+                ret = z_errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].s_arg);
             } else {
-                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].f_arg);
+                ret = z_errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].f_arg);
             }
         } else if (data[i].num_args == 2) {
             if (data[i].i_arg != -1) {
                 if (data[i].s_arg != NULL) {
-                    ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg,
+                    ret = z_errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg,
                                     data[i].s_arg);
                 } else {
-                    ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg,
+                    ret = z_errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg,
                                     data[i].f_arg);
                 }
             } else {
                 assert_nonnull(data[i].s_arg, "i:%d num_args:%d data[i].s_arg NULL", i, data[i].num_args);
-                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].s_arg,
+                ret = z_errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].s_arg,
                                 data[i].f_arg);
             }
         } else if (data[i].num_args == 3) {
             assert_nonnull(data[i].s_arg, "i:%d num_args:%d data[i].s_arg NULL", i, data[i].num_args);
-            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg, data[i].s_arg,
+            ret = z_errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg, data[i].s_arg,
                             data[i].f_arg);
         } else if (data[i].num_args == 9) { /* Special case max, assuming 4th arg "%d", 5th arg "%s" */
             assert_nonnull(data[i].s_arg, "i:%d num_args:%d data[i].s_arg NULL", i, data[i].num_args);
-            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, 2100000001, 2100000002, 3333,
+            ret = z_errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, 2100000001, 2100000002, 3333,
                             data[i].i_arg, data[i].s_arg, 2100000006, 2100000007, 2100000008, 2100000009);
         } else {
             assert_nonnull(NULL, "i:%d num_args:%d > 3 && != 9\n", i, data[i].num_args);
@@ -619,7 +620,7 @@ static void test_cnt_digits(const testCtx *const p_ctx) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = cnt_digits((const unsigned char *) data[i].data, length, data[i].position, data[i].max);
+        ret = z_cnt_digits((const unsigned char *) data[i].data, length, data[i].position, data[i].max);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
     }
 
@@ -658,7 +659,7 @@ static void test_is_valid_utf8(const testCtx *const p_ctx) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = is_valid_utf8((const unsigned char *) data[i].data, length);
+        ret = z_is_valid_utf8((const unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
     }
 
@@ -707,7 +708,7 @@ static void test_utf8_to_unicode(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        ret = utf8_to_unicode(symbol, (unsigned char *) data[i].data, vals, &ret_length, data[i].disallow_4byte);
+        ret = z_utf8_to_unicode(symbol, (unsigned char *) data[i].data, vals, &ret_length, data[i].disallow_4byte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             int j;
@@ -787,14 +788,14 @@ static void test_hrt_cpy_iso8859_1(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         expected_length = (int) strlen(data[i].expected);
 
-        ret = hrt_cpy_iso8859_1(symbol, (unsigned char *) data[i].data, length);
+        ret = z_hrt_cpy_iso8859_1(symbol, (unsigned char *) data[i].data, length);
         if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
             for (j = 0; j < symbol->text_length; j++) {
                 fprintf(stderr, "symbol->text[%d] %2X\n", j, symbol->text[j]);
             }
         }
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
-        assert_nonzero(testUtilIsValidUTF8(symbol->text, (int) ustrlen(symbol->text)),
+        assert_nonzero(testUtilIsValidUTF8(symbol->text, (int) z_ustrlen(symbol->text)),
                         "i:%d testUtilIsValidUTF8(%s) != 1\n", i, symbol->text);
         assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
                     i, symbol->text_length, expected_length);
@@ -809,16 +810,16 @@ static void test_hrt_cpy_nochk(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        const char *cpy; /* hrt_cpy_nochk() */
+        const char *cpy; /* z_hrt_cpy_nochk() */
         int cpy_length;
 
-        const char cpy_chr; /* hrt_cpy_chr() */
+        const char cpy_chr; /* z_hrt_cpy_chr() */
         int cpy_chr_length;
 
-        const char *cat; /* hrt_cat_nochk() */
+        const char *cat; /* z_hrt_cat_nochk() */
         int cat_length;
 
-        char cat_chr; /* hrt_cat_chr_nochk() */
+        char cat_chr; /* z_hrt_cat_chr_nochk() */
         int cat_chr_length;
 
         const char *expected;
@@ -827,15 +828,15 @@ static void test_hrt_cpy_nochk(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { "", -1, 0, 0, "", -1, 0, 0, "", -1 }, /* All zero */
-        /*  1*/ { "AB\000C", 4, 0, 0, "", -1, 0, 0, "AB\000C", 4 }, /* hrt_cpy_nochk() */
-        /*  2*/ { "", -1, '\000', 1, "", -1, 0, 0, "\000", 1 }, /* hrt_chr() (NUL char) */
-        /*  3*/ { "", -1, '\000', 1, "XYZ", -1, 0, 0, "\000XYZ", 4 }, /* hrt_chr() + hrt_cat_nochk() */
-        /*  4*/ { "", -1, '\000', 1, "", -1, '\000', 1, "\000\000", 2 }, /* hrt_chr() + hrt_cat_chr_nochk() (both NULL char) */
-        /*  5*/ { "", -1, '\000', 1, "XYZ", -1, '\001', 1, "\000XYZ\001", 5 }, /* hrt_chr() + hrt_cat_chr_nochk() + hrt_cat_nochk() */
-        /*  6*/ { "ABC\000", 4, 0, 0, "\000XYZ\177", 5, 0, 0, "ABC\000\000XYZ\177", 9 }, /* hrt_cpy_nochk() + hrt_cat_nochk() */
-        /*  7*/ { "ABC\000", 4, 0, 0, "", -1, '\177', 1, "ABC\000\177", 5 }, /* hrt_cpy_nochk() + hrt_cat_chr_nochk() */
-        /*  8*/ { "ABC\000", 4, 0, 0, "X\001Y\002Z", 5, '\003', 1, "ABC\000X\001Y\002Z\003", 10 }, /* hrt_cpy_nochk() + hrt_cat_chr_nochk() + hrt_cat_chr_nochk() */
-        /*  9*/ { "1234567890123456789012345678901234567890123456789012345", -1, 0, 0, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, 0, 0, "123456789012345678901234567890123456789012345678901234512345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1 }, /* hrt_cpy_nochk() + hrt_cat_nochk() - max 255 */
+        /*  1*/ { "AB\000C", 4, 0, 0, "", -1, 0, 0, "AB\000C", 4 }, /* z_hrt_cpy_nochk() */
+        /*  2*/ { "", -1, '\000', 1, "", -1, 0, 0, "\000", 1 }, /* z_hrt_chr() (NUL char) */
+        /*  3*/ { "", -1, '\000', 1, "XYZ", -1, 0, 0, "\000XYZ", 4 }, /* z_hrt_chr() + z_hrt_cat_nochk() */
+        /*  4*/ { "", -1, '\000', 1, "", -1, '\000', 1, "\000\000", 2 }, /* z_hrt_chr() + z_hrt_cat_chr_nochk() (both NULL char) */
+        /*  5*/ { "", -1, '\000', 1, "XYZ", -1, '\001', 1, "\000XYZ\001", 5 }, /* z_hrt_chr() + z_hrt_cat_chr_nochk() + z_hrt_cat_nochk() */
+        /*  6*/ { "ABC\000", 4, 0, 0, "\000XYZ\177", 5, 0, 0, "ABC\000\000XYZ\177", 9 }, /* z_hrt_cpy_nochk() + z_hrt_cat_nochk() */
+        /*  7*/ { "ABC\000", 4, 0, 0, "", -1, '\177', 1, "ABC\000\177", 5 }, /* z_hrt_cpy_nochk() + z_hrt_cat_chr_nochk() */
+        /*  8*/ { "ABC\000", 4, 0, 0, "X\001Y\002Z", 5, '\003', 1, "ABC\000X\001Y\002Z\003", 10 }, /* z_hrt_cpy_nochk() + z_hrt_cat_chr_nochk() + z_hrt_cat_chr_nochk() */
+        /*  9*/ { "1234567890123456789012345678901234567890123456789012345", -1, 0, 0, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, 0, 0, "123456789012345678901234567890123456789012345678901234512345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1 }, /* z_hrt_cpy_nochk() + z_hrt_cat_nochk() - max 255 */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length;
@@ -858,16 +859,16 @@ static void test_hrt_cpy_nochk(const testCtx *const p_ctx) {
         expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
 
         if ((length = data[i].cpy_length == -1 ? (int) strlen(data[i].cpy) : data[i].cpy_length)) {
-            hrt_cpy_nochk(symbol, TCU(data[i].cpy), length);
+            z_hrt_cpy_nochk(symbol, TCU(data[i].cpy), length);
         }
         if (data[i].cpy_chr_length) {
-            hrt_cpy_chr(symbol, data[i].cpy_chr);
+            z_hrt_cpy_chr(symbol, data[i].cpy_chr);
         }
         if ((length = data[i].cat_length == -1 ? (int) strlen(data[i].cat) : data[i].cat_length)) {
-            hrt_cat_nochk(symbol, TCU(data[i].cat), length);
+            z_hrt_cat_nochk(symbol, TCU(data[i].cat), length);
         }
         if (data[i].cat_chr_length) {
-            hrt_cat_chr_nochk(symbol, data[i].cat_chr);
+            z_hrt_cat_chr_nochk(symbol, data[i].cat_chr);
         }
 
         if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
@@ -876,7 +877,7 @@ static void test_hrt_cpy_nochk(const testCtx *const p_ctx) {
             }
         }
 
-        assert_nonzero(testUtilIsValidUTF8(symbol->text, (int) ustrlen(symbol->text)),
+        assert_nonzero(testUtilIsValidUTF8(symbol->text, (int) z_ustrlen(symbol->text)),
                     "i:%d testUtilIsValidUTF8(%s) != 1\n", i, symbol->text);
         assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
                     i, symbol->text_length, expected_length);
@@ -933,7 +934,7 @@ static void test_hrt_cpy_cat_nochk(const testCtx *const p_ctx) {
 
         expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
 
-        hrt_cpy_cat_nochk(symbol, TCU(data[i].source), data[i].length, data[i].separator, TCU(data[i].cat),
+        z_hrt_cpy_cat_nochk(symbol, TCU(data[i].source), data[i].length, data[i].separator, TCU(data[i].cat),
                             data[i].cat_length);
 
         if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
@@ -942,7 +943,7 @@ static void test_hrt_cpy_cat_nochk(const testCtx *const p_ctx) {
             }
         }
 
-        assert_nonzero(testUtilIsValidUTF8(symbol->text, (int) ustrlen(symbol->text)),
+        assert_nonzero(testUtilIsValidUTF8(symbol->text, (int) z_ustrlen(symbol->text)),
                     "i:%d testUtilIsValidUTF8(%s) != 1\n", i, symbol->text);
         assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
                     i, symbol->text_length, expected_length);
@@ -987,9 +988,9 @@ static void test_hrt_printf_nochk(const testCtx *const p_ctx) {
         memset(symbol, 0, sizeof(*symbol));
 
         if (data[i].num_args == 1) {
-            hrt_printf_nochk(symbol, data[i].fmt, data[i].data1);
+            z_hrt_printf_nochk(symbol, data[i].fmt, data[i].data1);
         } else if (data[i].num_args == 2) {
-            hrt_printf_nochk(symbol, data[i].fmt, data[i].data1, data[i].data2);
+            z_hrt_printf_nochk(symbol, data[i].fmt, data[i].data1, data[i].data2);
         } else {
             assert_zero(1, "i:%d, bad num_args\n", i);
         }
@@ -1043,7 +1044,7 @@ static void test_hrt_conv_gs1_brackets_nochk(const testCtx *const p_ctx) {
 
         length = (int) strlen(data[i].data);
 
-        hrt_conv_gs1_brackets_nochk(symbol, TCU(data[i].data), length);
+        z_hrt_conv_gs1_brackets_nochk(symbol, TCU(data[i].data), length);
 
         assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(\"%s\", \"%s\") != 0\n",
                     i, symbol->text, data[i].expected);
@@ -1097,8 +1098,8 @@ static void test_rt_cpy_seg(const testCtx *const p_ctx) {
 
         assert_nonzero(data[i].seg_count, "i:%d seg_count zero\n", i);
 
-        ret = rt_init_segs(symbol, data[i].seg_count);
-        assert_zero(ret, "i:%d rt_init_segs(%d) %d != 0\n", i, data[i].seg_count, ret);
+        ret = z_rt_init_segs(symbol, data[i].seg_count);
+        assert_zero(ret, "i:%d z_rt_init_segs(%d) %d != 0\n", i, data[i].seg_count, ret);
 
         seg_idx = data[i].seg_idx;
         assert_nonzero(seg_idx >= 0, "i:%d seg_idx %d < 0\n", i, seg_idx);
@@ -1108,10 +1109,10 @@ static void test_rt_cpy_seg(const testCtx *const p_ctx) {
         if (data[i].ddata_size > 0) {
             assert_equal(data[i].seg.length, data[i].ddata_size, "i:%d seg_length %d != ddata_size %d\n",
                         i, data[i].seg.length, data[i].ddata_size);
-            ret = rt_cpy_seg_ddata(symbol, seg_idx, &data[i].seg, data[i].ddata_eci, data[i].ddata);
+            ret = z_rt_cpy_seg_ddata(symbol, seg_idx, &data[i].seg, data[i].ddata_eci, data[i].ddata);
             assert_zero(ret, "i:%d rt_cpy_seg_ddata %d != 0\n", i, ret);
         } else {
-            ret = rt_cpy_seg(symbol, seg_idx, &data[i].seg);
+            ret = z_rt_cpy_seg(symbol, seg_idx, &data[i].seg);
             assert_zero(ret, "i:%d rt_cpy_segs %d != 0\n", i, ret);
         }
 
@@ -1181,16 +1182,16 @@ static void test_rt_cpy(const testCtx *const p_ctx) {
 
         expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
 
-        ret = rt_init_segs(symbol, 1);
+        ret = z_rt_init_segs(symbol, 1);
         assert_zero(ret, "i:%d rt_init_segs %d != 0\n", i, ret);
 
         length = data[i].length == -1 ? (int) strlen(data[i].source) : data[i].length;
 
         if ((cat_length = data[i].cat_length == -1 ? (int) strlen(data[i].cat) : data[i].cat_length)) {
-            ret = rt_cpy_cat(symbol, TCU(data[i].source), length, data[i].separator, TCU(data[i].cat), cat_length);
+            ret = z_rt_cpy_cat(symbol, TCU(data[i].source), length, data[i].separator, TCU(data[i].cat), cat_length);
             assert_zero(ret, "i:%d rt_cpy_cat %d != 0\n", i, ret);
         } else {
-            ret = rt_cpy(symbol, TCU(data[i].source), length);
+            ret = z_rt_cpy(symbol, TCU(data[i].source), length);
             assert_zero(ret, "i:%d rt_cpy %d != 0\n", i, ret);
         }
 
@@ -1252,14 +1253,14 @@ static void test_rt_printf_256(const testCtx *const p_ctx) {
 
         expected_length = (int) strlen(data[i].expected);
 
-        ret = rt_init_segs(symbol, 1);
+        ret = z_rt_init_segs(symbol, 1);
         assert_zero(ret, "i:%d rt_init_segs %d != 0\n", i, ret);
 
         if (data[i].num_args == 1) {
-            ret = rt_printf_256(symbol, data[i].fmt, data[i].data1);
+            ret = z_rt_printf_256(symbol, data[i].fmt, data[i].data1);
             assert_zero(ret, "i:%d rt_printf_256 1 arg ret %d != 0\n", i, ret);
         } else if (data[i].num_args == 2) {
-            ret = rt_printf_256(symbol, data[i].fmt, data[i].data1, data[i].data2);
+            ret = z_rt_printf_256(symbol, data[i].fmt, data[i].data1, data[i].data2);
             assert_zero(ret, "i:%d rt_printf_256 2 args ret %d != 0\n", i, ret);
         } else {
             assert_zero(1, "i:%d, bad num_args\n", i);
@@ -1339,8 +1340,8 @@ static void test_set_height(const testCtx *const p_ctx) {
         }
         symbol->height = data[i].height;
 
-        ret = set_height(symbol, data[i].min_row_height, data[i].default_height, data[i].max_height,
-                        data[i].no_errtxt);
+        ret = z_set_height(symbol, data[i].min_row_height, data[i].default_height, data[i].max_height,
+                            data[i].no_errtxt);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %g != %g\n",
                     i, symbol->height, data[i].expected_height);
@@ -1351,7 +1352,7 @@ static void test_set_height(const testCtx *const p_ctx) {
     testFinish();
 }
 
-INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length);
+INTERNAL void z_debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length);
 
 static void test_debug_test_codeword_dump_int(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
@@ -1380,7 +1381,7 @@ static void test_debug_test_codeword_dump_int(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        debug_test_codeword_dump_int(symbol, data[i].codewords, data[i].length);
+        z_debug_test_codeword_dump_int(symbol, data[i].codewords, data[i].length);
         assert_nonzero(strlen(symbol->errtxt) < 92, "i:%d strlen(%s) >= 92 (%d)\n",
                     i, symbol->errtxt, (int) strlen(symbol->errtxt));
         assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0 (%d, %d)\n",

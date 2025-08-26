@@ -36,11 +36,11 @@
 #include "common.h"
 #include "gs1.h"
 
-INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
+INTERNAL int zint_c25_inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
                 const int checkdigit_option, const int dont_set_height);
 
 /* Interleaved 2-of-5 (ITF-14) */
-INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number, zeroes;
     unsigned char local_source[14];
     unsigned char have_check_digit = '\0';
@@ -56,11 +56,11 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
         length -= 2;
     }
     if (length > 14) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 311, "Input length %d too long (maximum 14)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 311, "Input length %d too long (maximum 14)", length);
     }
 
-    if ((i = not_sane(NEON_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 312,
+    if ((i = z_not_sane(NEON_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 312,
                         "Invalid character at position %d in input (digits only)", i);
     }
 
@@ -77,13 +77,13 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     memcpy(local_source + zeroes, source, length);
 
     /* Calculate the check digit - the same method used for EAN-13 */
-    check_digit = (unsigned char) gs1_check_digit(local_source, 13);
+    check_digit = (unsigned char) zint_gs1_check_digit(local_source, 13);
     if (have_check_digit && have_check_digit != check_digit) {
-        return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 850, "Invalid check digit '%1$c', expecting '%2$c'",
-                            have_check_digit, check_digit);
+        return ZEXT z_errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 850, "Invalid check digit '%1$c', expecting '%2$c'",
+                                have_check_digit, check_digit);
     }
     local_source[13] = check_digit;
-    error_number = c25_inter_common(symbol, local_source, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
+    error_number = zint_c25_inter_common(symbol, local_source, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
     if (error_number < ZINT_ERROR) {
         if (!(symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP))) {
@@ -101,29 +101,29 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
                height 5.8mm / 1.016mm (X max) ~ 5.7; default 31.75mm / 0.495mm ~ 64.14 */
             const float min_height = 5.70866156f; /* 5.8 / 1.016 */
             const float default_height = 64.1414108f; /* 31.75 / 0.495 */
-            error_number = set_height(symbol, min_height, default_height, 0.0f, 0 /*no_errtxt*/);
+            error_number = z_set_height(symbol, min_height, default_height, 0.0f, 0 /*no_errtxt*/);
         } else {
-            (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+            (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
         }
     }
 
-    hrt_cpy_nochk(symbol, local_source, 14);
+    z_hrt_cpy_nochk(symbol, local_source, 14);
 
-    /* Use `raw_text` set by `c25_inter_common()` */
+    /* Use `raw_text` set by `zint_c25_inter_common()` */
 
     return error_number;
 }
 
 /* Deutsche Post check digit */
 static char c25_dp_check_digit(const unsigned int count) {
-    return itoc((10 - (count % 10)) % 10);
+    return z_itoc((10 - (count % 10)) % 10);
 }
 
 /* Deutsche Post Leitcode */
 /* Documentation (of a very incomplete and non-technical type):
 https://www.deutschepost.de/content/dam/dpag/images/D_d/dialogpost-schwer/dp-dialogpost-schwer-broschuere-072021.pdf
 */
-INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
     unsigned int count;
     int factor;
@@ -132,10 +132,10 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
 
     count = 0;
     if (length > 13) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 313, "Input length %d too long (maximum 13)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 313, "Input length %d too long (maximum 13)", length);
     }
-    if ((i = not_sane(NEON_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 314,
+    if ((i = z_not_sane(NEON_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 314,
                         "Invalid character at position %d in input (digits only)", i);
     }
 
@@ -146,29 +146,29 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
 
     factor = 4;
     for (i = 12; i >= 0; i--) {
-        count += factor * ctoi(local_source[i]);
+        count += factor * z_ctoi(local_source[i]);
         factor ^= 0x0D; /* Toggles 4 and 9 */
     }
     local_source[13] = c25_dp_check_digit(count);
-    error_number = c25_inter_common(symbol, local_source, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
+    error_number = zint_c25_inter_common(symbol, local_source, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
     /* TODO: Find documentation on BARCODE_DPLEIT dimensions/height */
     /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
-    (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
+    (void) z_set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
 
     /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do examples at
        https://www.philaseiten.de/cgi-bin/index.pl?ST=8615&CP=0&F=1#M147 */
-    hrt_printf_nochk(symbol, "%.5s.%.3s.%.3s.%.3s", local_source, local_source + 5, local_source + 8,
-                local_source + 11);
+    z_hrt_printf_nochk(symbol, "%.5s.%.3s.%.3s.%.3s", local_source, local_source + 5, local_source + 8,
+                        local_source + 11);
 
-    /* Use `raw_text` set by `c25_inter_common()` */
+    /* Use `raw_text` set by `zint_c25_inter_common()` */
 
     return error_number;
 }
 
 /* Deutsche Post Identcode */
 /* See dpleit() for (sort of) documentation reference */
-INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number, zeroes;
     unsigned int count;
     int factor;
@@ -176,10 +176,10 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
 
     count = 0;
     if (length > 11) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 315, "Input length %d too long (maximum 11)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 315, "Input length %d too long (maximum 11)", length);
     }
-    if ((i = not_sane(NEON_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 316,
+    if ((i = z_not_sane(NEON_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 316,
                         "Invalid character at position %d in input (digits only)", i);
     }
 
@@ -190,21 +190,21 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
 
     factor = 4;
     for (i = 10; i >= 0; i--) {
-        count += factor * ctoi(local_source[i]);
+        count += factor * z_ctoi(local_source[i]);
         factor ^= 0x0D; /* Toggles 4 and 9 */
     }
     local_source[11] = c25_dp_check_digit(count);
-    error_number = c25_inter_common(symbol, local_source, 12, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
+    error_number = zint_c25_inter_common(symbol, local_source, 12, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
     /* TODO: Find documentation on BARCODE_DPIDENT dimensions/height */
     /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
-    (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
+    (void) z_set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
 
     /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do other examples (see above) */
-    hrt_printf_nochk(symbol, "%.2s.%.2s %c.%.3s.%.3s %c", local_source, local_source + 2, local_source[4],
-            local_source + 5, local_source + 8, local_source[11]);
+    z_hrt_printf_nochk(symbol, "%.2s.%.2s %c.%.3s.%.3s %c", local_source, local_source + 2, local_source[4],
+                        local_source + 5, local_source + 8, local_source[11]);
 
-    /* Use `raw_text` set by `c25_inter_common()` */
+    /* Use `raw_text` set by `zint_c25_inter_common()` */
 
     return error_number;
 }

@@ -54,7 +54,7 @@ static const char qr_ecc_level_names[] = { 'L', 'M', 'Q', 'H' };
 
 /* Returns true if input glyph is in the Alphanumeric set or is GS1 FNC1 */
 static int qr_is_alpha(const unsigned int glyph, const int gs1) {
-    if (is_chr(QR_ALPHA, glyph)) {
+    if (z_is_chr(QR_ALPHA, glyph)) {
         return 1;
     }
     if (gs1 && glyph == '\x1D') {
@@ -327,7 +327,7 @@ static void qr_define_mode(char mode[], const unsigned int ddata[], const int le
 
     /* Get optimal mode for each code point by tracing backwards */
     for (i = length - 1; i >= 0; i--) {
-        j = posn(qr_mode_types, cur_mode);
+        j = z_posn(qr_mode_types, cur_mode);
         cur_mode = char_modes[i][j];
         mode[i] = cur_mode;
     }
@@ -349,7 +349,7 @@ static int qr_mode_indicator(const int version, const int mode) {
         { 0, 1, 2, 3, },
     };
 
-    int mode_index = posn(qr_mode_types, (const char) mode);
+    int mode_index = z_posn(qr_mode_types, (const char) mode);
 
     if (version < RMQR_VERSION) {
         return mode_indicators[0][mode_index]; /* QRCODE */
@@ -386,7 +386,7 @@ static int qr_cci_bits(const int version, const int mode) {
     static const unsigned char *const rmqr_ccis[QR_NUM_MODES] = {
         rmqr_numeric_cci, rmqr_alphanum_cci, rmqr_byte_cci, rmqr_kanji_cci,
     };
-    int mode_index = posn(qr_mode_types, (const char) mode);
+    int mode_index = z_posn(qr_mode_types, (const char) mode);
 
     if (version < RMQR_VERSION) { /* QRCODE */
         if (version < 10) {
@@ -425,13 +425,13 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
     int percent_count;
 
     if (eci != 0) { /* Not applicable to MICROQR */
-        bp = bin_append_posn(7, version < RMQR_VERSION ? 4 : 3, binary, bp); /* ECI (Table 4) */
+        bp = z_bin_append_posn(7, version < RMQR_VERSION ? 4 : 3, binary, bp); /* ECI (Table 4) */
         if (eci <= 127) {
-            bp = bin_append_posn(eci, 8, binary, bp); /* 000000 to 000127 */
+            bp = z_bin_append_posn(eci, 8, binary, bp); /* 000000 to 000127 */
         } else if (eci <= 16383) {
-            bp = bin_append_posn(0x8000 + eci, 16, binary, bp); /* 000128 to 016383 */
+            bp = z_bin_append_posn(0x8000 + eci, 16, binary, bp); /* 000128 to 016383 */
         } else {
-            bp = bin_append_posn(0xC00000 + eci, 24, binary, bp); /* 016384 to 999999 */
+            bp = z_bin_append_posn(0xC00000 + eci, 24, binary, bp); /* 016384 to 999999 */
         }
     }
 
@@ -451,7 +451,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
 
         /* Mode indicator */
         if (modebits) {
-            bp = bin_append_posn(qr_mode_indicator(version, data_block), modebits, binary, bp);
+            bp = z_bin_append_posn(qr_mode_indicator(version, data_block), modebits, binary, bp);
         }
 
         switch (data_block) {
@@ -459,7 +459,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 /* Kanji mode */
 
                 /* Character count indicator */
-                bp = bin_append_posn(short_data_block_length, qr_cci_bits(version, data_block), binary, bp);
+                bp = z_bin_append_posn(short_data_block_length, qr_cci_bits(version, data_block), binary, bp);
 
                 if (debug_print) {
                     printf("Kanji block (length %d)\n\t", short_data_block_length);
@@ -478,7 +478,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
 
                     prod = ((jis >> 8) * 0xc0) + (jis & 0xff);
 
-                    bp = bin_append_posn(prod, 13, binary, bp);
+                    bp = z_bin_append_posn(prod, 13, binary, bp);
 
                     if (debug_print) {
                         printf("0x%04X ", prod);
@@ -494,8 +494,8 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 /* Byte mode */
 
                 /* Character count indicator */
-                bp = bin_append_posn(short_data_block_length + double_byte, qr_cci_bits(version, data_block), binary,
-                                    bp);
+                bp = z_bin_append_posn(short_data_block_length + double_byte, qr_cci_bits(version, data_block),
+                                        binary, bp);
 
                 if (debug_print) {
                     printf("Byte block (length %d)\n\t", short_data_block_length + double_byte);
@@ -505,7 +505,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 for (i = 0; i < short_data_block_length; i++) {
                     unsigned int byte = ddata[position + i];
 
-                    bp = bin_append_posn(byte, byte > 0xFF ? 16 : 8, binary, bp);
+                    bp = z_bin_append_posn(byte, byte > 0xFF ? 16 : 8, binary, bp);
 
                     if (debug_print) {
                         printf("0x%02X(%d) ", byte, (int) byte);
@@ -530,8 +530,8 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 }
 
                 /* Character count indicator */
-                bp = bin_append_posn(short_data_block_length + percent_count, qr_cci_bits(version, data_block),
-                                    binary, bp);
+                bp = z_bin_append_posn(short_data_block_length + percent_count, qr_cci_bits(version, data_block),
+                                        binary, bp);
 
                 if (debug_print) {
                     printf("Alpha block (length %d)\n\t", short_data_block_length + percent_count);
@@ -604,7 +604,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                         }
                     }
 
-                    bp = bin_append_posn(prod, 1 + (5 * count), binary, bp);
+                    bp = z_bin_append_posn(prod, 1 + (5 * count), binary, bp);
 
                     if (debug_print) {
                         printf("0x%X ", prod);
@@ -620,7 +620,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 /* Numeric mode */
 
                 /* Character count indicator */
-                bp = bin_append_posn(short_data_block_length, qr_cci_bits(version, data_block), binary, bp);
+                bp = z_bin_append_posn(short_data_block_length, qr_cci_bits(version, data_block), binary, bp);
 
                 if (debug_print) {
                     printf("Number block (length %d)\n\t", short_data_block_length);
@@ -632,23 +632,23 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                     int count;
                     int first = 0, prod;
 
-                    first = ctoi((const char) ddata[position + i]);
+                    first = z_ctoi((const char) ddata[position + i]);
                     count = 1;
                     prod = first;
 
                     if (i + 1 < short_data_block_length && mode[position + i + 1] == 'N') {
-                        int second = ctoi((const char) ddata[position + i + 1]);
+                        int second = z_ctoi((const char) ddata[position + i + 1]);
                         count = 2;
                         prod = (prod * 10) + second;
 
                         if (i + 2 < short_data_block_length && mode[position + i + 2] == 'N') {
-                            int third = ctoi((const char) ddata[position + i + 2]);
+                            int third = z_ctoi((const char) ddata[position + i + 2]);
                             count = 3;
                             prod = (prod * 10) + third;
                         }
                     }
 
-                    bp = bin_append_posn(prod, 1 + (3 * count), binary, bp);
+                    bp = z_bin_append_posn(prod, 1 + (3 * count), binary, bp);
 
                     if (debug_print) {
                         printf("0x%X(%d) ", prod, prod);
@@ -686,18 +686,18 @@ static int qr_binary_segs(unsigned char datastream[], const int version, const i
     *binary = '\0';
 
     if (p_structapp) {
-        bp = bin_append_posn(3, 4, binary, bp); /* Structured Append indicator */
-        bp = bin_append_posn(p_structapp->index - 1, 4, binary, bp);
-        bp = bin_append_posn(p_structapp->count - 1, 4, binary, bp);
-        bp = bin_append_posn(to_int((const unsigned char *) p_structapp->id, (int) strlen(p_structapp->id)), 8,
-                binary, bp); /* Parity */
+        bp = z_bin_append_posn(3, 4, binary, bp); /* Structured Append indicator */
+        bp = z_bin_append_posn(p_structapp->index - 1, 4, binary, bp);
+        bp = z_bin_append_posn(p_structapp->count - 1, 4, binary, bp);
+        bp = z_bin_append_posn(z_to_int(ZCUCP(p_structapp->id), (int) strlen(p_structapp->id)), 8, binary,
+                                bp); /* Parity */
     }
 
     if (gs1) { /* Not applicable to MICROQR */
         if (version < RMQR_VERSION) {
-            bp = bin_append_posn(5, 4, binary, bp); /* FNC1 */
+            bp = z_bin_append_posn(5, 4, binary, bp); /* FNC1 */
         } else {
-            bp = bin_append_posn(5, 3, binary, bp);
+            bp = z_bin_append_posn(5, 3, binary, bp);
         }
     }
 
@@ -722,7 +722,7 @@ static int qr_binary_segs(unsigned char datastream[], const int version, const i
     if (termbits || current_bytes < target_codewords) {
         int max_termbits = qr_terminator_bits(version);
         termbits = termbits < max_termbits && current_bytes == target_codewords ? termbits : max_termbits;
-        bp = bin_append_posn(0, termbits, binary, bp);
+        bp = z_bin_append_posn(0, termbits, binary, bp);
     }
 
     /* Padding bits */
@@ -732,7 +732,7 @@ static int qr_binary_segs(unsigned char datastream[], const int version, const i
     }
     if (padbits) {
         current_bytes = (bp + padbits) / 8;
-        (void) bin_append_posn(0, padbits, binary, bp); /* Last use so not setting bp */
+        (void) z_bin_append_posn(0, padbits, binary, bp); /* Last use so not setting bp */
     }
 
     if (debug_print) printf("Terminated binary (%d): %.*s (padbits %d)\n", bp, bp, binary, padbits);
@@ -810,8 +810,8 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
     interleaved_data = (unsigned char *) z_alloca(data_cw);
     interleaved_ecc = (unsigned char *) z_alloca(ecc_cw);
 
-    rs_init_gf(&rs, 0x11d);
-    rs_init_code(&rs, ecc_block_length, 0);
+    zint_rs_init_gf(&rs, 0x11d);
+    zint_rs_init_code(&rs, ecc_block_length, 0);
 
     in_posn = 0;
 
@@ -827,7 +827,7 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
             data_block[j] = datastream[in_posn + j]; /* NOLINT(clang-analyzer-core.uninitialized.Assign) */
         }
 
-        rs_encode(&rs, length_this_block, data_block, ecc_block);
+        zint_rs_encode(&rs, length_this_block, data_block, ecc_block);
 
         if (debug_print) {
             printf("Block %d: ", i + 1);
@@ -1599,39 +1599,41 @@ static int qr_prep_data(struct zint_symbol *symbol, struct zint_seg segs[], cons
     /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
     const int raw_text = (symbol->input_mode & 0x07) != GS1_MODE && (symbol->output_options & BARCODE_RAW_TEXT);
 
-    if (raw_text && rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
     }
 
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        warn_number = sjis_cpy_segs(symbol, segs, seg_count, ddata, full_multibyte);
+        warn_number = zint_sjis_cpy_segs(symbol, segs, seg_count, ddata, full_multibyte);
     } else {
         unsigned int *dd = ddata;
         for (i = 0; i < seg_count; i++) {
             int done = 0, eci = segs[i].eci;
             if (segs[i].eci != 20 || seg_count > 1) { /* Unless ECI 20 (Shift JIS) or have multiple segments */
                 /* Try other encodings (ECI 0 defaults to ISO/IEC 8859-1) */
-                int error_number = sjis_utf8_to_eci(segs[i].eci, segs[i].source, &segs[i].length, dd, full_multibyte);
+                int error_number = zint_sjis_utf8_to_eci(segs[i].eci, segs[i].source, &segs[i].length, dd,
+                                                        full_multibyte);
                 if (error_number == 0) {
                     done = 1;
                 } else if (segs[i].eci || seg_count > 1) {
-                    return errtxtf(error_number, symbol, 575, "Invalid character in input for ECI '%d'", segs[i].eci);
+                    return z_errtxtf(error_number, symbol, 575, "Invalid character in input for ECI '%d'",
+                                    segs[i].eci);
                 }
             }
             if (!done) {
                 /* Try Shift-JIS */
-                int error_number = sjis_utf8(symbol, segs[i].source, &segs[i].length, dd);
+                int error_number = zint_sjis_utf8(symbol, segs[i].source, &segs[i].length, dd);
                 if (error_number != 0) {
                     return error_number;
                 }
                 if (segs[i].eci != 20) {
-                    warn_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 760,
+                    warn_number = z_errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 760,
                                             "Converted to Shift JIS but no ECI specified");
                 }
                 eci = 20;
             }
-            if (raw_text && rt_cpy_seg_ddata(symbol, i, &segs[i], eci, dd)) {
-                return ZINT_ERROR_MEMORY; /* `rt_cpy_seg_ddata()` only fails with OOM */
+            if (raw_text && z_rt_cpy_seg_ddata(symbol, i, &segs[i], eci, dd)) {
+                return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg_ddata()` only fails with OOM */
             }
             dd += segs[i].length;
         }
@@ -1640,7 +1642,7 @@ static int qr_prep_data(struct zint_symbol *symbol, struct zint_seg segs[], cons
     return warn_number;
 }
 
-INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+INTERNAL int zint_qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int warn_number;
     int i, j, est_binlen, prev_est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, size;
@@ -1652,7 +1654,7 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
     const int gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
     const int fast_encode = symbol->input_mode & FAST_MODE;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
-    const int eci_length_segs = get_eci_length_segs(segs, seg_count);
+    const int eci_length_segs = zint_get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
     unsigned int *ddata = (unsigned int *) z_alloca(sizeof(unsigned int) * eci_length_segs);
     char *mode = (char *) z_alloca(eci_length_segs);
@@ -1666,7 +1668,7 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         user_mask = 0; /* Ignore */
     }
 
-    segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs & protect lengths) */
+    z_segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs & protect lengths) */
 
     warn_number = qr_prep_data(symbol, local_segs, seg_count, ddata);
     if (warn_number >= ZINT_ERROR) {
@@ -1675,13 +1677,13 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
 
     if (symbol->structapp.count) {
         if (symbol->structapp.count < 2 || symbol->structapp.count > 16) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 750,
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 750,
                             "Structured Append count '%d' out of range (2 to 16)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 751,
-                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                                symbol->structapp.index, symbol->structapp.count);
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 751,
+                                    "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                    symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             int id, id_len;
@@ -1689,16 +1691,16 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
             for (id_len = 1; id_len < 4 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 3) { /* Max value 255 */
-                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 752,
+                return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 752,
                                 "Structured Append ID length %d too long (3 digit maximum)", id_len);
             }
 
-            id = to_int((const unsigned char *) symbol->structapp.id, id_len);
+            id = z_to_int(ZCUCP(symbol->structapp.id), id_len);
             if (id == -1) {
-                return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 753, "Invalid Structured Append ID (digits only)");
+                return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 753, "Invalid Structured Append ID (digits only)");
             }
             if (id > 255) {
-                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 754,
+                return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 754,
                                 "Structured Append ID value '%d' out of range (0 to 255)", id);
             }
         }
@@ -1710,13 +1712,13 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
     if (gs1 && warn_number == 0) {
         for (i = 0; i < seg_count; i++) {
             if (local_segs[i].eci) {
-                warn_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 755,
+                warn_number = z_errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 755,
                                         "Using ECI in GS1 mode not supported by GS1 standards");
                 break;
             }
         }
         if (warn_number == 0 && p_structapp) {
-            warn_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 756,
+            warn_number = z_errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 756,
                                     "Using Structured Append in GS1 mode not supported by GS1 standards");
         }
     }
@@ -1733,13 +1735,13 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
 
     if (est_binlen > (8 * max_cw)) {
         if (ecc_level == QR_LEVEL_L) {
-            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 567,
-                                "Input too long, requires %1$d codewords (maximum %2$d)", (est_binlen + 7) / 8,
-                                max_cw);
+            return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 567,
+                                    "Input too long, requires %1$d codewords (maximum %2$d)", (est_binlen + 7) / 8,
+                                    max_cw);
         }
-        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 561,
-                            "Input too long for ECC level %1$c, requires %2$d codewords (maximum %3$d)",
-                            qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, max_cw);
+        return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 561,
+                                "Input too long for ECC level %1$c, requires %2$d codewords (maximum %3$d)",
+                                qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, max_cw);
     }
 
     autosize = 40;
@@ -1804,10 +1806,10 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         }
 
         if (symbol->option_2 < version) {
-            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 569,
-                                "Input too long for Version %1$d-%2$c, requires %3$d codewords (maximum %4$d)",
-                                symbol->option_2, qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8,
-                                qr_data_codewords[ecc_level][symbol->option_2 - 1]);
+            return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 569,
+                                    "Input too long for Version %1$d-%2$c, requires %3$d codewords (maximum %4$d)",
+                                    symbol->option_2, qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8,
+                                    qr_data_codewords[ecc_level][symbol->option_2 - 1]);
         }
     }
 
@@ -1839,7 +1841,7 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
     (void) qr_binary_segs(datastream, version, target_codewords, mode, ddata, local_segs, seg_count, p_structapp, gs1,
                     est_binlen, debug_print);
 #ifdef ZINT_TEST
-    if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
+    if (symbol->debug & ZINT_DEBUG_TEST) z_debug_test_codeword_dump(symbol, datastream, target_codewords);
 #endif
     qr_add_ecc(fullstream, datastream, version, target_codewords, blocks, debug_print);
 
@@ -1872,7 +1874,7 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         int r = i * size;
         for (j = 0; j < size; j++) {
             if (grid[r + j] & 0x01) {
-                set_module(symbol, i, j);
+                z_set_module(symbol, i, j);
             }
         }
         symbol->row_height[i] = 1;
@@ -1901,11 +1903,11 @@ static int microqr_end(struct zint_symbol *symbol, char binary_data[], int bp, c
     bits_left = bits_total - bp;
     if (bits_left <= terminator_bits) {
         if (bits_left) {
-            bp = bin_append_posn(0, bits_left, binary_data, bp);
+            bp = z_bin_append_posn(0, bits_left, binary_data, bp);
             bits_left = 0;
         }
     } else {
-        bp = bin_append_posn(0, terminator_bits, binary_data, bp);
+        bp = z_bin_append_posn(0, terminator_bits, binary_data, bp);
         bits_left -= terminator_bits;
     }
 
@@ -1915,7 +1917,7 @@ static int microqr_end(struct zint_symbol *symbol, char binary_data[], int bp, c
 
     /* Manage last (4-bit) block */
     if (bits_end == 4 && bits_left && bits_left <= 4) {
-        bp = bin_append_posn(0, bits_left, binary_data, bp);
+        bp = z_bin_append_posn(0, bits_left, binary_data, bp);
         bits_left = 0;
     }
 
@@ -1923,7 +1925,7 @@ static int microqr_end(struct zint_symbol *symbol, char binary_data[], int bp, c
         /* Complete current byte */
         int remainder = 8 - (bp % 8);
         if (remainder != 8) {
-            bp = bin_append_posn(0, remainder, binary_data, bp);
+            bp = z_bin_append_posn(0, remainder, binary_data, bp);
             bits_left -= remainder;
         }
 
@@ -1933,10 +1935,10 @@ static int microqr_end(struct zint_symbol *symbol, char binary_data[], int bp, c
         }
         remainder = bits_left / 8;
         for (i = 0; i < remainder; i++) {
-            bp = bin_append_posn(i & 1 ? 0x11 : 0xEC, 8, binary_data, bp);
+            bp = z_bin_append_posn(i & 1 ? 0x11 : 0xEC, 8, binary_data, bp);
         }
         if (bits_end == 4) {
-            bp = bin_append_posn(0, 4, binary_data, bp);
+            bp = z_bin_append_posn(0, 4, binary_data, bp);
         }
     }
     assert((bp & 0x07) == 8 - bits_end);
@@ -1955,20 +1957,20 @@ static int microqr_end(struct zint_symbol *symbol, char binary_data[], int bp, c
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
         char bp_buf[10];
-        debug_test_codeword_dump(symbol, data_blocks, data_codewords);
+        z_debug_test_codeword_dump(symbol, data_blocks, data_codewords);
         sprintf(bp_buf, "%d", bp); /* Append `bp` to detect padding errors */
-        errtxt_adj(0, symbol, "%s (%s)", bp_buf);
+        z_errtxt_adj(0, symbol, "%s (%s)", bp_buf);
     }
 #endif
 
     /* Calculate Reed-Solomon error codewords */
-    rs_init_gf(&rs, 0x11d);
-    rs_init_code(&rs, ecc_codewords, 0);
-    rs_encode(&rs, data_codewords, data_blocks, ecc_blocks);
+    zint_rs_init_gf(&rs, 0x11d);
+    zint_rs_init_code(&rs, ecc_codewords, 0);
+    zint_rs_encode(&rs, data_codewords, data_blocks, ecc_blocks);
 
     /* Add Reed-Solomon codewords to binary data */
     for (i = 0; i < ecc_codewords; i++) {
-        bp = bin_append_posn(ecc_blocks[i], 8, binary_data, bp);
+        bp = z_bin_append_posn(ecc_blocks[i], 8, binary_data, bp);
     }
 
     return bp;
@@ -2167,7 +2169,7 @@ static int microqr_apply_bitmask(unsigned char *grid, const int size, const int 
     return best_pattern;
 }
 
-INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_microqr(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, size, j;
     char full_stream[200];
     int bp;
@@ -2190,22 +2192,23 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > 35) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 562, "Input length %d too long (maximum 35)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 562, "Input length %d too long (maximum 35)", length);
     }
 
     /* Check option 1 in combination with option 2 */
     ecc_level = QR_LEVEL_L;
     if (symbol->option_1 >= 1 && symbol->option_1 <= 4) {
         if (symbol->option_1 == 4) {
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 566, "Error correction level H not available");
+            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 566, "Error correction level H not available");
         }
         if (symbol->option_2 >= 1 && symbol->option_2 <= 4) {
             if (symbol->option_2 == 1 && symbol->option_1 != 1) {
-                return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 574,
+                return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 574,
                                 "Version M1 supports error correction level L only");
             }
             if (symbol->option_2 != 4 && symbol->option_1 == 3) {
-                return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 563, "Error correction level Q requires Version M4");
+                return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 563,
+                                "Error correction level Q requires Version M4");
             }
         }
         ecc_level = symbol->option_1 - 1;
@@ -2219,13 +2222,13 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        sjis_cpy(source, &length, ddata, full_multibyte);
+        zint_sjis_cpy(source, &length, ddata, full_multibyte);
     } else {
         /* Try ISO 8859-1 conversion first */
-        int error_number = sjis_utf8_to_eci(3, source, &length, ddata, full_multibyte);
+        int error_number = zint_sjis_utf8_to_eci(3, source, &length, ddata, full_multibyte);
         if (error_number != 0) {
             /* Try Shift-JIS */
-            error_number = sjis_utf8(symbol, source, &length, ddata);
+            error_number = zint_sjis_utf8(symbol, source, &length, ddata);
             if (error_number != 0) {
                 return error_number;
             }
@@ -2269,8 +2272,8 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     segs[0].length = length;
     segs[0].eci = 0;
 
-    if (raw_text && (rt_init_segs(symbol, seg_count) || rt_cpy_seg_ddata(symbol, 0, &segs[0], eci, ddata))) {
-        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` & `rt_cpy_seg_ddata()` only fail with OOM */
+    if (raw_text && (z_rt_init_segs(symbol, seg_count) || z_rt_cpy_seg_ddata(symbol, 0, &segs[0], eci, ddata))) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` & `z_rt_cpy_seg_ddata()` only fail with OOM */
     }
 
     /* Determine length of binary data */
@@ -2285,9 +2288,10 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Eliminate possible versions depending on binary length and error correction level specified */
     if (binary_count[3] > microqr_data[ecc_level][3][0]) {
-        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 565,
-                            "Input too long for Version M4-%1$c, requires %2$d codewords (maximum %3$d)",
-                            qr_ecc_level_names[ecc_level], (binary_count[3] + 7) / 8, microqr_data[ecc_level][3][1]);
+        return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 565,
+                                "Input too long for Version M4-%1$c, requires %2$d codewords (maximum %3$d)",
+                                qr_ecc_level_names[ecc_level], (binary_count[3] + 7) / 8,
+                                microqr_data[ecc_level][3][1]);
     }
     for (i = 0; i < 3; i++) {
         if (binary_count[i] > microqr_data[ecc_level][i][0]) {
@@ -2309,20 +2313,20 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Get version from user */
     if ((symbol->option_2 >= 1) && (symbol->option_2 <= 4)) {
-        if (symbol->option_2 == 1 && (i = not_sane(NEON_F, source, length))) {
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 758,
+        if (symbol->option_2 == 1 && (i = z_not_sane(NEON_F, source, length))) {
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 758,
                             "Invalid character at position %d in input for Version M1 (digits only)", i);
-        } else if (symbol->option_2 == 2 && not_sane(QR_ALPHA, source, length)) {
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 759,
+        } else if (symbol->option_2 == 2 && z_not_sane(QR_ALPHA, source, length)) {
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 759,
                             "Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)");
         }
         if (symbol->option_2 - 1 >= version) {
             version = symbol->option_2 - 1;
         } else {
-            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 570,
-                                "Input too long for Version M%1$d-%2$c, requires %3$d codewords (maximum %4$d)",
-                                symbol->option_2, qr_ecc_level_names[ecc_level], (binary_count[version] + 7) / 8,
-                                microqr_data[ecc_level][symbol->option_2 - 1][1]);
+            return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 570,
+                                    "Input too long for Version M%1$d-%2$c, requires %3$d codewords (maximum %4$d)",
+                                    symbol->option_2, qr_ecc_level_names[ecc_level], (binary_count[version] + 7) / 8,
+                                    microqr_data[ecc_level][symbol->option_2 - 1][1]);
         }
     }
 
@@ -2382,7 +2386,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
             if (grid[(i * size) + j] & 0x01) {
-                set_module(symbol, i, j);
+                z_set_module(symbol, i, j);
             }
         }
         symbol->row_height[i] = 1;
@@ -2393,7 +2397,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
 }
 
 /* For UPNQR the symbol size and error correction capacity is fixed */
-INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_upnqr(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, r, est_binlen;
     int ecc_level, version, target_codewords, blocks, size;
     int bitmask, error_number;
@@ -2425,13 +2429,13 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
             }
             break;
         case GS1_MODE: /* Should never happen as checked before being called */
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 571,
+            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 571,
                             "UPNQR does not support GS1 data"); /* Not reached */
             break;
         case UNICODE_MODE:
-            error_number = utf8_to_eci(4, source, preprocessed, &length);
+            error_number = zint_utf8_to_eci(4, source, preprocessed, &length);
             if (error_number != 0) {
-                return errtxt(error_number, symbol, 572, "Invalid character in input for ECI '4'");
+                return z_errtxt(error_number, symbol, 572, "Invalid character in input for ECI '4'");
             }
             for (i = 0; i < length; i++) {
                 ddata[i] = preprocessed[i];
@@ -2444,8 +2448,9 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     segs[0].length = length;
     segs[0].eci = 4;
 
-    if (raw_text && (rt_init_segs(symbol, seg_count) || rt_cpy_seg_ddata(symbol, 0, &segs[0], 0 /*eci*/, ddata))) {
-        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` & `rt_cpy_seg_ddata()` only fail with OOM */
+    if (raw_text
+            && (z_rt_init_segs(symbol, seg_count) || z_rt_cpy_seg_ddata(symbol, 0, &segs[0], 0 /*eci*/, ddata))) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` & `z_rt_cpy_seg_ddata()` only fail with OOM */
     }
 
     est_binlen = qr_calc_binlen_segs(15, mode, ddata, segs, seg_count, NULL /*p_structapp*/, 1 /*mode_preset*/,
@@ -2454,7 +2459,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     ecc_level = QR_LEVEL_M;
 
     if (est_binlen > 3320) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 573, "Input too long, requires %d codewords (maximum 415)",
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 573, "Input too long, requires %d codewords (maximum 415)",
                         (est_binlen + 7) / 8);
     }
 
@@ -2469,7 +2474,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     (void) qr_binary_segs(datastream, version, target_codewords, mode, ddata, segs, seg_count, NULL /*p_structapp*/,
                     0 /*gs1*/, est_binlen, debug_print);
 #ifdef ZINT_TEST
-    if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
+    if (symbol->debug & ZINT_DEBUG_TEST) z_debug_test_codeword_dump(symbol, datastream, target_codewords);
 #endif
     qr_add_ecc(fullstream, datastream, version, target_codewords, blocks, debug_print);
 
@@ -2500,7 +2505,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
         r = i * size;
         for (j = 0; j < size; j++) {
             if (grid[r + j] & 0x01) {
-                set_module(symbol, i, j);
+                z_set_module(symbol, i, j);
             }
         }
         symbol->row_height[i] = 1;
@@ -2633,7 +2638,7 @@ static void rmqr_setup_grid(unsigned char *grid, const int h_size, const int v_s
 }
 
 /* rMQR according to 2018 draft standard */
-INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+INTERNAL int zint_rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int warn_number;
     int i, j, est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, h_size, v_size;
@@ -2641,7 +2646,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     unsigned int left_format_info, right_format_info;
     const int gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
-    const int eci_length_segs = get_eci_length_segs(segs, seg_count);
+    const int eci_length_segs = zint_get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
     unsigned int *ddata = (unsigned int *) z_alloca(sizeof(unsigned int) * eci_length_segs);
     char *mode = (char *) z_alloca(eci_length_segs);
@@ -2650,18 +2655,18 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     unsigned char *grid;
 
     if (symbol->option_1 == 1) {
-        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 576, "Error correction level L not available in rMQR");
+        return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 576, "Error correction level L not available in rMQR");
     }
     if (symbol->option_1 == 3) {
-        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 577, "Error correction level Q not available in rMQR");
+        return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 577, "Error correction level Q not available in rMQR");
     }
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 38)) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 579, "Version '%d' out of range (1 to 38)",
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 579, "Version '%d' out of range (1 to 38)",
                         symbol->option_2);
     }
 
-    segs_cpy(symbol, segs, seg_count, local_segs);
+    z_segs_cpy(symbol, segs, seg_count, local_segs);
 
     warn_number = qr_prep_data(symbol, local_segs, seg_count, ddata);
     if (warn_number >= ZINT_ERROR) {
@@ -2673,7 +2678,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     if (gs1 && warn_number == 0) {
         for (i = 0; i < seg_count; i++) {
             if (local_segs[i].eci) {
-                warn_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 757,
+                warn_number = z_errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 757,
                                         "Using ECI in GS1 mode not supported by GS1 standards");
                 break;
             }
@@ -2687,9 +2692,9 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     max_cw = rmqr_data_codewords[ecc_level >> 1][31];
 
     if (est_binlen > (8 * max_cw)) {
-        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 578,
-                            "Input too long for ECC level %1$c, requires %2$d codewords (maximum %3$d)",
-                            qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, max_cw);
+        return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 578,
+                                "Input too long for ECC level %1$c, requires %2$d codewords (maximum %3$d)",
+                                qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, max_cw);
     }
 
     version = 31; /* Set default to keep compiler happy */
@@ -2748,10 +2753,10 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     if (est_binlen > (target_codewords * 8)) {
         /* User has selected a symbol too small for the data */
         assert(symbol->option_2 > 0);
-        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 560,
-                            "Input too long for Version %1$d %2$s-%3$c, requires %4$d codewords (maximum %5$d)",
-                            symbol->option_2, rmqr_version_names[symbol->option_2 - 1], qr_ecc_level_names[ecc_level],
-                            (est_binlen + 7) / 8, target_codewords);
+        return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 560,
+                                "Input too long for Version %1$d %2$s-%3$c, requires %4$d codewords (maximum %5$d)",
+                                symbol->option_2, rmqr_version_names[symbol->option_2 - 1],
+                                qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, target_codewords);
     }
 
     /* Feedback options */
@@ -2772,7 +2777,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     (void) qr_binary_segs(datastream, RMQR_VERSION + version, target_codewords, mode, ddata, local_segs, seg_count,
                     NULL /*p_structapp*/, gs1, est_binlen, debug_print);
 #ifdef ZINT_TEST
-    if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
+    if (symbol->debug & ZINT_DEBUG_TEST) z_debug_test_codeword_dump(symbol, datastream, target_codewords);
 #endif
     qr_add_ecc(fullstream, datastream, RMQR_VERSION + version, target_codewords, blocks, debug_print);
 
@@ -2828,7 +2833,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
         int r = i * h_size;
         for (j = 0; j < h_size; j++) {
             if (grid[r + j] & 0x01) {
-                set_module(symbol, i, j);
+                z_set_module(symbol, i, j);
             }
         }
         symbol->row_height[i] = 1;

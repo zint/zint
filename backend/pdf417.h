@@ -1,7 +1,7 @@
 /* pdf417.h - PDF417 tables and coefficients declarations */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
 
     Redistribution and use in source and binary forms, with or without
@@ -41,26 +41,26 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* PDF417 error correction coefficients from Grand Zebu */
-INTERNAL_DATA_EXTERN const unsigned short pdf_coefrs[1022];
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_coefrs[1022];
 
-INTERNAL_DATA_EXTERN const unsigned short pdf_bitpattern[2787];
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_bitpattern[2787];
 
 /* MicroPDF417 coefficients from ISO/IEC 24728:2006 Annex F */
-INTERNAL_DATA_EXTERN const unsigned short pdf_Microcoeffs[344];
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_Microcoeffs[344];
 
 /* rows, columns, error codewords, k-offset of valid MicroPDF417 sizes from ISO/IEC 24728:2006 */
-INTERNAL_DATA_EXTERN const unsigned short pdf_MicroVariants[136];
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_MicroVariants[136];
 
 /* following is Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 24728:2006 tables 10, 11 and 12 */
-INTERNAL_DATA_EXTERN const char pdf_RAPTable[136];
+INTERNAL_DATA_EXTERN const char zint_pdf_RAPTable[136];
 
 /* Left and Right Row Address Pattern from Table 2 */
-INTERNAL_DATA_EXTERN const unsigned short pdf_rap_side[52];
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_rap_side[52];
 
 /* Centre Row Address Pattern from Table 2 */
-INTERNAL_DATA_EXTERN const unsigned short pdf_rap_centre[52];
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_rap_centre[52];
 
-INTERNAL void pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], int start,
+INTERNAL void zint_pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], int start,
                 const int length, const int lastmode);
 
 #ifdef __cplusplus

@@ -80,7 +80,7 @@ static void test_check_colour_options(const testCtx *const p_ctx) {
         strcpy(symbol.bgcolour, data[i].bgcolour);
         symbol.errtxt[0] = '\0';
 
-        ret = out_check_colour_options(&symbol);
+        ret = zint_out_check_colour_options(&symbol);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         assert_zero(strcmp(symbol.errtxt, data[i].expected), "i:%d symbol.errtxt (%s) != expected (%s)\n", i, symbol.errtxt, data[i].expected);
     }
@@ -128,7 +128,7 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        ret = out_colour_get_rgb(data[i].colour, &red, &green, &blue, &alpha);
+        ret = zint_out_colour_get_rgb(data[i].colour, &red, &green, &blue, &alpha);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         assert_equal(red, data[i].red, "i:%d red 0x%02X (%d) != 0x%02X (%d) (green 0x%02X, blue 0x%02X)\n", i, red, red, data[i].red, data[i].red, green, blue);
         assert_equal(green, data[i].green, "i:%d green %d (0x%02X) != %d (0x%02X)\n", i, green, green, data[i].green, data[i].green);
@@ -141,8 +141,8 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
         } else {
             sprintf(rgb, "%02X%02X%02X", red, green, blue);
         }
-        ret = out_colour_get_cmyk(rgb, &cyan, &magenta, &yellow, &black, &rgb_alpha);
-        assert_equal(ret, 1 + have_alpha, "i:%d out_colour_get_cmyk(%s) ret %d != %d\n", i, rgb, ret, 1 + have_alpha);
+        ret = zint_out_colour_get_cmyk(rgb, &cyan, &magenta, &yellow, &black, &rgb_alpha);
+        assert_equal(ret, 1 + have_alpha, "i:%d zint_out_colour_get_cmyk(%s) ret %d != %d\n", i, rgb, ret, 1 + have_alpha);
         assert_equal(rgb_alpha, alpha, "i:%d rgb_alpha %d (0x%02X) != %d (0x%02X)\n", i, rgb_alpha, rgb_alpha, alpha, alpha);
 
         sprintf(cmyk, "%d,%d,%d,%d", cyan, magenta, yellow, black);
@@ -186,15 +186,15 @@ static void test_colour_get_cmyk(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        ret = out_colour_get_cmyk(data[i].colour, &cyan, &magenta, &yellow, &black, &alpha);
+        ret = zint_out_colour_get_cmyk(data[i].colour, &cyan, &magenta, &yellow, &black, &alpha);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         assert_equal(cyan, data[i].cyan, "i:%d cyan %d != %d (magenta %d, yellow %d, black %d)\n", i, cyan, data[i].cyan, magenta, yellow, black);
         assert_equal(magenta, data[i].magenta, "i:%d magenta %d != %d\n", i, magenta, data[i].magenta);
         assert_equal(yellow, data[i].yellow, "i:%d yellow %d != %d\n", i, yellow, data[i].yellow);
         assert_equal(alpha, data[i].alpha, "i:%d alpha %d != %d\n", i, alpha, data[i].alpha);
 
-        ret = out_colour_get_rgb(data[i].colour, &red, &green, &blue, &rgb_alpha);
-        assert_equal(ret, data[i].ret_rgb, "i:%d out_colour_get_rgb(%s) ret %d != %d\n", i, rgb, ret, data[i].ret_rgb);
+        ret = zint_out_colour_get_rgb(data[i].colour, &red, &green, &blue, &rgb_alpha);
+        assert_equal(ret, data[i].ret_rgb, "i:%d zint_out_colour_get_rgb(%s) ret %d != %d\n", i, rgb, ret, data[i].ret_rgb);
         assert_equal(rgb_alpha, alpha, "i:%d rgb_alpha %d != %d\n", i, rgb_alpha, alpha);
 
         sprintf(rgb, "%02X%02X%02X%02X", red, green, blue, rgb_alpha);
@@ -204,7 +204,7 @@ static void test_colour_get_cmyk(const testCtx *const p_ctx) {
     testFinish();
 }
 
-INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hide_text, const int comp_xoffset,
+INTERNAL int zint_test_out_quiet_zones(const struct zint_symbol *symbol, const int hide_text, const int comp_xoffset,
                             float *left, float *right, float *top, float *bottom);
 
 static void test_quiet_zones(const testCtx *const p_ctx) {
@@ -223,7 +223,7 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
 
         symbol->symbology = i;
         symbol->output_options = BARCODE_QUIET_ZONES;
-        ret = out_quiet_zones_test(symbol, hide_text, comp_xoffset, &left, &right, &top, &bottom);
+        ret = zint_test_out_quiet_zones(symbol, hide_text, comp_xoffset, &left, &right, &top, &bottom);
         if (i != BARCODE_FLAT && i != BARCODE_BC412) { /* Only two which aren't marked as done */
             assert_nonzero(ret, "i:%d %s not done\n", i, testUtilBarcodeName(i));
         }
@@ -284,7 +284,7 @@ static void test_set_whitespace_offsets(const testCtx *const p_ctx) {
         symbol.whitespace_height = data[i].whitespace_height;
         symbol.border_width = data[i].border_width;
         symbol.output_options = data[i].output_options;
-        out_set_whitespace_offsets(&symbol, data[i].hide_text, data[i].comp_xoffset,
+        zint_out_set_whitespace_offsets(&symbol, data[i].hide_text, data[i].comp_xoffset,
                 &xoffset, &yoffset, &roffset, &boffset, &qz_right, data[i].scaler,
                 &xoffset_si, &yoffset_si, &roffset_si, &boffset_si, &qz_right_si);
         assert_equal(xoffset, data[i].expected_xoffset, "i:%d xoffset %g != %g\n", i, xoffset, data[i].expected_xoffset);
@@ -389,9 +389,9 @@ static void test_fopen(const testCtx *const p_ctx) {
         }
         strcat(outfile, data[i].filename);
 
-        ret = out_fopen(outfile, "w");
+        ret = zint_out_fopen(outfile, "w");
         if (data[i].succeed) {
-            assert_nonnull(ret, "i:%d out_fopen(%s) == NULL (%d: %s)\n", i, outfile, errno, strerror(errno));
+            assert_nonnull(ret, "i:%d zint_out_fopen(%s) == NULL (%d: %s)\n", i, outfile, errno, strerror(errno));
             assert_zero(fclose(ret), "i:%d fclose(%s) != 0 (%d: %s)\n", i, outfile, errno, strerror(errno));
             assert_nonzero(testUtilExists(outfile), "i:%d testUtilExists(%s) != 0 (%d: %s)\n", i, outfile, errno, strerror(errno));
             if (data[i].dir[0]) {
@@ -407,7 +407,7 @@ static void test_fopen(const testCtx *const p_ctx) {
                 }
             }
         } else {
-            assert_null(ret, "i:%d out_fopen(%s) == NULL (%d: %s)\n", i, outfile, errno, strerror(errno));
+            assert_null(ret, "i:%d zint_out_fopen(%s) == NULL (%d: %s)\n", i, outfile, errno, strerror(errno));
             /* TODO: may have left junk around */
         }
     }

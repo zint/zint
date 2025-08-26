@@ -342,14 +342,14 @@ static int gs1_yyyymmd0(const unsigned char *data, int data_len, int offset, int
     if (!length_only && data_len) {
         int month, day;
 
-        month = to_int(data + offset + 4, 2);
+        month = z_to_int(data + offset + 4, 2);
         if (month == 0 || month > 12) {
             *p_err_no = 3;
             *p_err_posn = offset + 4 + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Invalid month '%.2s'", data + offset + 4);
         }
 
-        day = to_int(data + offset + 6, 2);
+        day = z_to_int(data + offset + 6, 2);
         if (day && day > days_in_month[month]) {
             *p_err_no = 3;
             *p_err_posn = offset + 6 + 1;
@@ -357,7 +357,7 @@ static int gs1_yyyymmd0(const unsigned char *data, int data_len, int offset, int
         }
         /* Leap year check */
         if (month == 2 && day == 29) {
-            const int year = to_int(data + offset, 4);
+            const int year = z_to_int(data + offset, 4);
             if ((year & 3) || (year % 100 == 0 && year % 400 != 0)) {
                 *p_err_no = 3;
                 *p_err_posn = offset + 6 + 1;
@@ -380,7 +380,7 @@ static int gs1_yyyymmdd(const unsigned char *data, int data_len, int offset, int
     data_len = data_len < offset ? 0 : data_len - offset;
 
     if (!length_only && data_len) {
-        const int day = to_int(data + offset + 6, 2);
+        const int day = z_to_int(data + offset + 6, 2);
         if (day == 0) {
             *p_err_no = 3;
             *p_err_posn = offset + 6 + 1;
@@ -427,7 +427,7 @@ static int gs1_yymmdd(const unsigned char *data, int data_len, int offset, int m
     data_len = data_len < offset ? 0 : data_len - offset;
 
     if (!length_only && data_len) {
-        const int day = to_int(data + offset + 4, 2);
+        const int day = z_to_int(data + offset + 4, 2);
         if (day == 0) {
             *p_err_no = 3;
             *p_err_posn = offset + 4 + 1;
@@ -452,13 +452,13 @@ static int gs1_hhmi(const unsigned char *data, int data_len, int offset, int min
     if (!length_only && data_len) {
         int hour, mins;
 
-        hour = to_int(data + offset, 2);
+        hour = z_to_int(data + offset, 2);
         if (hour > 23) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Invalid hour of day '%.2s'", data + offset);
         }
-        mins = to_int(data + offset + 2, 2);
+        mins = z_to_int(data + offset + 2, 2);
         if (mins > 59) {
             *p_err_no = 3;
             *p_err_posn = offset + 2 + 1;
@@ -481,7 +481,7 @@ static int gs1_hh(const unsigned char *data, int data_len, int offset, int min, 
     }
 
     if (!length_only && data_len) {
-        const int hour = to_int(data + offset, 2);
+        const int hour = z_to_int(data + offset, 2);
         if (hour > 23) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
@@ -504,7 +504,7 @@ static int gs1_mi(const unsigned char *data, int data_len, int offset, int min, 
     }
 
     if (!length_only && data_len) {
-        const int mins = to_int(data + offset, 2);
+        const int mins = z_to_int(data + offset, 2);
         if (mins > 59) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
@@ -527,7 +527,7 @@ static int gs1_ss(const unsigned char *data, int data_len, int offset, int min, 
     }
 
     if (!length_only && data_len) {
-        const int secs = to_int(data + offset, 2);
+        const int secs = z_to_int(data + offset, 2);
         if (secs > 59) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
@@ -557,7 +557,7 @@ static int gs1_iso3166(const unsigned char *data, int data_len, int offset, int 
     }
 
     if (!length_only && data_len) {
-        if (!iso3166_numeric(to_int(data + offset, 3))) {
+        if (!iso3166_numeric(z_to_int(data + offset, 3))) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Unknown country code '%.3s'", data + offset);
@@ -579,7 +579,7 @@ static int gs1_iso3166999(const unsigned char *data, int data_len, int offset, i
     }
 
     if (!length_only && data_len) {
-        const int cc = to_int(data + offset, 3);
+        const int cc = z_to_int(data + offset, 3);
         if (cc != 999 && !iso3166_numeric(cc)) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
@@ -627,7 +627,7 @@ static int gs1_iso4217(const unsigned char *data, int data_len, int offset, int 
     }
 
     if (!length_only && data_len) {
-        if (!iso4217_numeric(to_int(data + offset, 3))) {
+        if (!iso4217_numeric(z_to_int(data + offset, 3))) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Unknown currency code '%.3s'", data + offset);
@@ -730,7 +730,7 @@ static int gs1_nonzero(const unsigned char *data, int data_len, int offset, int 
     }
 
     if (!length_only && data_len) {
-        const int val = to_int(data + offset, data_len > max ? max : data_len);
+        const int val = z_to_int(data + offset, data_len > max ? max : data_len);
 
         if (val == 0) {
             *p_err_no = 3;
@@ -800,13 +800,13 @@ static int gs1_pieceoftotal(const unsigned char *data, int data_len, int offset,
     if (!length_only && data_len) {
         int pieces, total;
 
-        pieces = to_int(data + offset, 2);
+        pieces = z_to_int(data + offset, 2);
         if (pieces == 0) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Piece number cannot be zero");
         }
-        total = to_int(data + offset + 2, 2);
+        total = z_to_int(data + offset + 2, 2);
         if (total == 0) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
@@ -862,7 +862,7 @@ static int gs1_iban(const unsigned char *data, int data_len, int offset, int min
             *p_err_posn = d - data + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Non-numeric IBAN checksum '%.2s'", d);
         }
-        given_checksum = to_int(d, 2);
+        given_checksum = z_to_int(d, 2);
         d += 2;
         for (; d < de; d++) {
             /* 0-9, A-Z */
@@ -937,7 +937,7 @@ static const unsigned char *gs1_coupon_vli(const unsigned char *data, const int 
         (void) gs1_err_msg_printf_nochk(err_msg, "%s VLI missing", name);
         return NULL;
     }
-    vli = to_int(d, 1);
+    vli = z_to_int(d, 1);
     if ((vli < vli_min || vli > vli_max) && (vli != 9 || !vli_nine)) {
         *p_err_no = 3;
         *p_err_posn = d - data + 1;
@@ -981,7 +981,7 @@ static const unsigned char *gs1_coupon_val(const unsigned char *data, const int 
         (void) gs1_err_msg_printf_nochk(err_msg, "%s incomplete", name);
         return NULL;
     }
-    val = to_int(d, val_len);
+    val = z_to_int(d, val_len);
     if (val < 0) {
         *p_err_no = 3;
         *p_err_posn = d - data + 1;
@@ -1058,7 +1058,7 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
 
         /* Optional fields */
         while (d - data < data_len) {
-            const int data_field = to_int(d, 1);
+            const int data_field = z_to_int(d, 1);
             d++;
 
             if (data_field == 1) {
@@ -1435,13 +1435,13 @@ static int gs1_posinseqslash(const unsigned char *data, int data_len, int offset
             *p_err_posn = offset + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "No sequence separator ('/')");
         }
-        pos = to_int(data + offset, slash - (data + offset));
+        pos = z_to_int(data + offset, slash - (data + offset));
         if (pos == 0) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Sequence position cannot be zero");
         }
-        tot = to_int(slash + 1, de - (slash + 1));
+        tot = z_to_int(slash + 1, de - (slash + 1));
         if (tot == 0) {
             *p_err_no = 3;
             *p_err_posn = slash + 1 - data + 1;
@@ -1612,8 +1612,8 @@ static int gs1_packagetype(const unsigned char *data, int data_len, int offset, 
 #define GS1_PARENS_PLACEHOLDER_MASK 0x20  /* Mask `(` or `)` by this if escaped (get BS (\x08) or HT (\x09)) */
 
 /* Verify a GS1 input string */
-INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int *p_length, unsigned char reduced[],
-                int *p_reduced_length) {
+INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, unsigned char source[], int *p_length,
+                unsigned char reduced[], int *p_reduced_length) {
     int i, j;
     int error_value = 0;
     int bracket_level = 0, max_bracket_level = 0;
@@ -1625,7 +1625,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int 
     int length = *p_length;
     const char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
     const char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
-    const int ai_max = chr_cnt(source, length, obracket) + 1; /* Plus 1 so non-zero */
+    const int ai_max = z_chr_cnt(source, length, obracket) + 1; /* Plus 1 so non-zero */
     int *ai_value = (int *) z_alloca(sizeof(int) * ai_max);
     int *ai_location = (int *) z_alloca(sizeof(int) * ai_max);
     int *data_location = (int *) z_alloca(sizeof(int) * ai_max);
@@ -1636,21 +1636,22 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int 
     /* Detect control and extended ASCII characters */
     for (i = 0; i < length; i++) {
         if (source[i] >= 128) {
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 250, "Extended ASCII characters are not supported by GS1");
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 250,
+                            "Extended ASCII characters are not supported by GS1");
         }
         if (source[i] == '\0') {
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 262, "NUL characters not permitted in GS1 mode");
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 262, "NUL characters not permitted in GS1 mode");
         }
         if (source[i] < 32) {
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 251, "Control characters are not supported by GS1");
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 251, "Control characters are not supported by GS1");
         }
         if (source[i] == 127) {
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 263, "DEL characters are not supported by GS1");
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 263, "DEL characters are not supported by GS1");
         }
     }
 
     if (source[0] != obracket) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 252, "Data does not start with an AI");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 252, "Data does not start with an AI");
     }
 
     if ((symbol->input_mode & (ESCAPE_MODE | GS1PARENS_MODE)) == (ESCAPE_MODE | GS1PARENS_MODE)) {
@@ -1713,18 +1714,18 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int 
 
     if (bracket_level != 0) {
         /* Not all brackets are closed */
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 253, "Malformed AI in input (brackets don\'t match)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 253, "Malformed AI in input (brackets don\'t match)");
     }
 
     if (max_bracket_level > 1) {
         /* Nested brackets */
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 254, "Found nested brackets in input");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 254, "Found nested brackets in input");
     }
 
     if (max_ai_length > 4) {
         /* AI is too long */
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 255, "Invalid AI at position %d in input (AI too long)",
-                        max_ai_pos);
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 255,
+                        "Invalid AI at position %d in input (AI too long)", max_ai_pos);
     }
 
     if (min_ai_length <= 1) {
@@ -1732,14 +1733,14 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int 
            - permits dummy "[]" workaround for ticket #204 data with no valid AI */
         if (!(symbol->input_mode & GS1NOCHECK_MODE) || ai_single_digit || ai_zero_len_no_data) {
             /* AI is too short */
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 256, "Invalid AI at position %d in input (AI too short)",
-                            min_ai_pos);
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 256,
+                            "Invalid AI at position %d in input (AI too short)", min_ai_pos);
         }
     }
 
     if (ai_nonnumeric) {
         /* Non-numeric data in AI */
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 257,
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 257,
                         "Invalid AI at position %d in input (non-numeric characters in AI)", ai_nonnumeric_pos);
     }
 
@@ -1751,7 +1752,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int 
             if (source[i - 1] == obracket) {
                 ai_location[ai_count] = i;
                 for (j = 1; source[i + j] != cbracket; j++);
-                ai_value[ai_count] = to_int(source + i, j);
+                ai_value[ai_count] = z_to_int(source + i, j);
                 ai_count++;
                 i += j;
             }
@@ -1772,7 +1773,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int 
             }
             if (data_length[i] == 0) {
                 /* No data for given AI */
-                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 258, "Empty data field in input");
+                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 258, "Empty data field in input");
             }
         }
 
@@ -1795,11 +1796,11 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int 
             if (!gs1_lint(ai_value[i], local_source + data_location[i], data_length[i], &err_no, &err_posn,
                             err_msg)) {
                 if (err_no == 1) {
-                    errtxtf(0, symbol, 260, "Invalid AI (%02d)", ai_value[i]);
+                    z_errtxtf(0, symbol, 260, "Invalid AI (%02d)", ai_value[i]);
                 } else if (err_no == 2 || err_no == 4) { /* 4 is backward-incompatible bad length */
-                    errtxtf(0, symbol, 259, "Invalid data length for AI (%02d)", ai_value[i]);
+                    z_errtxtf(0, symbol, 259, "Invalid data length for AI (%02d)", ai_value[i]);
                 } else {
-                    ZEXT errtxtf(0, symbol, 261, "AI (%1$02d) position %2$d: %3$s", ai_value[i], err_posn, err_msg);
+                    ZEXT z_errtxtf(0, symbol, 261, "AI (%1$02d) position %2$d: %3$s", ai_value[i], err_posn, err_msg);
                 }
                 /* For backward compatibility only error on unknown AI or bad length */
                 if (err_no == 1 || err_no == 2) {
@@ -1821,7 +1822,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int 
                 reduced[j++] = '\x1D';
             }
             if (i + 1 != length) {
-                int last_ai = to_int(source + i + 1, 2);
+                int last_ai = z_to_int(source + i + 1, 2);
                 ai_latch = 0;
                 /* The following values from GS1 General Specifications Release 25.0
                    Figure 7.8.5-2 "Element strings with predefined length using GS1 Application Identifiers" */
@@ -1863,21 +1864,21 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int 
 }
 
 /* Helper to return standard GS1 check digit (GS1 General Specifications 7.9.1) */
-INTERNAL char gs1_check_digit(const unsigned char source[], const int length) {
+INTERNAL char zint_gs1_check_digit(const unsigned char source[], const int length) {
     int i;
     int count = 0;
     int factor = length & 1 ? 3 : 1;
 
     for (i = 0; i < length; i++) {
-        count += factor * ctoi(source[i]);
+        count += factor * z_ctoi(source[i]);
         factor ^= 0x02; /* Toggles 1 and 3 */
     }
 
-    return itoc((10 - (count % 10)) % 10);
+    return z_itoc((10 - (count % 10)) % 10);
 }
 
 /* Helper to expose `iso3166_alpha2()` */
-INTERNAL int gs1_iso3166_alpha2(const unsigned char *cc) {
+INTERNAL int zint_gs1_iso3166_alpha2(const unsigned char *cc) {
     return iso3166_alpha2((const char *) cc);
 }
 

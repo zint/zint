@@ -86,7 +86,7 @@ static const char TeleLens[128] = {
     12, 10,  8, 14, 10, 12, 12, 12, 10, 14, 12, 12, 14, 12, 12, 16
 };
 
-INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_telepen(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, count, check_digit;
     int error_number;
     char dest[1145]; /* 12 (Start) + 69 * 16 (max for DELs) + 16 (Check) + 12 (stop) + 1 = 1145 */
@@ -98,7 +98,7 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int len
     count = 0;
 
     if (length > 69) { /* 16 (Start) + 69 * 16 + 16 (Check) + 16 (Stop) = 1152 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 390, "Input length %d too long (maximum 69)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 390, "Input length %d too long (maximum 69)", length);
     }
     /* Start character */
     memcpy(d, TeleTable['_'], 12);
@@ -107,7 +107,7 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int len
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 391,
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 391,
                             "Invalid character at position %d in input, extended ASCII not allowed", i + 1);
         }
         memcpy(d, TeleTable[source[i]], TeleLens[source[i]]);
@@ -128,26 +128,26 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int len
     memcpy(d, TeleTable['z'], 12);
     d += 12;
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Default height from various Telepen docs is based on default 26pt at X 0.01125"
            (average of 0.01" - 0.0125") = (26 / 72) / 0.01125 ~ 32; no min height specified */
-        (void) set_height(symbol, 0.0f, 32.0f, 0, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 0.0f, 32.0f, 0, 1 /*no_errtxt*/);
     } else {
-        (void) set_height(symbol, 0.0f, 50.0f, 0, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 0.0f, 50.0f, 0, 1 /*no_errtxt*/);
     }
 
-    hrt_cpy_iso8859_1(symbol, source, length);
+    z_hrt_cpy_iso8859_1(symbol, source, length);
 
-    if (raw_text && rt_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+    if (raw_text && z_rt_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
 }
 
-INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_telepen_num(struct zint_symbol *symbol, unsigned char source[], int length) {
     int count, check_digit, glyph;
     int error_number = 0;
     int i;
@@ -159,10 +159,10 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     count = 0;
 
     if (length > 136) { /* 68*2 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 392, "Input length %d too long (maximum 136)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 392, "Input length %d too long (maximum 136)", length);
     }
-    if ((i = not_sane(SODIUM_X_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 393,
+    if ((i = z_not_sane(SODIUM_X_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 393,
                         "Invalid character at position %d in input (digits and \"X\" only)", i);
     }
 
@@ -173,7 +173,7 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     } else {
         memcpy(local_source, source, length);
     }
-    to_upper(local_source, length);
+    z_to_upper(local_source, length);
 
     /* Start character */
     memcpy(d, TeleTable['_'], 12);
@@ -181,15 +181,15 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
 
     for (i = 0; i < length; i += 2) {
         if (local_source[i] == 'X') {
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 394, "Invalid odd position %d of \"X\" in Telepen data",
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 394, "Invalid odd position %d of \"X\" in Telepen data",
                             i + 1);
         }
 
         if (local_source[i + 1] == 'X') {
-            glyph = ctoi(local_source[i]) + 17;
+            glyph = z_ctoi(local_source[i]) + 17;
             count += glyph;
         } else {
-            glyph = (10 * ctoi(local_source[i])) + ctoi(local_source[i + 1]);
+            glyph = 10 * z_ctoi(local_source[i]) + z_ctoi(local_source[i + 1]);
             glyph += 27;
             count += glyph;
         }
@@ -210,18 +210,18 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     memcpy(d, TeleTable['z'], 12);
     d += 12;
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
-        (void) set_height(symbol, 0.0f, 32.0f, 0, 1 /*no_errtxt*/); /* Same as alphanumeric Telepen */
+        (void) z_set_height(symbol, 0.0f, 32.0f, 0, 1 /*no_errtxt*/); /* Same as alphanumeric Telepen */
     } else {
-        (void) set_height(symbol, 0.0f, 50.0f, 0, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 0.0f, 50.0f, 0, 1 /*no_errtxt*/);
     }
 
-    hrt_cpy_nochk(symbol, local_source, length);
+    z_hrt_cpy_nochk(symbol, local_source, length);
 
-    if (raw_text && rt_cpy_cat(symbol, local_source, length, check_digit, NULL /*cat*/, 0)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+    if (raw_text && z_rt_cpy_cat(symbol, local_source, length, check_digit, NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;

@@ -4788,9 +4788,9 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
-            int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
-            int length1 = data[i].segs[1].length == -1 ? (int) ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
-            int length2 = data[i].segs[2].length == -1 ? (int) ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
+            int length = data[i].segs[0].length == -1 ? (int) z_ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1 ? (int) z_ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1 ? (int) z_ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
             printf("        /*%3d*/ { %s, %s, %d, %d, %d, { %d, %d, \"%s\" }, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
                     data[i].option_1, data[i].option_2, data[i].option_3,
@@ -5959,8 +5959,8 @@ static void test_fuzz(const testCtx *const p_ctx) {
 }
 
 
-INTERNAL void pdf_numbprocess_test(short *chainemc, int *p_mclength, const unsigned char chaine[], const int start,
-                const int length);
+INTERNAL void zint_test_pdf_numbprocess(short *chainemc, int *p_mclength, const unsigned char chaine[],
+                const int start, const int length);
 
 #include "../large.h"
 
@@ -6011,17 +6011,17 @@ static int annex_d_decode_dump(short chainemc[], int mclength, unsigned char *ch
         return -1;
     }
 
-    large_load_u64(&t, 0);
+    zint_large_load_u64(&t, 0);
     for (i = 1; i < mclength; i++) {
-        large_load(&s, &pow900s[mclength - i - 1]);
-        large_mul_u64(&s, chainemc[i]);
-        large_add(&t, &s);
+        zint_large_load(&s, &pow900s[mclength - i - 1]);
+        zint_large_mul_u64(&s, chainemc[i]);
+        zint_large_add(&t, &s);
     }
-    large_dump(&t, buf1);
+    zint_large_dump(&t, buf1);
 
-    large_load_str_u64(&e, chaine, length);
-    large_add(&e, &pow10s[length]); /* Add "1" prefix */
-    large_dump(&e, buf2);
+    zint_large_load_str_u64(&e, chaine, length);
+    zint_large_add(&e, &pow10s[length]); /* Add "1" prefix */
+    zint_large_dump(&e, buf2);
 
     return 0;
 }
@@ -6101,9 +6101,9 @@ static void test_numbprocess(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        length = (int) ustrlen(data[i].chaine);
+        length = (int) z_ustrlen(data[i].chaine);
         mclength = 0;
-        pdf_numbprocess_test(chainemc, &mclength, data[i].chaine, 0, length);
+        zint_test_pdf_numbprocess(chainemc, &mclength, data[i].chaine, 0, length);
         assert_nonzero(mclength < ARRAY_SIZE(chainemc), "i:%d mclength %d >= ARRAY_SIZE(chainemc) %d\n",
                     i, mclength, ARRAY_SIZE(chainemc));
 #if 0

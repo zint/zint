@@ -564,7 +564,7 @@ static void pdf_textprocess_minimal(short *chainemc, int *p_mclength, const unsi
 
 /* 671 */
 /* Byte compaction */
-INTERNAL void pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], int start,
+INTERNAL void zint_pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], int start,
                 const int length, const int lastmode) {
     const int real_lastmode = PDF_REAL_MODE(lastmode);
 
@@ -636,7 +636,7 @@ static void pdf_numbprocess(short *chainemc, int *p_mclength, const unsigned cha
         len = longueur + 1;
         chainemod[0] = 1;
         for (loop = 1; loop < len; loop++) {
-            chainemod[loop] = ctoi(chaine[start + loop + j - 1]);
+            chainemod[loop] = z_ctoi(chaine[start + loop + j - 1]);
         }
         do {
             /* 877 - gosub Modulo */
@@ -667,8 +667,8 @@ static void pdf_numbprocess(short *chainemc, int *p_mclength, const unsigned cha
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL void pdf_numbprocess_test(short *chainemc, int *p_mclength, const unsigned char chaine[], const int start,
-                const int length) {
+INTERNAL void zint_test_pdf_numbprocess(short *chainemc, int *p_mclength, const unsigned char chaine[],
+                const int start, const int length) {
     pdf_numbprocess(chainemc, p_mclength, chaine, start, length);
 }
 #endif
@@ -912,7 +912,7 @@ static void pdf_addEdges(const unsigned char source[], const int length, const i
     }
 
     if (z_isdigit(c)) {
-        const int len = cnt_digits(source, length, from, -1 /*all*/);
+        const int len = z_cnt_digits(source, length, from, -1 /*all*/);
         pdf_addEdge(source, length, edges, PDF_NUM, from, len, 0 /*t_table*/, lastmode, previous);
     }
 
@@ -1041,7 +1041,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
         pdf_appendix_d_encode(chaine, liste, &indexliste);
      } else {
         if (!pdf_define_mode(liste, &indexliste, chaine, length, *p_lastmode, debug_print)) {
-            return errtxt(ZINT_ERROR_MEMORY, symbol, 749, "Insufficient memory for mode buffers");
+            return z_errtxt(ZINT_ERROR_MEMORY, symbol, 749, "Insufficient memory for mode buffers");
         }
     }
 
@@ -1067,7 +1067,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
 
     if (eci != 0) {
         if (eci > 811799) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 472, "ECI code '%d' out of range (0 to 811799)",
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 472, "ECI code '%d' out of range (0 to 811799)",
                             symbol->eci);
         }
         /* Encoding ECI assignment number, according to Table 8 */
@@ -1101,7 +1101,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
                 }
                 break;
             case PDF_BYT: /* 670 - octet stream mode */
-                pdf_byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], *p_lastmode);
+                zint_pdf_byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], *p_lastmode);
                 /* Don't switch mode on single byte shift from text mode */
                 if (PDF_REAL_MODE(*p_lastmode) != PDF_TEX || liste[0][i] != 1) {
                     *p_lastmode = PDF_BYT;
@@ -1142,13 +1142,13 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
         int id_cnt = 0, ids[10];
 
         if (symbol->structapp.count < 2 || symbol->structapp.count > 99999) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 740,
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 740,
                             "Structured Append count '%d' out of range (2 to 99999)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 741,
-                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                                symbol->structapp.index, symbol->structapp.count);
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 741,
+                                    "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                    symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             int id_len;
@@ -1156,19 +1156,19 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
             for (id_len = 1; id_len < 31 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 30) { /* 10 triplets */
-                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 742,
+                return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 742,
                                 "Structured Append ID length %d too long (30 digit maximum)", id_len);
             }
 
             for (i = 0; i < id_len; i += 3, id_cnt++) {
                 const int triplet_len = i + 3 < id_len ? 3 : id_len - i;
-                ids[id_cnt] = to_int((const unsigned char *) (symbol->structapp.id + i), triplet_len);
+                ids[id_cnt] = z_to_int(ZCUCP(symbol->structapp.id + i), triplet_len);
                 if (ids[id_cnt] == -1) {
-                    return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 743,
+                    return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 743,
                                     "Invalid Structured Append ID (digits only)");
                 }
                 if (ids[id_cnt] > 899) {
-                    return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 744,
+                    return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 744,
                                         "Structured Append ID triplet %1$d value '%2$03d' out of range (000 to 899)",
                                         id_cnt + 1, ids[id_cnt]);
                 }
@@ -1196,8 +1196,8 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
     /* Start in upper alpha - tracked across calls to `pdf_textprocess()` to allow for interleaving byte shifts */
     curtable = T_ALPHA;
 
-    if (raw_text && rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
     }
 
     for (i = 0; i < seg_count; i++) {
@@ -1206,8 +1206,8 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
             assert(error_number >= ZINT_ERROR);
             return error_number;
         }
-        if (raw_text && rt_cpy_seg(symbol, i, &segs[i])) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
+        if (raw_text && z_rt_cpy_seg(symbol, i, &segs[i])) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
         }
     }
 
@@ -1228,8 +1228,8 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     int error_number;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
-    if ((i = segs_length(segs, seg_count)) > PDF_MAX_LEN) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 463, "Input length %d too long (maximum " PDF_MAX_LEN_S ")", i);
+    if ((i = z_segs_length(segs, seg_count)) > PDF_MAX_LEN) {
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 463, "Input length %d too long (maximum " PDF_MAX_LEN_S ")", i);
     }
 
     if ((error_number = pdf_initial_segs(symbol, segs, seg_count, 0 /*is_micro*/, chainemc, &mclength, structapp_cws,
@@ -1274,7 +1274,8 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     if (longueur > 928) {
         /* Enforce maximum codeword limit */
-        return errtxt(ZINT_ERROR_TOO_LONG, symbol, 464, "Input too long, requires too many codewords (maximum 928)");
+        return z_errtxt(ZINT_ERROR_TOO_LONG, symbol, 464,
+                        "Input too long, requires too many codewords (maximum 928)");
     }
 
     cols = symbol->option_2;
@@ -1291,7 +1292,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
                 /* Increase rows if multiple too big */
                 for (; cols >= 1 && rows < 90 && rows * cols > 928; rows++, cols = (longueur + rows - 1) / rows);
                 if (rows * cols > 928) {
-                    return errtxt(ZINT_ERROR_TOO_LONG, symbol, 465,
+                    return z_errtxt(ZINT_ERROR_TOO_LONG, symbol, 465,
                                     "Input too long, requires too many codewords (maximum 928)");
                 }
             }
@@ -1299,12 +1300,12 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
             /* Increase rows if multiple too big */
             for (; rows <= 90 && rows * cols < longueur; rows++);
             if (rows > 90 || rows * cols > 928) {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 745, "Input too long for number of columns '%d'", cols);
+                return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 745, "Input too long for number of columns '%d'", cols);
             }
         }
         if (rows != symbol->option_3) {
-            error_number = ZEXT errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 746,
-                                        "Number of rows increased from %1$d to %2$d", symbol->option_3, rows);
+            error_number = ZEXT z_errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 746,
+                                            "Number of rows increased from %1$d to %2$d", symbol->option_3, rows);
         }
     } else { /* Rows automatic, cols automatic or given */
         if (cols < 1) { /* Cols automatic */
@@ -1321,11 +1322,11 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
             /* Increase cols if multiple too big */
             for (; rows >= 3 && cols < 30 && rows * cols > 928; cols++, rows = (longueur + cols - 1) / cols);
             if (rows * cols > 928) {
-                return errtxt(ZINT_ERROR_TOO_LONG, symbol, 747,
+                return z_errtxt(ZINT_ERROR_TOO_LONG, symbol, 747,
                                 "Input too long, requires too many codewords (maximum 928)");
             }
             if (symbol->option_2 && cols != symbol->option_2) { /* Note previously did not warn if cols auto-upped */
-                error_number = ZEXT errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 748,
+                error_number = ZEXT z_errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 748,
                                             "Number of columns increased from %1$d to %2$d", symbol->option_2, cols);
             }
         }
@@ -1372,9 +1373,9 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     for (i = 0; i < mclength; i++) {
         total = (chainemc[i] + mccorrection[ecc_cws - 1]) % 929;
         for (j = ecc_cws - 1; j > 0; j--) {
-            mccorrection[j] = (mccorrection[j - 1] + 929 - (total * pdf_coefrs[offset + j]) % 929) % 929;
+            mccorrection[j] = (mccorrection[j - 1] + 929 - (total * zint_pdf_coefrs[offset + j]) % 929) % 929;
         }
-        mccorrection[0] = (929 - (total * pdf_coefrs[offset]) % 929) % 929;
+        mccorrection[0] = (929 - (total * zint_pdf_coefrs[offset]) % 929) % 929;
     }
 
     /* We add these codes to the string */
@@ -1391,7 +1392,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump_short(symbol, chainemc, mclength);
+        z_debug_test_codeword_dump_short(symbol, chainemc, mclength);
     }
 #endif
 
@@ -1427,24 +1428,24 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
                 offset = 1858; /* cluster(6) */
                 break;
         }
-        bp = bin_append_posn(0x1FEA8, 17, pattern, bp); /* Row start */
+        bp = z_bin_append_posn(0x1FEA8, 17, pattern, bp); /* Row start */
 
         for (j = 0; j <= cols; j++) {
-            bp = bin_append_posn(pdf_bitpattern[offset + dummy[j]], 16, pattern, bp);
+            bp = z_bin_append_posn(zint_pdf_bitpattern[offset + dummy[j]], 16, pattern, bp);
             pattern[bp++] = '0';
         }
 
         if (symbol->symbology != BARCODE_PDF417COMP) {
-            bp = bin_append_posn(pdf_bitpattern[offset + dummy[j]], 16, pattern, bp);
+            bp = z_bin_append_posn(zint_pdf_bitpattern[offset + dummy[j]], 16, pattern, bp);
             pattern[bp++] = '0';
-            bp = bin_append_posn(0x3FA29, 18, pattern, bp); /* Row Stop */
+            bp = z_bin_append_posn(0x3FA29, 18, pattern, bp); /* Row Stop */
         } else {
             pattern[bp++] = '1'; /* Compact PDF417 Stop pattern */
         }
 
         for (loop = 0; loop < bp; loop++) {
             if (pattern[loop] == '1') {
-                set_module(symbol, i, loop);
+                z_set_module(symbol, i, loop);
             }
         }
     }
@@ -1453,9 +1454,9 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     /* ISO/IEC 15438:2015 Section 5.8.2 3X minimum row height */
     if (error_number) {
-        (void) set_height(symbol, 3.0f, 0.0f, 0.0f, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 3.0f, 0.0f, 0.0f, 1 /*no_errtxt*/);
     } else {
-        error_number = set_height(symbol, 3.0f, 0.0f, 0.0f, 0 /*no_errtxt*/);
+        error_number = z_set_height(symbol, 3.0f, 0.0f, 0.0f, 0 /*no_errtxt*/);
     }
 
     /* 843 */
@@ -1463,33 +1464,33 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
 }
 
 /* 345 */
-INTERNAL int pdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+INTERNAL int zint_pdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int codeerr, error_number;
 
     error_number = 0;
 
     if ((symbol->option_1 < -1) || (symbol->option_1 > 8)) {
-        errtxtf(0, symbol, 460, "Error correction level '%d' out of range (0 to 8)", symbol->option_1);
+        z_errtxtf(0, symbol, 460, "Error correction level '%d' out of range (0 to 8)", symbol->option_1);
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         }
-        error_number = errtxt_adj(ZINT_WARN_INVALID_OPTION, symbol, "%1$s%2$s", ", ignoring");
+        error_number = z_errtxt_adj(ZINT_WARN_INVALID_OPTION, symbol, "%1$s%2$s", ", ignoring");
         symbol->option_1 = -1;
     }
     if ((symbol->option_2 < 0) || (symbol->option_2 > 30)) {
-        errtxtf(0, symbol, 461, "Number of columns '%d' out of range (1 to 30)", symbol->option_2);
+        z_errtxtf(0, symbol, 461, "Number of columns '%d' out of range (1 to 30)", symbol->option_2);
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         }
-        error_number = errtxt_adj(ZINT_WARN_INVALID_OPTION, symbol, "%1$s%2$s", ", ignoring");
+        error_number = z_errtxt_adj(ZINT_WARN_INVALID_OPTION, symbol, "%1$s%2$s", ", ignoring");
         symbol->option_2 = 0;
     }
     if (symbol->option_3 && (symbol->option_3 < 3 || symbol->option_3 > 90)) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 466, "Number of rows '%d' out of range (3 to 90)",
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 466, "Number of rows '%d' out of range (3 to 90)",
                         symbol->option_3);
     }
     if (symbol->option_2 && symbol->option_3 && symbol->option_2 * symbol->option_3 > 928) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 475, "Columns x rows value '%d' out of range (1 to 928)",
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 475, "Columns x rows value '%d' out of range (1 to 928)",
                         symbol->option_2 * symbol->option_3);
     }
 
@@ -1506,7 +1507,7 @@ INTERNAL int pdf417(struct zint_symbol *symbol, struct zint_seg segs[], const in
 }
 
 /* Like PDF417 only much smaller! */
-INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+INTERNAL int zint_micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int i, k, j, longueur, mccorrection[50] = {0}, offset;
     int ecc_cwds;
     int total, mclength, error_number = 0;
@@ -1521,12 +1522,12 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     /* From ISO/IEC 24728:2006 Table 1 — MicroPDF417 version characteristics */
     static char col_max_codewords[5] = { 0, 20, 37, 82, 126 };
 
-    if ((i = segs_length(segs, seg_count)) > MICRO_PDF_MAX_LEN) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 474, "Input length %d too long (maximum " MICRO_PDF_MAX_LEN_S ")",
-                        i);
+    if ((i = z_segs_length(segs, seg_count)) > MICRO_PDF_MAX_LEN) {
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 474,
+                        "Input length %d too long (maximum " MICRO_PDF_MAX_LEN_S ")", i);
     }
     if (symbol->option_3) {
-        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 476, "Cannot specify rows for MicroPDF417");
+        return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 476, "Cannot specify rows for MicroPDF417");
     }
 
     /* Encoding starts out the same as PDF417, so use the same code */
@@ -1540,15 +1541,15 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     /* This is where it all changes! */
 
     if (mclength + structapp_cp > 126) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 467, "Input too long, requires %d codewords (maximum 126)",
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 467, "Input too long, requires %d codewords (maximum 126)",
                         mclength + structapp_cp);
     }
     if (symbol->option_2 > 4) {
         if (symbol->warn_level == WARN_FAIL_ALL) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 471, "Number of columns '%d' out of range (1 to 4)",
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 471, "Number of columns '%d' out of range (1 to 4)",
                             symbol->option_2);
         }
-        error_number = errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 468,
+        error_number = z_errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 468,
                                 "Number of columns '%d' out of range (1 to 4), ignoring", symbol->option_2);
         symbol->option_2 = 0;
     }
@@ -1568,11 +1569,11 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     if (symbol->option_2 >= 1 && mclength + structapp_cp > col_max_codewords[symbol->option_2]) {
         /* The user specified the column but the data doesn't fit - go to automatic */
         if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 469,
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 469,
                                 "Input too long for number of columns '%1$d', requires %2$d codewords (maximum %3$d)",
                                 symbol->option_2, mclength + structapp_cp, col_max_codewords[symbol->option_2]);
         }
-        error_number = errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 470,
+        error_number = z_errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 470,
                                 "Input too long for number of columns '%d', ignoring", symbol->option_2);
         symbol->option_2 = 0;
     }
@@ -1672,16 +1673,16 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     /* Now we have the variant we can load the data */
     variant--;
-    symbol->option_2 = pdf_MicroVariants[variant]; /* Columns */
-    symbol->rows = pdf_MicroVariants[variant + 34]; /* Rows */
-    ecc_cwds = pdf_MicroVariants[variant + 68]; /* Number of EC CWs */
+    symbol->option_2 = zint_pdf_MicroVariants[variant]; /* Columns */
+    symbol->rows = zint_pdf_MicroVariants[variant + 34]; /* Rows */
+    ecc_cwds = zint_pdf_MicroVariants[variant + 68]; /* Number of EC CWs */
     longueur = (symbol->option_2 * symbol->rows) - ecc_cwds; /* Number of non-EC CWs */
     i = longueur - (mclength + structapp_cp); /* Amount of padding required */
-    offset = pdf_MicroVariants[variant + 102]; /* Coefficient offset */
+    offset = zint_pdf_MicroVariants[variant + 102]; /* Coefficient offset */
 
     /* Feedback options */
     /* Place in top byte, leaving bottom one for maybe future use - also compatible with AZTEC */
-    symbol->option_1 = ((int) stripf(roundf(stripf(ecc_cwds * 100.0f / (longueur + ecc_cwds))))) << 8;
+    symbol->option_1 = ((int) z_stripf(roundf(z_stripf(ecc_cwds * 100.0f / (longueur + ecc_cwds))))) << 8;
 
     if (debug_print) {
         fputs("\nChoose symbol size:\n", stdout);
@@ -1708,9 +1709,10 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
         total = (chainemc[i] + mccorrection[ecc_cwds - 1]) % 929;
         for (j = ecc_cwds - 1; j >= 0; j--) {
             if (j == 0) {
-                mccorrection[j] = (929 - (total * pdf_Microcoeffs[offset + j]) % 929) % 929;
+                mccorrection[j] = (929 - (total * zint_pdf_Microcoeffs[offset + j]) % 929) % 929;
             } else {
-                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * pdf_Microcoeffs[offset + j]) % 929) % 929;
+                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * zint_pdf_Microcoeffs[offset + j]) % 929)
+                                    % 929;
             }
         }
     }
@@ -1734,15 +1736,15 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump_short(symbol, chainemc, mclength);
+        z_debug_test_codeword_dump_short(symbol, chainemc, mclength);
     }
 #endif
 
     /* Now get the RAP (Row Address Pattern) start values */
-    LeftRAP = pdf_RAPTable[variant];
-    CentreRAP = pdf_RAPTable[variant + 34];
-    RightRAP = pdf_RAPTable[variant + 68];
-    Cluster = pdf_RAPTable[variant + 102] / 3;
+    LeftRAP = zint_pdf_RAPTable[variant];
+    CentreRAP = zint_pdf_RAPTable[variant + 34];
+    RightRAP = zint_pdf_RAPTable[variant + 68];
+    Cluster = zint_pdf_RAPTable[variant + 102] / 3;
 
     /* That's all values loaded, get on with the encoding */
 
@@ -1757,35 +1759,35 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
         k = i * symbol->option_2;
 
         /* Copy the data into codebarre */
-        bp = bin_append_posn(pdf_rap_side[LeftRAP - 1], 10, pattern, bp);
-        bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k]], 16, pattern, bp);
+        bp = z_bin_append_posn(zint_pdf_rap_side[LeftRAP - 1], 10, pattern, bp);
+        bp = z_bin_append_posn(zint_pdf_bitpattern[offset + chainemc[k]], 16, pattern, bp);
         pattern[bp++] = '0';
         if (symbol->option_2 >= 2) {
             if (symbol->option_2 == 3) {
-                bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
+                bp = z_bin_append_posn(zint_pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
             }
-            bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 1]], 16, pattern, bp);
+            bp = z_bin_append_posn(zint_pdf_bitpattern[offset + chainemc[k + 1]], 16, pattern, bp);
             pattern[bp++] = '0';
             if (symbol->option_2 >= 3) {
                 if (symbol->option_2 == 4) {
-                    bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
+                    bp = z_bin_append_posn(zint_pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
                 }
-                bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 2]], 16, pattern, bp);
+                bp = z_bin_append_posn(zint_pdf_bitpattern[offset + chainemc[k + 2]], 16, pattern, bp);
                 pattern[bp++] = '0';
                 if (symbol->option_2 == 4) {
-                    bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 3]], 16, pattern, bp);
+                    bp = z_bin_append_posn(zint_pdf_bitpattern[offset + chainemc[k + 3]], 16, pattern, bp);
                     pattern[bp++] = '0';
                 }
             }
         }
-        bp = bin_append_posn(pdf_rap_side[RightRAP - 1], 10, pattern, bp);
+        bp = z_bin_append_posn(zint_pdf_rap_side[RightRAP - 1], 10, pattern, bp);
         pattern[bp++] = '1'; /* Stop */
         if (debug_print) printf("%.*s\n", bp, pattern);
 
         /* So now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
         for (loop = 0; loop < bp; loop++) {
             if (pattern[loop] == '1') {
-                set_module(symbol, i, loop);
+                z_set_module(symbol, i, loop);
             }
         }
 
@@ -1812,9 +1814,9 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     /* ISO/IEC 24728:2006 Section 5.8.2 2X minimum row height */
     if (error_number) {
-        (void) set_height(symbol, 2.0f, 0.0f, 0.0f, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 2.0f, 0.0f, 0.0f, 1 /*no_errtxt*/);
     } else {
-        error_number = set_height(symbol, 2.0f, 0.0f, 0.0f, 0 /*no_errtxt*/);
+        error_number = z_set_height(symbol, 2.0f, 0.0f, 0.0f, 0 /*no_errtxt*/);
     }
 
     return error_number;

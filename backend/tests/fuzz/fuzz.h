@@ -51,7 +51,7 @@
                                 | COMPLIANT_HEIGHT | EANUPC_GUARD_WHITESPACE | EMBED_VECTOR_FONT)
 #endif
 
-/* Based on `is_sane()` flags in "backend/common.h") */
+/* Based on `z_not_sane()` flags in "backend/common.h") */
 #define IS_CTL_F    (0x00000001)            /* ASCII control (incl. DEL) */
 #define IS_PRT_F    (0x00000002)            /* ASCII printable (incl. space) */
 #define IS_SPC_F    (0x00000004 | IS_PRT_F) /* Space */
@@ -84,7 +84,7 @@
 #define IS_UPR_F    (IS_UPO_F | IS_UHX_F | IS_UT__F | IS_UX__F) /* Uppercase letters */
 #define IS_LWR_F    (IS_LWO_F | IS_LHX_F | IS_LT__F | IS_LX__F) /* Lowercase letters */
 
-/* Flag table for `is_chr()` and `is_sane()` (taken from "backend/common.c") */
+/* Flag table for `z_is_chr()` and `z_not_sane()` (adapted from "backend/common.c") */
 #define IS_CLS_F    (IS_CLI_F | IS_SIL_F)
 static const unsigned int flgs[256] = {
     IS_CTL_F, IS_CTL_F, IS_CTL_F, IS_CTL_F, IS_CTL_F, IS_CTL_F, IS_CTL_F, IS_CTL_F, /*00-07*/
@@ -121,16 +121,16 @@ static const unsigned int flgs[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*E0-FF*/
 };
 
-/* Verifies that a string only uses valid characters */
-static int is_sane(const unsigned int flg, const unsigned char source[], const int length) {
+/* Verifies if a string only uses valid characters, returning 1-based position in `source` if not, 0 for success */
+static int not_sane(const unsigned int flg, const unsigned char source[], const int length) {
     int i;
 
     for (i = 0; i < length; i++) {
         if (!(flgs[source[i]] & flg)) {
-            return 0;
+            return i + 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 #define NEON_F              (IS_NUM_F) /* NEON "0123456789" */
@@ -397,7 +397,7 @@ static int set_symbol(struct zint_symbol *symbol, const int idx, const int chk_s
     if (length > si->len_max) {
         return 0;
     }
-    if (chk_sane && si->sane_flag && !is_sane(si->sane_flag, input, length)) {
+    if (chk_sane && si->sane_flag && not_sane(si->sane_flag, input, length)) {
         return 0;
     }
 

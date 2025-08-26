@@ -1,7 +1,7 @@
 /*  eci.c - Extended Channel Interpretations to Unicode tables */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -37,40 +37,41 @@
 extern "C" {
 #endif /* __cplusplus */
 
-INTERNAL int is_eci_convertible(const int eci);
-INTERNAL int is_eci_convertible_segs(const struct zint_seg segs[], const int seg_count, int convertible[]);
+INTERNAL int zint_is_eci_convertible(const int eci);
+INTERNAL int zint_is_eci_convertible_segs(const struct zint_seg segs[], const int seg_count, int convertible[]);
 
-INTERNAL int get_eci_length(const int eci, const unsigned char source[], int length);
-INTERNAL int get_eci_length_segs(const struct zint_seg segs[], const int seg_count);
+INTERNAL int zint_get_eci_length(const int eci, const unsigned char source[], int length);
+INTERNAL int zint_get_eci_length_segs(const struct zint_seg segs[], const int seg_count);
 
-INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *p_length);
+INTERNAL int zint_utf8_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *p_length);
 
-INTERNAL int get_best_eci(const unsigned char source[], int length);
-INTERNAL int get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
+INTERNAL int zint_get_best_eci(const unsigned char source[], int length);
+INTERNAL int zint_get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
 
 /* QRCODE Shift JIS helpers */
-INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+INTERNAL int zint_sjis_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
                 unsigned int *ddata);
-INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *ddata, const int full_multibyte);
-INTERNAL int sjis_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+INTERNAL void zint_sjis_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte);
+INTERNAL int zint_sjis_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
                 unsigned int *ddata, const int full_multibyte);
-INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
+INTERNAL int zint_sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte);
 
 /* GRIDMATRIX GB 2312 helpers */
-INTERNAL int gb2312_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+INTERNAL int zint_gb2312_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
                 unsigned int *ddata);
-INTERNAL int gb2312_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+INTERNAL int zint_gb2312_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
                 unsigned int *ddata, const int full_multibyte);
-INTERNAL int gb2312_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
+INTERNAL int zint_gb2312_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte);
 
 /* HANXIN GB 18030 helpers */
-INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+INTERNAL int zint_gb18030_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
                 unsigned int *ddata);
-INTERNAL int gb18030_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+INTERNAL int zint_gb18030_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
                 unsigned int *ddata, const int full_multibyte);
-INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
+INTERNAL int zint_gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte);
 
 #ifdef __cplusplus

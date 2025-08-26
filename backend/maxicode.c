@@ -141,7 +141,7 @@ static int mx_symbol_ch(const unsigned char op, const unsigned char ch) {
         return maxiSymbolChar[ch];
     }
     if (op & MX_OP_SETB) {
-        const int p = posn(" ,./:", ch);
+        const int p = z_posn(" ,./:", ch);
         if (p >= 0) {
             return 47 + p;
         }
@@ -288,7 +288,7 @@ static int mx_text_process_segs(unsigned char codewords[144], const int mode, st
     int ci, ci_top;
 
     /* Backtracking information */
-    const int segs_len = segs_length(segs, seg_count);
+    const int segs_len = z_segs_length(segs, seg_count);
     char (*prior_code_sets)[MX_STATES] = (char (*)[MX_STATES]) z_alloca(sizeof(*prior_code_sets) * (segs_len + 9));
     unsigned char (*path_ops)[MX_STATES]
                                     = (unsigned char (*)[MX_STATES]) z_alloca(sizeof(*path_ops) * (segs_len + 9));
@@ -466,10 +466,10 @@ static void mx_do_primary_ecc(unsigned char codewords[144]) {
     int j;
     rs_t rs;
 
-    rs_init_gf(&rs, 0x43);
-    rs_init_code(&rs, eclen, 1);
+    zint_rs_init_gf(&rs, 0x43);
+    zint_rs_init_code(&rs, eclen, 1);
 
-    rs_encode(&rs, datalen, codewords, ecc);
+    zint_rs_encode(&rs, datalen, codewords, ecc);
 
     for (j = 0; j < eclen; j++) {
         codewords[datalen + j] = ecc[j];
@@ -483,15 +483,15 @@ static void mx_do_secondary_ecc(unsigned char codewords[144], const int datalen,
     int j;
     rs_t rs;
 
-    rs_init_gf(&rs, 0x43);
-    rs_init_code(&rs, eclen, 1);
+    zint_rs_init_gf(&rs, 0x43);
+    zint_rs_init_code(&rs, eclen, 1);
 
     /* Even */
     for (j = 0; j < datalen; j += 2) {
         data[j >> 1] = codewords[j + 20];
     }
 
-    rs_encode(&rs, datalen >> 1, data, ecc);
+    zint_rs_encode(&rs, datalen >> 1, data, ecc);
 
     for (j = 0; j < eclen; j++) {
         codewords[datalen + (j << 1) + 20] = ecc[j];
@@ -502,7 +502,7 @@ static void mx_do_secondary_ecc(unsigned char codewords[144], const int datalen,
         data[j >> 1] = codewords[j + 1 + 20];
     }
 
-    rs_encode(&rs, datalen >> 1, data, ecc);
+    zint_rs_encode(&rs, datalen >> 1, data, ecc);
 
     for (j = 0; j < eclen; j++) {
         codewords[datalen + (j << 1) + 1 + 20] = ecc[j];
@@ -513,7 +513,7 @@ static void mx_do_secondary_ecc(unsigned char codewords[144], const int datalen,
 static void mx_do_primary_2(unsigned char codewords[144], const unsigned char postcode[],
             const int postcode_length, const int country, const int service) {
 
-    const int postcode_num = to_int(postcode, postcode_length);
+    const int postcode_num = z_to_int(postcode, postcode_length);
 
     codewords[0] = ((postcode_num & 0x03) << 4) | 2;
     codewords[1] = ((postcode_num & 0xFC) >> 2);
@@ -549,7 +549,7 @@ static void mx_do_primary_3(unsigned char codewords[144], unsigned char postcode
     codewords[9] = ((service & 0x3F0) >> 4);
 }
 
-INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int i, j, mode, lp = 0;
     int error_number;
     unsigned char codewords[144];
@@ -564,7 +564,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
         lp = (int) strlen(symbol->primary);
         if (lp == 0) {
             if (mode == 0) { /* Require primary message to auto-determine between 2 and 3 */
-                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 554, "Primary Message empty");
+                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 554, "Primary Message empty");
             }
             mode = 4;
         } else {
@@ -579,7 +579,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
     }
 
     if (mode < 2 || mode > 6) { /* Only codes 2 to 6 supported */
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 550, "Mode '%d' out of range (2 to 6)", mode);
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 550, "Mode '%d' out of range (2 to 6)", mode);
     }
 
     if (mode <= 3) { /* Modes 2 and 3 need data in symbol->primary */
@@ -592,18 +592,18 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
         }
         if (lp < 7 || lp > 15) { /* 1 to 9 character postcode + 3 digit country code + 3 digit service class */
             if (lp == 0) {
-                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 548, "Primary Message empty");
+                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 548, "Primary Message empty");
             }
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 551,
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 551,
                             "Primary Message length %d wrong (7 to 15 characters required)", lp);
         }
         postcode_len = lp - 6;
 
-        countrycode = to_int((const unsigned char *) (symbol->primary + postcode_len), 3);
-        service = to_int((const unsigned char *) (symbol->primary + postcode_len + 3), 3);
+        countrycode = z_to_int(ZCUCP(symbol->primary + postcode_len), 3);
+        service = z_to_int(ZCUCP(symbol->primary + postcode_len + 3), 3);
 
         if (countrycode == -1 || service == -1) { /* Check that country code and service are numeric */
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 552,
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 552,
                             "Non-numeric country code or service class in Primary Message");
         }
 
@@ -618,7 +618,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
                     break;
                 }
                 if (!z_isdigit(postcode[i])) {
-                    return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 555, "Non-numeric postcode in Primary Message");
+                    return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 555, "Non-numeric postcode in Primary Message");
                 }
             }
             if (countrycode == 840 && postcode_len == 5) {
@@ -635,11 +635,11 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
                 postcode[i] = ' ';
             }
             /* Upper-case and check for Code Set A characters only */
-            to_upper(postcode, postcode_len);
+            z_to_upper(postcode, postcode_len);
             for (i = 0; i < 6; i++) {
                 /* Don't allow control chars (CR FS GS RS for Code Set A) */
                 if (postcode[i] < ' ' || !(maxiCodeSet[postcode[i]] & MX_OP_SETA)) {
-                    return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 556,
+                    return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 556,
                                     "Invalid character in postcode in Primary Message");
                 }
             }
@@ -648,11 +648,11 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
 
         if (symbol->option_2) { /* Check for option_2 = vv + 1, where vv is version of SCM prefix "[)>\R01\Gvv" */
             if (symbol->option_2 < 0 || symbol->option_2 > 100) {
-                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 557,
+                return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 557,
                                 "SCM prefix version '%d' out of range (1 to 100)", symbol->option_2);
             }
             if (symbol->eci == 25 || (symbol->eci >= 33 && symbol->eci <= 35)) { /* UTF-16/32 */
-                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 547,
+                return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 547,
                                 "SCM prefix can not be used with ECI %d (ECI must be ASCII compatible)", symbol->eci);
             }
             scm_vv = symbol->option_2 - 1;
@@ -674,32 +674,33 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
 
     if (symbol->structapp.count) {
         if (symbol->structapp.count < 2 || symbol->structapp.count > 8) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 558,
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 558,
                             "Structured Append count '%d' out of range (2 to 8)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 559,
-                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                                symbol->structapp.index, symbol->structapp.count);
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 559,
+                                    "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                    symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 549, "Structured Append ID not available for MaxiCode");
+            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 549,
+                            "Structured Append ID not available for MaxiCode");
         }
         structapp_cw = (symbol->structapp.count - 1) | ((symbol->structapp.index - 1) << 3);
     }
 
     error_number = mx_text_process_segs(codewords, mode, segs, seg_count, structapp_cw, scm_vv, debug_print);
     if (error_number == ZINT_ERROR_TOO_LONG) {
-        return errtxt(error_number, symbol, 553, "Input too long, requires too many codewords (maximum 144)");
+        return z_errtxt(error_number, symbol, 553, "Input too long, requires too many codewords (maximum 144)");
     }
 
     if (raw_text) {
-        if (rt_init_segs(symbol, seg_count)) {
-            return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+        if (z_rt_init_segs(symbol, seg_count)) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
         }
         for (i = 0; i < seg_count; i++) {
-            if (rt_cpy_seg(symbol, i, &segs[i])) {
-                return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
+            if (z_rt_cpy_seg(symbol, i, &segs[i])) {
+                return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
             }
         }
     }
@@ -722,7 +723,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump(symbol, codewords, 144);
+        z_debug_test_codeword_dump(symbol, codewords, 144);
     }
 #endif
 
@@ -734,32 +735,32 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
 
             if (block != 0) {
                 if ((codewords[block - 1] >> (5 - (mod_seq % 6))) & 1) {
-                    set_module(symbol, i, j);
+                    z_set_module(symbol, i, j);
                 }
             }
         }
     }
 
     /* Add orientation markings */
-    set_module(symbol, 0, 28); /* Top right filler */
-    set_module(symbol, 0, 29);
-    set_module(symbol, 9, 10); /* Top left marker */
-    set_module(symbol, 9, 11);
-    set_module(symbol, 10, 11);
-    set_module(symbol, 15, 7); /* Left hand marker */
-    set_module(symbol, 16, 8);
-    set_module(symbol, 16, 20); /* Right hand marker */
-    set_module(symbol, 17, 20);
-    set_module(symbol, 22, 10); /* Bottom left marker */
-    set_module(symbol, 23, 10);
-    set_module(symbol, 22, 17); /* Bottom right marker */
-    set_module(symbol, 23, 17);
+    z_set_module(symbol, 0, 28); /* Top right filler */
+    z_set_module(symbol, 0, 29);
+    z_set_module(symbol, 9, 10); /* Top left marker */
+    z_set_module(symbol, 9, 11);
+    z_set_module(symbol, 10, 11);
+    z_set_module(symbol, 15, 7); /* Left hand marker */
+    z_set_module(symbol, 16, 8);
+    z_set_module(symbol, 16, 20); /* Right hand marker */
+    z_set_module(symbol, 17, 20);
+    z_set_module(symbol, 22, 10); /* Bottom left marker */
+    z_set_module(symbol, 23, 10);
+    z_set_module(symbol, 22, 17); /* Bottom right marker */
+    z_set_module(symbol, 23, 17);
 
     symbol->width = 30;
     symbol->rows = 33;
 
     /* Note MaxiCode fixed size so symbol height ignored but set anyway */
-    (void) set_height(symbol, 5.0f, 0.0f, 0.0f, 1 /*no_errtxt*/);
+    (void) z_set_height(symbol, 5.0f, 0.0f, 0.0f, 1 /*no_errtxt*/);
 
     return error_number;
 }

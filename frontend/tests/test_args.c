@@ -42,7 +42,7 @@ static int utf8_to_wchar(const char *str, wchar_t *out) {
 
     while (*str) {
         do {
-            decode_utf8(&state, &codepoint, *str++);
+            z_decode_utf8(&state, &codepoint, *str++);
         } while (*str && state != 0 && state != 12);
         if (state != 0) {
             return 0;

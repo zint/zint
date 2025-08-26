@@ -38,7 +38,7 @@
 #include "output.h"
 #include "bmp.h"        /* Bitmap header structure */
 
-INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
+INTERNAL int zint_bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
     int i, row, column;
     int bits_per_pixel;
     int colour_count;
@@ -55,16 +55,16 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     unsigned char map[128];
     unsigned char *rowbuf;
 
-    (void) out_colour_get_rgb(symbol->fgcolour, &fg.red, &fg.green, &fg.blue, NULL /*alpha*/);
+    (void) zint_out_colour_get_rgb(symbol->fgcolour, &fg.red, &fg.green, &fg.blue, NULL /*alpha*/);
     fg.reserved = 0x00;
 
-    (void) out_colour_get_rgb(symbol->bgcolour, &bg.red, &bg.green, &bg.blue, NULL /*alpha*/);
+    (void) zint_out_colour_get_rgb(symbol->bgcolour, &bg.red, &bg.green, &bg.blue, NULL /*alpha*/);
     bg.reserved = 0x00;
 
     if (symbol->symbology == BARCODE_ULTRA) {
         static const unsigned char ultra_chars[8] = { 'C', 'B', 'M', 'R', 'Y', 'G', 'K', 'W' };
         for (i = 0; i < 8; i++) {
-            out_colour_char_to_rgb(ultra_chars[i], &palette[i].red, &palette[i].green, &palette[i].blue);
+            zint_out_colour_char_to_rgb(ultra_chars[i], &palette[i].red, &palette[i].green, &palette[i].blue);
             palette[i].reserved = 0x00;
             if (memcmp(&palette[i], &fg, sizeof(fg)) == 0) {
                 ultra_fg_index = i + 1;
@@ -88,51 +88,51 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
     /* Must fit in `uint32_t` field in header */
     if (file_size != (uint32_t) file_size) {
-        return errtxt(ZINT_ERROR_MEMORY, symbol, 606, "Output size too large for file size field of BMP header");
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 606, "Output size too large for file size field of BMP header");
     }
 
     if (!(rowbuf = (unsigned char *) malloc(row_size))) {
-        return errtxt(ZINT_ERROR_MEMORY, symbol, 602, "Insufficient memory for BMP row buffer");
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 602, "Insufficient memory for BMP row buffer");
     }
 
-    out_le_u16(file_header.header_field, 0x4d42); /* "BM" */
-    out_le_u32(file_header.file_size, file_size);
-    out_le_u32(file_header.reserved, 0);
-    out_le_u32(file_header.data_offset, data_offset);
+    zint_out_le_u16(file_header.header_field, 0x4d42); /* "BM" */
+    zint_out_le_u32(file_header.file_size, file_size);
+    zint_out_le_u32(file_header.reserved, 0);
+    zint_out_le_u32(file_header.data_offset, data_offset);
 
-    out_le_u32(info_header.header_size, sizeof(bitmap_info_header_t));
-    out_le_i32(info_header.width, symbol->bitmap_width);
-    out_le_i32(info_header.height, symbol->bitmap_height);
-    out_le_u16(info_header.colour_planes, 1);
-    out_le_u16(info_header.bits_per_pixel, bits_per_pixel);
-    out_le_u32(info_header.compression_method, 0); /* BI_RGB */
-    out_le_u32(info_header.image_size, 0);
-    resolution = symbol->dpmm ? (int) roundf(stripf(symbol->dpmm * 1000.0f)) : 0; /* pixels per metre */
-    out_le_i32(info_header.horiz_res, resolution);
-    out_le_i32(info_header.vert_res, resolution);
-    out_le_u32(info_header.colours, colour_count);
-    out_le_u32(info_header.important_colours, colour_count);
+    zint_out_le_u32(info_header.header_size, sizeof(bitmap_info_header_t));
+    zint_out_le_i32(info_header.width, symbol->bitmap_width);
+    zint_out_le_i32(info_header.height, symbol->bitmap_height);
+    zint_out_le_u16(info_header.colour_planes, 1);
+    zint_out_le_u16(info_header.bits_per_pixel, bits_per_pixel);
+    zint_out_le_u32(info_header.compression_method, 0); /* BI_RGB */
+    zint_out_le_u32(info_header.image_size, 0);
+    resolution = symbol->dpmm ? (int) roundf(z_stripf(symbol->dpmm * 1000.0f)) : 0; /* pixels per metre */
+    zint_out_le_i32(info_header.horiz_res, resolution);
+    zint_out_le_i32(info_header.vert_res, resolution);
+    zint_out_le_u32(info_header.colours, colour_count);
+    zint_out_le_u32(info_header.important_colours, colour_count);
 
     /* Open output file in binary mode */
-    if (!fm_open(fmp, symbol, "wb")) {
-        ZEXT errtxtf(0, symbol, 601, "Could not open BMP output file (%1$d: %2$s)", fmp->err, strerror(fmp->err));
+    if (!zint_fm_open(fmp, symbol, "wb")) {
+        ZEXT z_errtxtf(0, symbol, 601, "Could not open BMP output file (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         free(rowbuf);
         return ZINT_ERROR_FILE_ACCESS;
     }
 
-    fm_write(&file_header, sizeof(bitmap_file_header_t), 1, fmp);
-    fm_write(&info_header, sizeof(bitmap_info_header_t), 1, fmp);
+    zint_fm_write(&file_header, sizeof(bitmap_file_header_t), 1, fmp);
+    zint_fm_write(&info_header, sizeof(bitmap_info_header_t), 1, fmp);
 
-    fm_write(&bg, sizeof(color_ref_t), 1, fmp);
+    zint_fm_write(&bg, sizeof(color_ref_t), 1, fmp);
     if (bits_per_pixel == 4) {
         for (i = 0; i < 8; i++) {
-            fm_write(&palette[i], sizeof(color_ref_t), 1, fmp);
+            zint_fm_write(&palette[i], sizeof(color_ref_t), 1, fmp);
         }
         if (ultra_fg_index == 9) {
-            fm_write(&fg, sizeof(color_ref_t), 1, fmp);
+            zint_fm_write(&fg, sizeof(color_ref_t), 1, fmp);
         }
     } else {
-        fm_write(&fg, sizeof(color_ref_t), 1, fmp);
+        zint_fm_write(&fg, sizeof(color_ref_t), 1, fmp);
     }
 
     /* Pixel Plotting */
@@ -143,7 +143,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
             for (column = 0; column < symbol->bitmap_width; column++) {
                 rowbuf[column >> 1] |= map[pb[column]] << (!(column & 1) << 2);
             }
-            fm_write(rowbuf, 1, row_size, fmp);
+            zint_fm_write(rowbuf, 1, row_size, fmp);
         }
     } else { /* bits_per_pixel == 1 */
         for (row = 0; row < symbol->bitmap_height; row++) {
@@ -152,20 +152,20 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
             for (column = 0; column < symbol->bitmap_width; column++) {
                 rowbuf[column >> 3] |= map[pb[column]] >> (column & 7);
             }
-            fm_write(rowbuf, 1, row_size, fmp);
+            zint_fm_write(rowbuf, 1, row_size, fmp);
         }
     }
     free(rowbuf);
 
-    if (fm_error(fmp)) {
-        ZEXT errtxtf(0, symbol, 603, "Incomplete write of BMP output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
-        (void) fm_close(fmp, symbol);
+    if (zint_fm_error(fmp)) {
+        ZEXT z_errtxtf(0, symbol, 603, "Incomplete write of BMP output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
+        (void) zint_fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (!fm_close(fmp, symbol)) {
-        return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 605, "Failure on closing BMP output file (%1$d: %2$s)",
-                            fmp->err, strerror(fmp->err));
+    if (!zint_fm_close(fmp, symbol)) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 605, "Failure on closing BMP output file (%1$d: %2$s)",
+                                fmp->err, strerror(fmp->err));
     }
 
     return 0;

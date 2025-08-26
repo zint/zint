@@ -62,7 +62,7 @@ static void gif_BufferNextByte(struct gif_state *pState) {
     pState->OutPosCur++;
     if (pState->fOutPaged && pState->OutPosCur + 2 >= pState->OutLength) {
         /* Keep last 256 bytes so `OutByteCountPos` within range */
-        fm_write(pState->pOut, 1, pState->OutPosCur - 256, pState->fmp);
+        zint_fm_write(pState->pOut, 1, pState->OutPosCur - 256, pState->fmp);
         memmove(pState->pOut, pState->pOut + pState->OutPosCur - 256, 256);
         pState->OutByteCountPos -= pState->OutPosCur - 256;
         pState->OutPosCur = 256;
@@ -237,7 +237,7 @@ static int gif_lzw(struct gif_state *pState, unsigned char paletteBitSize) {
 /*
  * Called function to save in gif format
  */
-INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
+INTERNAL int zint_gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     struct filemem fm;
     unsigned char outbuf[10];
     unsigned char paletteRGB[10][3];
@@ -256,8 +256,8 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     const size_t bitmapSize = (size_t) symbol->bitmap_height * symbol->bitmap_width;
 
-    (void) out_colour_get_rgb(symbol->fgcolour, &RGBfg[0], &RGBfg[1], &RGBfg[2], &fgalpha);
-    (void) out_colour_get_rgb(symbol->bgcolour, &RGBbg[0], &RGBbg[1], &RGBbg[2], &bgalpha);
+    (void) zint_out_colour_get_rgb(symbol->fgcolour, &RGBfg[0], &RGBfg[1], &RGBfg[2], &fgalpha);
+    (void) zint_out_colour_get_rgb(symbol->bgcolour, &RGBbg[0], &RGBbg[1], &RGBbg[2], &bgalpha);
 
     /* Prepare state array */
     State.pIn = pixelbuf;
@@ -269,7 +269,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         State.OutLength = GIF_LZW_PAGE_SIZE;
     }
     if (!(State.pOut = (unsigned char *) malloc(State.OutLength))) {
-        return errtxt(ZINT_ERROR_MEMORY, symbol, 614, "Insufficient memory for GIF LZW buffer");
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 614, "Insufficient memory for GIF LZW buffer");
     }
 #ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
     memset(State.pOut, 0, State.OutLength);
@@ -278,9 +278,9 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     State.fmp = &fm;
 
     /* Open output file in binary mode */
-    if (!fm_open(State.fmp, symbol, "wb")) {
-        ZEXT errtxtf(0, symbol, 611, "Could not open GIF output file (%1$d: %2$s)", State.fmp->err,
-                    strerror(State.fmp->err));
+    if (!zint_fm_open(State.fmp, symbol, "wb")) {
+        ZEXT z_errtxtf(0, symbol, 611, "Could not open GIF output file (%1$d: %2$s)", State.fmp->err,
+                        strerror(State.fmp->err));
         free(State.pOut);
         return ZINT_ERROR_FILE_ACCESS;
     }
@@ -305,7 +305,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         static const unsigned char ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
         for (i = 0; i < 8; i++) {
             State.map[ultra_chars[i]] = (unsigned char) i;
-            out_colour_char_to_rgb(ultra_chars[i], &paletteRGB[i][0], &paletteRGB[i][1], &paletteRGB[i][2]);
+            zint_out_colour_char_to_rgb(ultra_chars[i], &paletteRGB[i][0], &paletteRGB[i][1], &paletteRGB[i][2]);
         }
         paletteCount = 8;
         paletteBitSize = 3;
@@ -360,7 +360,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     paletteSize = 1 << paletteBitSize;
 
     /* GIF signature (6) */
-    fm_write(transparent_index == -1 ? "GIF87a" : "GIF89a", 1, 6, State.fmp);
+    zint_fm_write(transparent_index == -1 ? "GIF87a" : "GIF89a", 1, 6, State.fmp);
     /* Screen Descriptor (7) */
     /* Screen Width */
     outbuf[0] = (unsigned char) (0xff & symbol->bitmap_width);
@@ -385,12 +385,12 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     outbuf[5] = (unsigned char) (bgindex == -1 ? 0 : bgindex);
     /* Byte 7 must be 0x00  */
     outbuf[6] = 0x00;
-    fm_write(outbuf, 1, 7, State.fmp);
+    zint_fm_write(outbuf, 1, 7, State.fmp);
     /* Global Color Table (paletteSize*3) */
-    fm_write(paletteRGB, 1, 3 * paletteCount, State.fmp);
+    zint_fm_write(paletteRGB, 1, 3 * paletteCount, State.fmp);
     /* Add unused palette items to fill palette size */
     for (i = paletteCount; i < paletteSize; i++) {
-        fm_write(RGBUnused, 1, 3, State.fmp);
+        zint_fm_write(RGBUnused, 1, 3, State.fmp);
     }
 
     /* Graphic control extension (8) */
@@ -418,7 +418,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         outbuf[6] = (unsigned char) transparent_index;
         /* Block Terminator */
         outbuf[7] = 0;
-        fm_write(outbuf, 1, 8, State.fmp);
+        zint_fm_write(outbuf, 1, 8, State.fmp);
     }
     /* Image Descriptor */
     /* Image separator character = ',' */
@@ -441,30 +441,30 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
      * There is no local color table if its most significant bit is reset.
      */
     outbuf[9] = 0x00;
-    fm_write(outbuf, 1, 10, State.fmp);
+    zint_fm_write(outbuf, 1, 10, State.fmp);
 
     /* Call lzw encoding */
     if (!gif_lzw(&State, paletteBitSize)) {
         free(State.pOut);
-        (void) fm_close(State.fmp, symbol);
-        return errtxt(ZINT_ERROR_MEMORY, symbol, 613, "Insufficient memory for GIF LZW buffer");
+        (void) zint_fm_close(State.fmp, symbol);
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 613, "Insufficient memory for GIF LZW buffer");
     }
-    fm_write(State.pOut, 1, State.OutPosCur, State.fmp);
+    zint_fm_write(State.pOut, 1, State.OutPosCur, State.fmp);
     free(State.pOut);
 
     /* GIF terminator */
-    fm_putc(';', State.fmp);
+    zint_fm_putc(';', State.fmp);
 
-    if (fm_error(State.fmp)) {
-        ZEXT errtxtf(0, symbol, 615, "Incomplete write of GIF output (%1$d: %2$s)", State.fmp->err,
-                    strerror(State.fmp->err));
-        (void) fm_close(State.fmp, symbol);
+    if (zint_fm_error(State.fmp)) {
+        ZEXT z_errtxtf(0, symbol, 615, "Incomplete write of GIF output (%1$d: %2$s)", State.fmp->err,
+                        strerror(State.fmp->err));
+        (void) zint_fm_close(State.fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (!fm_close(State.fmp, symbol)) {
-        return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 617, "Failure on closing GIF output file (%1$d: %2$s)",
-                            State.fmp->err, strerror(State.fmp->err));
+    if (!zint_fm_close(State.fmp, symbol)) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 617, "Failure on closing GIF output file (%1$d: %2$s)",
+                                State.fmp->err, strerror(State.fmp->err));
     }
 
     return 0;

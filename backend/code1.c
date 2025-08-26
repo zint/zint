@@ -55,11 +55,11 @@ static void c1_horiz(struct zint_symbol *symbol, const int row_no, const int ful
 
     if (full) {
         for (i = 0; i < symbol->width; i++) {
-            set_module(symbol, row_no, i);
+            z_set_module(symbol, row_no, i);
         }
     } else {
         for (i = 1; i < symbol->width - 1; i++) {
-            set_module(symbol, row_no, i);
+            z_set_module(symbol, row_no, i);
         }
     }
 }
@@ -75,35 +75,36 @@ static void c1_central_finder(struct zint_symbol *symbol, const int start_row, c
         } else {
             c1_horiz(symbol, start_row + (i * 2), 0);
             if (i != row_count - 1) {
-                set_module(symbol, start_row + (i * 2) + 1, 1);
-                set_module(symbol, start_row + (i * 2) + 1, symbol->width - 2);
+                z_set_module(symbol, start_row + (i * 2) + 1, 1);
+                z_set_module(symbol, start_row + (i * 2) + 1, symbol->width - 2);
             }
         }
     }
 }
 
 /* Add solid column */
-static void c1_vert(struct zint_symbol *symbol, const int column, const int height, const int top) {
+static void c1_vert(struct zint_symbol *symbol, const int top_col, const int top_height, const int bot_col,
+                const int bot_height) {
     int i;
 
-    if (top) {
-        for (i = 0; i < height; i++) {
-            set_module(symbol, i, column);
-        }
-    } else {
-        for (i = 0; i < height; i++) {
-            set_module(symbol, symbol->rows - i - 1, column);
-        }
+    for (i = 0; i < top_height; i++) {
+        z_set_module(symbol, i, top_col);
+    }
+    for (i = 0; i < bot_height; i++) {
+        z_set_module(symbol, symbol->rows - i - 1, bot_col);
     }
 }
 
 /* Add bump to the right of the vertical recognition pattern column (Versions A-H) */
-static void c1_spigot(struct zint_symbol *symbol, const int row_no) {
+static void c1_spigot(struct zint_symbol *symbol, const int row1, const int row2) {
     int i;
 
     for (i = symbol->width - 1; i > 0; i--) {
-        if (module_is_set(symbol, row_no, i - 1)) {
-            set_module(symbol, row_no, i);
+        if (z_module_is_set(symbol, row1, i - 1)) {
+            z_set_module(symbol, row1, i);
+        }
+        if (z_module_is_set(symbol, row2, i - 1)) {
+            z_set_module(symbol, row2, i);
         }
     }
 }
@@ -323,7 +324,7 @@ static int c1_is_last_single_ascii(const unsigned char source[], const int lengt
     if (length - sp == 1 && source[sp] <= 127) {
         return 1;
     }
-    if (length - sp == 2 && is_twodigits(source, length, sp)) {
+    if (length - sp == 2 && z_is_twodigits(source, length, sp)) {
         return 1;
     }
     return 0;
@@ -397,25 +398,25 @@ static int c1_decimal_unlatch(char decimal_binary[24], int db_p, unsigned int ta
     int sp = *p_sp;
     int bits_left;
 
-    db_p = bin_append_posn(63, 6, decimal_binary, db_p); /* Unlatch */
+    db_p = z_bin_append_posn(63, 6, decimal_binary, db_p); /* Unlatch */
     if (db_p >= 8) {
         db_p = c1_decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
     }
     bits_left = (8 - db_p) & 0x07;
     if (decimal_count >= 1 && bits_left >= 4) {
-        db_p = bin_append_posn(ctoi(source[sp]) + 1, 4, decimal_binary, db_p);
+        db_p = z_bin_append_posn(z_ctoi(source[sp]) + 1, 4, decimal_binary, db_p);
         sp++;
         if (bits_left == 6) {
-            db_p = bin_append_posn(1, 2, decimal_binary, db_p);
+            db_p = z_bin_append_posn(1, 2, decimal_binary, db_p);
         }
         (void) c1_decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
 
     } else if (bits_left) {
         if (bits_left >= 4) {
-            db_p = bin_append_posn(15, 4, decimal_binary, db_p);
+            db_p = z_bin_append_posn(15, 4, decimal_binary, db_p);
         }
         if (bits_left == 2 || bits_left == 6) {
-            db_p = bin_append_posn(1, 2, decimal_binary, db_p);
+            db_p = z_bin_append_posn(1, 2, decimal_binary, db_p);
         }
         (void) c1_decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
     }
@@ -494,7 +495,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
     int db_p = 0;
     int byte_start = 0;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
-    const int eci_length = length + 7 + chr_cnt(source, length, '\\');
+    const int eci_length = length + 7 + z_chr_cnt(source, length, '\\');
     unsigned char *eci_buf = (unsigned char *) z_alloca(eci_length + 1);
     int *num_digits = (int *) z_alloca(sizeof(int) * (eci_length + 1));
 
@@ -601,20 +602,20 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
             /* Step B - ASCII encodation */
             next_mode = C1_ASCII;
 
-            if ((length - sp) >= 21 && num_digits[sp] >= 21) {
+            if (length - sp >= 21 && num_digits[sp] >= 21) {
                 /* Step B1 */
                 next_mode = C1_DECIMAL;
-                db_p = bin_append_posn(15, 4, decimal_binary, db_p);
-            } else if ((length - sp) >= 13 && num_digits[sp] == (length - sp)) {
+                db_p = z_bin_append_posn(15, 4, decimal_binary, db_p);
+            } else if (length - sp >= 13 && num_digits[sp] == length - sp) {
                 /* Step B2 */
                 next_mode = C1_DECIMAL;
-                db_p = bin_append_posn(15, 4, decimal_binary, db_p);
+                db_p = z_bin_append_posn(15, 4, decimal_binary, db_p);
             }
 
             if (next_mode == C1_ASCII) {
-                if (is_twodigits(source, length, sp)) {
+                if (z_is_twodigits(source, length, sp)) {
                     /* Step B3 */
-                    target[tp++] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
+                    target[tp++] = z_to_int(source + sp, 2) + 130;
                     if (debug_print) printf("ASCDD(%.2s) ", source + sp);
                     sp += 2;
                 } else {
@@ -671,10 +672,10 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
             next_mode = current_mode;
             if (cte_p == 0) {
                 /* Step C/D1 */
-                if ((length - sp) >= 12 && num_digits[sp] >= 12) {
+                if (length - sp >= 12 && num_digits[sp] >= 12) {
                     /* Step C/D1a */
                     next_mode = C1_ASCII;
-                } else if ((length - sp) >= 8 && num_digits[sp] == (length - sp)) {
+                } else if (length - sp >= 8 && num_digits[sp] == length - sp) {
                     /* Step C/D1b */
                     next_mode = C1_ASCII;
                 } else {
@@ -728,13 +729,13 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
             next_mode = C1_EDI;
             if (cte_p == 0) {
                 /* Step E1 */
-                if ((length - sp) >= 12 && num_digits[sp] >= 12) {
+                if (length - sp >= 12 && num_digits[sp] >= 12) {
                     /* Step E1a */
                     next_mode = C1_ASCII;
-                } else if ((length - sp) >= 8 && num_digits[sp] == (length - sp)) {
+                } else if (length - sp >= 8 && num_digits[sp] == length - sp) {
                     /* Step E1b */
                     next_mode = C1_ASCII;
-                } else if ((length - sp) < 3 || !c1_isedi(source[sp]) || !c1_isedi(source[sp + 1])
+                } else if (length - sp < 3 || !c1_isedi(source[sp]) || !c1_isedi(source[sp + 1])
                         || !c1_isedi(source[sp + 2])) {
                     /* Step E1c */
                     /* This ensures ASCII switch if don't have EDI triplet, so cte_p will be zero on loop exit */
@@ -760,7 +761,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                 } else if (z_isupper(source[sp])) {
                     cte_buffer[cte_p++] = source[sp] - 'A' + 14;
                 } else {
-                    cte_buffer[cte_p++] = posn(edi_nonalphanum_chars, source[sp]);
+                    cte_buffer[cte_p++] = z_posn(edi_nonalphanum_chars, source[sp]);
                 }
 
                 if (cte_p >= 3) {
@@ -784,8 +785,8 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                         && (can_ascii || (num_digits[sp] == 1 && bits_left >= 4))) {
                     if (can_ascii) {
                         /* Encode last character or last 2 digits as ASCII */
-                        if (is_twodigits(source, length, sp)) {
-                            target[tp++] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
+                        if (z_is_twodigits(source, length, sp)) {
+                            target[tp++] = z_to_int(source + sp, 2) + 130;
                             if (debug_print) printf("ASCDD(%.2s) ", source + sp);
                             sp += 2;
                         } else {
@@ -795,10 +796,10 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                         }
                     } else {
                         /* Encode last digit in 4 bits */
-                        db_p = bin_append_posn(ctoi(source[sp]) + 1, 4, decimal_binary, db_p);
+                        db_p = z_bin_append_posn(z_ctoi(source[sp]) + 1, 4, decimal_binary, db_p);
                         sp++;
                         if (bits_left == 6) {
-                            db_p = bin_append_posn(1, 2, decimal_binary, db_p);
+                            db_p = z_bin_append_posn(1, 2, decimal_binary, db_p);
                         }
                         db_p = c1_decimal_binary_transfer(decimal_binary, db_p, target, &tp);
                     }
@@ -816,8 +817,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                 } else {
                     /* Step F3 */
                     /* There are three digits - convert the value to binary */
-                    int value = (100 * ctoi(source[sp])) + (10 * ctoi(source[sp + 1])) + ctoi(source[sp + 2]) + 1;
-                    db_p = bin_append_posn(value, 10, decimal_binary, db_p);
+                    db_p = z_bin_append_posn(z_to_int(source + sp, 3) + 1, 10, decimal_binary, db_p);
                     if (db_p >= 8) {
                         db_p = c1_decimal_binary_transfer(decimal_binary, db_p, target, &tp);
                     }
@@ -897,8 +897,8 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
 
                 target[tp++] = 255; /* Unlatch */
                 for (; sp < length; sp++) {
-                    if (is_twodigits(source, length, sp)) {
-                        target[tp++] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
+                    if (z_is_twodigits(source, length, sp)) {
+                        target[tp++] = z_to_int(source + sp, 2) + 130;
                         sp++;
                     } else if (source[sp] & 0x80) {
                         target[tp++] = 235; /* FNC4 (Upper Shift) */
@@ -918,7 +918,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
 
         /* Finish Decimal mode and go back to ASCII unless only one codeword remaining */
         if (c1_codewords_remaining(symbol, tp) > 1) {
-            db_p = bin_append_posn(63, 6, decimal_binary, db_p); /* Unlatch */
+            db_p = z_bin_append_posn(63, 6, decimal_binary, db_p); /* Unlatch */
         }
 
         if (db_p >= 8) {
@@ -929,12 +929,12 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
 
         if (bits_left) {
 
-            if ((bits_left == 4) || (bits_left == 6)) {
-                db_p = bin_append_posn(15, 4, decimal_binary, db_p);
+            if (bits_left == 4 || bits_left == 6) {
+                db_p = z_bin_append_posn(15, 4, decimal_binary, db_p);
             }
 
             if (bits_left == 2 || bits_left == 6) {
-                db_p = bin_append_posn(1, 2, decimal_binary, db_p);
+                db_p = z_bin_append_posn(1, 2, decimal_binary, db_p);
             }
 
             (void) c1_decimal_binary_transfer(decimal_binary, db_p, target, &tp);
@@ -984,14 +984,14 @@ static int c1_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
     /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
     const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
 
-    if (raw_text && rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
     }
 
     for (i = 0; i < seg_count; i++) {
         tp = c1_encode(symbol, segs[i].source, segs[i].length, segs[i].eci, seg_count, gs1, target, &tp, p_last_mode);
-        if (raw_text && rt_cpy_seg(symbol, i, &segs[i])) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
+        if (raw_text && z_rt_cpy_seg(symbol, i, &segs[i])) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
         }
     }
 
@@ -1008,7 +1008,7 @@ static void c1_block_copy(struct zint_symbol *symbol, char datagrid[136][120], c
     for (i = start_row; i < (start_row + height); i++) {
         for (j = start_col; j < (start_col + width); j++) {
             if (datagrid[i][j]) {
-                set_module(symbol, i + row_offset, j + col_offset);
+                z_set_module(symbol, i + row_offset, j + col_offset);
             }
         }
     }
@@ -1021,7 +1021,7 @@ static int c1_total_length_segs(struct zint_seg segs[], const int seg_count) {
 
     if (segs[0].eci || seg_count > 1) {
         for (i = 0; i < seg_count; i++) {
-            total_len += segs[i].length + 7 + chr_cnt(segs[i].source, segs[i].length, '\\');
+            total_len += segs[i].length + 7 + z_chr_cnt(segs[i].source, segs[i].length, '\\');
         }
     } else {
         total_len = segs[0].length;
@@ -1030,7 +1030,7 @@ static int c1_total_length_segs(struct zint_seg segs[], const int seg_count) {
     return total_len;
 }
 
-INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+INTERNAL int zint_codeone(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int size = 1, i, j;
     char datagrid[136][120];
     int row, col;
@@ -1039,30 +1039,31 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
-    if ((symbol->option_2 < 0) || (symbol->option_2 > 10)) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 513, "Version '%d' out of range (1 to 10)",
-                        symbol->option_2);
+    if (symbol->option_2 < 0 || symbol->option_2 > 10) {
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 513, "Version '%d' out of range (1 to 10)",
+                            symbol->option_2);
     }
 
     if (symbol->structapp.count) {
         if (symbol->option_2 == 9) { /* Version S */
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 714, "Structured Append not available for Version S");
+            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 714, "Structured Append not available for Version S");
         }
         if (gs1) {
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 710,
+            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 710,
                             "Cannot have Structured Append and GS1 mode at the same time");
         }
         if (symbol->structapp.count < 2 || symbol->structapp.count > 128) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 711,
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 711,
                             "Structured Append count '%d' out of range (2 to 128)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 712,
-                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                                symbol->structapp.index, symbol->structapp.count);
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 712,
+                                    "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                    symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 713, "Structured Append ID not available for Code One");
+            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 713,
+                            "Structured Append ID not available for Code One");
         }
     }
 
@@ -1075,14 +1076,14 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         const int raw_text = symbol->output_options & BARCODE_RAW_TEXT; /* GS1 mode ignored for Version S */
 
         if (seg_count > 1) {
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 715, "Multiple segments not supported for Version S");
+            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 715, "Multiple segments not supported for Version S");
         }
         if (segs[0].length > 18) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 514, "Input length %d too long for Version S (maximum 18)",
+            return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 514, "Input length %d too long for Version S (maximum 18)",
                             segs[0].length);
         }
-        if ((i = not_sane(NEON_F, segs[0].source, segs[0].length))) {
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 515,
+        if ((i = z_not_sane(NEON_F, segs[0].source, segs[0].length))) {
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 515,
                             "Invalid character at position %d in input (Version S encodes digits only)", i);
         }
 
@@ -1108,18 +1109,18 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
             printf("Subversion: %d\n", sub_version);
         }
 
-        if (raw_text && rt_cpy(symbol, segs[0].source, segs[0].length)) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+        if (raw_text && z_rt_cpy(symbol, segs[0].source, segs[0].length)) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
         }
 
         /* Convert value plus one to binary */
-        large_load_str_u64(&elreg, segs[0].source, segs[0].length);
-        large_add_u64(&elreg, 1);
-        large_uint_array(&elreg, target, codewords, 5 /*bits*/);
+        zint_large_load_str_u64(&elreg, segs[0].source, segs[0].length);
+        zint_large_add_u64(&elreg, 1);
+        zint_large_uint_array(&elreg, target, codewords, 5 /*bits*/);
 
-        rs_init_gf(&rs, 0x25);
-        rs_init_code(&rs, codewords, 0);
-        rs_encode_uint(&rs, codewords, target, ecc);
+        zint_rs_init_gf(&rs, 0x25);
+        zint_rs_init_code(&rs, codewords, 0);
+        zint_rs_encode_uint(&rs, codewords, target, ecc);
 
         for (i = 0; i < codewords; i++) {
             target[i + codewords] = ecc[i];
@@ -1160,7 +1161,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         int last_mode = 0; /* Suppress gcc 14 "-Wmaybe-uninitialized" false positive */
 
         if ((i = c1_total_length_segs(segs, seg_count)) > 90) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 519, "Input length %d too long for Version T (maximum 90)",
+            return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 519, "Input length %d too long for Version T (maximum 90)",
                             i);
         }
 
@@ -1170,7 +1171,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
         assert(data_length); /* Can't exceed C1_MAX_CWS as input <= 90 */
         if (data_length > 38) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 516,
+            return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 516,
                             "Input too long for Version T, requires %d codewords (maximum 38)", data_length);
         }
 
@@ -1208,9 +1209,9 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         }
 
         /* Calculate error correction data */
-        rs_init_gf(&rs, 0x12d);
-        rs_init_code(&rs, ecc_cw, 0);
-        rs_encode_uint(&rs, data_cw, target, ecc);
+        zint_rs_init_gf(&rs, 0x12d);
+        zint_rs_init_code(&rs, ecc_cw, 0);
+        zint_rs_encode_uint(&rs, data_cw, target, ecc);
 
         for (i = 0; i < ecc_cw; i++) {
             target[data_cw + i] = ecc[i];
@@ -1254,7 +1255,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         }
 
         if (data_length == 0) {
-            return errtxt(ZINT_ERROR_TOO_LONG, symbol, 517,
+            return z_errtxt(ZINT_ERROR_TOO_LONG, symbol, 517,
                             "Input too long, requires too many codewords (maximum " C1_MAX_CWS_S ")");
         }
 
@@ -1268,10 +1269,10 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
             size = symbol->option_2;
         }
 
-        if ((symbol->option_2 != 0) && (symbol->option_2 < size)) {
-            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 518,
-                                "Input too long for Version %1$c, requires %2$d codewords (maximum %3$d)",
-                                'A' + symbol->option_2 - 1, data_length, c1_data_length[symbol->option_2 - 1]);
+        if (symbol->option_2 && symbol->option_2 < size) {
+            return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 518,
+                                    "Input too long for Version %1$c, requires %2$d codewords (maximum %3$d)",
+                                    'A' + symbol->option_2 - 1, data_length, c1_data_length[symbol->option_2 - 1]);
         }
 
         /* Feedback options */
@@ -1301,13 +1302,13 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         ecc_blocks = c1_ecc_blocks[size - 1];
         ecc_length = c1_ecc_length[size - 1];
 
-        rs_init_gf(&rs, 0x12d);
-        rs_init_code(&rs, ecc_blocks, 0);
+        zint_rs_init_gf(&rs, 0x12d);
+        zint_rs_init_code(&rs, ecc_blocks, 0);
         for (i = 0; i < blocks; i++) {
             for (j = 0; j < data_blocks; j++) {
                 sub_data[j] = target[j * blocks + i];
             }
-            rs_encode_uint(&rs, data_blocks, sub_data, sub_ecc);
+            zint_rs_encode_uint(&rs, data_blocks, sub_data, sub_ecc);
             for (j = 0; j < ecc_blocks; j++) {
                 target[data_cw + j * blocks + i] = sub_ecc[j];
             }
@@ -1345,11 +1346,9 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
     switch (size) {
         case 1: /* Version A */
             c1_central_finder(symbol, 6, 3, 1);
-            c1_vert(symbol, 4, 6, 1);
-            c1_vert(symbol, 12, 5, 0);
-            set_module(symbol, 5, 12);
-            c1_spigot(symbol, 0);
-            c1_spigot(symbol, 15);
+            c1_vert(symbol, 4, 6, 12, 5);
+            z_set_module(symbol, 5, 12);
+            c1_spigot(symbol, 0, 15);
             c1_block_copy(symbol, datagrid, 0, 0, 5, 4, 0, 0);
             c1_block_copy(symbol, datagrid, 0, 4, 5, 12, 0, 2);
             c1_block_copy(symbol, datagrid, 5, 0, 5, 12, 6, 0);
@@ -1357,11 +1356,9 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
             break;
         case 2: /* Version B */
             c1_central_finder(symbol, 8, 4, 1);
-            c1_vert(symbol, 4, 8, 1);
-            c1_vert(symbol, 16, 7, 0);
-            set_module(symbol, 7, 16);
-            c1_spigot(symbol, 0);
-            c1_spigot(symbol, 21);
+            c1_vert(symbol, 4, 8, 16, 7);
+            z_set_module(symbol, 7, 16);
+            c1_spigot(symbol, 0, 21);
             c1_block_copy(symbol, datagrid, 0, 0, 7, 4, 0, 0);
             c1_block_copy(symbol, datagrid, 0, 4, 7, 16, 0, 2);
             c1_block_copy(symbol, datagrid, 7, 0, 7, 16, 8, 0);
@@ -1369,12 +1366,9 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
             break;
         case 3: /* Version C */
             c1_central_finder(symbol, 11, 4, 2);
-            c1_vert(symbol, 4, 11, 1);
-            c1_vert(symbol, 26, 13, 1);
-            c1_vert(symbol, 4, 10, 0);
-            c1_vert(symbol, 26, 10, 0);
-            c1_spigot(symbol, 0);
-            c1_spigot(symbol, 27);
+            c1_vert(symbol, 4, 11, 4, 10);
+            c1_vert(symbol, 26, 13, 26, 10);
+            c1_spigot(symbol, 0, 27);
             c1_block_copy(symbol, datagrid, 0, 0, 10, 4, 0, 0);
             c1_block_copy(symbol, datagrid, 0, 4, 10, 20, 0, 2);
             c1_block_copy(symbol, datagrid, 0, 24, 10, 4, 0, 4);
@@ -1384,16 +1378,11 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
             break;
         case 4: /* Version D */
             c1_central_finder(symbol, 16, 5, 1);
-            c1_vert(symbol, 4, 16, 1);
-            c1_vert(symbol, 20, 16, 1);
-            c1_vert(symbol, 36, 16, 1);
-            c1_vert(symbol, 4, 15, 0);
-            c1_vert(symbol, 20, 15, 0);
-            c1_vert(symbol, 36, 15, 0);
-            c1_spigot(symbol, 0);
-            c1_spigot(symbol, 12);
-            c1_spigot(symbol, 27);
-            c1_spigot(symbol, 39);
+            c1_vert(symbol, 4, 16, 4, 15);
+            c1_vert(symbol, 20, 16, 20, 15);
+            c1_vert(symbol, 36, 16, 36, 15);
+            c1_spigot(symbol, 0, 27);
+            c1_spigot(symbol, 12, 39);
             c1_block_copy(symbol, datagrid, 0, 0, 15, 4, 0, 0);
             c1_block_copy(symbol, datagrid, 0, 4, 15, 14, 0, 2);
             c1_block_copy(symbol, datagrid, 0, 18, 15, 14, 0, 4);
@@ -1405,16 +1394,11 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
             break;
         case 5: /* Version E */
             c1_central_finder(symbol, 22, 5, 2);
-            c1_vert(symbol, 4, 22, 1);
-            c1_vert(symbol, 26, 24, 1);
-            c1_vert(symbol, 48, 22, 1);
-            c1_vert(symbol, 4, 21, 0);
-            c1_vert(symbol, 26, 21, 0);
-            c1_vert(symbol, 48, 21, 0);
-            c1_spigot(symbol, 0);
-            c1_spigot(symbol, 12);
-            c1_spigot(symbol, 39);
-            c1_spigot(symbol, 51);
+            c1_vert(symbol, 4, 22, 4, 21);
+            c1_vert(symbol, 26, 24, 26, 21);
+            c1_vert(symbol, 48, 22, 48, 21);
+            c1_spigot(symbol, 0, 39);
+            c1_spigot(symbol, 12, 51);
             c1_block_copy(symbol, datagrid, 0, 0, 21, 4, 0, 0);
             c1_block_copy(symbol, datagrid, 0, 4, 21, 20, 0, 2);
             c1_block_copy(symbol, datagrid, 0, 24, 21, 20, 0, 4);
@@ -1426,132 +1410,85 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
             break;
         case 6: /* Version F */
             c1_central_finder(symbol, 31, 5, 3);
-            c1_vert(symbol, 4, 31, 1);
-            c1_vert(symbol, 26, 35, 1);
-            c1_vert(symbol, 48, 31, 1);
-            c1_vert(symbol, 70, 35, 1);
-            c1_vert(symbol, 4, 30, 0);
-            c1_vert(symbol, 26, 30, 0);
-            c1_vert(symbol, 48, 30, 0);
-            c1_vert(symbol, 70, 30, 0);
-            c1_spigot(symbol, 0);
-            c1_spigot(symbol, 12);
-            c1_spigot(symbol, 24);
-            c1_spigot(symbol, 45);
-            c1_spigot(symbol, 57);
-            c1_spigot(symbol, 69);
+            c1_vert(symbol, 4, 31, 4, 30);
+            c1_vert(symbol, 26, 35, 26, 30);
+            c1_vert(symbol, 48, 31, 48, 30);
+            c1_vert(symbol, 70, 35, 70, 30);
+            for (i = 0; i <= 24; i += 12) {
+                c1_spigot(symbol, i, i + 45);
+            }
             c1_block_copy(symbol, datagrid, 0, 0, 30, 4, 0, 0);
-            c1_block_copy(symbol, datagrid, 0, 4, 30, 20, 0, 2);
-            c1_block_copy(symbol, datagrid, 0, 24, 30, 20, 0, 4);
-            c1_block_copy(symbol, datagrid, 0, 44, 30, 20, 0, 6);
             c1_block_copy(symbol, datagrid, 0, 64, 30, 4, 0, 8);
             c1_block_copy(symbol, datagrid, 30, 0, 30, 4, 10, 0);
-            c1_block_copy(symbol, datagrid, 30, 4, 30, 20, 10, 2);
-            c1_block_copy(symbol, datagrid, 30, 24, 30, 20, 10, 4);
-            c1_block_copy(symbol, datagrid, 30, 44, 30, 20, 10, 6);
             c1_block_copy(symbol, datagrid, 30, 64, 30, 4, 10, 8);
+            for (i = 4, j = 2; i <= 44; i += 20, j += 2) {
+                c1_block_copy(symbol, datagrid, 0, i, 30, 20, 0, j);
+                c1_block_copy(symbol, datagrid, 30, i, 30, 20, 10, j);
+            }
             break;
         case 7: /* Version G */
             c1_central_finder(symbol, 47, 6, 2);
-            c1_vert(symbol, 6, 47, 1);
-            c1_vert(symbol, 27, 49, 1);
-            c1_vert(symbol, 48, 47, 1);
-            c1_vert(symbol, 69, 49, 1);
-            c1_vert(symbol, 90, 47, 1);
-            c1_vert(symbol, 6, 46, 0);
-            c1_vert(symbol, 27, 46, 0);
-            c1_vert(symbol, 48, 46, 0);
-            c1_vert(symbol, 69, 46, 0);
-            c1_vert(symbol, 90, 46, 0);
-            c1_spigot(symbol, 0);
-            c1_spigot(symbol, 12);
-            c1_spigot(symbol, 24);
-            c1_spigot(symbol, 36);
-            c1_spigot(symbol, 67);
-            c1_spigot(symbol, 79);
-            c1_spigot(symbol, 91);
-            c1_spigot(symbol, 103);
+            c1_vert(symbol, 6, 47, 6, 46);
+            c1_vert(symbol, 27, 49, 27, 46);
+            c1_vert(symbol, 48, 47, 48, 46);
+            c1_vert(symbol, 69, 49, 69, 46);
+            c1_vert(symbol, 90, 47, 90, 46);
+            for (i = 0; i <= 36; i += 12) {
+                c1_spigot(symbol, i, i + 67);
+            }
             c1_block_copy(symbol, datagrid, 0, 0, 46, 6, 0, 0);
-            c1_block_copy(symbol, datagrid, 0, 6, 46, 19, 0, 2);
-            c1_block_copy(symbol, datagrid, 0, 25, 46, 19, 0, 4);
-            c1_block_copy(symbol, datagrid, 0, 44, 46, 19, 0, 6);
-            c1_block_copy(symbol, datagrid, 0, 63, 46, 19, 0, 8);
             c1_block_copy(symbol, datagrid, 0, 82, 46, 6, 0, 10);
             c1_block_copy(symbol, datagrid, 46, 0, 46, 6, 12, 0);
-            c1_block_copy(symbol, datagrid, 46, 6, 46, 19, 12, 2);
-            c1_block_copy(symbol, datagrid, 46, 25, 46, 19, 12, 4);
-            c1_block_copy(symbol, datagrid, 46, 44, 46, 19, 12, 6);
-            c1_block_copy(symbol, datagrid, 46, 63, 46, 19, 12, 8);
             c1_block_copy(symbol, datagrid, 46, 82, 46, 6, 12, 10);
+            for (i = 6, j = 2; i <= 63; i += 19, j += 2) {
+                c1_block_copy(symbol, datagrid, 0, i, 46, 19, 0, j);
+                c1_block_copy(symbol, datagrid, 46, i, 46, 19, 12, j);
+            }
             break;
         case 8: /* Version H */
             c1_central_finder(symbol, 69, 6, 3);
-            c1_vert(symbol, 6, 69, 1);
-            c1_vert(symbol, 26, 73, 1);
-            c1_vert(symbol, 46, 69, 1);
-            c1_vert(symbol, 66, 73, 1);
-            c1_vert(symbol, 86, 69, 1);
-            c1_vert(symbol, 106, 73, 1);
-            c1_vert(symbol, 126, 69, 1);
-            c1_vert(symbol, 6, 68, 0);
-            c1_vert(symbol, 26, 68, 0);
-            c1_vert(symbol, 46, 68, 0);
-            c1_vert(symbol, 66, 68, 0);
-            c1_vert(symbol, 86, 68, 0);
-            c1_vert(symbol, 106, 68, 0);
-            c1_vert(symbol, 126, 68, 0);
-            c1_spigot(symbol, 0);
-            c1_spigot(symbol, 12);
-            c1_spigot(symbol, 24);
-            c1_spigot(symbol, 36);
-            c1_spigot(symbol, 48);
-            c1_spigot(symbol, 60);
-            c1_spigot(symbol, 87);
-            c1_spigot(symbol, 99);
-            c1_spigot(symbol, 111);
-            c1_spigot(symbol, 123);
-            c1_spigot(symbol, 135);
-            c1_spigot(symbol, 147);
+            c1_vert(symbol, 6, 69, 6, 68);
+            c1_vert(symbol, 26, 73, 26, 68);
+            c1_vert(symbol, 46, 69, 46, 68);
+            c1_vert(symbol, 66, 73, 66, 68);
+            c1_vert(symbol, 86, 69, 86, 68);
+            c1_vert(symbol, 106, 73, 106, 68);
+            c1_vert(symbol, 126, 69, 126, 68);
+            for (i = 0; i <= 60; i += 12) {
+                c1_spigot(symbol, i, i + 87);
+            }
             c1_block_copy(symbol, datagrid, 0, 0, 68, 6, 0, 0);
-            c1_block_copy(symbol, datagrid, 0, 6, 68, 18, 0, 2);
-            c1_block_copy(symbol, datagrid, 0, 24, 68, 18, 0, 4);
-            c1_block_copy(symbol, datagrid, 0, 42, 68, 18, 0, 6);
-            c1_block_copy(symbol, datagrid, 0, 60, 68, 18, 0, 8);
-            c1_block_copy(symbol, datagrid, 0, 78, 68, 18, 0, 10);
-            c1_block_copy(symbol, datagrid, 0, 96, 68, 18, 0, 12);
             c1_block_copy(symbol, datagrid, 0, 114, 68, 6, 0, 14);
             c1_block_copy(symbol, datagrid, 68, 0, 68, 6, 12, 0);
-            c1_block_copy(symbol, datagrid, 68, 6, 68, 18, 12, 2);
-            c1_block_copy(symbol, datagrid, 68, 24, 68, 18, 12, 4);
-            c1_block_copy(symbol, datagrid, 68, 42, 68, 18, 12, 6);
-            c1_block_copy(symbol, datagrid, 68, 60, 68, 18, 12, 8);
-            c1_block_copy(symbol, datagrid, 68, 78, 68, 18, 12, 10);
-            c1_block_copy(symbol, datagrid, 68, 96, 68, 18, 12, 12);
             c1_block_copy(symbol, datagrid, 68, 114, 68, 6, 12, 14);
+            for (i = 6, j = 2; i <= 96; i += 18, j += 2) {
+                c1_block_copy(symbol, datagrid, 0, i, 68, 18, 0, j);
+                c1_block_copy(symbol, datagrid, 68, i, 68, 18, 12, j);
+            }
             break;
         case 9: /* Version S */
             c1_horiz(symbol, 5, 1);
             c1_horiz(symbol, 7, 1);
-            set_module(symbol, 6, 0);
-            set_module(symbol, 6, symbol->width - 1);
-            unset_module(symbol, 7, 1);
-            unset_module(symbol, 7, symbol->width - 2);
+            z_set_module(symbol, 6, 0);
+            z_set_module(symbol, 6, symbol->width - 1);
+            z_unset_module(symbol, 7, 1);
+            z_unset_module(symbol, 7, symbol->width - 2);
             switch (sub_version) {
                 case 1: /* Version S-10 */
-                    set_module(symbol, 0, 5);
+                    z_set_module(symbol, 0, 5);
                     c1_block_copy(symbol, datagrid, 0, 0, 4, 5, 0, 0);
                     c1_block_copy(symbol, datagrid, 0, 5, 4, 5, 0, 1);
                     break;
                 case 2: /* Version S-20 */
-                    set_module(symbol, 0, 10);
-                    set_module(symbol, 4, 10);
+                    z_set_module(symbol, 0, 10);
+                    z_set_module(symbol, 4, 10);
                     c1_block_copy(symbol, datagrid, 0, 0, 4, 10, 0, 0);
                     c1_block_copy(symbol, datagrid, 0, 10, 4, 10, 0, 1);
                     break;
                 case 3: /* Version S-30 */
-                    set_module(symbol, 0, 15);
-                    set_module(symbol, 4, 15);
-                    set_module(symbol, 6, 15);
+                    z_set_module(symbol, 0, 15);
+                    z_set_module(symbol, 4, 15);
+                    z_set_module(symbol, 6, 15);
                     c1_block_copy(symbol, datagrid, 0, 0, 4, 15, 0, 0);
                     c1_block_copy(symbol, datagrid, 0, 15, 4, 15, 0, 1);
                     break;
@@ -1561,33 +1498,33 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
             c1_horiz(symbol, 11, 1);
             c1_horiz(symbol, 13, 1);
             c1_horiz(symbol, 15, 1);
-            set_module(symbol, 12, 0);
-            set_module(symbol, 12, symbol->width - 1);
-            set_module(symbol, 14, 0);
-            set_module(symbol, 14, symbol->width - 1);
-            unset_module(symbol, 13, 1);
-            unset_module(symbol, 13, symbol->width - 2);
-            unset_module(symbol, 15, 1);
-            unset_module(symbol, 15, symbol->width - 2);
+            z_set_module(symbol, 12, 0);
+            z_set_module(symbol, 12, symbol->width - 1);
+            z_set_module(symbol, 14, 0);
+            z_set_module(symbol, 14, symbol->width - 1);
+            z_unset_module(symbol, 13, 1);
+            z_unset_module(symbol, 13, symbol->width - 2);
+            z_unset_module(symbol, 15, 1);
+            z_unset_module(symbol, 15, symbol->width - 2);
             switch (sub_version) {
                 case 1: /* Version T-16 */
-                    set_module(symbol, 0, 8);
-                    set_module(symbol, 10, 8);
+                    z_set_module(symbol, 0, 8);
+                    z_set_module(symbol, 10, 8);
                     c1_block_copy(symbol, datagrid, 0, 0, 10, 8, 0, 0);
                     c1_block_copy(symbol, datagrid, 0, 8, 10, 8, 0, 1);
                     break;
                 case 2: /* Version T-32 */
-                    set_module(symbol, 0, 16);
-                    set_module(symbol, 10, 16);
-                    set_module(symbol, 12, 16);
+                    z_set_module(symbol, 0, 16);
+                    z_set_module(symbol, 10, 16);
+                    z_set_module(symbol, 12, 16);
                     c1_block_copy(symbol, datagrid, 0, 0, 10, 16, 0, 0);
                     c1_block_copy(symbol, datagrid, 0, 16, 10, 16, 0, 1);
                     break;
                 case 3: /* Verion T-48 */
-                    set_module(symbol, 0, 24);
-                    set_module(symbol, 10, 24);
-                    set_module(symbol, 12, 24);
-                    set_module(symbol, 14, 24);
+                    z_set_module(symbol, 0, 24);
+                    z_set_module(symbol, 10, 24);
+                    z_set_module(symbol, 12, 24);
+                    z_set_module(symbol, 14, 24);
                     c1_block_copy(symbol, datagrid, 0, 0, 10, 24, 0, 0);
                     c1_block_copy(symbol, datagrid, 0, 24, 10, 24, 0, 1);
                     break;
@@ -1602,11 +1539,11 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     if (symbol->option_2 == 9) { /* Version S */
         if (symbol->eci || gs1) {
-            return errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 511, "%s ignored for Version S",
-                            symbol->eci && gs1 ? "ECI and GS1 mode" : symbol->eci ? "ECI" : "GS1 mode");
+            return z_errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 511, "%s ignored for Version S",
+                                symbol->eci && gs1 ? "ECI and GS1 mode" : symbol->eci ? "ECI" : "GS1 mode");
         }
     } else if (symbol->eci && gs1) {
-        return errtxt(ZINT_WARN_INVALID_OPTION, symbol, 512, "ECI ignored for GS1 mode");
+        return z_errtxt(ZINT_WARN_INVALID_OPTION, symbol, 512, "ECI ignored for GS1 mode");
     }
 
     return 0;

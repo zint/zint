@@ -50,7 +50,7 @@ static const char CodaTable[20][8] = {
 };
 
 /* The Codabar system consisting of simple substitution */
-INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_codabar(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number = 0;
     int posns[103];
@@ -61,31 +61,31 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 103) { /* No stack smashing please (103 + 1) * 11 = 1144 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 356, "Input length %d too long (maximum 103)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 356, "Input length %d too long (maximum 103)", length);
     }
     /* BS EN 798:1995 4.2 "'Codabar' symbols shall consist of ... b) start character;
        c) one or more symbol characters representing data ... d) stop character ..." */
     if (length < 3) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 362, "Input length %d too short (minimum 3)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 362, "Input length %d too short (minimum 3)", length);
     }
-    to_upper(source, length);
+    z_to_upper(source, length);
 
     /* Codabar must begin and end with the characters A, B, C or D */
     if ((source[0] != 'A') && (source[0] != 'B') && (source[0] != 'C')
             && (source[0] != 'D')) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 358, "Does not begin with \"A\", \"B\", \"C\" or \"D\"");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 358, "Does not begin with \"A\", \"B\", \"C\" or \"D\"");
     }
     if ((source[length - 1] != 'A') && (source[length - 1] != 'B') &&
             (source[length - 1] != 'C') && (source[length - 1] != 'D')) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 359, "Does not end with \"A\", \"B\", \"C\" or \"D\"");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 359, "Does not end with \"A\", \"B\", \"C\" or \"D\"");
     }
-    if ((i = not_sane_lookup(CALCIUM, sizeof(CALCIUM) - 1, source, length, posns))) {
-        return ZEXT errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 357,
-                            "Invalid character at position %1$d in input (\"%2$s\" only)", i, CALCIUM);
+    if ((i = z_not_sane_lookup(CALCIUM, sizeof(CALCIUM) - 1, source, length, posns))) {
+        return ZEXT z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 357,
+                                "Invalid character at position %1$d in input (\"%2$s\" only)", i, CALCIUM);
     }
     /* And must not use A, B, C or D otherwise (BS EN 798:1995 4.3.2) */
-    if ((i = not_sane(CALCIUM_INNER_F, source + 1, length - 2))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 363,
+    if ((i = z_not_sane(CALCIUM_INNER_F, source + 1, length - 2))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 363,
                         "Invalid character at position %d in input (cannot contain \"A\", \"B\", \"C\" or \"D\")", i);
     }
 
@@ -116,7 +116,7 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
         }
     }
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* BS EN 798:1995 4.4.1 (d) max of 5mm / 0.43mm (X max) ~ 11.628 or 15% of width where (taking N =
@@ -124,23 +124,24 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
            = ((4 + 5) * C + (D + 2) + C - 1 + 2 * 10) * X = (10 * C + D + 21) * X
            Length (C) includes start/stop chars */
         const float min_height_min = 11.6279068f; /* 5.0 / 0.43 */
-        float min_height = stripf((10.0f * ((add_checksum ? length + 1 : length) + 2.0f) + d_chars + 21.0f) * 0.15f);
+        float min_height = z_stripf((10.0f * ((length + add_checksum) + 2.0f) + d_chars + 21.0f) * 0.15f);
         if (min_height < min_height_min) {
             min_height = min_height_min;
         }
         /* Using 50 as default as none recommended */
-        error_number = set_height(symbol, min_height, min_height > 50.0f ? min_height : 50.0f, 0.0f, 0 /*no_errtxt*/);
+        error_number = z_set_height(symbol, min_height, min_height > 50.0f ? min_height : 50.0f, 0.0f,
+                                    0 /*no_errtxt*/);
     } else {
-        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
     /* If visible check char, place before final A/B/C/D character (BS EN 798:1995 A.3) */
-    hrt_cpy_cat_nochk(symbol, source, length - 1, symbol->option_2 == 2 ? CALCIUM[checksum] : '\xFF',
+    z_hrt_cpy_cat_nochk(symbol, source, length - 1, symbol->option_2 == 2 ? CALCIUM[checksum] : '\xFF',
                         source + length - 1, 1);
 
-    if (raw_text && rt_cpy_cat(symbol, source, length - 1,
+    if (raw_text && z_rt_cpy_cat(symbol, source, length - 1,
                                 add_checksum ? CALCIUM[checksum] : '\xFF', source + length - 1, 1)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;

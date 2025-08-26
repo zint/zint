@@ -40,53 +40,53 @@ extern "C" {
 #include <stdio.h> /* For FILE */
 
 /* Check colour options are good (`symbol->fgcolour`, `symbol->bgcolour`) */
-INTERNAL int out_check_colour_options(struct zint_symbol *symbol);
+INTERNAL int zint_out_check_colour_options(struct zint_symbol *symbol);
 
 /* Return RGB(A) from (well-formed) colour string. Returns 0 if RGB or converted CMYK, 1 if RGBA */
-INTERNAL int out_colour_get_rgb(const char *colour, unsigned char *red, unsigned char *green, unsigned char *blue,
-                unsigned char *alpha);
+INTERNAL int zint_out_colour_get_rgb(const char *colour, unsigned char *red, unsigned char *green,
+                unsigned char *blue, unsigned char *alpha);
 /* Return CMYK from (well-formed) colour string. Returns 0 if CMYK, 1 if converted RBG, 2 if converted RGBA */
-INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, int *yellow, int *black,
+INTERNAL int zint_out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, int *yellow, int *black,
                 unsigned char *rgb_alpha);
 
 /* Convert internal colour chars "WCBMRYGK" to RGB */
-INTERNAL int out_colour_char_to_rgb(const unsigned char ch, unsigned char *red, unsigned char *green,
+INTERNAL int zint_out_colour_char_to_rgb(const unsigned char ch, unsigned char *red, unsigned char *green,
                 unsigned char *blue);
 
 /* Set left (x), top (y), right and bottom offsets for whitespace, also right quiet zone */
-INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
+INTERNAL void zint_out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
                 const int comp_xoffset, float *p_xoffset, float *p_yoffset, float *p_roffset, float *p_boffset,
                 float *p_qz_right, const float scaler, int *p_xoffset_si, int *p_yoffset_si, int *p_roffset_si,
                 int *p_boffset_si, int *p_qz_right_si);
 
 /* Set composite offset and main width excluding add-on (for start of add-on calc) and add-on text, returning
    EAN/UPC type */
-INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp_xoffset, int *p_main_width,
+INTERNAL int zint_out_process_upcean(const struct zint_symbol *symbol, const int comp_xoffset, int *p_main_width,
                 unsigned char addon[6], int *p_addon_len, int *p_addon_gap);
 
 /* Calculate large bar height i.e. linear bars with zero row height that respond to the symbol height.
    If scaler `si` non-zero (raster), then large_bar_height if non-zero or else row heights will be rounded
    to nearest pixel and symbol height adjusted */
-INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, int *row_heights_si,
+INTERNAL float zint_out_large_bar_height(struct zint_symbol *symbol, const int si, int *row_heights_si,
                 int *symbol_height_si);
 
 /* Create output file, creating sub-directories if necessary. Returns `fopen()` FILE pointer */
-INTERNAL FILE *out_fopen(const char filename[256], const char *mode);
+INTERNAL FILE *zint_out_fopen(const char filename[256], const char *mode);
 
 #ifdef _WIN32
 /* Do `fopen()` on Windows, assuming `filename` is UTF-8 encoded. Props Marcel, ticket #288 */
-INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
+INTERNAL FILE *zint_out_win_fopen(const char *filename, const char *mode);
 #endif
 
 /* Little-endian output */
-#define out_le_u16(b, n) do { \
+#define zint_out_le_u16(b, n) do { \
         unsigned char *bp = (unsigned char *) &(b); \
         uint16_t u16 = (uint16_t) (n); \
         bp[0] = (unsigned char) (u16 & 0xFF); \
         bp[1] = (unsigned char) ((u16 >> 8) & 0xFF); \
     } while (0)
 
-#define out_le_u32(b, n) do { \
+#define zint_out_le_u32(b, n) do { \
         unsigned char *bp = (unsigned char *) &(b); \
         uint32_t u32 = (uint32_t) (n); \
         bp[0] = (unsigned char) (u32 & 0xFF); \
@@ -95,7 +95,7 @@ INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
         bp[3] = (unsigned char) ((u32 >> 24) & 0xFF); \
     } while (0)
 
-#define out_le_i32(b, n) do { \
+#define zint_out_le_i32(b, n) do { \
         unsigned char *bp = (unsigned char *) &(b); \
         int32_t i32 = (int32_t) (n); \
         bp[0] = (unsigned char) (i32 & 0xFF); \
@@ -104,7 +104,7 @@ INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
         bp[3] = (unsigned char) ((i32 >> 24) & 0xFF); \
     } while (0)
 
-#define out_le_float(b, n) do { \
+#define zint_out_le_float(b, n) do { \
         unsigned char *bp = (unsigned char *) &(b); \
         float f = (float) (n); \
         uint32_t *p_u32 = (uint32_t *) &f; \

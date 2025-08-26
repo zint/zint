@@ -92,7 +92,7 @@ static void test_perf(const testCtx *const p_ctx, const int default_iterations, 
             assert_nonnull(symbol, "Symbol not created\n");
 
             if (strlen(data[i].composite_primary)) {
-                if (is_composite(data[i].symbology)) {
+                if (z_is_composite(data[i].symbology)) {
                     text = data[i].composite_primary;
                     assert_nonzero((int) strlen(data[i].data) < ARRAY_SIZE(symbol->primary),
                                 "i:%d composite length %d >= %d\n",

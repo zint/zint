@@ -42,7 +42,7 @@
 #include "filemem.h"
 #include "output.h"
 
-/* Note using "wpng_" prefix not "png_" (except for `png_pixel_plot()`) to avoid clashing with libpng */
+/* Note using "wpng_" prefix not "png_" to avoid clashing with libpng */
 
 /* Note if change this need to change "backend/tests/test_png.c" definition also */
 struct wpng_error_type {
@@ -61,12 +61,12 @@ static void wpng_error_handler(png_structp png_ptr, png_const_charp msg) {
         fflush(stderr);
         return; /* libpng will call abort() */
     }
-    errtxtf(0, wpng_error_ptr->symbol, 635, "libpng error: %s", msg ? msg : "<NULL>");
+    z_errtxtf(0, wpng_error_ptr->symbol, 635, "libpng error: %s", msg ? msg : "<NULL>");
     longjmp(wpng_error_ptr->jmpbuf, 1);
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL void wpng_error_handler_test(png_structp png_ptr, png_const_charp msg) {
+INTERNAL void zint_test_wpng_error_handler(png_structp png_ptr, png_const_charp msg) {
     wpng_error_handler(png_ptr, msg);
 }
 #endif
@@ -74,13 +74,13 @@ INTERNAL void wpng_error_handler_test(png_structp png_ptr, png_const_charp msg) 
 /* libpng write callback */
 static void wpng_write(png_structp png_ptr, png_bytep ptr, size_t size) {
     struct filemem *fmp = (struct filemem *) png_get_io_ptr(png_ptr);
-    (void) fm_write(ptr, 1, size, fmp);
+    (void) zint_fm_write(ptr, 1, size, fmp);
 }
 
 /* libpng flush callback */
 static void wpng_flush(png_structp png_ptr) {
     struct filemem *fmp = (struct filemem *) png_get_io_ptr(png_ptr);
-    (void) fm_flush(fmp);
+    (void) zint_fm_flush(fmp);
 }
 
 /* Guestimate best compression strategy */
@@ -103,7 +103,7 @@ static int wpng_guess_compression_strategy(struct zint_symbol *symbol, const uns
     return Z_FILTERED;
 }
 
-INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
+INTERNAL int zint_png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
     struct wpng_error_type wpng_error;
     struct filemem fm;
     struct filemem *const fmp = &fm;
@@ -125,15 +125,15 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
     wpng_error.symbol = symbol;
 
-    (void) out_colour_get_rgb(symbol->fgcolour, &fg.red, &fg.green, &fg.blue, &fg_alpha);
-    (void) out_colour_get_rgb(symbol->bgcolour, &bg.red, &bg.green, &bg.blue, &bg_alpha);
+    (void) zint_out_colour_get_rgb(symbol->fgcolour, &fg.red, &fg.green, &fg.blue, &fg_alpha);
+    (void) zint_out_colour_get_rgb(symbol->bgcolour, &bg.red, &bg.green, &bg.blue, &bg_alpha);
 
     num_trans = 0;
     if (symbol->symbology == BARCODE_ULTRA) {
         static const unsigned char ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
         for (i = 0; i < 8; i++) {
             map[ultra_chars[i]] = i;
-            out_colour_char_to_rgb(ultra_chars[i], &palette[i].red, &palette[i].green, &palette[i].blue);
+            zint_out_colour_char_to_rgb(ultra_chars[i], &palette[i].red, &palette[i].green, &palette[i].blue);
             if (fg_alpha != 0xff) {
                 trans_alpha[i] = fg_alpha;
             }
@@ -211,29 +211,29 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     }
 
     /* Open output file in binary mode */
-    if (!fm_open(fmp, symbol, "wb")) {
-        return ZEXT errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 632, "Could not open PNG output file (%1$d: %2$s)",
-                            fmp->err, strerror(fmp->err));
+    if (!zint_fm_open(fmp, symbol, "wb")) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 632, "Could not open PNG output file (%1$d: %2$s)",
+                                fmp->err, strerror(fmp->err));
     }
 
     /* Set up error handling routine as proc() above */
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, &wpng_error, wpng_error_handler, NULL);
     if (!png_ptr) {
-        (void) fm_close(fmp, symbol);
-        return errtxt(ZINT_ERROR_MEMORY, symbol, 633, "Insufficient memory for PNG write structure buffer");
+        (void) zint_fm_close(fmp, symbol);
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 633, "Insufficient memory for PNG write structure buffer");
     }
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         png_destroy_write_struct(&png_ptr, NULL);
-        (void) fm_close(fmp, symbol);
-        return errtxt(ZINT_ERROR_MEMORY, symbol, 634, "Insufficient memory for PNG info structure buffer");
+        (void) zint_fm_close(fmp, symbol);
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 634, "Insufficient memory for PNG info structure buffer");
     }
 
     /* catch jumping here */
     if (setjmp(wpng_error.jmpbuf)) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
-        (void) fm_close(fmp, symbol);
+        (void) zint_fm_close(fmp, symbol);
         return ZINT_ERROR_MEMORY;
     }
 
@@ -250,7 +250,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     }
 
     if (symbol->dpmm) {
-        int resolution = (int) roundf(stripf(symbol->dpmm * 1000.0f)); /* pixels per metre */
+        int resolution = (int) roundf(z_stripf(symbol->dpmm * 1000.0f)); /* pixels per metre */
         png_set_pHYs(png_ptr, info_ptr, resolution, resolution, PNG_RESOLUTION_METER);
     }
 
@@ -311,15 +311,15 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     /* make sure we have disengaged */
     png_destroy_write_struct(&png_ptr, &info_ptr);
 
-    if (fm_error(fmp)) {
-        ZEXT errtxtf(0, symbol, 638, "Incomplete write of PNG output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
-        (void) fm_close(fmp, symbol);
+    if (zint_fm_error(fmp)) {
+        ZEXT z_errtxtf(0, symbol, 638, "Incomplete write of PNG output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
+        (void) zint_fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (!fm_close(fmp, symbol)) {
-        return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 960, "Failure on closing PNG output file (%1$d: %2$s)",
-                            fmp->err, strerror(fmp->err));
+    if (!zint_fm_close(fmp, symbol)) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 960, "Failure on closing PNG output file (%1$d: %2$s)",
+                                fmp->err, strerror(fmp->err));
     }
 
     return 0;

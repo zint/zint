@@ -48,7 +48,7 @@
 #define C16K_ABORC  '9'
 #define C16K_AORB   'Z'
 
-/* Note using C128Table with extra entry at 106 (Triple Shift) for C16KTable */
+/* Note using `zint_C128Table[]` with extra entry at 106 (Triple Shift) for C16KTable */
 
 /* EN 12323 Table 3 and Table 4 - Start patterns and stop patterns */
 static const char C16KStartStop[8][4] = {
@@ -322,7 +322,7 @@ static void c16k_set_c(const unsigned char source_a, const unsigned char source_
 }
 
 /* Code 16k EN 12323:2005 */
-INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
     char width_pattern[40]; /* 4 (start) + 1 (guard) + 5*6 (chars) + 4 (stop) + 1 */
     int current_row, rows, looper, first_check, second_check;
     int indexchaine;
@@ -339,11 +339,12 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > C128_MAX) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 420, "Input length %d too long (maximum " C128_MAX_S ")", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 420, "Input length %d too long (maximum " C128_MAX_S ")",
+                        length);
     }
 
     if (symbol->option_1 == 1 || symbol->option_1 > 16) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 424, "Minimum number of rows '%d' out of range (2 to 16)",
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 424, "Minimum number of rows '%d' out of range (2 to 16)",
                         symbol->option_1);
     }
 
@@ -388,7 +389,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 422, "Cannot use Reader Initialisation in GS1 mode");
+            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 422, "Cannot use Reader Initialisation in GS1 mode");
         }
         if (m == 2) {
             m = 5;
@@ -482,7 +483,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         }
 
         if (bar_characters > 80 - 2) { /* Max rows 16 * 5 - 2 check chars */
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 421,
+            return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 421,
                             "Input too long, requires %d symbol characters (maximum 78)", bar_characters);
         }
     } while (read < length);
@@ -535,7 +536,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump_int(symbol, values, bar_characters); /* Missing row start/stop */
+        z_debug_test_codeword_dump_int(symbol, values, bar_characters); /* Missing row start/stop */
     }
 #endif
 
@@ -551,7 +552,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         d += 4;
         *d++ = '1';
         for (i = 0; i < 5; i++, d += 6) {
-            memcpy(d, C128Table[values[(current_row * 5) + i]], 6);
+            memcpy(d, zint_C128Table[values[(current_row * 5) + i]], 6);
         }
         memcpy(d, C16KStartStop[C16KStopValues[current_row]], 4);
         d += 4;
@@ -560,9 +561,9 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         writer = 0;
         flip_flop = 1;
         for (mx_reader = 0, len = d - width_pattern; mx_reader < len; mx_reader++) {
-            for (looper = 0; looper < ctoi(width_pattern[mx_reader]); looper++) {
+            for (looper = 0; looper < z_ctoi(width_pattern[mx_reader]); looper++) {
                 if (flip_flop == 1) {
-                    set_module(symbol, current_row, writer);
+                    z_set_module(symbol, current_row, writer);
                 }
                 writer++;
             }
@@ -578,12 +579,12 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
            Section 4.5 (b) H = X[r(h + g) + g] = rows * row_height + (rows - 1) * separator as borders not included
            in symbol->height (added on) */
         const int separator = symbol->option_3 >= 1 && symbol->option_3 <= 4 ? symbol->option_3 : 1;
-        const float min_row_height = stripf((8.0f * rows + separator * (rows - 1)) / rows);
+        const float min_row_height = z_stripf((8.0f * rows + separator * (rows - 1)) / rows);
         const float default_height = 10.0f * rows + separator * (rows - 1);
-        error_number = set_height(symbol, min_row_height, default_height, 0.0f, 0 /*no_errtxt*/);
+        error_number = z_set_height(symbol, min_row_height, default_height, 0.0f, 0 /*no_errtxt*/);
         symbol->option_3 = separator; /* Feedback options */
     } else {
-        (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
     }
 
     symbol->output_options |= BARCODE_BIND;
@@ -592,8 +593,8 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         symbol->border_width = 1; /* BS EN 12323:2005 Section 4.3.7 minimum (note change from previous default 2) */
     }
 
-    if (raw_text && rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
     }
 
     return error_number;

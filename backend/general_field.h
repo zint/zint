@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,15 +32,15 @@
 #ifndef Z_GENERAL_FIELD_H
 #define Z_GENERAL_FIELD_H
 
-#define NUMERIC         110
-#define ALPHANUMERIC    97
-#define ISOIEC          105
+#define GF_NUMERIC          110
+#define GF_ALPHANUMERIC     97
+#define GF_ISOIEC           105
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-INTERNAL int general_field_encode(const char *general_field, const int general_field_len, int *p_mode,
+INTERNAL int zint_general_field_encode(const char *general_field, const int general_field_len, int *p_mode,
                 char *p_last_digit, char binary_string[], int *p_bp);
 
 #ifdef __cplusplus

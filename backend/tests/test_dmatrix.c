@@ -925,8 +925,8 @@ static void test_reader_init(const testCtx *const p_ctx) {
 
 #define ZINT_TEST_ENCODING
 #ifdef ZINT_TEST_ENCODING
-INTERNAL int dm_encode_test(struct zint_symbol *symbol, const unsigned char source[], const int length, const int eci,
-                const int last_seg, const int gs1, unsigned char target[], int *p_tp);
+INTERNAL int zint_test_dm_encode(struct zint_symbol *symbol, const unsigned char source[], const int length,
+                const int eci, const int last_seg, const int gs1, unsigned char target[], int *p_tp);
 #endif
 
 static void test_input(const testCtx *const p_ctx) {
@@ -1320,8 +1320,8 @@ static void test_input(const testCtx *const p_ctx) {
 
                     if ((data[i].input_mode & 0x07) == GS1_MODE) {
                         int data_len = length;
-                        ret = gs1_verify(symbol, ZUCP(data[i].data), &data_len, reduced, &length);
-                        assert_zero(ret, "i:%d gs1_verify() ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+                        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), &data_len, reduced, &length);
+                        assert_zero(ret, "i:%d zint_gs1_verify() ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
                         text = reduced;
                     } else {
                         text = ZCUCP(data[i].data);
@@ -1331,7 +1331,7 @@ static void test_input(const testCtx *const p_ctx) {
                     symbol->option_2 = data[i].option_2 != -1 ? data[i].option_2 : 0; /* Restore option_2 */
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 :
                             (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode_test(symbol, text, length, symbol->eci, last_seg, gs1, binary[0], &binlen);
+                    ret = zint_test_dm_encode(symbol, text, length, symbol->eci, last_seg, gs1, binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[0] = binlen;
@@ -1341,7 +1341,7 @@ static void test_input(const testCtx *const p_ctx) {
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 :
                             (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
                     symbol->option_2 = data[i].option_2 != -1 ? data[i].option_2 : 0; /* Restore option_2 */
-                    ret = dm_encode_test(symbol, text, length, symbol->eci, last_seg, gs1, binary[1], &binlen);
+                    ret = zint_test_dm_encode(symbol, text, length, symbol->eci, last_seg, gs1, binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[1] = binlen;
@@ -5917,7 +5917,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     symbol->input_mode = data[i - 1].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 :
                             (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode_test(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1,
+                    ret = zint_test_dm_encode(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1,
                                         binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
@@ -5927,7 +5927,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     symbol->input_mode = data[i].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 :
                             (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode_test(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1,
+                    ret = zint_test_dm_encode(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1,
                                         binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
@@ -6314,9 +6314,9 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
-            int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
-            int length1 = data[i].segs[1].length == -1 ? (int) ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
-            int length2 = data[i].segs[2].length == -1 ? (int) ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
+            int length = data[i].segs[0].length == -1 ? (int) z_ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1 ? (int) z_ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1 ? (int) z_ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
             printf("        /*%3d*/ { %s, %s, %s, %d, %s, { %d, %d, \"%s\" }, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
                     testUtilOutputOptionsName(data[i].output_options),
@@ -7637,7 +7637,8 @@ static void test_minimalenc(const testCtx *const p_ctx) {
         binlen = 0;
         symbol->input_mode |= FAST_MODE;
         gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-        ret = dm_encode_test(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1, binary[0], &binlen);
+        ret = zint_test_dm_encode(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1, binary[0],
+                                    &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() FAST_MODE ret %d != %d (%s)\n",
                     i, ret, data[i].ret, symbol->errtxt);
 
@@ -7646,7 +7647,8 @@ static void test_minimalenc(const testCtx *const p_ctx) {
         binlen = 0;
         symbol->input_mode &= ~FAST_MODE;
         gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-        ret = dm_encode_test(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1, binary[1], &binlen);
+        ret = zint_test_dm_encode(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1, binary[1],
+                                    &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() minimal ret %d != %d (%s)\n",
                     i, ret, data[i].ret, symbol->errtxt);
 

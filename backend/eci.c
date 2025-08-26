@@ -290,12 +290,12 @@ static int u_sjis_int(const unsigned int u, unsigned int *d) {
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int u_sjis_int_test(const unsigned int u, unsigned int *d) {
+INTERNAL int zint_test_u_sjis_int(const unsigned int u, unsigned int *d) {
     return u_sjis_int(u, d);
 }
 #endif
 
-/* Version of `u_sjis_int()` taking unsigned char destination, for use by `utf8_to_eci()` */
+/* Version of `u_sjis_int()` taking unsigned char destination, for use by `zint_utf8_to_eci()` */
 static int u_sjis(const unsigned int u, unsigned char *dest) {
     unsigned int d;
     int ret = u_sjis_int(u, &d);
@@ -346,7 +346,7 @@ static int u_big5(const unsigned int u, unsigned char *dest) {
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int u_big5_test(const unsigned int u, unsigned char *dest) {
+INTERNAL int zint_test_u_big5(const unsigned int u, unsigned char *dest) {
     return u_big5(u, dest);
 }
 #endif
@@ -387,7 +387,7 @@ static int u_ksx1001(const unsigned int u, unsigned char *dest) {
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int u_ksx1001_test(const unsigned int u, unsigned char *dest) {
+INTERNAL int zint_test_u_ksx1001(const unsigned int u, unsigned char *dest) {
     return u_ksx1001(u, dest);
 }
 #endif
@@ -426,12 +426,12 @@ static int u_gb2312_int(const unsigned int u, unsigned int *d) {
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int u_gb2312_int_test(const unsigned int u, unsigned int *d) {
+INTERNAL int zint_test_u_gb2312_int(const unsigned int u, unsigned int *d) {
     return u_gb2312_int(u, d);
 }
 #endif
 
-/* Version of `u_gb2312_int()` taking unsigned char destination, for use by `utf8_to_eci()` */
+/* Version of `u_gb2312_int()` taking unsigned char destination, for use by `zint_utf8_to_eci()` */
 static int u_gb2312(const unsigned int u, unsigned char *dest) {
     unsigned int d;
     int ret = u_gb2312_int(u, &d);
@@ -495,12 +495,12 @@ static int u_gbk_int(const unsigned int u, unsigned int *d) {
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int u_gbk_int_test(const unsigned int u, unsigned int *d) {
+INTERNAL int zint_test_u_gbk_int(const unsigned int u, unsigned int *d) {
     return u_gbk_int(u, d);
 }
 #endif
 
-/* Version of `u_gbk_int()` taking unsigned char destination, for use by `utf8_to_eci()` */
+/* Version of `u_gbk_int()` taking unsigned char destination, for use by `zint_utf8_to_eci()` */
 static int u_gbk(const unsigned int u, unsigned char *dest) {
     unsigned int d;
     int ret = u_gbk_int(u, &d);
@@ -624,12 +624,12 @@ static int u_gb18030_int(const unsigned int u, unsigned int *d1, unsigned int *d
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int u_gb18030_int_test(const unsigned int u, unsigned int *d1, unsigned int *d2) {
+INTERNAL int zint_test_u_gb18030_int(const unsigned int u, unsigned int *d1, unsigned int *d2) {
     return u_gb18030_int(u, d1, d2);
 }
 #endif
 
-/* Version of `u_gb18030_int()` taking unsigned char destination, for use by `utf8_to_eci()` */
+/* Version of `u_gb18030_int()` taking unsigned char destination, for use by `zint_utf8_to_eci()` */
 static int u_gb18030(const unsigned int u, unsigned char *dest) {
     unsigned int d1, d2;
     int ret = u_gb18030_int(u, &d1, &d2);
@@ -672,7 +672,7 @@ static int chr_range_cnt(const unsigned char string[], const int length, const u
 }
 
 /* Is ECI convertible from UTF-8? */
-INTERNAL int is_eci_convertible(const int eci) {
+INTERNAL int zint_is_eci_convertible(const int eci) {
     if (eci == 26 || (eci > 35 && eci != 170)) { /* Exclude ECI 170 - ASCII Invariant */
         /* UTF-8 (26) or 8-bit binary data (899) or undefined (> 35 and < 899) or not character set (> 899) */
         return 0;
@@ -682,21 +682,21 @@ INTERNAL int is_eci_convertible(const int eci) {
 
 /* Are any of the ECIs in the segments convertible from UTF-8?
    Sets `convertible[]` for each, which must be at least `seg_count` in size */
-INTERNAL int is_eci_convertible_segs(const struct zint_seg segs[], const int seg_count, int convertible[]) {
+INTERNAL int zint_is_eci_convertible_segs(const struct zint_seg segs[], const int seg_count, int convertible[]) {
     int ret = 0;
     int i;
     for (i = 0; i < seg_count; i++) {
-        convertible[i] = is_eci_convertible(segs[i].eci);
+        convertible[i] = zint_is_eci_convertible(segs[i].eci);
         ret |= convertible[i];
     }
     return ret;
 }
 
 /* Calculate length required to convert UTF-8 to (double-byte) encoding */
-INTERNAL int get_eci_length(const int eci, const unsigned char source[], int length) {
+INTERNAL int zint_get_eci_length(const int eci, const unsigned char source[], int length) {
     if (eci == 20) { /* Shift JIS */
         /* Only ASCII backslash (reverse solidus) exceeds UTF-8 length */
-        length += chr_cnt(source, length, '\\');
+        length += z_chr_cnt(source, length, '\\');
 
     } else if (eci == 25 || eci == 33) { /* UTF-16 */
         /* All ASCII chars take 2 bytes */
@@ -717,13 +717,13 @@ INTERNAL int get_eci_length(const int eci, const unsigned char source[], int len
     return length;
 }
 
-/* Call `get_eci_length()` for each segment, returning total */
-INTERNAL int get_eci_length_segs(const struct zint_seg segs[], const int seg_count) {
+/* Call `zint_get_eci_length()` for each segment, returning total */
+INTERNAL int zint_get_eci_length_segs(const struct zint_seg segs[], const int seg_count) {
     int length = 0;
     int i;
 
     for (i = 0; i < seg_count; i++) {
-        length += get_eci_length(segs[i].eci, segs[i].source, segs[i].length);
+        length += zint_get_eci_length(segs[i].eci, segs[i].source, segs[i].length);
     }
 
     return length;
@@ -731,7 +731,7 @@ INTERNAL int get_eci_length_segs(const struct zint_seg segs[], const int seg_cou
 
 /* Convert UTF-8 to other character encodings */
 typedef int (*eci_func_t)(const unsigned int u, unsigned char *dest);
-INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *p_length) {
+INTERNAL int zint_utf8_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *p_length) {
 
     static const eci_func_t eci_funcs[36] = {
                 NULL,         NULL,      u_cp437,         NULL,  u_iso8859_2, /*0-4*/
@@ -754,7 +754,7 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
     if (eci == 0 || eci == 3 || eci == 1) {
         while (in_posn < length) {
             do {
-                decode_utf8(&state, &codepoint, source[in_posn++]);
+                z_decode_utf8(&state, &codepoint, source[in_posn++]);
             } while (in_posn < length && state != 0 && state != 12);
             if (state != 0) {
                 return ZINT_ERROR_INVALID_DATA;
@@ -783,7 +783,7 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
     while (in_posn < length) {
         int incr;
         do {
-            decode_utf8(&state, &codepoint, source[in_posn++]);
+            z_decode_utf8(&state, &codepoint, source[in_posn++]);
         } while (in_posn < length && state != 0 && state != 12);
         if (state != 0) {
             return ZINT_ERROR_INVALID_DATA;
@@ -801,9 +801,9 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
 }
 
 /* Find the lowest single-byte ECI mode which will encode a given set of Unicode text, assuming valid UTF-8 */
-INTERNAL int get_best_eci(const unsigned char source[], int length) {
+INTERNAL int zint_get_best_eci(const unsigned char source[], int length) {
     int eci = 3;
-    /* Note: attempting single-byte conversions only, so get_eci_length() unnecessary */
+    /* Note: attempting single-byte conversions only, so `zint_get_eci_length()` unnecessary */
     unsigned char *local_source = (unsigned char *) z_alloca(length + 1);
 
     do {
@@ -812,26 +812,27 @@ INTERNAL int get_best_eci(const unsigned char source[], int length) {
         } else if (eci == 19) { /* Reserved */
             eci = 21; /* Skip 20 Shift JIS */
         }
-        if (utf8_to_eci(eci, source, local_source, &length) == 0) {
+        if (zint_utf8_to_eci(eci, source, local_source, &length) == 0) {
             return eci;
         }
         eci++;
     } while (eci < 25);
 
-    assert(is_valid_utf8(source, length));
+    assert(z_is_valid_utf8(source, length));
 
     return 26; /* If all of these fail, use UTF-8! */
 }
 
-/* Call `get_best_eci()` for each segment, assuming valid UTF-8. Returns 0 on failure, first ECI set on success */
-INTERNAL int get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+/* Call `zint_get_best_eci()` for each segment, assuming valid UTF-8. Returns 0 on failure, first ECI set on success
+*/
+INTERNAL int zint_get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     const int default_eci = symbol->symbology == BARCODE_GRIDMATRIX ? 29 : symbol->symbology == BARCODE_UPNQR ? 4 : 3;
     int first_eci_set = 0;
     int i;
 
     for (i = 0; i < seg_count; i++) {
         if (segs[i].eci == 0) {
-            const int eci = get_best_eci(segs[i].source, segs[i].length);
+            const int eci = zint_get_best_eci(segs[i].source, segs[i].length);
             if (eci == default_eci) {
                 if (i != 0 && segs[i - 1].eci != 0 && segs[i - 1].eci != default_eci) {
                     segs[i].eci = eci;
@@ -857,20 +858,20 @@ INTERNAL int get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg segs[
 /* QRCODE Shift JIS helpers */
 
 /* Convert UTF-8 string to Shift JIS and place in array of ints */
-INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+INTERNAL int zint_sjis_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
                 unsigned int *ddata) {
     int error_number;
     unsigned int i, length;
     unsigned int *utfdata = (unsigned int *) z_alloca(sizeof(unsigned int) * (*p_length + 1));
 
-    error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 1 /*disallow_4byte*/);
+    error_number = z_utf8_to_unicode(symbol, source, utfdata, p_length, 1 /*disallow_4byte*/);
     if (error_number != 0) {
         return error_number;
     }
 
     for (i = 0, length = *p_length; i < length; i++) {
         if (!u_sjis_int(utfdata[i], ddata + i)) {
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 800, "Invalid character in input");
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 800, "Invalid character in input");
         }
     }
 
@@ -879,7 +880,8 @@ INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[],
 
 /* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in
  * a single entry. If `full_multibyte` not set, do a straight copy */
-INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *ddata, const int full_multibyte) {
+INTERNAL void zint_sjis_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte) {
     unsigned int i, j, length;
     unsigned char c1, c2;
 
@@ -910,41 +912,41 @@ INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int
     }
 }
 
-/* Call `sjis_cpy()` for each segment */
-INTERNAL int sjis_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+/* Call `zint_sjis_cpy()` for each segment */
+INTERNAL int zint_sjis_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
                 unsigned int *ddata, const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT; /* Note only called for DATA_MODE */
 
     for (i = 0; i < seg_count; i++) {
-        sjis_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
-        if (raw_text && rt_cpy_seg_ddata(symbol, i, &segs[i], 0 /*eci*/, dd)) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg_ddata()` only fails with OOM */
+        zint_sjis_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
+        if (raw_text && z_rt_cpy_seg_ddata(symbol, i, &segs[i], 0 /*eci*/, dd)) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg_ddata()` only fails with OOM */
         }
         dd += segs[i].length;
     }
     return 0;
 }
 
-/* Convert UTF-8 string to ECI and place in array of ints using `sjis_cpy()` */
-INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
+/* Convert UTF-8 string to ECI and place in array of ints using `zint_sjis_cpy()` */
+INTERNAL int zint_sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte) {
 
-    if (is_eci_convertible(eci)) {
+    if (zint_is_eci_convertible(eci)) {
         int error_number;
-        const int eci_length = get_eci_length(eci, source, *p_length);
+        const int eci_length = zint_get_eci_length(eci, source, *p_length);
         unsigned char *converted = (unsigned char *) z_alloca(eci_length + 1);
 
-        error_number = utf8_to_eci(eci, source, converted, p_length);
+        error_number = zint_utf8_to_eci(eci, source, converted, p_length);
         if (error_number != 0) {
             /* Note not setting `symbol->errtxt`, up to caller */
             return error_number;
         }
 
-        sjis_cpy(converted, p_length, ddata, full_multibyte || eci == 20);
+        zint_sjis_cpy(converted, p_length, ddata, full_multibyte || eci == 20);
     } else {
-        sjis_cpy(source, p_length, ddata, full_multibyte);
+        zint_sjis_cpy(source, p_length, ddata, full_multibyte);
     }
 
     return 0;
@@ -953,13 +955,13 @@ INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *
 /* GRIDMATRIX GB 2312 helpers */
 
 /* Convert UTF-8 string to GB 2312 (EUC-CN) and place in array of ints */
-INTERNAL int gb2312_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+INTERNAL int zint_gb2312_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
                 unsigned int *ddata) {
     int error_number;
     unsigned int i, length;
     unsigned int *utfdata = (unsigned int *) z_alloca(sizeof(unsigned int) * (*p_length + 1));
 
-    error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 1 /*disallow_4byte*/);
+    error_number = z_utf8_to_unicode(symbol, source, utfdata, p_length, 1 /*disallow_4byte*/);
     if (error_number != 0) {
         return error_number;
     }
@@ -969,7 +971,7 @@ INTERNAL int gb2312_utf8(struct zint_symbol *symbol, const unsigned char source[
             ddata[i] = utfdata[i];
         } else {
             if (!u_gb2312_int(utfdata[i], ddata + i)) {
-                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 810, "Invalid character in input");
+                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 810, "Invalid character in input");
             }
         }
     }
@@ -1011,24 +1013,24 @@ static void gb2312_cpy(const unsigned char source[], int *p_length, unsigned int
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL void gb2312_cpy_test(const unsigned char source[], int *p_length, unsigned int *ddata,
+INTERNAL void zint_test_gb2312_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte) {
     gb2312_cpy(source, p_length, ddata, full_multibyte);
 }
 #endif
 
 /* Call `gb2312_cpy()` for each segment */
-INTERNAL int gb2312_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+INTERNAL int zint_gb2312_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
                 unsigned int *ddata, const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     for (i = 0; i < seg_count; i++) {
-        const int eci = segs[i].eci ? segs[i].eci : 29; /* Need to set as `rt_cpy_seg_ddata()` defaults to 3 */
+        const int eci = segs[i].eci ? segs[i].eci : 29; /* Need to set as `z_rt_cpy_seg_ddata()` defaults to 3 */
         gb2312_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
-        if (raw_text && rt_cpy_seg_ddata(symbol, i, &segs[i], eci, dd)) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg_ddata()` only fails with OOM */
+        if (raw_text && z_rt_cpy_seg_ddata(symbol, i, &segs[i], eci, dd)) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg_ddata()` only fails with OOM */
         }
         dd += segs[i].length;
     }
@@ -1036,15 +1038,15 @@ INTERNAL int gb2312_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[],
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints using `gb2312_cpy()` */
-INTERNAL int gb2312_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
+INTERNAL int zint_gb2312_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte) {
 
-    if (is_eci_convertible(eci)) {
+    if (zint_is_eci_convertible(eci)) {
         int error_number;
-        const int eci_length = get_eci_length(eci, source, *p_length);
+        const int eci_length = zint_get_eci_length(eci, source, *p_length);
         unsigned char *converted = (unsigned char *) z_alloca(eci_length + 1);
 
-        error_number = utf8_to_eci(eci, source, converted, p_length);
+        error_number = zint_utf8_to_eci(eci, source, converted, p_length);
         if (error_number != 0) {
             /* Note not setting `symbol->errtxt`, up to caller */
             return error_number;
@@ -1061,13 +1063,13 @@ INTERNAL int gb2312_utf8_to_eci(const int eci, const unsigned char source[], int
 /* HANXIN GB 18030 helpers */
 
 /* Convert UTF-8 string to GB 18030 and place in array of ints */
-INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+INTERNAL int zint_gb18030_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
                 unsigned int *ddata) {
     int error_number, ret;
     unsigned int i, j, length;
     unsigned int *utfdata = (unsigned int *) z_alloca(sizeof(unsigned int) * (*p_length + 1));
 
-    error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 0 /*disallow_4byte*/);
+    error_number = z_utf8_to_unicode(symbol, source, utfdata, p_length, 0 /*disallow_4byte*/);
     if (error_number != 0) {
         return error_number;
     }
@@ -1078,7 +1080,7 @@ INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source
         } else {
             ret = u_gb18030_int(utfdata[i], ddata + j, ddata + j + 1);
             if (ret == 0) { /* Should never happen, as GB 18030 is a UTF i.e. maps all Unicode codepoints */
-                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 820, "Invalid character in input"); /* Not reached */
+                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 820, "Invalid character in input"); /* Not reached */
             }
             if (ret == 4) {
                 j++;
@@ -1136,14 +1138,14 @@ static void gb18030_cpy(const unsigned char source[], int *p_length, unsigned in
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL void gb18030_cpy_test(const unsigned char source[], int *p_length, unsigned int *ddata,
+INTERNAL void zint_test_gb18030_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte) {
     gb18030_cpy(source, p_length, ddata, full_multibyte);
 }
 #endif
 
 /* Call `gb18030_cpy()` for each segment */
-INTERNAL int gb18030_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+INTERNAL int zint_gb18030_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
                 unsigned int *ddata, const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
@@ -1151,8 +1153,8 @@ INTERNAL int gb18030_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[]
 
     for (i = 0; i < seg_count; i++) {
         gb18030_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
-        if (raw_text && rt_cpy_seg_ddata(symbol, i, &segs[i], 0 /*eci*/, dd)) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg_ddata()` only fails with OOM */
+        if (raw_text && z_rt_cpy_seg_ddata(symbol, i, &segs[i], 0 /*eci*/, dd)) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg_ddata()` only fails with OOM */
         }
         dd += segs[i].length;
     }
@@ -1160,15 +1162,15 @@ INTERNAL int gb18030_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[]
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints using `gb18030_cpy()` */
-INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
+INTERNAL int zint_gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte) {
 
-    if (is_eci_convertible(eci)) {
+    if (zint_is_eci_convertible(eci)) {
         int error_number;
-        const int eci_length = get_eci_length(eci, source, *p_length);
+        const int eci_length = zint_get_eci_length(eci, source, *p_length);
         unsigned char *converted = (unsigned char *) z_alloca(eci_length + 1);
 
-        error_number = utf8_to_eci(eci, source, converted, p_length);
+        error_number = zint_utf8_to_eci(eci, source, converted, p_length);
         if (error_number != 0) {
             /* Note not setting `symbol->errtxt`, up to caller */
             return error_number;

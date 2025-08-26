@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-04-24)
+Version 2.15.0.9 (dev) not released yet (2025-08-25)
 ====================================================
 
 **Incompatible changes**
@@ -46,6 +46,9 @@ Changes
 - For EAN/UPC accept space as alternative add-on separator to '+', and accept
   GTIN-13 format with & without 2-digit or 5-digit add-on (no separator)
 - GS1PARENS_MODE: allow parentheses in AI data if backslashed and `ESCAPE_MODE`
+- Prefix all `INTERNAL` funcs/tables with `zint_`, except for those in
+  "backend/common.h", which are prefixed by `z_` - makes symbol clashes more
+  unlikely when zint is statically linked (ticket #337, props Ulrich Becker)
 
 Bugs
 ----
@@ -61,6 +64,8 @@ Bugs
 - MAILMARK_2D: fix postcode validation: no limited alphanumerics, spaced-out
   DPS "outward"-only allowed, all-blank DPS allowed (ticket #334, props Milton
   Neal)
+- DOTCODE: fix padding allowance to cover cases with large no. of columns
+  requested and little data, to prevent buffer overflow
 - manual/man page: fix DATAMATRIX Sizes tables "28 12x26" -> "27 12x26"
 
 

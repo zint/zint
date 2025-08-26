@@ -43,7 +43,7 @@
 #include "emf.h"
 
 /* Multiply truncating to 3 decimal places (avoids rounding differences on various platforms) */
-#define emf_mul3dpf(m, arg) stripf(roundf((m) * (arg) * 1000.0f) / 1000.0f)
+#define emf_mul3dpf(m, arg) z_stripf(roundf((m) * (arg) * 1000.0f) / 1000.0f)
 
 static int emf_count_rectangles(const struct zint_symbol *symbol) {
     int rectangles = 0;
@@ -159,7 +159,7 @@ static int emf_utfle_length(const unsigned char *input, const int length) {
     return result;
 }
 
-INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
+INTERNAL int zint_emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     int i;
     struct filemem fm;
     struct filemem *const fmp = &fm;
@@ -181,14 +181,14 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     int device_pxx, device_pxy; /* Pixels */
     int mmx, mmy; /* Millimeters */
     int micronx, microny; /* Micrometers */
-    const float dpmm = symbol->dpmm ? stripf(symbol->dpmm)
+    const float dpmm = symbol->dpmm ? z_stripf(symbol->dpmm)
                                     : ZBarcode_XdimDp_From_Scale(symbol->symbology, symbol->scale,
                                         ZBarcode_Default_Xdim(symbol->symbology), "EMF");
     const int sideways = rotate_angle == 90 || rotate_angle == 270;
 
     int draw_background = 1;
     int bold;
-    const int upcean = is_upcean(symbol->symbology);
+    const int is_upcean = z_is_upcean(symbol->symbology);
 
     struct zint_vector_rect *rect;
     struct zint_vector_circle *circ;
@@ -239,11 +239,11 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     const int ih_ultra_offset = symbol->symbology == BARCODE_ULTRA ? 8 : 0;
 
     if (symbol->vector == NULL) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 643, "Vector header NULL");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 643, "Vector header NULL");
     }
 
-    (void) out_colour_get_rgb(symbol->fgcolour, &fgred, &fggrn, &fgblu, NULL /*alpha*/);
-    (void) out_colour_get_rgb(symbol->bgcolour, &bgred, &bggrn, &bgblu, &bgalpha);
+    (void) zint_out_colour_get_rgb(symbol->fgcolour, &fgred, &fggrn, &fgblu, NULL /*alpha*/);
+    (void) zint_out_colour_get_rgb(symbol->bgcolour, &bgred, &bggrn, &bgblu, &bgalpha);
     if (bgalpha == 0) {
         draw_background = 0;
     }
@@ -287,150 +287,151 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     device_pxy = height;
 
     if (dpmm) {
-        frame_cmmx = (int) roundf(stripf(width * 100.0f / dpmm)) - 1; /* frame also "inclusive-inclusive" */
-        frame_cmmy = (int) roundf(stripf(height * 100.0f / dpmm)) - 1;
-        mmx = (int) roundf(stripf(width / dpmm)); /* millimeters */
-        mmy = (int) roundf(stripf(height / dpmm));
-        micronx = (int) roundf(stripf(width * 1000.0f / dpmm)); /* micrometers */
-        microny = (int) roundf(stripf(height * 1000.0f / dpmm));
+        frame_cmmx = (int) roundf(z_stripf(width * 100.0f / dpmm)) - 1; /* frame also "inclusive-inclusive" */
+        frame_cmmy = (int) roundf(z_stripf(height * 100.0f / dpmm)) - 1;
+        mmx = (int) roundf(z_stripf(width / dpmm)); /* millimeters */
+        mmy = (int) roundf(z_stripf(height / dpmm));
+        micronx = (int) roundf(z_stripf(width * 1000.0f / dpmm)); /* micrometers */
+        microny = (int) roundf(z_stripf(height * 1000.0f / dpmm));
     } else { /* Should only happen if `symbol->scale` zero. */
-        frame_cmmx = (int) roundf(stripf(width * 100.0f)) - 1;
-        frame_cmmy = (int) roundf(stripf(height * 100.0f)) - 1;
-        mmx = (int) roundf(stripf(width));
-        mmy = (int) roundf(stripf(height));
-        micronx = (int) roundf(stripf(width * 1000.0f));
-        microny = (int) roundf(stripf(height * 1000.0f));
+        frame_cmmx = (int) roundf(z_stripf(width * 100.0f)) - 1;
+        frame_cmmy = (int) roundf(z_stripf(height * 100.0f)) - 1;
+        mmx = (int) roundf(z_stripf(width));
+        mmy = (int) roundf(z_stripf(height));
+        micronx = (int) roundf(z_stripf(width * 1000.0f));
+        microny = (int) roundf(z_stripf(height * 1000.0f));
     }
 
     /* Header */
-    out_le_u32(emr_header.type, 0x00000001); /* EMR_HEADER */
-    out_le_u32(emr_header.size, 108); /* Including extensions */
-    out_le_i32(emr_header.emf_header.bounds.left, 0);
-    out_le_i32(emr_header.emf_header.bounds.top, 0);
-    out_le_i32(emr_header.emf_header.bounds.right, sideways ? bounds_pxy : bounds_pxx);
-    out_le_i32(emr_header.emf_header.bounds.bottom, sideways ? bounds_pxx : bounds_pxy);
-    out_le_i32(emr_header.emf_header.frame.left, 0);
-    out_le_i32(emr_header.emf_header.frame.top, 0);
-    out_le_i32(emr_header.emf_header.frame.right, sideways ? frame_cmmy : frame_cmmx);
-    out_le_i32(emr_header.emf_header.frame.bottom, sideways ? frame_cmmx : frame_cmmy);
-    out_le_u32(emr_header.emf_header.record_signature, 0x464d4520); /* ENHMETA_SIGNATURE */
-    out_le_u32(emr_header.emf_header.version, 0x00010000);
-    out_le_u16(emr_header.emf_header.handles, (fsize2 != 0.0f ? 5 : 4) + ih_ultra_offset); /* No. of graphics objs */
-    out_le_u16(emr_header.emf_header.reserved, 0x0000);
-    out_le_u32(emr_header.emf_header.n_description, 0);
-    out_le_u32(emr_header.emf_header.off_description, 0);
-    out_le_u32(emr_header.emf_header.n_pal_entries, 0);
-    out_le_u32(emr_header.emf_header.device.cx, sideways ? device_pxy : device_pxx);
-    out_le_u32(emr_header.emf_header.device.cy, sideways ? device_pxx : device_pxy);
-    out_le_u32(emr_header.emf_header.millimeters.cx, sideways ? mmy : mmx);
-    out_le_u32(emr_header.emf_header.millimeters.cy, sideways ? mmx : mmy);
+    zint_out_le_u32(emr_header.type, 0x00000001); /* EMR_HEADER */
+    zint_out_le_u32(emr_header.size, 108); /* Including extensions */
+    zint_out_le_i32(emr_header.emf_header.bounds.left, 0);
+    zint_out_le_i32(emr_header.emf_header.bounds.top, 0);
+    zint_out_le_i32(emr_header.emf_header.bounds.right, sideways ? bounds_pxy : bounds_pxx);
+    zint_out_le_i32(emr_header.emf_header.bounds.bottom, sideways ? bounds_pxx : bounds_pxy);
+    zint_out_le_i32(emr_header.emf_header.frame.left, 0);
+    zint_out_le_i32(emr_header.emf_header.frame.top, 0);
+    zint_out_le_i32(emr_header.emf_header.frame.right, sideways ? frame_cmmy : frame_cmmx);
+    zint_out_le_i32(emr_header.emf_header.frame.bottom, sideways ? frame_cmmx : frame_cmmy);
+    zint_out_le_u32(emr_header.emf_header.record_signature, 0x464d4520); /* ENHMETA_SIGNATURE */
+    zint_out_le_u32(emr_header.emf_header.version, 0x00010000);
+    /* No. of graphics objs */
+    zint_out_le_u16(emr_header.emf_header.handles, (fsize2 != 0.0f ? 5 : 4) + ih_ultra_offset);
+    zint_out_le_u16(emr_header.emf_header.reserved, 0x0000);
+    zint_out_le_u32(emr_header.emf_header.n_description, 0);
+    zint_out_le_u32(emr_header.emf_header.off_description, 0);
+    zint_out_le_u32(emr_header.emf_header.n_pal_entries, 0);
+    zint_out_le_u32(emr_header.emf_header.device.cx, sideways ? device_pxy : device_pxx);
+    zint_out_le_u32(emr_header.emf_header.device.cy, sideways ? device_pxx : device_pxy);
+    zint_out_le_u32(emr_header.emf_header.millimeters.cx, sideways ? mmy : mmx);
+    zint_out_le_u32(emr_header.emf_header.millimeters.cy, sideways ? mmx : mmy);
     /* HeaderExtension1 */
-    out_le_u32(emr_header.emf_header.cb_pixel_format, 0x0000); /* None set */
-    out_le_u32(emr_header.emf_header.off_pixel_format, 0x0000); /* None set */
-    out_le_u32(emr_header.emf_header.b_open_gl, 0x0000); /* OpenGL not present */
+    zint_out_le_u32(emr_header.emf_header.cb_pixel_format, 0x0000); /* None set */
+    zint_out_le_u32(emr_header.emf_header.off_pixel_format, 0x0000); /* None set */
+    zint_out_le_u32(emr_header.emf_header.b_open_gl, 0x0000); /* OpenGL not present */
     /* HeaderExtension2 */
-    out_le_u32(emr_header.emf_header.micrometers.cx, sideways ? microny : micronx);
-    out_le_u32(emr_header.emf_header.micrometers.cy, sideways ? micronx : microny);
+    zint_out_le_u32(emr_header.emf_header.micrometers.cx, sideways ? microny : micronx);
+    zint_out_le_u32(emr_header.emf_header.micrometers.cy, sideways ? micronx : microny);
     bytecount = 108;
     recordcount = 1;
 
-    out_le_u32(emr_mapmode.type, 0x00000011); /* EMR_SETMAPMODE */
-    out_le_u32(emr_mapmode.size, 12);
-    out_le_u32(emr_mapmode.mapmode, 0x01); /* MM_TEXT */
+    zint_out_le_u32(emr_mapmode.type, 0x00000011); /* EMR_SETMAPMODE */
+    zint_out_le_u32(emr_mapmode.size, 12);
+    zint_out_le_u32(emr_mapmode.mapmode, 0x01); /* MM_TEXT */
     bytecount += 12;
     recordcount++;
 
     if (rotate_angle) {
-        out_le_u32(emr_setworldtransform.type, 0x00000023); /* EMR_SETWORLDTRANSFORM */
-        out_le_u32(emr_setworldtransform.size, 32);
-        out_le_float(emr_setworldtransform.m11, rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? -1.0f : 0.0f);
-        out_le_float(emr_setworldtransform.m12, rotate_angle == 90 ? 1.0f : rotate_angle == 180 ? 0.0f : -1.0f);
-        out_le_float(emr_setworldtransform.m21, rotate_angle == 90 ? -1.0f : rotate_angle == 180 ? 0.0f : 1.0f);
-        out_le_float(emr_setworldtransform.m22, rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? -1.0f : 0.0f);
-        out_le_float(emr_setworldtransform.dx, rotate_angle == 90 ? height : rotate_angle == 180 ? width : 0.0f);
-        out_le_float(emr_setworldtransform.dy, rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? height : width);
+        zint_out_le_u32(emr_setworldtransform.type, 0x00000023); /* EMR_SETWORLDTRANSFORM */
+        zint_out_le_u32(emr_setworldtransform.size, 32);
+        zint_out_le_float(emr_setworldtransform.m11, rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? -1.0f : 0.0f);
+        zint_out_le_float(emr_setworldtransform.m12, rotate_angle == 90 ? 1.0f : rotate_angle == 180 ? 0.0f : -1.0f);
+        zint_out_le_float(emr_setworldtransform.m21, rotate_angle == 90 ? -1.0f : rotate_angle == 180 ? 0.0f : 1.0f);
+        zint_out_le_float(emr_setworldtransform.m22, rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? -1.0f : 0.0f);
+        zint_out_le_float(emr_setworldtransform.dx, rotate_angle == 90 ? height : rotate_angle == 180 ? width : 0.0f);
+        zint_out_le_float(emr_setworldtransform.dy, rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? height : width);
         bytecount += 32;
         recordcount++;
     }
 
     /* Create Brushes */
-    out_le_u32(emr_createbrushindirect_bg.type, 0x00000027); /* EMR_CREATEBRUSHINDIRECT */
-    out_le_u32(emr_createbrushindirect_bg.size, 24);
-    out_le_u32(emr_createbrushindirect_bg.ih_brush, 0);
-    out_le_u32(emr_createbrushindirect_bg.log_brush.brush_style, 0x0000); /* BS_SOLID */
+    zint_out_le_u32(emr_createbrushindirect_bg.type, 0x00000027); /* EMR_CREATEBRUSHINDIRECT */
+    zint_out_le_u32(emr_createbrushindirect_bg.size, 24);
+    zint_out_le_u32(emr_createbrushindirect_bg.ih_brush, 0);
+    zint_out_le_u32(emr_createbrushindirect_bg.log_brush.brush_style, 0x0000); /* BS_SOLID */
     emr_createbrushindirect_bg.log_brush.color.red = bgred;
     emr_createbrushindirect_bg.log_brush.color.green = bggrn;
     emr_createbrushindirect_bg.log_brush.color.blue = bgblu;
     emr_createbrushindirect_bg.log_brush.color.reserved = 0;
-    out_le_u32(emr_createbrushindirect_bg.log_brush.brush_hatch, 0x0006); /* HS_SOLIDCLR */
+    zint_out_le_u32(emr_createbrushindirect_bg.log_brush.brush_hatch, 0x0006); /* HS_SOLIDCLR */
     bytecount += 24;
     recordcount++;
 
     if (symbol->symbology == BARCODE_ULTRA) {
         static const unsigned char ultra_chars[9] = { '0', 'C', 'B', 'M', 'R', 'Y', 'G', 'K', 'W' };
         for (i = 0; i < 9; i++) {
-            out_le_u32(emr_createbrushindirect_colour[i].type, 0x00000027); /* EMR_CREATEBRUSHINDIRECT */
-            out_le_u32(emr_createbrushindirect_colour[i].size, 24);
-            out_le_u32(emr_createbrushindirect_colour[i].ih_brush, 1 + i);
-            out_le_u32(emr_createbrushindirect_colour[i].log_brush.brush_style, 0x0000); /* BS_SOLID */
+            zint_out_le_u32(emr_createbrushindirect_colour[i].type, 0x00000027); /* EMR_CREATEBRUSHINDIRECT */
+            zint_out_le_u32(emr_createbrushindirect_colour[i].size, 24);
+            zint_out_le_u32(emr_createbrushindirect_colour[i].ih_brush, 1 + i);
+            zint_out_le_u32(emr_createbrushindirect_colour[i].log_brush.brush_style, 0x0000); /* BS_SOLID */
             if (i == 0) {
                 emr_createbrushindirect_colour[i].log_brush.color.red = fgred;
                 emr_createbrushindirect_colour[i].log_brush.color.green = fggrn;
                 emr_createbrushindirect_colour[i].log_brush.color.blue = fgblu;
             } else {
-                out_colour_char_to_rgb(ultra_chars[i],
+                zint_out_colour_char_to_rgb(ultra_chars[i],
                         &emr_createbrushindirect_colour[i].log_brush.color.red,
                         &emr_createbrushindirect_colour[i].log_brush.color.green,
                         &emr_createbrushindirect_colour[i].log_brush.color.blue);
             }
             emr_createbrushindirect_colour[i].log_brush.color.reserved = 0;
-            out_le_u32(emr_createbrushindirect_colour[i].log_brush.brush_hatch, 0x0006); /* HS_SOLIDCLR */
+            zint_out_le_u32(emr_createbrushindirect_colour[i].log_brush.brush_hatch, 0x0006); /* HS_SOLIDCLR */
         }
         bytecount += colours_used * 24;
         recordcount += colours_used;
     } else {
-        out_le_u32(emr_createbrushindirect_fg.type, 0x00000027); /* EMR_CREATEBRUSHINDIRECT */
-        out_le_u32(emr_createbrushindirect_fg.size, 24);
-        out_le_u32(emr_createbrushindirect_fg.ih_brush, 1);
-        out_le_u32(emr_createbrushindirect_fg.log_brush.brush_style, 0x0000); /* BS_SOLID */
+        zint_out_le_u32(emr_createbrushindirect_fg.type, 0x00000027); /* EMR_CREATEBRUSHINDIRECT */
+        zint_out_le_u32(emr_createbrushindirect_fg.size, 24);
+        zint_out_le_u32(emr_createbrushindirect_fg.ih_brush, 1);
+        zint_out_le_u32(emr_createbrushindirect_fg.log_brush.brush_style, 0x0000); /* BS_SOLID */
         emr_createbrushindirect_fg.log_brush.color.red = fgred;
         emr_createbrushindirect_fg.log_brush.color.green = fggrn;
         emr_createbrushindirect_fg.log_brush.color.blue = fgblu;
         emr_createbrushindirect_fg.log_brush.color.reserved = 0;
-        out_le_u32(emr_createbrushindirect_fg.log_brush.brush_hatch, 0x0006); /* HS_SOLIDCLR */
+        zint_out_le_u32(emr_createbrushindirect_fg.log_brush.brush_hatch, 0x0006); /* HS_SOLIDCLR */
         bytecount += 24;
         recordcount++;
     }
 
-    out_le_u32(emr_selectobject_bgbrush.type, 0x00000025); /* EMR_SELECTOBJECT */
-    out_le_u32(emr_selectobject_bgbrush.size, 12);
+    zint_out_le_u32(emr_selectobject_bgbrush.type, 0x00000025); /* EMR_SELECTOBJECT */
+    zint_out_le_u32(emr_selectobject_bgbrush.size, 12);
     emr_selectobject_bgbrush.ih_object = emr_createbrushindirect_bg.ih_brush;
     bytecount += 12;
     recordcount++;
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for (i = 0; i < 9; i++) {
-            out_le_u32(emr_selectobject_colour[i].type, 0x00000025); /* EMR_SELECTOBJECT */
-            out_le_u32(emr_selectobject_colour[i].size, 12);
+            zint_out_le_u32(emr_selectobject_colour[i].type, 0x00000025); /* EMR_SELECTOBJECT */
+            zint_out_le_u32(emr_selectobject_colour[i].size, 12);
             emr_selectobject_colour[i].ih_object = emr_createbrushindirect_colour[i].ih_brush;
         }
         bytecount += colours_used * 12;
         recordcount += colours_used;
     } else {
-        out_le_u32(emr_selectobject_fgbrush.type, 0x00000025); /* EMR_SELECTOBJECT */
-        out_le_u32(emr_selectobject_fgbrush.size, 12);
+        zint_out_le_u32(emr_selectobject_fgbrush.type, 0x00000025); /* EMR_SELECTOBJECT */
+        zint_out_le_u32(emr_selectobject_fgbrush.size, 12);
         emr_selectobject_fgbrush.ih_object = emr_createbrushindirect_fg.ih_brush;
         bytecount += 12;
         recordcount++;
     }
 
     /* Create Pens */
-    out_le_u32(emr_createpen.type, 0x00000026); /* EMR_CREATEPEN */
-    out_le_u32(emr_createpen.size, 28);
-    out_le_u32(emr_createpen.ih_pen, 2 + ih_ultra_offset);
-    out_le_u32(emr_createpen.log_pen.pen_style, 0x00000005); /* PS_NULL */
-    out_le_i32(emr_createpen.log_pen.width.x, 1);
-    out_le_i32(emr_createpen.log_pen.width.y, 0); /* ignored */
+    zint_out_le_u32(emr_createpen.type, 0x00000026); /* EMR_CREATEPEN */
+    zint_out_le_u32(emr_createpen.size, 28);
+    zint_out_le_u32(emr_createpen.ih_pen, 2 + ih_ultra_offset);
+    zint_out_le_u32(emr_createpen.log_pen.pen_style, 0x00000005); /* PS_NULL */
+    zint_out_le_i32(emr_createpen.log_pen.width.x, 1);
+    zint_out_le_i32(emr_createpen.log_pen.width.y, 0); /* ignored */
     emr_createpen.log_pen.color_ref.red = 0;
     emr_createpen.log_pen.color_ref.green = 0;
     emr_createpen.log_pen.color_ref.blue = 0;
@@ -438,20 +439,20 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     bytecount += 28;
     recordcount++;
 
-    out_le_u32(emr_selectobject_pen.type, 0x00000025); /* EMR_SELECTOBJECT */
-    out_le_u32(emr_selectobject_pen.size, 12);
+    zint_out_le_u32(emr_selectobject_pen.type, 0x00000025); /* EMR_SELECTOBJECT */
+    zint_out_le_u32(emr_selectobject_pen.size, 12);
     emr_selectobject_pen.ih_object = emr_createpen.ih_pen;
     bytecount += 12;
     recordcount++;
 
     if (draw_background) {
         /* Make background from a rectangle */
-        out_le_u32(background.type, 0x0000002b); /* EMR_RECTANGLE */
-        out_le_u32(background.size, 24);
-        out_le_i32(background.box.top, 0);
-        out_le_i32(background.box.left, 0);
-        out_le_i32(background.box.right, width);
-        out_le_i32(background.box.bottom, height);
+        zint_out_le_u32(background.type, 0x0000002b); /* EMR_RECTANGLE */
+        zint_out_le_u32(background.size, 24);
+        zint_out_le_i32(background.box.top, 0);
+        zint_out_le_i32(background.box.left, 0);
+        zint_out_le_i32(background.box.right, width);
+        zint_out_le_i32(background.box.bottom, height);
         bytecount += 24;
         recordcount++;
     }
@@ -460,12 +461,12 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     rect = symbol->vector->rectangles;
     this_rectangle = 0;
     while (rect) {
-        out_le_u32(rectangle[this_rectangle].type, 0x0000002b); /* EMR_RECTANGLE */
-        out_le_u32(rectangle[this_rectangle].size, 24);
-        out_le_i32(rectangle[this_rectangle].box.top, rect->y);
-        out_le_i32(rectangle[this_rectangle].box.bottom, stripf(rect->y + rect->height));
-        out_le_i32(rectangle[this_rectangle].box.left, rect->x);
-        out_le_i32(rectangle[this_rectangle].box.right, stripf(rect->x + rect->width));
+        zint_out_le_u32(rectangle[this_rectangle].type, 0x0000002b); /* EMR_RECTANGLE */
+        zint_out_le_u32(rectangle[this_rectangle].size, 24);
+        zint_out_le_i32(rectangle[this_rectangle].box.top, rect->y);
+        zint_out_le_i32(rectangle[this_rectangle].box.bottom, z_stripf(rect->y + rect->height));
+        zint_out_le_i32(rectangle[this_rectangle].box.left, rect->x);
+        zint_out_le_i32(rectangle[this_rectangle].box.right, z_stripf(rect->x + rect->width));
         this_rectangle++;
         bytecount += 24;
         recordcount++;
@@ -483,24 +484,24 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             previous_diameter = circ->diameter + circ->width;
             radius = emf_mul3dpf(0.5f, previous_diameter);
         }
-        out_le_u32(circle[this_circle].type, 0x0000002a); /* EMR_ELLIPSE */
-        out_le_u32(circle[this_circle].size, 24);
-        out_le_i32(circle[this_circle].box.top, stripf(circ->y - radius));
-        out_le_i32(circle[this_circle].box.bottom, stripf(circ->y + radius));
-        out_le_i32(circle[this_circle].box.left, stripf(circ->x - radius));
-        out_le_i32(circle[this_circle].box.right, stripf(circ->x + radius));
+        zint_out_le_u32(circle[this_circle].type, 0x0000002a); /* EMR_ELLIPSE */
+        zint_out_le_u32(circle[this_circle].size, 24);
+        zint_out_le_i32(circle[this_circle].box.top, z_stripf(circ->y - radius));
+        zint_out_le_i32(circle[this_circle].box.bottom, z_stripf(circ->y + radius));
+        zint_out_le_i32(circle[this_circle].box.left, z_stripf(circ->x - radius));
+        zint_out_le_i32(circle[this_circle].box.right, z_stripf(circ->x + radius));
         this_circle++;
         bytecount += 24;
         recordcount++;
 
         if (symbol->symbology == BARCODE_MAXICODE) { /* Drawing MaxiCode bullseye using overlayed discs */
             float inner_radius = radius - circ->width;
-            out_le_u32(circle[this_circle].type, 0x0000002a); /* EMR_ELLIPSE */
-            out_le_u32(circle[this_circle].size, 24);
-            out_le_i32(circle[this_circle].box.top, stripf(circ->y - inner_radius));
-            out_le_i32(circle[this_circle].box.bottom, stripf(circ->y + inner_radius));
-            out_le_i32(circle[this_circle].box.left, stripf(circ->x - inner_radius));
-            out_le_i32(circle[this_circle].box.right, stripf(circ->x + inner_radius));
+            zint_out_le_u32(circle[this_circle].type, 0x0000002a); /* EMR_ELLIPSE */
+            zint_out_le_u32(circle[this_circle].size, 24);
+            zint_out_le_i32(circle[this_circle].box.top, z_stripf(circ->y - inner_radius));
+            zint_out_le_i32(circle[this_circle].box.bottom, z_stripf(circ->y + inner_radius));
+            zint_out_le_i32(circle[this_circle].box.left, z_stripf(circ->x - inner_radius));
+            zint_out_le_i32(circle[this_circle].box.right, z_stripf(circ->x + inner_radius));
             this_circle++;
             bytecount += 24;
             recordcount++;
@@ -514,9 +515,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     hex = symbol->vector->hexagons;
     this_hexagon = 0;
     while (hex) {
-        out_le_u32(hexagon[this_hexagon].type, 0x00000003); /* EMR_POLYGON */
-        out_le_u32(hexagon[this_hexagon].size, 76);
-        out_le_u32(hexagon[this_hexagon].count, 6);
+        zint_out_le_u32(hexagon[this_hexagon].type, 0x00000003); /* EMR_POLYGON */
+        zint_out_le_u32(hexagon[this_hexagon].size, 76);
+        zint_out_le_u32(hexagon[this_hexagon].count, 6);
 
         if (previous_diameter != hex->diameter) {
             previous_diameter = hex->diameter;
@@ -526,18 +527,18 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         }
 
         /* Note rotation done via world transform */
-        out_le_i32(hexagon[this_hexagon].a_points_a.x, hex->x);
-        out_le_i32(hexagon[this_hexagon].a_points_a.y, stripf(hex->y + radius));
-        out_le_i32(hexagon[this_hexagon].a_points_b.x, stripf(hex->x + half_sqrt3_radius));
-        out_le_i32(hexagon[this_hexagon].a_points_b.y, stripf(hex->y + half_radius));
-        out_le_i32(hexagon[this_hexagon].a_points_c.x, stripf(hex->x + half_sqrt3_radius));
-        out_le_i32(hexagon[this_hexagon].a_points_c.y, stripf(hex->y - half_radius));
-        out_le_i32(hexagon[this_hexagon].a_points_d.x, hex->x);
-        out_le_i32(hexagon[this_hexagon].a_points_d.y, stripf(hex->y - radius));
-        out_le_i32(hexagon[this_hexagon].a_points_e.x, stripf(hex->x - half_sqrt3_radius));
-        out_le_i32(hexagon[this_hexagon].a_points_e.y, stripf(hex->y - half_radius));
-        out_le_i32(hexagon[this_hexagon].a_points_f.x, stripf(hex->x - half_sqrt3_radius));
-        out_le_i32(hexagon[this_hexagon].a_points_f.y, stripf(hex->y + half_radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_a.x, hex->x);
+        zint_out_le_i32(hexagon[this_hexagon].a_points_a.y, z_stripf(hex->y + radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_b.x, z_stripf(hex->x + half_sqrt3_radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_b.y, z_stripf(hex->y + half_radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_c.x, z_stripf(hex->x + half_sqrt3_radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_c.y, z_stripf(hex->y - half_radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_d.x, hex->x);
+        zint_out_le_i32(hexagon[this_hexagon].a_points_d.y, z_stripf(hex->y - radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_e.x, z_stripf(hex->x - half_sqrt3_radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_e.y, z_stripf(hex->y - half_radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_f.x, z_stripf(hex->x - half_sqrt3_radius));
+        zint_out_le_i32(hexagon[this_hexagon].a_points_f.y, z_stripf(hex->y + half_radius));
 
         hexagon[this_hexagon].bounds.top = hexagon[this_hexagon].a_points_d.y;
         hexagon[this_hexagon].bounds.bottom = hexagon[this_hexagon].a_points_a.y;
@@ -551,14 +552,14 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     /* Create font records, alignment records and text color */
     if (symbol->vector->strings) {
-        bold = (symbol->output_options & BOLD_TEXT) && !is_upcean(symbol->symbology);
+        bold = (symbol->output_options & BOLD_TEXT) && !z_is_upcean(symbol->symbology);
         memset(&emr_extcreatefontindirectw, 0, sizeof(emr_extcreatefontindirectw));
-        out_le_u32(emr_extcreatefontindirectw.type, 0x00000052); /* EMR_EXTCREATEFONTINDIRECTW */
-        out_le_u32(emr_extcreatefontindirectw.size, 104);
-        out_le_u32(emr_extcreatefontindirectw.ih_fonts, 3 + ih_ultra_offset);
-        out_le_i32(emr_extcreatefontindirectw.elw.height, fsize);
-        out_le_i32(emr_extcreatefontindirectw.elw.width, 0); /* automatic */
-        out_le_i32(emr_extcreatefontindirectw.elw.weight, bold ? 700 : 400);
+        zint_out_le_u32(emr_extcreatefontindirectw.type, 0x00000052); /* EMR_EXTCREATEFONTINDIRECTW */
+        zint_out_le_u32(emr_extcreatefontindirectw.size, 104);
+        zint_out_le_u32(emr_extcreatefontindirectw.ih_fonts, 3 + ih_ultra_offset);
+        zint_out_le_i32(emr_extcreatefontindirectw.elw.height, fsize);
+        zint_out_le_i32(emr_extcreatefontindirectw.elw.width, 0); /* automatic */
+        zint_out_le_i32(emr_extcreatefontindirectw.elw.weight, bold ? 700 : 400);
         emr_extcreatefontindirectw.elw.char_set = 0x00; /* ANSI_CHARSET */
         emr_extcreatefontindirectw.elw.out_precision = 0x00; /* OUT_DEFAULT_PRECIS */
         emr_extcreatefontindirectw.elw.clip_precision = 0x00; /* CLIP_DEFAULT_PRECIS */
@@ -567,21 +568,21 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         bytecount += 104;
         recordcount++;
 
-        out_le_u32(emr_selectobject_font.type, 0x00000025); /* EMR_SELECTOBJECT */
-        out_le_u32(emr_selectobject_font.size, 12);
+        zint_out_le_u32(emr_selectobject_font.type, 0x00000025); /* EMR_SELECTOBJECT */
+        zint_out_le_u32(emr_selectobject_font.size, 12);
         emr_selectobject_font.ih_object = emr_extcreatefontindirectw.ih_fonts;
         bytecount += 12;
         recordcount++;
 
         if (fsize2) {
             memcpy(&emr_extcreatefontindirectw2, &emr_extcreatefontindirectw, sizeof(emr_extcreatefontindirectw));
-            out_le_u32(emr_extcreatefontindirectw2.ih_fonts, 4 + ih_ultra_offset);
-            out_le_i32(emr_extcreatefontindirectw2.elw.height, fsize2);
+            zint_out_le_u32(emr_extcreatefontindirectw2.ih_fonts, 4 + ih_ultra_offset);
+            zint_out_le_i32(emr_extcreatefontindirectw2.elw.height, fsize2);
             bytecount += 104;
             recordcount++;
 
-            out_le_u32(emr_selectobject_font2.type, 0x00000025); /* EMR_SELECTOBJECT */
-            out_le_u32(emr_selectobject_font2.size, 12);
+            zint_out_le_u32(emr_selectobject_font2.type, 0x00000025); /* EMR_SELECTOBJECT */
+            zint_out_le_u32(emr_selectobject_font2.size, 12);
             emr_selectobject_font2.ih_object = emr_extcreatefontindirectw2.ih_fonts;
             bytecount += 12;
             recordcount++;
@@ -589,22 +590,22 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
         /* Note select aligns counted below in strings loop */
 
-        out_le_u32(emr_settextalign_centre.type, 0x00000016); /* EMR_SETTEXTALIGN */
-        out_le_u32(emr_settextalign_centre.size, 12);
-        out_le_u32(emr_settextalign_centre.text_alignment_mode, 0x0006 | 0x0018); /* TA_CENTER | TA_BASELINE */
+        zint_out_le_u32(emr_settextalign_centre.type, 0x00000016); /* EMR_SETTEXTALIGN */
+        zint_out_le_u32(emr_settextalign_centre.size, 12);
+        zint_out_le_u32(emr_settextalign_centre.text_alignment_mode, 0x0006 | 0x0018); /* TA_CENTER | TA_BASELINE */
         if (halign_left) {
-            out_le_u32(emr_settextalign_left.type, 0x00000016); /* EMR_SETTEXTALIGN */
-            out_le_u32(emr_settextalign_left.size, 12);
-            out_le_u32(emr_settextalign_left.text_alignment_mode, 0x0000 | 0x0018); /* TA_LEFT | TA_BASELINE */
+            zint_out_le_u32(emr_settextalign_left.type, 0x00000016); /* EMR_SETTEXTALIGN */
+            zint_out_le_u32(emr_settextalign_left.size, 12);
+            zint_out_le_u32(emr_settextalign_left.text_alignment_mode, 0x0000 | 0x0018); /* TA_LEFT | TA_BASELINE */
         }
         if (halign_right) {
-            out_le_u32(emr_settextalign_right.type, 0x00000016); /* EMR_SETTEXTALIGN */
-            out_le_u32(emr_settextalign_right.size, 12);
-            out_le_u32(emr_settextalign_right.text_alignment_mode, 0x0002 | 0x0018); /* TA_RIGHT | TA_BASELINE */
+            zint_out_le_u32(emr_settextalign_right.type, 0x00000016); /* EMR_SETTEXTALIGN */
+            zint_out_le_u32(emr_settextalign_right.size, 12);
+            zint_out_le_u32(emr_settextalign_right.text_alignment_mode, 0x0002 | 0x0018); /* TA_RIGHT | TA_BASELINE */
         }
 
-        out_le_u32(emr_settextcolor.type, 0x0000018); /* EMR_SETTEXTCOLOR */
-        out_le_u32(emr_settextcolor.size, 12);
+        zint_out_le_u32(emr_settextcolor.type, 0x0000018); /* EMR_SETTEXTCOLOR */
+        zint_out_le_u32(emr_settextcolor.size, 12);
         emr_settextcolor.color.red = fgred;
         emr_settextcolor.color.green = fggrn;
         emr_settextcolor.color.blue = fgblu;
@@ -639,37 +640,37 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
                 for (i = 0; i < this_text; i++) {
                     free(this_string[i]);
                 }
-                return errtxt(ZINT_ERROR_MEMORY, symbol, 641, "Insufficient memory for EMF string buffer");
+                return z_errtxt(ZINT_ERROR_MEMORY, symbol, 641, "Insufficient memory for EMF string buffer");
             }
             memset(this_string[this_text], 0, text_bumped_lens[this_text]);
-            out_le_u32(text[this_text].type, 0x00000054); /* EMR_EXTTEXTOUTW */
-            out_le_u32(text[this_text].size, 76 + text_bumped_lens[this_text]);
-            out_le_i32(text[this_text].bounds.top, 0); /* ignored */
-            out_le_i32(text[this_text].bounds.left, 0); /* ignored */
-            out_le_i32(text[this_text].bounds.right, 0xffffffff); /* ignored */
-            out_le_i32(text[this_text].bounds.bottom, 0xffffffff); /* ignored */
-            out_le_u32(text[this_text].i_graphics_mode, 0x00000002); /* GM_ADVANCED */
-            out_le_float(text[this_text].ex_scale, 1.0f);
-            out_le_float(text[this_text].ey_scale, 1.0f);
+            zint_out_le_u32(text[this_text].type, 0x00000054); /* EMR_EXTTEXTOUTW */
+            zint_out_le_u32(text[this_text].size, 76 + text_bumped_lens[this_text]);
+            zint_out_le_i32(text[this_text].bounds.top, 0); /* ignored */
+            zint_out_le_i32(text[this_text].bounds.left, 0); /* ignored */
+            zint_out_le_i32(text[this_text].bounds.right, 0xffffffff); /* ignored */
+            zint_out_le_i32(text[this_text].bounds.bottom, 0xffffffff); /* ignored */
+            zint_out_le_u32(text[this_text].i_graphics_mode, 0x00000002); /* GM_ADVANCED */
+            zint_out_le_float(text[this_text].ex_scale, 1.0f);
+            zint_out_le_float(text[this_text].ey_scale, 1.0f);
             /* Unhack the guard whitespace `gws_left_fudge`/`gws_right_fudge` hack */
-            if (upcean && string->halign == 1 && string->text[0] == '<') {
+            if (is_upcean && string->halign == 1 && string->text[0] == '<') {
                 const float gws_left_fudge = symbol->scale < 0.1f ? 0.1f : symbol->scale; /* 0.5 * 2 * scale */
-                out_le_i32(text[this_text].w_emr_text.reference.x, string->x + gws_left_fudge);
-            } else if (upcean && string->halign == 2 && string->text[0] == '>') {
+                zint_out_le_i32(text[this_text].w_emr_text.reference.x, string->x + gws_left_fudge);
+            } else if (is_upcean && string->halign == 2 && string->text[0] == '>') {
                 const float gws_right_fudge = symbol->scale < 0.1f ? 0.1f : symbol->scale; /* 0.5 * 2 * scale */
-                out_le_i32(text[this_text].w_emr_text.reference.x, string->x - gws_right_fudge);
+                zint_out_le_i32(text[this_text].w_emr_text.reference.x, string->x - gws_right_fudge);
             } else {
-                out_le_i32(text[this_text].w_emr_text.reference.x, string->x);
+                zint_out_le_i32(text[this_text].w_emr_text.reference.x, string->x);
             }
-            out_le_i32(text[this_text].w_emr_text.reference.y, string->y);
-            out_le_u32(text[this_text].w_emr_text.chars, utfle_len);
-            out_le_u32(text[this_text].w_emr_text.off_string, 76);
-            out_le_u32(text[this_text].w_emr_text.options, 0);
-            out_le_i32(text[this_text].w_emr_text.rectangle.top, 0);
-            out_le_i32(text[this_text].w_emr_text.rectangle.left, 0);
-            out_le_i32(text[this_text].w_emr_text.rectangle.right, 0xffffffff);
-            out_le_i32(text[this_text].w_emr_text.rectangle.bottom, 0xffffffff);
-            out_le_u32(text[this_text].w_emr_text.off_dx, 0);
+            zint_out_le_i32(text[this_text].w_emr_text.reference.y, string->y);
+            zint_out_le_u32(text[this_text].w_emr_text.chars, utfle_len);
+            zint_out_le_u32(text[this_text].w_emr_text.off_string, 76);
+            zint_out_le_u32(text[this_text].w_emr_text.options, 0);
+            zint_out_le_i32(text[this_text].w_emr_text.rectangle.top, 0);
+            zint_out_le_i32(text[this_text].w_emr_text.rectangle.left, 0);
+            zint_out_le_i32(text[this_text].w_emr_text.rectangle.right, 0xffffffff);
+            zint_out_le_i32(text[this_text].w_emr_text.rectangle.bottom, 0xffffffff);
+            zint_out_le_u32(text[this_text].w_emr_text.off_dx, 0);
             emf_utfle_copy(this_string[this_text], string->text, string->length);
             bytecount += 76 + text_bumped_lens[this_text];
             recordcount++;
@@ -682,10 +683,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     assert(this_text == string_count);
 
     /* Create EOF record */
-    out_le_u32(emr_eof.type, 0x0000000e); /* EMR_EOF */
-    out_le_u32(emr_eof.size, 20); /* Assuming no palette entries */
-    out_le_u32(emr_eof.n_pal_entries, 0);
-    out_le_u32(emr_eof.off_pal_entries, 0);
+    zint_out_le_u32(emr_eof.type, 0x0000000e); /* EMR_EOF */
+    zint_out_le_u32(emr_eof.size, 20); /* Assuming no palette entries */
+    zint_out_le_u32(emr_eof.n_pal_entries, 0);
+    zint_out_le_u32(emr_eof.off_pal_entries, 0);
     emr_eof.size_last = emr_eof.size;
     bytecount += 20;
     recordcount++;
@@ -696,60 +697,60 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     /* Put final counts in header */
-    out_le_u32(emr_header.emf_header.bytes, bytecount);
-    out_le_u32(emr_header.emf_header.records, recordcount);
+    zint_out_le_u32(emr_header.emf_header.bytes, bytecount);
+    zint_out_le_u32(emr_header.emf_header.records, recordcount);
 
     /* Send EMF data to file */
-    if (!fm_open(fmp, symbol, "wb")) {
-        return ZEXT errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 640, "Could not open EMF output file (%1$d: %2$s)",
-                            fmp->err, strerror(fmp->err));
+    if (!zint_fm_open(fmp, symbol, "wb")) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 640, "Could not open EMF output file (%1$d: %2$s)",
+                                fmp->err, strerror(fmp->err));
     }
 
-    fm_write(&emr_header, sizeof(emr_header_t), 1, fmp);
+    zint_fm_write(&emr_header, sizeof(emr_header_t), 1, fmp);
 
-    fm_write(&emr_mapmode, sizeof(emr_mapmode_t), 1, fmp);
+    zint_fm_write(&emr_mapmode, sizeof(emr_mapmode_t), 1, fmp);
 
     if (rotate_angle) {
-        fm_write(&emr_setworldtransform, sizeof(emr_setworldtransform_t), 1, fmp);
+        zint_fm_write(&emr_setworldtransform, sizeof(emr_setworldtransform_t), 1, fmp);
     }
 
-    fm_write(&emr_createbrushindirect_bg, sizeof(emr_createbrushindirect_t), 1, fmp);
+    zint_fm_write(&emr_createbrushindirect_bg, sizeof(emr_createbrushindirect_t), 1, fmp);
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for (i = 0; i < 9; i++) {
             if (rectangle_bycolour[i]) {
-                fm_write(&emr_createbrushindirect_colour[i], sizeof(emr_createbrushindirect_t), 1, fmp);
+                zint_fm_write(&emr_createbrushindirect_colour[i], sizeof(emr_createbrushindirect_t), 1, fmp);
             }
         }
     } else {
-        fm_write(&emr_createbrushindirect_fg, sizeof(emr_createbrushindirect_t), 1, fmp);
+        zint_fm_write(&emr_createbrushindirect_fg, sizeof(emr_createbrushindirect_t), 1, fmp);
     }
 
-    fm_write(&emr_createpen, sizeof(emr_createpen_t), 1, fmp);
+    zint_fm_write(&emr_createpen, sizeof(emr_createpen_t), 1, fmp);
 
     if (symbol->vector->strings) {
-        fm_write(&emr_extcreatefontindirectw, sizeof(emr_extcreatefontindirectw_t), 1, fmp);
+        zint_fm_write(&emr_extcreatefontindirectw, sizeof(emr_extcreatefontindirectw_t), 1, fmp);
         if (fsize2) {
-            fm_write(&emr_extcreatefontindirectw2, sizeof(emr_extcreatefontindirectw_t), 1, fmp);
+            zint_fm_write(&emr_extcreatefontindirectw2, sizeof(emr_extcreatefontindirectw_t), 1, fmp);
         }
     }
 
-    fm_write(&emr_selectobject_bgbrush, sizeof(emr_selectobject_t), 1, fmp);
-    fm_write(&emr_selectobject_pen, sizeof(emr_selectobject_t), 1, fmp);
+    zint_fm_write(&emr_selectobject_bgbrush, sizeof(emr_selectobject_t), 1, fmp);
+    zint_fm_write(&emr_selectobject_pen, sizeof(emr_selectobject_t), 1, fmp);
     if (draw_background) {
-        fm_write(&background, sizeof(emr_rectangle_t), 1, fmp);
+        zint_fm_write(&background, sizeof(emr_rectangle_t), 1, fmp);
     }
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for (i = 0; i < 9; i++) {
             if (rectangle_bycolour[i]) {
-                fm_write(&emr_selectobject_colour[i], sizeof(emr_selectobject_t), 1, fmp);
+                zint_fm_write(&emr_selectobject_colour[i], sizeof(emr_selectobject_t), 1, fmp);
 
                 rect = symbol->vector->rectangles;
                 this_rectangle = 0;
                 while (rect) {
                     if ((i == 0 && rect->colour == -1) || rect->colour == i) {
-                        fm_write(&rectangle[this_rectangle], sizeof(emr_rectangle_t), 1, fmp);
+                        zint_fm_write(&rectangle[this_rectangle], sizeof(emr_rectangle_t), 1, fmp);
                     }
                     this_rectangle++;
                     rect = rect->next;
@@ -757,42 +758,42 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             }
         }
     } else {
-        fm_write(&emr_selectobject_fgbrush, sizeof(emr_selectobject_t), 1, fmp);
+        zint_fm_write(&emr_selectobject_fgbrush, sizeof(emr_selectobject_t), 1, fmp);
 
         /* Rectangles */
         for (i = 0; i < rectangle_count; i++) {
-            fm_write(&rectangle[i], sizeof(emr_rectangle_t), 1, fmp);
+            zint_fm_write(&rectangle[i], sizeof(emr_rectangle_t), 1, fmp);
         }
     }
 
     /* Hexagons */
     for (i = 0; i < hexagon_count; i++) {
-        fm_write(&hexagon[i], sizeof(emr_polygon_t), 1, fmp);
+        zint_fm_write(&hexagon[i], sizeof(emr_polygon_t), 1, fmp);
     }
 
     /* Circles */
     if (symbol->symbology == BARCODE_MAXICODE) {
         /* Bullseye needed */
         for (i = 0; i < circle_count; i++) {
-            fm_write(&circle[i], sizeof(emr_ellipse_t), 1, fmp);
+            zint_fm_write(&circle[i], sizeof(emr_ellipse_t), 1, fmp);
             if (i < circle_count - 1) {
                 if (i % 2) {
-                    fm_write(&emr_selectobject_fgbrush, sizeof(emr_selectobject_t), 1, fmp);
+                    zint_fm_write(&emr_selectobject_fgbrush, sizeof(emr_selectobject_t), 1, fmp);
                 } else {
-                    fm_write(&emr_selectobject_bgbrush, sizeof(emr_selectobject_t), 1, fmp);
+                    zint_fm_write(&emr_selectobject_bgbrush, sizeof(emr_selectobject_t), 1, fmp);
                 }
             }
         }
     } else {
         for (i = 0; i < circle_count; i++) {
-            fm_write(&circle[i], sizeof(emr_ellipse_t), 1, fmp);
+            zint_fm_write(&circle[i], sizeof(emr_ellipse_t), 1, fmp);
         }
     }
 
     /* Text */
     if (string_count > 0) {
-        fm_write(&emr_selectobject_font, sizeof(emr_selectobject_t), 1, fmp);
-        fm_write(&emr_settextcolor, sizeof(emr_settextcolor_t), 1, fmp);
+        zint_fm_write(&emr_selectobject_font, sizeof(emr_selectobject_t), 1, fmp);
+        zint_fm_write(&emr_settextcolor, sizeof(emr_settextcolor_t), 1, fmp);
     }
 
     current_fsize = fsize;
@@ -800,34 +801,34 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     for (i = 0; i < string_count; i++) {
         if (text_fsizes[i] != current_fsize) {
             current_fsize = text_fsizes[i];
-            fm_write(&emr_selectobject_font2, sizeof(emr_selectobject_t), 1, fmp);
+            zint_fm_write(&emr_selectobject_font2, sizeof(emr_selectobject_t), 1, fmp);
         }
         if (text_haligns[i] != current_halign) {
             current_halign = text_haligns[i];
             if (current_halign == 0) {
-                fm_write(&emr_settextalign_centre, sizeof(emr_settextalign_t), 1, fmp);
+                zint_fm_write(&emr_settextalign_centre, sizeof(emr_settextalign_t), 1, fmp);
             } else if (current_halign == 1) {
-                fm_write(&emr_settextalign_left, sizeof(emr_settextalign_t), 1, fmp);
+                zint_fm_write(&emr_settextalign_left, sizeof(emr_settextalign_t), 1, fmp);
             } else {
-                fm_write(&emr_settextalign_right, sizeof(emr_settextalign_t), 1, fmp);
+                zint_fm_write(&emr_settextalign_right, sizeof(emr_settextalign_t), 1, fmp);
             }
         }
-        fm_write(&text[i], sizeof(emr_exttextoutw_t), 1, fmp);
-        fm_write(this_string[i], text_bumped_lens[i], 1, fmp);
+        zint_fm_write(&text[i], sizeof(emr_exttextoutw_t), 1, fmp);
+        zint_fm_write(this_string[i], text_bumped_lens[i], 1, fmp);
         free(this_string[i]);
     }
 
-    fm_write(&emr_eof, sizeof(emr_eof_t), 1, fmp);
+    zint_fm_write(&emr_eof, sizeof(emr_eof_t), 1, fmp);
 
-    if (fm_error(fmp)) {
-        ZEXT errtxtf(0, symbol, 644, "Incomplete write of EMF output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
-        (void) fm_close(fmp, symbol);
+    if (zint_fm_error(fmp)) {
+        ZEXT z_errtxtf(0, symbol, 644, "Incomplete write of EMF output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
+        (void) zint_fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (!fm_close(fmp, symbol)) {
-        return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 941, "Failure on closing EMF output file (%1$d: %2$s)",
-                            fmp->err, strerror(fmp->err));
+    if (!zint_fm_close(fmp, symbol)) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 941, "Failure on closing EMF output file (%1$d: %2$s)",
+                                fmp->err, strerror(fmp->err));
     }
     return error_number;
 }

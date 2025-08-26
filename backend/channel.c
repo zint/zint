@@ -172,7 +172,7 @@ nb0:    if (++B[0] <= bmax[0]) goto lb0;
 }
 
 /* Channel Code - According to ANSI/AIM BC12-1998 */
-INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_channel(struct zint_symbol *symbol, unsigned char source[], int length) {
     static const int max_ranges[] = { -1, -1, -1, 26, 292, 3493, 44072, 576688, 7742862 };
     static const unsigned char zeroes_str[] = "0000000"; /* 7 zeroes */
     int S[8] = {0}, B[8] = {0};
@@ -184,13 +184,13 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 7) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 333, "Input length %d too long (maximum 7)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 333, "Input length %d too long (maximum 7)", length);
     }
-    if ((i = not_sane(NEON_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 334,
+    if ((i = z_not_sane(NEON_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 334,
                         "Invalid character at position %d in input (digits only)", i);
     }
-    target_value = to_int(source, length);
+    target_value = z_to_int(source, length);
 
     if ((symbol->option_2 < 3) || (symbol->option_2 > 8)) {
         channels = 0;
@@ -218,12 +218,13 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (target_value > max_ranges[channels]) {
         if (channels == 8) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 318, "Input value \"%1$d\" out of range (0 to %2$d)",
-                                target_value, max_ranges[channels]);
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 318,
+                                    "Input value \"%1$d\" out of range (0 to %2$d)",
+                                    target_value, max_ranges[channels]);
         }
-        return ZEXT errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 335,
-                            "Input value \"%1$d\" out of range (0 to %2$d for %3$d channels)", target_value,
-                            max_ranges[channels], channels);
+        return ZEXT z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 335,
+                                "Input value \"%1$d\" out of range (0 to %2$d for %3$d channels)",
+                                target_value, max_ranges[channels], channels);
     }
 
     /* Feedback options */
@@ -234,27 +235,27 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
     memcpy(d, "111111111", 9); /* Finder pattern */
     d += 9;
     for (i = 8 - channels; i < 8; i++) {
-        *d++ = itoc(S[i]);
-        *d++ = itoc(B[i]);
+        *d++ = z_itoc(S[i]);
+        *d++ = z_itoc(B[i]);
     }
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* ANSI/AIM BC12-1998 gives min height as 5mm or 15% of length; X left as application specification so use
            length = 1X (left qz) + (9 (finder) + 4 * 8 - 2) * X + 2X (right qz);
            use 20 as default based on figures in spec */
-        const float min_height = stripf((1 + 9 + 4 * channels - 2 + 2) * 0.15f);
-        error_number = set_height(symbol, min_height, 20.0f, 0.0f, 0 /*no_errtxt*/);
+        const float min_height = z_stripf((1 + 9 + 4 * channels - 2 + 2) * 0.15f);
+        error_number = z_set_height(symbol, min_height, 20.0f, 0.0f, 0 /*no_errtxt*/);
     } else {
-        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
     zeroes = channels - 1 - length;
-    hrt_cpy_cat_nochk(symbol, zeroes_str, zeroes, '\xFF' /*separator (none)*/, source, length);
+    z_hrt_cpy_cat_nochk(symbol, zeroes_str, zeroes, '\xFF' /*separator (none)*/, source, length);
 
-    if (raw_text && rt_cpy_cat(symbol, zeroes_str, zeroes, '\xFF' /*separator (none)*/, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+    if (raw_text && z_rt_cpy_cat(symbol, zeroes_str, zeroes, '\xFF' /*separator (none)*/, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
     return error_number;
 }

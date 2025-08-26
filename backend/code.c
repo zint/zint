@@ -119,7 +119,7 @@ static const char C93Table[47][6] = {
 };
 
 /* Code 39 */
-INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_code39(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i;
     int counter;
     int posns[86];
@@ -135,18 +135,18 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
 
     /* LOGMARS MIL-STD-1189 Rev. B https://apps.dtic.mil/dtic/tr/fulltext/u2/a473534.pdf */
     if ((symbol->symbology == BARCODE_LOGMARS) && (length > 30)) { /* MIL-STD-1189 Rev. B Section 5.2.6.2 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 322, "Input length %d too long (maximum 30)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 322, "Input length %d too long (maximum 30)", length);
     /* Prevent encoded_data out-of-bounds >= 143 for BARCODE_HIBC_39 due to wider 'wide' bars */
     } else if ((symbol->symbology == BARCODE_HIBC_39) && (length > 70)) { /* 16 (Start) + 70*16 + 15 (Stop) = 1151 */
         /* 70 less '+' and check */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 319, "Input length %d too long (maximum 68)", length - 2);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 319, "Input length %d too long (maximum 68)", length - 2);
     } else if (length > 86) { /* 13 (Start) + 86*13 + 12 (Stop) = 1143 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 323, "Input length %d too long (maximum 86)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 323, "Input length %d too long (maximum 86)", length);
     }
 
-    to_upper(source, length);
-    if ((i = not_sane_lookup(SILVER, 43 /* Up to "%" */, source, length, posns))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 324,
+    z_to_upper(source, length);
+    if ((i = z_not_sane_lookup(SILVER, 43 /* Up to "%" */, source, length, posns))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 324,
                         "Invalid character at position %d in input (alphanumerics, space and \"-.$/+%%\" only)", i);
     }
 
@@ -186,7 +186,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         printf("Barspaces: %.*s\n", (int) (d - dest), dest);
     }
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         if (symbol->symbology == BARCODE_LOGMARS) {
@@ -195,20 +195,20 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
                Default height 0.625" (average of 0.375" - 0.875") / 0.01375" (average of 0.0075" - 0.02") ~ 45.45 */
             const float default_height = 45.4545441f; /* 0.625 / 0.01375 */
             const float max_height = 116.666664f; /* 0.875 / 0.0075 */
-            error_number = set_height(symbol, 6.25f, default_height, max_height, 0 /*no_errtxt*/);
+            error_number = z_set_height(symbol, 6.25f, default_height, max_height, 0 /*no_errtxt*/);
         } else if (symbol->symbology == BARCODE_CODE39 || symbol->symbology == BARCODE_EXCODE39
                     || symbol->symbology == BARCODE_HIBC_39) {
             /* ISO/IEC 16388:2007 4.4 (e) recommended min height 5.0mm or 15% of width excluding quiet zones;
                as X left to application specification use
                width = (C + 2) * (3 * N + 6) * X + (C + 1) * I = (C + 2) * 9 + C + 1) * X = (10 * C + 19);
                use 50 as default as none recommended */
-            const float min_height = stripf((10.0f * (symbol->option_2 == 1 ? length + 1 : length) + 19.0f) * 0.15f);
-            error_number = set_height(symbol, min_height, min_height > 50.0f ? min_height : 50.0f, 0.0f,
+            const float min_height = z_stripf((10.0f * (length + (symbol->option_2 == 1)) + 19.0f) * 0.15f);
+            error_number = z_set_height(symbol, min_height, min_height > 50.0f ? min_height : 50.0f, 0.0f,
                                         0 /*no_errtxt*/);
         }
         /* PZN and CODE32 set their own heights */
     } else {
-        (void) set_height(symbol, 0.0f, 50.f, 0.0f, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 0.0f, 50.f, 0.0f, 1 /*no_errtxt*/);
     }
 
     /* Display a space check digit as _, otherwise it looks like an error */
@@ -216,20 +216,20 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         check_digit = '_';
     }
     if (symbol->symbology == BARCODE_CODE39) {
-        hrt_cpy_chr(symbol, '*');
-        hrt_cat_nochk(symbol, source, length);
+        z_hrt_cpy_chr(symbol, '*');
+        z_hrt_cat_nochk(symbol, source, length);
         if (symbol->option_2 == 1) { /* Visible check digit */
-            hrt_cat_chr_nochk(symbol, check_digit);
+            z_hrt_cat_chr_nochk(symbol, check_digit);
         }
-        hrt_cat_chr_nochk(symbol, '*');
+        z_hrt_cat_chr_nochk(symbol, '*');
     } else {
-        hrt_cpy_cat_nochk(symbol, source, length, symbol->option_2 == 1 ? check_digit : '\xFF', NULL /*cat*/, 0);
+        z_hrt_cpy_cat_nochk(symbol, source, length, symbol->option_2 == 1 ? check_digit : '\xFF', NULL /*cat*/, 0);
     }
 
     if (raw_text) {
-        if (rt_cpy_cat(symbol, source, length, check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF',
+        if (z_rt_cpy_cat(symbol, source, length, check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF',
                         NULL /*cat*/, 0)) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
         }
     }
 
@@ -237,7 +237,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
 }
 
 /* Extended Code 39 - ISO/IEC 16388:2007 Annex A */
-INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_excode39(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i;
     unsigned char buffer[86 * 2 + 1] = {0};
     unsigned char *b = buffer;
@@ -247,22 +247,22 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 86) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 328, "Input length %d too long (maximum 86)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 328, "Input length %d too long (maximum 86)", length);
     }
 
     /* Create a buffer string and place control characters into it */
     for (i = 0; i < length; i++) {
         if (!z_isascii(source[i])) {
             /* Cannot encode extended ASCII */
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 329,
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 329,
                             "Invalid character at position %d in input, extended ASCII not allowed", i + 1);
         }
         memcpy(b, EC39Ctrl[source[i]], 2);
         b += EC39Ctrl[source[i]][1] ? 2 : 1;
     }
     if (b - buffer > 86) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 317, "Input too long, requires %d symbol characters (maximum 86)",
-                        (int) (b - buffer));
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 317,
+                        "Input too long, requires %d symbol characters (maximum 86)", (int) (b - buffer));
     }
     *b = '\0';
 
@@ -270,11 +270,11 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
         symbol->option_2 = 1; /* Make hidden check digit visible so returned in HRT */
     }
     if (raw_text) {
-        symbol->output_options &= ~BARCODE_RAW_TEXT; /* Don't use `code39()`'s `raw_text` */
+        symbol->output_options &= ~BARCODE_RAW_TEXT; /* Don't use `zint_code39()`'s `raw_text` */
     }
 
     /* Then send the buffer to the C39 function */
-    if ((error_number = code39(symbol, buffer, b - buffer)) >= ZINT_ERROR) {
+    if ((error_number = zint_code39(symbol, buffer, b - buffer)) >= ZINT_ERROR) {
         return error_number;
     }
 
@@ -291,25 +291,25 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
     }
 
     /* Copy over source to HRT, subbing space for unprintables */
-    (void) hrt_cpy_iso8859_1(symbol, source, length); /* Will fit (ASCII, length <= 86) */
+    (void) z_hrt_cpy_iso8859_1(symbol, source, length); /* Will fit (ASCII, length <= 86) */
     if (symbol->option_2 == 1) {
-        hrt_cat_chr_nochk(symbol, check_digit);
+        z_hrt_cat_chr_nochk(symbol, check_digit);
     }
 
-    if (raw_text && rt_cpy_cat(symbol, source, length, check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF',
-                                NULL /*cat*/, 0)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+    if (raw_text && z_rt_cpy_cat(symbol, source, length,
+                                check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF', NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
 }
 
 /* Code 93 is an advancement on Code 39 and the definition is a lot tighter */
-INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_code93(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     /* SILVER includes the extra characters a, b, c and d to represent Code 93 specific
        shift characters 1, 2, 3 and 4 respectively. These characters are never used by
-       `code39()` and `excode39()` */
+       `zint_code39()` and `excode39()` */
 
     int i;
     int h, weight, c, k, error_number = 0;
@@ -324,14 +324,14 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     assert(length > 0);
 
     if (length > 123) { /* 9 (Start) + 123*9 + 2*9 (Checks) + 10 (Stop) = 1144 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 330, "Input length %d too long (maximum 123)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 330, "Input length %d too long (maximum 123)", length);
     }
 
     /* Message Content */
     for (i = 0; i < length; i++) {
         if (!z_isascii(source[i])) {
             /* Cannot encode extended ASCII */
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 331,
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 331,
                             "Invalid character at position %d in input, extended ASCII not allowed", i + 1);
         }
         memcpy(b, C93Ctrl[source[i]], 2);
@@ -341,12 +341,12 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     /* Now we can check the true length of the barcode */
     h = b - buffer;
     if (h > 123) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 332,
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 332,
                         "Input too long, requires %d symbol characters (maximum 123)", h);
     }
 
     for (i = 0; i < h; i++) {
-        values[i] = posn(SILVER, buffer[i]);
+        values[i] = z_posn(SILVER, buffer[i]);
     }
 
     /* Putting the data into dest[] is not done until after check digits are calculated */
@@ -392,33 +392,34 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     memcpy(d, "1111411", 7);
     d += 7;
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* ANSI/AIM BC5-1995 Section 2.6 minimum height 0.2" or 15% of symbol length, whichever is greater
            no max X given so for min height use symbol length = (9 * (C + 4) + 1) * X + 2 * Q = symbol->width + 20;
            use 40 as default height based on figures in spec */
-        const float min_height = stripf((symbol->width + 20) * 0.15f);
-        error_number = set_height(symbol, min_height, min_height > 40.0f ? min_height : 40.0f, 0.0f, 0 /*no_errtxt*/);
+        const float min_height = z_stripf((symbol->width + 20) * 0.15f);
+        error_number = z_set_height(symbol, min_height, min_height > 40.0f ? min_height : 40.0f, 0.0f,
+                                    0 /*no_errtxt*/);
     } else {
-        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    (void) hrt_cpy_iso8859_1(symbol, source, length); /* Will fit (ASCII, length <= 123) */
+    (void) z_hrt_cpy_iso8859_1(symbol, source, length); /* Will fit (ASCII, length <= 123) */
     if (symbol->option_2 == 1) {
-        hrt_cat_chr_nochk(symbol, SILVER[c]);
-        hrt_cat_chr_nochk(symbol, SILVER[k]);
+        z_hrt_cat_chr_nochk(symbol, SILVER[c]);
+        z_hrt_cat_chr_nochk(symbol, SILVER[k]);
     }
 
-    if (raw_text && rt_cpy_cat(symbol, source, length, SILVER[c], (const unsigned char *) SILVER + k, 1)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+    if (raw_text && z_rt_cpy_cat(symbol, source, length, SILVER[c], (const unsigned char *) SILVER + k, 1)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
 }
 
 /* Vehicle Identification Number (VIN) */
-INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_vin(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     /* This code verifies the check digit present in North American VIN codes */
 
@@ -433,16 +434,16 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     /* Check length */
     if (length != 17) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 336, "Input length %d wrong (17 characters required)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 336, "Input length %d wrong (17 characters required)", length);
     }
 
     /* Check input characters, I, O and Q are not allowed */
-    if ((i = not_sane(ARSENIC_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 337,
+    if ((i = z_not_sane(ARSENIC_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 337,
                         "Invalid character at position %d in input (alphanumerics only, excluding \"IOQ\")", i);
     }
 
-    to_upper(source, length);
+    z_to_upper(source, length);
 
     /* Check digit only valid for North America */
     if (source[0] >= '1' && source[0] <= '5') {
@@ -476,9 +477,9 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
         }
 
         if (input_check != output_check) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 338,
-                                "Invalid check digit '%1$c' (position 9), expecting '%2$c'", input_check,
-                                output_check);
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 338,
+                                    "Invalid check digit '%1$c' (position 9), expecting '%2$c'", input_check,
+                                    output_check);
         }
     }
 
@@ -494,19 +495,19 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     /* Copy glyphs to symbol */
     for (i = 0; i < 17; i++, d += 10) {
-        memcpy(d, C39Table[posn(SILVER, source[i])], 10);
+        memcpy(d, C39Table[z_posn(SILVER, source[i])], 10);
     }
 
     /* Stop character */
     memcpy(d, C39Table[43], 9);
     d += 9;
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
-    hrt_cpy_nochk(symbol, source, length);
+    z_hrt_cpy_nochk(symbol, source, length);
 
-    if (raw_text && rt_cpy_cat(symbol, NULL /*source*/, 0, symbol->option_2 == 1 ? 'I' : '\xFF', source, length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+    if (raw_text && z_rt_cpy_cat(symbol, NULL /*source*/, 0, symbol->option_2 == 1 ? 'I' : '\xFF', source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
     /* Specification of dimensions/height for BARCODE_VIN unlikely */

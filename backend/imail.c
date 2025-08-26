@@ -245,9 +245,9 @@ static unsigned short USPS_MSB_Math_CRC11GenerateFrameCheckSequence(unsigned cha
     return FrameCheckSequence;
 }
 
-INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
+INTERNAL int zint_daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
 
-INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_usps_imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     char data_pattern[200];
     int error_number = 0;
     int i, j, read;
@@ -264,10 +264,10 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 32) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 450, "Input length %d too long (maximum 32)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 450, "Input length %d too long (maximum 32)", length);
     }
-    if ((i = not_sane(SODIUM_MNS_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 451,
+    if ((i = z_not_sane(SODIUM_MNS_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 451,
                         "Invalid character at position %d in input (digits and \"-\" only)", i);
     }
 
@@ -300,17 +300,17 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     }
 
     if (strlen(tracker) != 20) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 452,
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 452,
                         "Invalid length for tracking code (20 characters required)");
     }
     if (tracker[1] > '4') {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 454,
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 454,
                         "Barcode Identifier (second character) out of range (0 to 4)");
     }
 
     zip_len = (int) strlen(zip);
     if (zip_len != 0 && zip_len != 5 && zip_len != 9 && zip_len != 11) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 453,
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 453,
                         "Invalid length for ZIP code (5, 9 or 11 characters required)");
     }
 
@@ -318,62 +318,62 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
 
     /* Routing code first */
 
-    large_load_str_u64(&accum, (const unsigned char *) zip, zip_len);
+    zint_large_load_str_u64(&accum, ZCUCP(zip), zip_len);
 
     /* add weight to routing code */
     if (zip_len > 9) {
-        large_add_u64(&accum, 1000100001);
+        zint_large_add_u64(&accum, 1000100001);
     } else if (zip_len > 5) {
-        large_add_u64(&accum, 100001);
+        zint_large_add_u64(&accum, 100001);
     } else if (zip_len > 0) {
-        large_add_u64(&accum, 1);
+        zint_large_add_u64(&accum, 1);
     }
 
     /* tracking code */
 
     /* multiply by 10 */
-    large_mul_u64(&accum, 10);
+    zint_large_mul_u64(&accum, 10);
 
     /* add first digit of tracker */
-    large_add_u64(&accum, ctoi(tracker[0]));
+    zint_large_add_u64(&accum, z_ctoi(tracker[0]));
 
     /* multiply by 5 */
-    large_mul_u64(&accum, 5);
+    zint_large_mul_u64(&accum, 5);
 
     /* add second digit */
-    large_add_u64(&accum, ctoi(tracker[1]));
+    zint_large_add_u64(&accum, z_ctoi(tracker[1]));
 
     /* and then the rest */
 
     for (read = 2; read < 20; read++) {
 
-        large_mul_u64(&accum, 10);
-        large_add_u64(&accum, ctoi(tracker[read]));
+        zint_large_mul_u64(&accum, 10);
+        zint_large_add_u64(&accum, z_ctoi(tracker[read]));
     }
 
     /* *** Step 2 - Generation of 11-bit CRC on Binary Data *** */
 
-    large_load(&byte_array_reg, &accum);
+    zint_large_load(&byte_array_reg, &accum);
 
-    large_unset_bit(&byte_array_reg, 102);
-    large_unset_bit(&byte_array_reg, 103);
+    zint_large_unset_bit(&byte_array_reg, 102);
+    zint_large_unset_bit(&byte_array_reg, 103);
 
-    large_uchar_array(&byte_array_reg, byte_array, 13, 8 /*bits*/);
+    zint_large_uchar_array(&byte_array_reg, byte_array, 13, 8 /*bits*/);
 
     usps_crc = USPS_MSB_Math_CRC11GenerateFrameCheckSequence(byte_array);
 
     /* *** Step 3 - Conversion from Binary Data to Codewords *** */
 
     /* start with codeword J which is base 636 */
-    codeword[9] = (unsigned int) large_div_u64(&accum, 636);
+    codeword[9] = (unsigned int) zint_large_div_u64(&accum, 636);
 
     /* then codewords I to B with base 1365 */
 
     for (j = 8; j > 0; j--) {
-        codeword[j] = (unsigned int) large_div_u64(&accum, 1365);
+        codeword[j] = (unsigned int) zint_large_div_u64(&accum, 1365);
     }
 
-    codeword[0] = (unsigned int) large_lo(&accum);
+    codeword[0] = (unsigned int) zint_large_lo(&accum);
 
     /* *** Step 4 - Inserting Additional Information into Codewords *** */
 
@@ -412,18 +412,18 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
             j += 1;
         if (bar_map[i + 65] == 0)
             j += 2;
-        data_pattern[i] = itoc(j);
+        data_pattern[i] = z_itoc(j);
     }
 
     /* Translate 4-state data pattern to symbol */
     read = 0;
     for (i = 0; i < 65; i++) {
         if ((data_pattern[i] == '1') || (data_pattern[i] == '0')) {
-            set_module(symbol, 0, read);
+            z_set_module(symbol, 0, read);
         }
-        set_module(symbol, 1, read);
+        z_set_module(symbol, 1, read);
         if ((data_pattern[i] == '2') || (data_pattern[i] == '0')) {
-            set_module(symbol, 2, read);
+            z_set_module(symbol, 2, read);
         }
         read += 2;
     }
@@ -440,17 +440,17 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
         symbol->row_height[0] = 2.0855f; /* 0.0485 * 43 */
         symbol->row_height[1] = 2.06399989f; /* 0.048 * 43 */
         /* Note using max X for minimum and min X for maximum */
-        error_number = daft_set_height(symbol, min_height, max_height);
+        error_number = zint_daft_set_height(symbol, min_height, max_height);
     } else {
         symbol->row_height[0] = 3.0f;
         symbol->row_height[1] = 2.0f;
-        (void) daft_set_height(symbol, 0.0f, 0.0f);
+        (void) zint_daft_set_height(symbol, 0.0f, 0.0f);
     }
     symbol->rows = 3;
     symbol->width = read - 1;
 
-    if (raw_text && rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
     }
 
     return error_number;

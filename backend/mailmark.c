@@ -86,17 +86,17 @@ static int mailmark_verify_character(const char input, const char type, const in
 
     switch (type) {
         case 'A':
-            val = posn(SET_A, input);
+            val = z_posn(SET_A, input);
             break;
         case 'L':
             /* Limited only applies to 4-state (ticket #334, props Milton Neal) */
-            val = posn(is_2d ? SET_A : SET_L, input);
+            val = z_posn(is_2d ? SET_A : SET_L, input);
             break;
         case 'N':
-            val = posn(SET_N, input);
+            val = z_posn(SET_N, input);
             break;
         case 'S':
-            val = posn(SET_S, input);
+            val = z_posn(SET_S, input);
             break;
     }
 
@@ -167,10 +167,10 @@ static int mailmark_verify_postcode(const char postcode[10], const int length, i
     return 0;
 }
 
-INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
+INTERNAL int zint_daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
 
 /* Royal Mail 4-state Mailmark */
-INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned char local_source[28];
     int format;
     int version_id;
@@ -195,14 +195,14 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 26) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 580, "Input length %d too long (maximum 26)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 580, "Input length %d too long (maximum 26)", length);
     }
 
     memcpy(local_source, source, length);
 
     if (length < 22) {
         if (length < 14) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 588, "Input length %d too short (minimum 14)", length);
+            return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 588, "Input length %d too short (minimum 14)", length);
         }
         memset(local_source + length, ' ', 22 - length);
         length = 22;
@@ -211,33 +211,34 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
         length = 26;
     }
 
-    to_upper(local_source, length);
+    z_to_upper(local_source, length);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Producing 4-state Mailmark (%d): %.*s<end>\n", length, length, local_source);
     }
 
-    if ((i = not_sane(RUBIDIUM_F, local_source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 581,
+    if ((i = z_not_sane(RUBIDIUM_F, local_source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 581,
                         "Invalid character at position %d in input (alphanumerics and space only)", i);
     }
 
     /* Format is in the range 0-4 */
-    format = ctoi(local_source[0]);
+    format = z_ctoi(local_source[0]);
     if ((format < 0) || (format > 4)) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 582, "Format (1st character) out of range (0 to 4)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 582, "Format (1st character) out of range (0 to 4)");
     }
 
     /* Version ID is in the range 1-4 */
-    version_id = ctoi(local_source[1]) - 1;
+    version_id = z_ctoi(local_source[1]) - 1;
     if ((version_id < 0) || (version_id > 3)) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 583, "Version ID (2nd character) out of range (1 to 4)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 583, "Version ID (2nd character) out of range (1 to 4)");
     }
 
     /* Class is in the range 0-9,A-E */
-    mail_class = ctoi(local_source[2]);
+    mail_class = z_ctoi(local_source[2]);
     if ((mail_class < 0) || (mail_class > 14)) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 584, "Class (3rd character) out of range (0 to 9 and A to E)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 584,
+                        "Class (3rd character) out of range (0 to 9 and A to E)");
     }
 
     /* Supply Chain ID is 2 digits for barcode C and 6 digits for barcode L */
@@ -245,9 +246,9 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     for (i = 3; i < (length - 17); i++) {
         if (z_isdigit(local_source[i])) {
             supply_chain_id *= 10;
-            supply_chain_id += ctoi(local_source[i]);
+            supply_chain_id += z_ctoi(local_source[i]);
         } else {
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 585,
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 585,
                             "Invalid Supply Chain ID at character %d (digits only)", i);
         }
     }
@@ -257,9 +258,10 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     for (i = length - 17; i < (length - 9); i++) {
         if (z_isdigit(local_source[i])) {
             item_id *= 10;
-            item_id += ctoi(local_source[i]);
+            item_id += z_ctoi(local_source[i]);
         } else {
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 586, "Invalid Item ID at character %d (digits only)", i);
+            return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 586,
+                            "Invalid Item ID at character %d (digits only)", i);
         }
     }
 
@@ -268,111 +270,111 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
         postcode[i] = local_source[(length - 9) + i];
     }
     if (mailmark_verify_postcode(postcode, 9, &postcode_type) != 0) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 587, "Invalid postcode \"%.9s\"", postcode);
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 587, "Invalid postcode \"%.9s\"", postcode);
     }
 
     /* Convert postcode to internal user field */
 
-    large_load_u64(&destination_postcode, 0);
+    zint_large_load_u64(&destination_postcode, 0);
 
     if (postcode_type != 7) {
         const char *const pattern = mailmark_postcode_format[postcode_type - 1];
 
-        large_load_u64(&b, 0);
+        zint_large_load_u64(&b, 0);
 
         for (i = 0; i < 9; i++) {
             switch (pattern[i]) {
                 case 'A':
-                    large_mul_u64(&b, 26);
-                    large_add_u64(&b, posn(SET_A, postcode[i]));
+                    zint_large_mul_u64(&b, 26);
+                    zint_large_add_u64(&b, z_posn(SET_A, postcode[i]));
                     break;
                 case 'L':
-                    large_mul_u64(&b, 20);
-                    large_add_u64(&b, posn(SET_L, postcode[i]));
+                    zint_large_mul_u64(&b, 20);
+                    zint_large_add_u64(&b, z_posn(SET_L, postcode[i]));
                     break;
                 case 'N':
-                    large_mul_u64(&b, 10);
-                    large_add_u64(&b, posn(SET_N, postcode[i]));
+                    zint_large_mul_u64(&b, 10);
+                    zint_large_add_u64(&b, z_posn(SET_N, postcode[i]));
                     break;
                 /* case 'S' ignored as value is 0 */
             }
         }
 
-        large_load(&destination_postcode, &b);
+        zint_large_load(&destination_postcode, &b);
 
         /* destination_postcode = a + b */
-        large_load_u64(&b, 1);
+        zint_large_load_u64(&b, 1);
         if (postcode_type == 1) {
-            large_add(&destination_postcode, &b);
+            zint_large_add(&destination_postcode, &b);
         }
-        large_add_u64(&b, 5408000000);
+        zint_large_add_u64(&b, 5408000000);
         if (postcode_type == 2) {
-            large_add(&destination_postcode, &b);
+            zint_large_add(&destination_postcode, &b);
         }
-        large_add_u64(&b, 5408000000);
+        zint_large_add_u64(&b, 5408000000);
         if (postcode_type == 3) {
-            large_add(&destination_postcode, &b);
+            zint_large_add(&destination_postcode, &b);
         }
-        large_add_u64(&b, 54080000000);
+        zint_large_add_u64(&b, 54080000000);
         if (postcode_type == 4) {
-            large_add(&destination_postcode, &b);
+            zint_large_add(&destination_postcode, &b);
         }
-        large_add_u64(&b, 140608000000);
+        zint_large_add_u64(&b, 140608000000);
         if (postcode_type == 5) {
-            large_add(&destination_postcode, &b);
+            zint_large_add(&destination_postcode, &b);
         }
-        large_add_u64(&b, 208000000);
+        zint_large_add_u64(&b, 208000000);
         if (postcode_type == 6) {
-            large_add(&destination_postcode, &b);
+            zint_large_add(&destination_postcode, &b);
         }
     }
 
     /* Conversion from Internal User Fields to Consolidated Data Value */
     /* Set CDV to 0 */
-    large_load_u64(&cdv, 0);
+    zint_large_load_u64(&cdv, 0);
 
     /* Add Destination Post Code plus DPS */
-    large_add(&cdv, &destination_postcode);
+    zint_large_add(&cdv, &destination_postcode);
 
     /* Multiply by 100,000,000 */
-    large_mul_u64(&cdv, 100000000);
+    zint_large_mul_u64(&cdv, 100000000);
 
     /* Add Item ID */
-    large_add_u64(&cdv, item_id);
+    zint_large_add_u64(&cdv, item_id);
 
     if (length == 22) {
         /* Barcode C - Multiply by 100 */
-        large_mul_u64(&cdv, 100);
+        zint_large_mul_u64(&cdv, 100);
     } else {
         /* Barcode L - Multiply by 1,000,000 */
-        large_mul_u64(&cdv, 1000000);
+        zint_large_mul_u64(&cdv, 1000000);
     }
 
     /* Add Supply Chain ID */
-    large_add_u64(&cdv, supply_chain_id);
+    zint_large_add_u64(&cdv, supply_chain_id);
 
     /* Multiply by 15 */
-    large_mul_u64(&cdv, 15);
+    zint_large_mul_u64(&cdv, 15);
 
     /* Add Class */
-    large_add_u64(&cdv, mail_class);
+    zint_large_add_u64(&cdv, mail_class);
 
     /* Multiply by 5 */
-    large_mul_u64(&cdv, 5);
+    zint_large_mul_u64(&cdv, 5);
 
     /* Add Format */
-    large_add_u64(&cdv, format);
+    zint_large_add_u64(&cdv, format);
 
     /* Multiply by 4 */
-    large_mul_u64(&cdv, 4);
+    zint_large_mul_u64(&cdv, 4);
 
     /* Add Version ID */
-    large_add_u64(&cdv, version_id);
+    zint_large_add_u64(&cdv, version_id);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("DPC type %d\n", postcode_type);
         fputs("CDV: ", stdout);
-        large_print(&cdv);
+        zint_large_print(&cdv);
     }
 
     if (length == 22) {
@@ -388,18 +390,18 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     /* Conversion from Consolidated Data Value to Data Numbers */
 
     for (j = data_top; j >= (data_step + 1); j--) {
-        data[j] = (unsigned char) large_div_u64(&cdv, 32);
+        data[j] = (unsigned char) zint_large_div_u64(&cdv, 32);
     }
 
     for (j = data_step; j >= 0; j--) {
-        data[j] = (unsigned char) large_div_u64(&cdv, 30);
+        data[j] = (unsigned char) zint_large_div_u64(&cdv, 30);
     }
 
     /* Generation of Reed-Solomon Check Numbers */
-    rs_init_gf(&rs, 0x25);
-    rs_init_code(&rs, check_count, 1);
+    zint_rs_init_gf(&rs, 0x25);
+    zint_rs_init_code(&rs, check_count, 1);
     data_top++;
-    rs_encode(&rs, data_top, data, check);
+    zint_rs_encode(&rs, data_top, data, check);
 
     /* Append check digits to data */
     memcpy(data + data_top, check, check_count);
@@ -467,11 +469,11 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     j = 0;
     for (i = 0, len = d - bar; i < len; i++) {
         if ((bar[i] == 'F') || (bar[i] == 'A')) {
-            set_module(symbol, 0, j);
+            z_set_module(symbol, 0, j);
         }
-        set_module(symbol, 1, j);
+        z_set_module(symbol, 1, j);
         if ((bar[i] == 'F') || (bar[i] == 'D')) {
-            set_module(symbol, 2, j);
+            z_set_module(symbol, 2, j);
         }
         j += 2;
     }
@@ -490,27 +492,27 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
         symbol->row_height[0] = 3.16417313f; /* (1.9 * 42.3) / 25.4 */
         symbol->row_height[1] = 2.16496062f; /* (1.3 * 42.3) / 25.4 */
         /* Note using max X for minimum and min X for maximum */
-        error_number = daft_set_height(symbol, min_height, max_height);
+        error_number = zint_daft_set_height(symbol, min_height, max_height);
     } else {
         symbol->row_height[0] = 4.0f;
         symbol->row_height[1] = 2.0f;
-        (void) daft_set_height(symbol, 0.0f, 0.0f);
+        (void) zint_daft_set_height(symbol, 0.0f, 0.0f);
     }
     symbol->rows = 3;
     symbol->width = j - 1;
 
-    if (raw_text && rt_cpy(symbol, local_source, length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
     }
 
     return error_number;
 }
 
-INTERNAL int datamatrix(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
+INTERNAL int zint_datamatrix(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
 
 /* Royal Mail 2D Mailmark (CMDM) (Data Matrix) */
 /* https://www.royalmailtechnical.com/rmt_docs/User_Guides_2021/Mailmark_Barcode_definition_document_20210215.pdf */
-INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int length) {
     static const char spaces[9] = "         ";
     unsigned char local_source[90 + 1];
     char postcode[10];
@@ -518,19 +520,19 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     struct zint_seg segs[1];
 
     if (length > 90) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 589, "Input length %d too long (maximum 90)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 589, "Input length %d too long (maximum 90)", length);
     }
 
     if (length < 28) { /* After adding prefix (4), blank Return to Sender Post Code (7), Reserved (6): 28 + 17 = 45 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 860, "Input length %d too short (minimum 28)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 860, "Input length %d too short (minimum 28)", length);
     }
 
     /* Add prefix if missing */
     memcpy(local_source, source, 4);
-    to_upper(local_source, 3);
+    z_to_upper(local_source, 3);
     if (memcmp(local_source, "JGB ", 4) != 0) {
         if (length > 86) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 861, "Input length %d too long (maximum 86)", length);
+            return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 861, "Input length %d too long (maximum 86)", length);
         }
         memcpy(local_source, "JGB ", 4);
         memcpy(local_source + 4, source, length);
@@ -540,13 +542,13 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     if (length < 32) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 862, "Input length %d too short (minimum 32)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 862, "Input length %d too short (minimum 32)", length);
     }
     if (length < 39) { /* Space-pad Return to Sender Post Code */
         memset(local_source + length, ' ', 39 - length);
         length = 39;
     }
-    to_upper(local_source, 39);
+    z_to_upper(local_source, 39);
 
     if (length < 45) { /* Space-pad Reserved */
         memset(local_source + length, ' ', 45 - length);
@@ -557,17 +559,17 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     /* 8: 24 x 24, 10: 32 x 32, 30: 16 x 48 */
     if (symbol->option_2) {
         if (symbol->option_2 != 8 && symbol->option_2 != 10 && symbol->option_2 != 30) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 863, "Invalid Version '%d' (8, 10 or 30 only)",
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 863, "Invalid Version '%d' (8, 10 or 30 only)",
                             symbol->option_2);
         }
         if (symbol->option_2 == 8) {
             if (length > 51) {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 864,
+                return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 864,
                                 "Input length %d too long for Version 8 (maximum 51)", length);
             }
         } else if (symbol->option_2 == 30) {
             if (length > 70) {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 865,
+                return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 865,
                                 "Input length %d too long for Version 30 (maximum 70)", length);
             }
         }
@@ -585,8 +587,8 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
         printf("Producing 2D Mailmark %d (%d): %s<end>\n", symbol->option_2, length, local_source);
     }
 
-    if ((i = not_sane(RUBIDIUM_F, local_source, 45))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 866,
+    if ((i = z_not_sane(RUBIDIUM_F, local_source, 45))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 866,
                         "Invalid character at position %d in input (alphanumerics and space only in first 45)", i);
     }
 
@@ -594,23 +596,23 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     /* Not checking that matches values listed in Mailmark Definition Document as contradicted by Mailmark Mailing
        Requirements Section 5.7 which says 'P' for poll card is valid, which isn't listed */
     if (local_source[4] == ' ') {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 867, "Invalid Information Type ID (cannot be space)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 867, "Invalid Information Type ID (cannot be space)");
     }
     /* Version ID */
     if (local_source[5] != '1') {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 868, "Invalid Version ID (\"1\" only)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 868, "Invalid Version ID (\"1\" only)");
     }
     /* Class */
     if (local_source[6] == ' ') {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 869, "Invalid Class (cannot be space)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 869, "Invalid Class (cannot be space)");
     }
     /* Supply Chain ID */
-    if (cnt_digits(local_source, length, 7, 7) != 7) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 870, "Invalid Supply Chain ID (7 digits only)");
+    if (z_cnt_digits(local_source, length, 7, 7) != 7) {
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 870, "Invalid Supply Chain ID (7 digits only)");
     }
     /* Item ID */
-    if (cnt_digits(local_source, length, 14, 8) != 8) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 871, "Invalid Item ID (8 digits only)");
+    if (z_cnt_digits(local_source, length, 14, 8) != 8) {
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 871, "Invalid Item ID (8 digits only)");
     }
 
     /* Destination Post Code plus DPS field */
@@ -622,13 +624,13 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
         i++;
         /* If not 2 to 4 non-spaces left, check full post code */
         if (mailmark_verify_postcode(postcode, i >= 2 && i <= 4 ? i : 9, NULL /*p_postcode_type*/) != 0) {
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 872, "Invalid Destination Post Code plus DPS");
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 872, "Invalid Destination Post Code plus DPS");
         }
     }
 
     /* Service Type */
     if (local_source[31] < '0' || local_source[31] > '6') {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 873, "Invalid Service Type (\"0\" to \"6\" only)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 873, "Invalid Service Type (\"0\" to \"6\" only)");
     }
 
     /* Return to Sender Post Code */
@@ -645,20 +647,20 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
             postcode[i++] = ' ';
         }
         if (mailmark_verify_postcode(postcode, 9, NULL /*p_postcode_type*/) != 0) {
-            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 874, "Invalid Return to Sender Post Code");
+            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 874, "Invalid Return to Sender Post Code");
         }
     }
 
     /* Reserved */
     if (memcmp(local_source + 39, spaces, 6) != 0) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 875, "Invalid Reserved field (must be spaces only)");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 875, "Invalid Reserved field (must be spaces only)");
     }
 
     segs[0].eci = 0;
     segs[0].source = local_source;
     segs[0].length = length;
 
-    return datamatrix(symbol, segs, 1);
+    return zint_datamatrix(symbol, segs, 1);
 }
 
 /* vim: set ts=4 sw=4 et : */

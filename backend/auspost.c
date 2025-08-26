@@ -86,9 +86,9 @@ static char *aus_rs_error(char data_pattern[], char *d) {
                 + aus_convert_pattern(data_pattern[reader + 2], 0);
     }
 
-    rs_init_gf(&rs, 0x43);
-    rs_init_code(&rs, 4, 1);
-    rs_encode(&rs, triple_writer, triple, result);
+    zint_rs_init_gf(&rs, 0x43);
+    zint_rs_init_code(&rs, 4, 1);
+    zint_rs_encode(&rs, triple_writer, triple, result);
 
     for (reader = 0; reader < 4; reader++, d += 3) {
         memcpy(d, AusBarTable[result[reader]], 3);
@@ -97,10 +97,10 @@ static char *aus_rs_error(char data_pattern[], char *d) {
     return d;
 }
 
-INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
+INTERNAL int zint_daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
 
 /* Handles Australia Posts's 4 State Codes */
-INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* Customer Standard Barcode, Barcode 2 or Barcode 3 system determined automatically
        (i.e. the FCC doesn't need to be specified by the user) dependent
        on the length of the input string */
@@ -127,16 +127,16 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     /* Do all of the length checking first to avoid stack smashing */
     if (symbol->symbology == BARCODE_AUSPOST) {
         if (length != 8 && length != 13 && length != 16 && length != 18 && length != 23) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 401,
+            return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 401,
                             "Input length %d wrong (8, 13, 16, 18 or 23 characters required)", length);
         }
     } else if (length > 8) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 403, "Input length %d too long (maximum 8)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 403, "Input length %d too long (maximum 8)", length);
     }
 
     /* Check input immediately to catch nuls */
-    if ((i = not_sane(GDSET_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 404,
+    if ((i = z_not_sane(GDSET_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 404,
                         "Invalid character at position %d in input (alphanumerics, space and \"#\" only)", i);
     }
 
@@ -151,8 +151,8 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
             case 16:
                 memcpy(fcc, "59", 2);
-                if ((i = not_sane(NEON_F, source, length))) {
-                    return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 402,
+                if ((i = z_not_sane(NEON_F, source, length))) {
+                    return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 402,
                                     "Invalid character at position %d in input (digits only for FCC 59 length 16)",
                                     i);
                 }
@@ -162,8 +162,8 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
             case 23:
                 memcpy(fcc, "62", 2);
-                if ((i = not_sane(NEON_F, source, length))) {
-                    return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 406,
+                if ((i = z_not_sane(NEON_F, source, length))) {
+                    return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 406,
                                     "Invalid character at position %d in input (digits only for FCC 62 length 23)",
                                     i);
                 }
@@ -189,8 +189,8 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     length += zeroes;
     /* Verify that the first 8 characters are numbers */
     memcpy(dpid, local_source, 8);
-    if ((i = not_sane(NEON_F, dpid, 8))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 405,
+    if ((i = z_not_sane(NEON_F, dpid, 8))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 405,
                         "Invalid character at position %d in DPID (first 8 characters) (digits only)", i);
     }
 
@@ -212,7 +212,7 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     if (length > 8) {
         if ((length == 13) || (length == 18)) {
             for (reader = 8; reader < length; reader++, d += 3) {
-                memcpy(d, AusCTable[posn(GDSET, local_source[reader])], 3);
+                memcpy(d, AusCTable[z_posn(GDSET, local_source[reader])], 3);
             }
         } else if ((length == 16) || (length == 23)) {
             for (reader = 8; reader < length; reader++, d += 2) {
@@ -245,11 +245,11 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     h = d - data_pattern;
     for (loopey = 0; loopey < h; loopey++) {
         if ((data_pattern[loopey] == '1') || (data_pattern[loopey] == '0')) {
-            set_module(symbol, 0, writer);
+            z_set_module(symbol, 0, writer);
         }
-        set_module(symbol, 1, writer);
+        z_set_module(symbol, 1, writer);
         if ((data_pattern[loopey] == '2') || (data_pattern[loopey] == '0')) {
-            set_module(symbol, 2, writer);
+            z_set_module(symbol, 2, writer);
         }
         writer += 2;
     }
@@ -265,17 +265,18 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
          */
         symbol->row_height[0] = 3.7f; /* 1.85f / 0.5f */
         symbol->row_height[1] = 2.6f; /* 1.3f / 0.5f */
-        error_number = daft_set_height(symbol, 7.0f, 14.0f); /* Note using max X for minimum and min X for maximum */
+        /* Note using max X for minimum and min X for maximum */
+        error_number = zint_daft_set_height(symbol, 7.0f, 14.0f);
     } else {
         symbol->row_height[0] = 3.0f;
         symbol->row_height[1] = 2.0f;
-        error_number = daft_set_height(symbol, 0.0f, 0.0f);
+        error_number = zint_daft_set_height(symbol, 0.0f, 0.0f);
     }
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (raw_text && rt_cpy_cat(symbol, fcc, 2, '\xFF' /*separator (none)*/, local_source, length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+    if (raw_text && z_rt_cpy_cat(symbol, fcc, 2, '\xFF' /*separator (none)*/, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;

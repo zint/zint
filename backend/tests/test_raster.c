@@ -1975,7 +1975,7 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
             symbol->show_hrt = data[i].show_hrt;
         }
 
-        if (is_composite(symbol->symbology)) {
+        if (z_is_composite(symbol->symbology)) {
             text = *(data[i].composite) ? data[i].composite : composite;
             length = (int) strlen(text);
             assert_nonzero(strlen(data[i].data) < 128, "i:%d linear data length %d >= 128\n", i, (int) strlen(data[i].data));

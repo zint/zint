@@ -1,7 +1,7 @@
 /*  tif_lzw.h - LZW compression for TIFF */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -168,10 +168,10 @@ static void tif_lzw_cl_hash(tif_lzw_state *sp) {
 #define PutNextCode(op_fmp, c) { \
     nextdata = (nextdata << nbits) | c; \
     nextbits += nbits; \
-    fm_putc((nextdata >> (nextbits - 8)) & 0xff, op_fmp); \
+    zint_fm_putc((nextdata >> (nextbits - 8)) & 0xff, op_fmp); \
     nextbits -= 8; \
     if (nextbits >= 8) { \
-        fm_putc((nextdata >> (nextbits - 8)) & 0xff, op_fmp); \
+        zint_fm_putc((nextdata >> (nextbits - 8)) & 0xff, op_fmp); \
         nextbits -= 8; \
     } \
     outcount += nbits; \
@@ -358,7 +358,7 @@ static int tif_lzw_encode(tif_lzw_state *sp, struct filemem *op_fmp, const unsig
     PutNextCode(op_fmp, CODE_EOI);
     /* Explicit 0xff masking to make icc -check=conversions happy */
     if (nextbits > 0) {
-        fm_putc((nextdata << (8 - nextbits)) & 0xff, op_fmp);
+        zint_fm_putc((nextdata << (8 - nextbits)) & 0xff, op_fmp);
     }
 
     return 1;

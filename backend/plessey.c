@@ -52,7 +52,7 @@ static const char MSITable[10][8] = {
 };
 
 /* Not MSI/Plessey but the older Plessey standard */
-INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i;
     unsigned char checkptr[67 * 4 + 8] = {0};
@@ -65,10 +65,10 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 67) { /* 16 + 67 * 16 + 4 * 8 + 19 = 1139 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 370, "Input length %d too long (maximum 67)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 370, "Input length %d too long (maximum 67)", length);
     }
-    if ((i = not_sane(SSET_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 371,
+    if ((i = z_not_sane(SSET_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 371,
                         "Invalid character at position %d in input (digits and \"ABCDEF\" only)", i);
     }
 
@@ -115,21 +115,21 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
     memcpy(d, "331311313", 9);
     d += 9;
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
     /* TODO: Find documentation on BARCODE_PLESSEY dimensions/height */
 
-    c1 = (char) xtoc(check_digits & 0xF);
-    c2 = (char) xtoc(check_digits >> 4);
+    c1 = (char) z_xtoc(check_digits & 0xF);
+    c2 = (char) z_xtoc(check_digits >> 4);
 
-    hrt_cpy_nochk(symbol, source, length);
+    z_hrt_cpy_nochk(symbol, source, length);
     if (symbol->option_2 == 1) {
-        hrt_cat_chr_nochk(symbol, c1);
-        hrt_cat_chr_nochk(symbol, c2);
+        z_hrt_cat_chr_nochk(symbol, c1);
+        z_hrt_cat_chr_nochk(symbol, c2);
     }
 
-    if (raw_text && rt_printf_256(symbol, "%.*s%c%c", length, source, c1, c2)) {
-        return ZINT_ERROR_MEMORY; /* `rt_printf_256()` only fails with OOM */
+    if (raw_text && z_rt_printf_256(symbol, "%.*s%c%c", length, source, c1, c2)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_printf_256()` only fails with OOM */
     }
 
     return error_number;
@@ -146,11 +146,11 @@ static char msi_check_digit_mod10(const unsigned char source[], const int length
 
     for (i = length - 1; i >= 0; i--) {
         /* Note overflow impossible for max length 92 * max weight 9 * max val 15 == 12420 */
-        x += vals[undoubled][ctoi(source[i])];
+        x += vals[undoubled][z_ctoi(source[i])];
         undoubled = !undoubled;
     }
 
-    return itoc((10 - x % 10) % 10);
+    return z_itoc((10 - x % 10) % 10);
 }
 
 /* Modulo 11 check digit - IBM weight system wrap = 7, NCR system wrap = 9
@@ -160,14 +160,14 @@ static char msi_check_digit_mod11(const unsigned char source[], const int length
 
     for (i = length - 1; i >= 0; i--) {
         /* Note overflow impossible for max length 92 * max weight 9 * max val 15 == 12420 */
-        x += weight * ctoi(source[i]);
+        x += weight * z_ctoi(source[i]);
         weight++;
         if (weight > wrap) {
             weight = 2;
         }
     }
 
-    return itoc((11 - x % 11) % 11); /* Will return ':' for 10 */
+    return z_itoc((11 - x % 11) % 11); /* Will return ':' for 10 */
 }
 
 /* Plain MSI Plessey - does not calculate any check character */
@@ -180,10 +180,10 @@ static char *msi_plessey_nomod(struct zint_symbol *symbol, const unsigned char s
         memcpy(d, MSITable[source[i] - '0'], 8);
     }
 
-    hrt_cpy_nochk(symbol, source, length);
+    z_hrt_cpy_nochk(symbol, source, length);
 
-    if (raw_text && rt_cpy(symbol, source, length)) {
-        return NULL; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, source, length)) {
+        return NULL; /* `z_rt_cpy()` only fails with OOM */
     }
 
     return d;
@@ -207,13 +207,13 @@ static char *msi_plessey_mod10(struct zint_symbol *symbol, const unsigned char s
     memcpy(d, MSITable[check_digit - '0'], 8);
     d += 8;
 
-    hrt_cpy_nochk(symbol, source, length);
+    z_hrt_cpy_nochk(symbol, source, length);
     if (!no_checktext) {
-        hrt_cat_chr_nochk(symbol, check_digit);
+        z_hrt_cat_chr_nochk(symbol, check_digit);
     }
 
-    if (raw_text && rt_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
-        return NULL; /* `rt_cpy_cat()` only fails with OOM */
+    if (raw_text && z_rt_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
+        return NULL; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
     return d;
@@ -236,13 +236,13 @@ static char *msi_plessey_mod1010(struct zint_symbol *symbol, const unsigned char
     }
 
     if (no_checktext) {
-        hrt_cpy_nochk(symbol, source, length);
+        z_hrt_cpy_nochk(symbol, source, length);
     } else {
-        hrt_cpy_nochk(symbol, local_source, length + 2);
+        z_hrt_cpy_nochk(symbol, local_source, length + 2);
     }
 
-    if (raw_text && rt_cpy(symbol, local_source, length + 2)) {
-        return NULL; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, local_source, length + 2)) {
+        return NULL; /* `z_rt_cpy()` only fails with OOM */
     }
     return d;
 }
@@ -271,12 +271,13 @@ static char *msi_plessey_mod11(struct zint_symbol *symbol, const unsigned char s
         memcpy(d, MSITable[check_digits[i] - '0'], 8);
     }
 
-    hrt_cpy_nochk(symbol, source, length);
+    z_hrt_cpy_nochk(symbol, source, length);
     if (!no_checktext) {
-        hrt_cat_nochk(symbol, check_digits, check_digits_len);
+        z_hrt_cat_nochk(symbol, check_digits, check_digits_len);
     }
 
-    if (raw_text && rt_cpy_cat(symbol, source, length, '\xFF' /*separator (none)*/, check_digits, check_digits_len)) {
+    if (raw_text && z_rt_cpy_cat(symbol, source, length, '\xFF' /*separator (none)*/, check_digits,
+                                check_digits_len)) {
         return NULL; /* `check_digits_len()` only fails with OOM */
     }
     return d;
@@ -312,19 +313,19 @@ static char *msi_plessey_mod1110(struct zint_symbol *symbol, const unsigned char
     }
 
     if (no_checktext) {
-        hrt_cpy_nochk(symbol, source, length);
+        z_hrt_cpy_nochk(symbol, source, length);
     } else {
-        hrt_cpy_nochk(symbol, local_source, local_length);
+        z_hrt_cpy_nochk(symbol, local_source, local_length);
     }
 
-    if (raw_text && rt_cpy(symbol, local_source, local_length)) {
-        return NULL; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, local_source, local_length)) {
+        return NULL; /* `z_rt_cpy()` only fails with OOM */
     }
 
     return d;
 }
 
-INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0;
     int i;
     char dest[766]; /* 2 + 92 * 8 + 3 * 8 + 3 + 1 = 766 */
@@ -334,10 +335,10 @@ INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 92) { /* 3 (Start) + 92 * 12 + 3 * 12 + 4 (Stop) = 1147 */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 372, "Input length %d too long (maximum 92)", length);
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 372, "Input length %d too long (maximum 92)", length);
     }
-    if ((i = not_sane(NEON_F, source, length))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 377,
+    if ((i = z_not_sane(NEON_F, source, length))) {
+        return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 377,
                         "Invalid character at position %d in input (digits only)", i);
     }
 
@@ -364,14 +365,14 @@ INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     if (!d) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy()` etc. only fail with OOM */
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` etc. only fail with OOM */
     }
 
     /* Stop character */
     memcpy(d, "121", 3);
     d += 3;
 
-    expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, d - dest);
 
     /* TODO: Find documentation on BARCODE_MSI_PLESSEY dimensions/height */
 

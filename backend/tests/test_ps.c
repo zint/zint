@@ -139,7 +139,8 @@ static void test_print(const testCtx *const p_ctx) {
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
-        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
+        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL),
+                        "testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
             ret = testUtilMkDir(data_dir_path);
             assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
@@ -153,7 +154,9 @@ static void test_print(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1, data[i].output_options,
+                                    data[i].data, -1, debug);
         if (data[i].border_width != -1) {
             symbol->border_width = data[i].border_width;
         }
@@ -177,39 +180,47 @@ static void test_print(const testCtx *const p_ctx) {
         }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
+        assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n",
+                    i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         strcpy(symbol->outfile, eps);
         ret = ZBarcode_Print(symbol, data[i].rotate_angle);
-        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n",
+                    i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
-        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
+        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file),
+                    "i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %.5g, %.5g, \"%s\", \"%s\", %d, \"%s\", \"%s\"},\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width,
-                    testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width, data[i].whitespace_height, data[i].option_1, data[i].option_2,
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
+                    data[i].border_width,
+                    testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width,
+                    data[i].whitespace_height, data[i].option_1, data[i].option_2,
                     data[i].scale, data[i].dot_size, data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_ghostscript) {
                 ret = testUtilVerifyGhostscript(expected_file, debug);
-                assert_zero(ret, "i:%d %s ghostscript %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
+                assert_zero(ret, "i:%d %s ghostscript %s ret %d != 0\n",
+                            i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
             assert_nonzero(testUtilExists(expected_file), "i:%d testUtilExists(%s) == 0\n", i, expected_file);
 
             ret = testUtilCmpEpss(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpEpss(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+            assert_zero(ret, "i:%d %s testUtilCmpEpss(%s, %s) %d != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
 
             symbol->output_options |= BARCODE_MEMORY_FILE;
             ret = ZBarcode_Print(symbol, data[i].rotate_angle);
             assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n",
-                            i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
             assert_nonnull(symbol->memfile, "i:%d %s memfile NULL\n", i, testUtilBarcodeName(data[i].symbology));
-            assert_nonzero(symbol->memfile_size, "i:%d %s memfile_size 0\n", i, testUtilBarcodeName(data[i].symbology));
+            assert_nonzero(symbol->memfile_size, "i:%d %s memfile_size 0\n",
+                        i, testUtilBarcodeName(data[i].symbology));
 
             ret = testUtilWriteFile(memfile, symbol->memfile, symbol->memfile_size, "wb");
             assert_zero(ret, "%d: testUtilWriteFile(%s) fail ret %d != 0\n", i, memfile, ret);
@@ -230,7 +241,7 @@ static void test_print(const testCtx *const p_ctx) {
     testFinish();
 }
 
-INTERNAL void ps_convert_test(const unsigned char *string, unsigned char *ps_string);
+INTERNAL void zint_test_ps_convert(const unsigned char *string, unsigned char *ps_string);
 
 static void test_ps_convert(const testCtx *const p_ctx) {
 
@@ -252,14 +263,15 @@ static void test_ps_convert(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        ps_convert_test((unsigned char *) data[i].data, converted);
-        assert_zero(strcmp((char *) converted, data[i].expected), "i:%d ps_convert(%s) %s != %s\n", i, data[i].data, converted, data[i].expected);
+        zint_test_ps_convert((unsigned char *) data[i].data, converted);
+        assert_zero(strcmp((char *) converted, data[i].expected), "i:%d ps_convert(%s) %s != %s\n",
+                    i, data[i].data, converted, data[i].expected);
     }
 
     testFinish();
 }
 
-INTERNAL int ps_plot(struct zint_symbol *symbol, int rotate_angle);
+INTERNAL int zint_ps_plot(struct zint_symbol *symbol, int rotate_angle);
 
 static void test_outfile(const testCtx *const p_ctx) {
     int ret;
@@ -282,24 +294,29 @@ static void test_outfile(const testCtx *const p_ctx) {
         static char expected_errtxt[] = "645: Could not open EPS output file ("; /* Excluding OS-dependent `errno` stuff */
 
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
-        assert_nonzero(testUtilCreateROFile(symbol.outfile), "ps_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_nonzero(testUtilCreateROFile(symbol.outfile), "zint_ps_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
+                    symbol.outfile, errno, strerror(errno));
 
-        ret = ps_plot(&symbol, 0);
-        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "ps_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
-        assert_zero(testUtilRmROFile(symbol.outfile), "ps_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
-        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
+        ret = zint_ps_plot(&symbol, 0);
+        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "zint_ps_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
+                    ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+        assert_zero(testUtilRmROFile(symbol.outfile), "zint_ps_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
+                    symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n",
+                    symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;
 
     printf(">>>Begin ignore (EPS to stdout)\n"); fflush(stdout);
-    ret = ps_plot(&symbol, 0);
+    ret = zint_ps_plot(&symbol, 0);
     printf("<<<End ignore (EPS to stdout)\n"); fflush(stdout);
-    assert_zero(ret, "ps_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
+    assert_zero(ret, "zint_ps_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
 
     symbol.vector = NULL;
-    ret = ps_plot(&symbol, 0);
-    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ps_plot ret %d != ZINT_ERROR_INVALID_DATA (%d) (%s)\n", ret, ZINT_ERROR_INVALID_DATA, symbol.errtxt);
+    ret = zint_ps_plot(&symbol, 0);
+    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "zint_ps_plot ret %d != ZINT_ERROR_INVALID_DATA (%d) (%s)\n",
+                ret, ZINT_ERROR_INVALID_DATA, symbol.errtxt);
 
     testFinish();
 }

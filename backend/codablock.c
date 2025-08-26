@@ -534,7 +534,7 @@ static void SumASCII(uchar **ppOutPos, const int Sum, const int CharacterSet) {
 
 /* Main function called by zint framework
  */
-INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int zint_codablockf(struct zint_symbol *symbol, unsigned char source[], int length) {
     int charCur, dataLength;
     int error_number;
     int rows, columns, useColumns;
@@ -560,35 +560,35 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     /* option1: rows <= 0: automatic, 1..44 */
     rows = symbol->option_1;
     if (rows == 1) {
-        error_number = code128(symbol, source, length);
+        error_number = zint_code128(symbol, source, length);
         if (error_number < ZINT_ERROR) {
             symbol->output_options |= BARCODE_BIND;
             if (symbol->border_width == 0) { /* Allow override if non-zero */
                 symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
             }
-            hrt_cpy_nochk(symbol, (const unsigned char *) "", 0); /* Zap HRT for compatibility with CODABLOCKF */
-            /* Use `raw_text` from `code128()` */
+            z_hrt_cpy_nochk(symbol, (const unsigned char *) "", 0); /* Zap HRT for compatibility with CODABLOCKF */
+            /* Use `raw_text` from `zint_code128()` */
             if (symbol->output_options & COMPLIANT_HEIGHT) {
                 /* AIM ISS-X-24 Section 4.6.1 minimum row height 8X (for compatibility with CODABLOCKF, not specced
                    for CODE128) */
                 if (error_number == 0) {
-                    error_number = set_height(symbol, 8.0f, 10.0f, 0.0f, 0 /*no_errtxt*/);
+                    error_number = z_set_height(symbol, 8.0f, 10.0f, 0.0f, 0 /*no_errtxt*/);
                 } else {
-                    (void) set_height(symbol, 8.0f, 10.0f, 0.0f, 1 /*no_errtxt*/);
+                    (void) z_set_height(symbol, 8.0f, 10.0f, 0.0f, 1 /*no_errtxt*/);
                 }
             } else {
-                (void) set_height(symbol, 0.0f, 5.0f, 0.0f, 1 /*no_errtxt*/);
+                (void) z_set_height(symbol, 0.0f, 5.0f, 0.0f, 1 /*no_errtxt*/);
             }
         }
         return error_number;
     }
     if (rows > 44) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 410, "Number of rows '%d' out of range (0 to 44)", rows);
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 410, "Number of rows '%d' out of range (0 to 44)", rows);
     }
     /* option_2: (usable data) columns: <= 0: automatic, 9..67 (min 9 == 4 data, max 67 == 62 data) */
     columns = symbol->option_2;
     if (!(columns <= 0 || (columns >= 9 && columns <= 67))) {
-        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 411, "Number of columns '%d' out of range (9 to 67)",
+        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 411, "Number of columns '%d' out of range (9 to 67)",
                         columns);
     }
     if (columns < 0) { /* Protect against negative overflow (ticket #300 (#9) Andre Maute) */
@@ -640,7 +640,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         error_number = Columns2Rows(T, dataLength, &rows, &useColumns, pSet, &fillings, debug);
     }
     if (error_number != 0) {
-        return errtxt(error_number, symbol, 413,
+        return z_errtxt(error_number, symbol, 413,
                         "Input too long, requires too many symbol characters (maximum 2726)");
     }
     /* Suppresses clang-analyzer-core.VLASize warning */
@@ -846,7 +846,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump(symbol, pOutput, rows * columns);
+        z_debug_test_codeword_dump(symbol, pOutput, rows * columns);
     }
 #endif
 
@@ -857,23 +857,23 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         const int rc = r * columns;
         char *d = dest;
         for (c = 0; c < columns - 1; c++, d += 6) {
-            memcpy(d, C128Table[pOutput[rc + c]], 6);
+            memcpy(d, zint_C128Table[pOutput[rc + c]], 6);
         }
-        memcpy(d, "2331112", 7); /* Stop character (106, not in C128Table) */
+        memcpy(d, "2331112", 7); /* Stop character (106, not in `zint_C128Table[]`) */
         d += 7;
-        expand(symbol, dest, d - dest);
+        z_expand(symbol, dest, d - dest);
     }
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* AIM ISS-X-24 Section 4.6.1 minimum row height; use 10 * rows as default */
-        float min_row_height = stripf(0.55f * useColumns + 3.0f);
+        float min_row_height = z_stripf(0.55f * useColumns + 3.0f);
         if (min_row_height < 8.0f) {
             min_row_height = 8.0f;
         }
-        error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows,
+        error_number = z_set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows,
                                   0.0f, 0 /*no_errtxt*/);
     } else {
-        (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
+        (void) z_set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
     }
 
     symbol->output_options |= BARCODE_BIND;
@@ -882,8 +882,8 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
     }
 
-    if (raw_text && rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    if (raw_text && z_rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
     }
 
     return error_number;

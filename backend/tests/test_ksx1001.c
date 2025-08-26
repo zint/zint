@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -40,12 +40,12 @@
 #include "../just_say_gno/ksx1001_gnu.h"
 #endif
 
-INTERNAL int u_ksx1001_test(const unsigned int u, unsigned char *dest);
+INTERNAL int zint_test_u_ksx1001(const unsigned int u, unsigned char *dest);
 
 /* Version of `u_ksx1001()` taking unsigned int destination for backward-compatible testing */
 static int u_ksx1001_int(const unsigned int u, unsigned int *d) {
     unsigned char dest[2] = {0}; /* Suppress clang -fsanitize=memory false positive */
-    int ret = u_ksx1001_test(u, dest);
+    int ret = zint_test_u_ksx1001(u, dest);
     if (ret) {
         *d = ret == 1 ? dest[0] : ((dest[0] << 8) | dest[1]);
     }
@@ -127,7 +127,8 @@ static void test_u_ksx1001_int(const testCtx *const p_ctx) {
         val = val2 = 0;
         ret = u_ksx1001_int(i, &val);
         ret2 = u_ksx1001_int2(i, &val2);
-        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n",
+                    (int) i, i, ret, ret2, val, val2);
         if (ret2) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
@@ -150,7 +151,8 @@ static void test_u_ksx1001_int(const testCtx *const p_ctx) {
                 }
             }
 
-            assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
+            assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n",
+                        (int) i, i, ret, ret2, val, val2);
             if (ret2) {
                 val2 += 0x8080; /* `ksx1001_wctomb_zint()` returns pure KS X 1001 values, convert to EUC-KR */
                 assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);

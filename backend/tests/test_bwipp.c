@@ -394,7 +394,7 @@ static void test_aztec_bwipjs_354(const testCtx *const p_ctx) {
         assert_nonzero(length, "i:%d cnv_hex_data length zero\n", i);
 
         #if 0
-        debug_print_escape(TCU(data_buf), length, NULL);
+        z_debug_print_escape(TCU(data_buf), length, NULL);
         printf("\n");
         #endif
 
@@ -484,7 +484,7 @@ static void test_codablockf_fnc4_digit(const testCtx *const p_ctx) {
         assert_nonzero(length, "i:%d cnv_hex_data length zero\n", i);
 
         #if 0
-        debug_print_escape(TCU(data_buf), length, NULL);
+        z_debug_print_escape(TCU(data_buf), length, NULL);
         printf("\n");
         #endif
 

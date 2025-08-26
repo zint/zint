@@ -53,8 +53,8 @@ static void ps_put_colour(const int is_rgb, const int colour, struct filemem *co
             "0 0 0", /* 6: Black (7) */
             "1 1 1", /* 7: White (8) */
         };
-        fm_puts(ps_rgbs[idx], fmp);
-        fm_puts(" setrgbcolor\n", fmp);
+        zint_fm_puts(ps_rgbs[idx], fmp);
+        zint_fm_puts(" setrgbcolor\n", fmp);
     } else {
         static const char ps_cmyks[8][8] = {
             "1 0 0 0", /* 0: Cyan (1) */
@@ -66,8 +66,8 @@ static void ps_put_colour(const int is_rgb, const int colour, struct filemem *co
             "0 0 0 1", /* 6: Black (7) */
             "0 0 0 0", /* 7: White (8) */
         };
-        fm_puts(ps_cmyks[idx], fmp);
-        fm_puts(" setcmykcolor\n", fmp);
+        zint_fm_puts(ps_cmyks[idx], fmp);
+        zint_fm_puts(" setcmykcolor\n", fmp);
     }
 }
 
@@ -102,7 +102,7 @@ static void ps_convert(const unsigned char *string, unsigned char *ps_string) {
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL void ps_convert_test(const unsigned char *string, unsigned char *ps_string) {
+INTERNAL void zint_test_ps_convert(const unsigned char *string, unsigned char *ps_string) {
     ps_convert(string, ps_string);
 }
 #endif
@@ -110,50 +110,50 @@ INTERNAL void ps_convert_test(const unsigned char *string, unsigned char *ps_str
 /* Helper to output RGB colour */
 static void ps_put_rgbcolor(const float red, const float green, const float blue,
                 struct filemem *const fmp) {
-    fm_putsf("", 2, red, fmp);
-    fm_putsf(" ", 2, green, fmp);
-    fm_putsf(" ", 2, blue, fmp);
-    fm_puts(" setrgbcolor\n", fmp);
+    zint_fm_putsf("", 2, red, fmp);
+    zint_fm_putsf(" ", 2, green, fmp);
+    zint_fm_putsf(" ", 2, blue, fmp);
+    zint_fm_puts(" setrgbcolor\n", fmp);
 }
 
 /* Helper to output CMYK colour */
 static void ps_put_cmykcolor(const float cyan, const float magenta, const float yellow, const float black,
                 struct filemem *const fmp) {
-    fm_putsf("", 2, cyan, fmp);
-    fm_putsf(" ", 2, magenta, fmp);
-    fm_putsf(" ", 2, yellow, fmp);
-    fm_putsf(" ", 2, black, fmp);
-    fm_puts(" setcmykcolor\n", fmp);
+    zint_fm_putsf("", 2, cyan, fmp);
+    zint_fm_putsf(" ", 2, magenta, fmp);
+    zint_fm_putsf(" ", 2, yellow, fmp);
+    zint_fm_putsf(" ", 2, black, fmp);
+    zint_fm_puts(" setcmykcolor\n", fmp);
 }
 
 /* Helper to output rectangle */
 static void ps_put_rect(const struct zint_symbol *symbol, const struct zint_vector_rect *rect, const int type,
                 struct filemem *const fmp) {
     if (type == 0 || type == 1) {
-        fm_putsf("", 2, rect->height, fmp);
-        fm_putsf(" ", 2, (symbol->vector->height - rect->y) - rect->height, fmp);
+        zint_fm_putsf("", 2, rect->height, fmp);
+        zint_fm_putsf(" ", 2, (symbol->vector->height - rect->y) - rect->height, fmp);
     }
-    fm_putsf(type == 0 ? " " : type == 1 ? " I " : type == 2 ? "I " : "", 2, rect->x, fmp);
-    fm_putsf(" ", 2, rect->width, fmp);
-    fm_puts(" R\n", fmp);
+    zint_fm_putsf(type == 0 ? " " : type == 1 ? " I " : type == 2 ? "I " : "", 2, rect->x, fmp);
+    zint_fm_putsf(" ", 2, rect->width, fmp);
+    zint_fm_puts(" R\n", fmp);
 }
 
 /* Helper to output circle/disc */
 static void ps_put_circle(const struct zint_symbol *symbol, const struct zint_vector_circle *circle,
                 const float radius, const int type, struct filemem *const fmp) {
     if (circle->width) {
-        fm_putsf("", 2, circle->x, fmp);
-        fm_putsf(" ", 2, symbol->vector->height - circle->y, fmp);
-        fm_putsf(" ", 4, radius, fmp);
-        fm_putsf(" ", 4, circle->width, fmp);
-        fm_puts(" C\n", fmp);
+        zint_fm_putsf("", 2, circle->x, fmp);
+        zint_fm_putsf(" ", 2, symbol->vector->height - circle->y, fmp);
+        zint_fm_putsf(" ", 4, radius, fmp);
+        zint_fm_putsf(" ", 4, circle->width, fmp);
+        zint_fm_puts(" C\n", fmp);
     } else {
         if (type == 0 || type == 1) {
-            fm_putsf("", 2, symbol->vector->height - circle->y, fmp);
-            fm_putsf(" ", 4, radius, fmp);
+            zint_fm_putsf("", 2, symbol->vector->height - circle->y, fmp);
+            zint_fm_putsf(" ", 4, radius, fmp);
         }
-        fm_putsf(type == 0 ? " " : type == 1 ? " I " : type == 2 ? "I " : "", 2, circle->x, fmp);
-        fm_puts(" D\n", fmp);
+        zint_fm_putsf(type == 0 ? " " : type == 1 ? " I " : type == 2 ? "I " : "", 2, circle->x, fmp);
+        zint_fm_puts(" D\n", fmp);
     }
 }
 
@@ -169,7 +169,7 @@ static int ps_count_rectangles(const struct zint_symbol *symbol) {
     return rectangles;
 }
 
-INTERNAL int ps_plot(struct zint_symbol *symbol) {
+INTERNAL int zint_ps_plot(struct zint_symbol *symbol) {
     struct filemem fm;
     struct filemem *const fmp = &fm;
     unsigned char fgred, fggrn, fgblu, bgred, bggrn, bgblu, bgalpha;
@@ -191,35 +191,36 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     int ps_len = 0;
     int iso_latin1 = 0;
     int have_circles_with_width = 0, have_circles_without_width = 0;
-    const int upcean = is_upcean(symbol->symbology);
+    const int is_upcean = z_is_upcean(symbol->symbology);
     const int is_rgb = (symbol->output_options & CMYK_COLOUR) == 0;
 
     if (symbol->vector == NULL) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 646, "Vector header NULL");
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 646, "Vector header NULL");
     }
-    if (!fm_open(fmp, symbol, "w")) {
-        return ZEXT errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 645, "Could not open EPS output file (%1$d: %2$s)",
-                            fmp->err, strerror(fmp->err));
+    if (!zint_fm_open(fmp, symbol, "w")) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 645, "Could not open EPS output file (%1$d: %2$s)",
+                                fmp->err, strerror(fmp->err));
     }
 
     if (is_rgb) {
-        (void) out_colour_get_rgb(symbol->fgcolour, &fgred, &fggrn, &fgblu, NULL /*alpha*/);
+        (void) zint_out_colour_get_rgb(symbol->fgcolour, &fgred, &fggrn, &fgblu, NULL /*alpha*/);
         red_ink = fgred / 255.0f;
         green_ink = fggrn / 255.0f;
         blue_ink = fgblu / 255.0f;
 
-        (void) out_colour_get_rgb(symbol->bgcolour, &bgred, &bggrn, &bgblu, &bgalpha);
+        (void) zint_out_colour_get_rgb(symbol->bgcolour, &bgred, &bggrn, &bgblu, &bgalpha);
         red_paper = bgred / 255.0f;
         green_paper = bggrn / 255.0f;
         blue_paper = bgblu / 255.0f;
     } else {
-        (void) out_colour_get_cmyk(symbol->fgcolour, &fgcyan, &fgmagenta, &fgyellow, &fgblack, NULL /*rgb_alpha*/);
+        (void) zint_out_colour_get_cmyk(symbol->fgcolour, &fgcyan, &fgmagenta, &fgyellow, &fgblack,
+                                        NULL /*rgb_alpha*/);
         cyan_ink = fgcyan / 100.0f;
         magenta_ink = fgmagenta / 100.0f;
         yellow_ink = fgyellow / 100.0f;
         black_ink = fgblack / 100.0f;
 
-        (void) out_colour_get_cmyk(symbol->bgcolour, &bgcyan, &bgmagenta, &bgyellow, &bgblack, &bgalpha);
+        (void) zint_out_colour_get_cmyk(symbol->bgcolour, &bgcyan, &bgmagenta, &bgyellow, &bgblack, &bgalpha);
         cyan_paper = bgcyan / 100.0f;
         magenta_paper = bgmagenta / 100.0f;
         yellow_paper = bgyellow / 100.0f;
@@ -261,52 +262,53 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     }
 
     /* Start writing the header */
-    fm_puts("%!PS-Adobe-3.0 EPSF-3.0\n"
-            "%%Creator: Zint ", fmp);
+    zint_fm_puts("%!PS-Adobe-3.0 EPSF-3.0\n"
+                "%%Creator: Zint ", fmp);
 #if ZINT_VERSION_BUILD
-    fm_printf(fmp, "%d.%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
+    zint_fm_printf(fmp, "%d.%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE,
+                    ZINT_VERSION_BUILD);
 #else
-    fm_printf(fmp, "%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
+    zint_fm_printf(fmp, "%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
 #endif
-    fm_puts("%%Title: Zint Generated Symbol\n"
-            "%%Pages: 0\n"
-            "%%BoundingBox: 0 0 ", fmp);
-    fm_printf(fmp, "%d %d\n", (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
-    fm_puts("%%EndComments\n", fmp);
+    zint_fm_puts("%%Title: Zint Generated Symbol\n"
+                "%%Pages: 0\n"
+                "%%BoundingBox: 0 0 ", fmp);
+    zint_fm_printf(fmp, "%d %d\n", (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
+    zint_fm_puts("%%EndComments\n", fmp);
 
     /* Definitions */
     if (have_circles_without_width) {
         /* Disc: y radius x D */
-        fm_puts("/D { newpath 3 1 roll 0 360 arc fill } bind def\n", fmp);
+        zint_fm_puts("/D { newpath 3 1 roll 0 360 arc fill } bind def\n", fmp);
     }
     if (have_circles_with_width) {
         /* Circle (ring): x y radius width C (adapted from BWIPP renmaxicode.ps) */
-        fm_puts("/C { newpath 4 1 roll 3 copy 0 360 arc closepath 4 -1 roll add 360 0 arcn closepath fill }"
-                " bind def\n", fmp);
+        zint_fm_puts("/C { newpath 4 1 roll 3 copy 0 360 arc closepath 4 -1 roll add 360 0 arcn closepath fill }"
+                    " bind def\n", fmp);
     }
     if (symbol->vector->hexagons) {
         /* Hexagon: radius half_radius half_sqrt3_radius x y */
         if (symbol->vector->hexagons->rotation == 0 || symbol->vector->hexagons->rotation == 180) {
-            fm_puts("/H { newpath moveto 2 copy exch neg exch rmoveto 2 index neg 0 exch rlineto 2 copy neg rlineto"
-                    " 2 copy rlineto 3 -1 roll 0 exch rlineto exch neg exch rlineto closepath fill }"
-                    " bind def\n", fmp);
+            zint_fm_puts("/H { newpath moveto 2 copy exch neg exch rmoveto 2 index neg 0 exch rlineto"
+                        " 2 copy neg rlineto 2 copy rlineto 3 -1 roll 0 exch rlineto exch neg exch rlineto"
+                        " closepath fill } bind def\n", fmp);
         } else {
-            fm_puts("/H { newpath moveto 2 copy neg exch neg rmoveto 2 index 0 rlineto 2 copy exch rlineto"
-                    " 2 copy neg exch rlineto 3 -1 roll neg 0 rlineto neg exch neg rlineto closepath fill }"
-                    " bind def\n", fmp);
+            zint_fm_puts("/H { newpath moveto 2 copy neg exch neg rmoveto 2 index 0 rlineto 2 copy exch rlineto"
+                        " 2 copy neg exch rlineto 3 -1 roll neg 0 rlineto neg exch neg rlineto"
+                        " closepath fill } bind def\n", fmp);
         }
         /* Copy r hr hsr for repeat use without having to specify them subsequently */
-        fm_puts("/J { 3 copy } bind def\n", fmp);
+        zint_fm_puts("/J { 3 copy } bind def\n", fmp);
         /* TODO: Save repeating x also */
     }
     if (symbol->vector->rectangles || draw_background) {
         /* Rectangle: h y x w */
-        fm_puts("/R { newpath 4 1 roll exch moveto 1 index 0 rlineto 0 exch rlineto neg 0 rlineto closepath fill }"
-                " bind def\n", fmp);
+        zint_fm_puts("/R { newpath 4 1 roll exch moveto 1 index 0 rlineto 0 exch rlineto neg 0 rlineto"
+                    " closepath fill } bind def\n", fmp);
     }
     if (symbol->vector->rectangles || have_circles_without_width) {
         /* Copy h y (rect) or y r (disc) for repeat use without having to specify them subsequently */
-        fm_puts("/I { 2 copy } bind def\n", fmp);
+        zint_fm_puts("/I { 2 copy } bind def\n", fmp);
     }
 
     /* Now the actual representation */
@@ -319,9 +321,9 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             ps_put_cmykcolor(cyan_paper, magenta_paper, yellow_paper, black_paper, fmp);
         }
 
-        fm_putsf("", 2, symbol->vector->height, fmp);
-        fm_putsf(" 0 0 ", 2, symbol->vector->width, fmp); /* y x w */
-        fm_puts(" R\n", fmp);
+        zint_fm_putsf("", 2, symbol->vector->height, fmp);
+        zint_fm_putsf(" 0 0 ", 2, symbol->vector->width, fmp); /* y x w */
+        zint_fm_puts(" R\n", fmp);
     }
 
     if (symbol->symbology != BARCODE_ULTRA) {
@@ -395,18 +397,18 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         float hy = symbol->vector->height - hex->y;
         if (previous_diameter != hex->diameter) {
             previous_diameter = hex->diameter;
-            fm_putsf("", 4, 0.5f * previous_diameter /*radius*/, fmp);
-            fm_putsf(" ", 4, 0.43301270189221932338f * previous_diameter /*half_sqrt3_radius*/, fmp);
-            fm_putsf(" ", 4, 0.25f * previous_diameter /*half_radius*/, fmp);
-            fm_putc('\n', fmp);
+            zint_fm_putsf("", 4, 0.5f * previous_diameter /*radius*/, fmp);
+            zint_fm_putsf(" ", 4, 0.43301270189221932338f * previous_diameter /*half_sqrt3_radius*/, fmp);
+            zint_fm_putsf(" ", 4, 0.25f * previous_diameter /*half_radius*/, fmp);
+            zint_fm_putc('\n', fmp);
         }
         if (hex->next) {
-            fm_putsf("J ", 2, hex->x, fmp);
+            zint_fm_putsf("J ", 2, hex->x, fmp);
         } else {
-            fm_putsf("", 2, hex->x, fmp);
+            zint_fm_putsf("", 2, hex->x, fmp);
         }
-        fm_putsf(" ", 2, hy, fmp);
-        fm_puts(" H\n", fmp);
+        zint_fm_putsf(" ", 2, hy, fmp);
+        zint_fm_puts(" H\n", fmp);
     }
 
     /* Circles */
@@ -453,68 +455,68 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         const char *font;
         unsigned char *ps_string = (unsigned char *) z_alloca(ps_len + 1);
 
-        if ((symbol->output_options & BOLD_TEXT) && !upcean) {
+        if ((symbol->output_options & BOLD_TEXT) && !is_upcean) {
             font = "Helvetica-Bold";
         } else {
             font = "Helvetica";
         }
         if (iso_latin1) {
             /* Change encoding to ISO 8859-1, see Postscript Language Reference Manual 2nd Edition Example 5.6 */
-            fm_printf(fmp, "/%s findfont\n", font);
-            fm_puts("dup length dict begin\n"
-                  "{1 index /FID ne {def} {pop pop} ifelse} forall\n"
-                  "/Encoding ISOLatin1Encoding def\n"
-                  "currentdict\n"
-                  "end\n"
-                  "/Helvetica-ISOLatin1 exch definefont pop\n", fmp);
+            zint_fm_printf(fmp, "/%s findfont\n", font);
+            zint_fm_puts("dup length dict begin\n"
+                          "{1 index /FID ne {def} {pop pop} ifelse} forall\n"
+                          "/Encoding ISOLatin1Encoding def\n"
+                          "currentdict\n"
+                          "end\n"
+                          "/Helvetica-ISOLatin1 exch definefont pop\n", fmp);
             font = "Helvetica-ISOLatin1";
         }
         do {
             ps_convert(string->text, ps_string);
             if (string->fsize != previous_fsize) {
-                fm_printf(fmp, "/%s findfont", font);
+                zint_fm_printf(fmp, "/%s findfont", font);
                 /* Compensate for Helvetica being smaller than Zint's OCR-B */
-                fm_putsf( " ", 2, upcean ? string->fsize * 1.07f : string->fsize, fmp);
-                fm_puts(" scalefont setfont\n", fmp);
+                zint_fm_putsf( " ", 2, is_upcean ? string->fsize * 1.07f : string->fsize, fmp);
+                zint_fm_puts(" scalefont setfont\n", fmp);
                 previous_fsize = string->fsize;
             }
             /* Unhack the guard whitespace `gws_left_fudge`/`gws_right_fudge` hack */
-            if (upcean && string->halign == 1 && string->text[0] == '<') {
+            if (is_upcean && string->halign == 1 && string->text[0] == '<') {
                 const float gws_left_fudge = symbol->scale < 0.1f ? 0.1f : symbol->scale; /* 0.5 * 2 * scale */
-                fm_putsf(" ", 2, string->x + gws_left_fudge, fmp);
-            } else if (upcean && string->halign == 2 && string->text[0] == '>') {
+                zint_fm_putsf(" ", 2, string->x + gws_left_fudge, fmp);
+            } else if (is_upcean && string->halign == 2 && string->text[0] == '>') {
                 const float gws_right_fudge = symbol->scale < 0.1f ? 0.1f : symbol->scale; /* 0.5 * 2 * scale */
-                fm_putsf(" ", 2, string->x - gws_right_fudge, fmp);
+                zint_fm_putsf(" ", 2, string->x - gws_right_fudge, fmp);
             } else {
-                fm_putsf(" ", 2, string->x, fmp);
+                zint_fm_putsf(" ", 2, string->x, fmp);
             }
-            fm_putsf(" ", 2, symbol->vector->height - string->y, fmp);
-            fm_puts(" moveto\n", fmp);
+            zint_fm_putsf(" ", 2, symbol->vector->height - string->y, fmp);
+            zint_fm_puts(" moveto\n", fmp);
             if (string->rotation != 0) {
-                fm_puts(" gsave\n", fmp);
-                fm_printf(fmp, " %d rotate\n", 360 - string->rotation);
+                zint_fm_puts(" gsave\n", fmp);
+                zint_fm_printf(fmp, " %d rotate\n", 360 - string->rotation);
             }
             if (string->halign == 0 || string->halign == 2) { /* Need width for middle or right align */
-                fm_printf(fmp, " (%s) stringwidth pop" /* Returns "width height" - discard "height" */
+                zint_fm_printf(fmp, " (%s) stringwidth pop" /* Returns "width height" - discard "height" */
                                 " %s 0 rmoveto\n", ps_string, string->halign == 2 ? "neg" : "-2 div");
             }
-            fm_printf(fmp, " (%s) show\n", ps_string);
+            zint_fm_printf(fmp, " (%s) show\n", ps_string);
             if (string->rotation != 0) {
-                fm_puts(" grestore\n", fmp);
+                zint_fm_puts(" grestore\n", fmp);
             }
             string = string->next;
         } while (string);
     }
 
-    if (fm_error(fmp)) {
-        ZEXT errtxtf(0, symbol, 647, "Incomplete write of EPS output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
-        (void) fm_close(fmp, symbol);
+    if (zint_fm_error(fmp)) {
+        ZEXT z_errtxtf(0, symbol, 647, "Incomplete write of EPS output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
+        (void) zint_fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (!fm_close(fmp, symbol)) {
-        return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 649, "Failure on closing EPS output file (%1$d: %2$s)",
-                            fmp->err, strerror(fmp->err));
+    if (!zint_fm_close(fmp, symbol)) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 649, "Failure on closing EPS output file (%1$d: %2$s)",
+                                fmp->err, strerror(fmp->err));
     }
 
     return 0;

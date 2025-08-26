@@ -33,7 +33,7 @@
 #include "testcommon.h"
 
 /* Round to 3 decimal places (avoids rounding differences on various platforms) */
-#define rnd3dpf(m) stripf(roundf((m) * 1000) / 1000)
+#define rnd3dpf(m) z_stripf(roundf((m) * 1000) / 1000)
 
 static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, float x, float y, float width, float height) {
     struct zint_vector_rect *rect;
@@ -161,7 +161,7 @@ static int check_vector_strings(const struct zint_symbol *symbol, char errmsg[12
                 sprintf(errmsg, "string[%d]->text NULL", i);
                 return 0;
             }
-            length = (int) ustrlen(string->text);
+            length = (int) z_ustrlen(string->text);
             if (string->length != length) {
                 sprintf(errmsg, "string[%d]->length != %d", string->length, length);
                 return 0;
@@ -170,7 +170,7 @@ static int check_vector_strings(const struct zint_symbol *symbol, char errmsg[12
         if ((ZBarcode_Cap(symbol->symbology, ZINT_CAP_EANUPC) & ZINT_CAP_EANUPC) == ZINT_CAP_EANUPC) {
             const unsigned char *addon = (const unsigned char *) strchr((const char *) symbol->text, '+');
             const int has_addon = addon != NULL;
-            const int text_len = has_addon ? (int) (addon - symbol->text) : (int) ustrlen(symbol->text);
+            const int text_len = has_addon ? (int) (addon - symbol->text) : (int) z_ustrlen(symbol->text);
             int num = -1;
             switch (symbol->symbology) {
                 case BARCODE_EANX:
@@ -231,7 +231,7 @@ static int check_vector_rectangles(const struct zint_symbol *symbol, char errmsg
     const struct zint_vector *vector = symbol->vector;
     const struct zint_vector_rect *rect;
     const int have_border = symbol->border_width && (symbol->output_options & (BARCODE_BIND | BARCODE_BOX | BARCODE_BIND_TOP));
-    const int dotty = is_dotty(symbol->symbology) && (symbol->output_options & BARCODE_DOTTY_MODE);
+    const int dotty = z_is_dotty(symbol->symbology) && (symbol->output_options & BARCODE_DOTTY_MODE);
     int i;
 
     if (!vector) {
@@ -283,7 +283,7 @@ static int check_vector_rectangles(const struct zint_symbol *symbol, char errmsg
             sprintf(errmsg, "rect[%d]->width %g > vector->width %g", i, rect->width, vector->width);
             return 0;
         }
-        if (stripf(rect->x + rect->width) > vector->width) {
+        if (z_stripf(rect->x + rect->width) > vector->width) {
             sprintf(errmsg, "rect[%d]->x + width %g > vector->width %g", i, rect->x + rect->width, vector->width);
             return 0;
         }
@@ -295,7 +295,7 @@ static int check_vector_rectangles(const struct zint_symbol *symbol, char errmsg
             sprintf(errmsg, "rect[%d]->height %g > vector->height %g", i, rect->height, vector->height);
             return 0;
         }
-        if (stripf(rect->y + rect->height) > vector->height) {
+        if (z_stripf(rect->y + rect->height) > vector->height) {
             sprintf(errmsg, "rect[%d]->y + height %g > vector->height %g", i, rect->y + rect->height, vector->height);
             return 0;
         }
@@ -319,7 +319,7 @@ static int check_vector_rectangles(const struct zint_symbol *symbol, char errmsg
 static int check_vector_circles(const struct zint_symbol *symbol, char errmsg[128]) {
     const struct zint_vector *vector = symbol->vector;
     const struct zint_vector_circle *circle;
-    const int dotty = is_dotty(symbol->symbology) && (symbol->output_options & BARCODE_DOTTY_MODE);
+    const int dotty = z_is_dotty(symbol->symbology) && (symbol->output_options & BARCODE_DOTTY_MODE);
     int i;
 
     if (!vector) {
@@ -373,11 +373,11 @@ static int check_vector_circles(const struct zint_symbol *symbol, char errmsg[12
             sprintf(errmsg, "circle[%d]->diameter %g > vector->height %g", i, circle->diameter, vector->height);
             return 0;
         }
-        if (stripf(circle->x + circle->diameter / 2) > vector->width) {
+        if (z_stripf(circle->x + circle->diameter / 2) > vector->width) {
             sprintf(errmsg, "circle[%d]->x + diameter / 2 %g > vector->width %g", i, circle->x + circle->diameter / 2, vector->width);
             return 0;
         }
-        if (stripf(circle->y + circle->diameter / 2) > vector->height) {
+        if (z_stripf(circle->y + circle->diameter / 2) > vector->height) {
             sprintf(errmsg, "circle[%d]->y + diameter / 2 %g > vector->height %g", i, circle->y + circle->diameter / 2, vector->height);
             return 0;
         }
@@ -440,11 +440,11 @@ static int check_vector_hexagons(const struct zint_symbol *symbol, char errmsg[1
             sprintf(errmsg, "hex[%d]->diameter %g > vector->height %g", i, hex->diameter, vector->height);
             return 0;
         }
-        if (stripf(hex->x + hex->diameter / 2) > vector->width) {
+        if (z_stripf(hex->x + hex->diameter / 2) > vector->width) {
             sprintf(errmsg, "hex[%d]->x + diameter / 2 %g > vector->width %g", i, hex->x + hex->diameter / 2, vector->width);
             return 0;
         }
-        if (stripf(hex->y + hex->diameter / 2) > vector->height) {
+        if (z_stripf(hex->y + hex->diameter / 2) > vector->height) {
             sprintf(errmsg, "hex[%d]->y + diameter / 2 %g > vector->height %g", i, hex->y + hex->diameter / 2, vector->height);
             return 0;
         }
@@ -2181,7 +2181,7 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
             symbol->show_hrt = data[i].show_hrt;
         }
 
-        if (is_composite(symbol->symbology)) {
+        if (z_is_composite(symbol->symbology)) {
             text = *(data[i].composite) ? data[i].composite : composite;
             length = (int) strlen(text);
             assert_nonzero(strlen(data[i].data) < 128, "i:%d linear data length %d >= 128\n", i, (int) strlen(data[i].data));
