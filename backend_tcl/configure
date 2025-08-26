@@ -666,12 +666,24 @@ AR
 STUBS_BUILD
 SHARED_BUILD
 TCL_THREADS
+TK_INCLUDES
 TCL_INCLUDES
 PKG_OBJECTS
 PKG_SOURCES
 RANLIB
 SET_MAKE
 CPP
+TK_XINCLUDES
+TK_LIBS
+TK_STUB_LIB_SPEC
+TK_STUB_LIB_FLAG
+TK_STUB_LIB_FILE
+TK_LIB_SPEC
+TK_LIB_FLAG
+TK_LIB_FILE
+TK_SRC_DIR
+TK_BIN_DIR
+TK_VERSION
 TCL_SHLIB_LD_LIBS
 TCL_LD_FLAGS
 TCL_EXTRA_CFLAGS
@@ -756,7 +768,10 @@ ac_user_opts='
 enable_option_checking
 with_tcl
 with_tcl8
+with_tk
+with_tk8
 with_tclinclude
+with_tkinclude
 enable_threads
 enable_shared
 enable_stubs
@@ -1407,7 +1422,10 @@ Optional Packages:
   --with-tcl              directory containing tcl configuration
                           (tclConfig.sh)
   --with-tcl8             Compile for Tcl8 in Tcl9 environment
+  --with-tk               directory containing tk configuration (tkConfig.sh)
+  --with-tk8              Compile for Tk8 in Tk9 environment
   --with-tclinclude       directory containing the public Tcl header files
+  --with-tkinclude        directory containing the public Tk header files
 
 Some influential environment variables:
   CC          C compiler command
@@ -4011,8 +4029,251 @@ printf "%s\n" "#define BUILD_${PACKAGE_NAME} /**/" >>confdefs.h
 # Load the tkConfig.sh file if necessary (Tk extension)
 #--------------------------------------------------------------------
 
-#TEA_PATH_TKCONFIG
-#TEA_LOAD_TKCONFIG
+
+    #
+    # Ok, lets find the tk configuration
+    # First, look for one uninstalled.
+    # the alternative search directory is invoked by --with-tk
+    #
+
+    if test x"${no_tk}" = x ; then
+	# we reset no_tk in case something fails here
+	no_tk=true
+
+# Check whether --with-tk was given.
+if test ${with_tk+y}
+then :
+  withval=$with_tk; with_tkconfig="${withval}"
+fi
+
+
+# Check whether --with-tk8 was given.
+if test ${with_tk8+y}
+then :
+  withval=$with_tk8; with_tk8="${withval}"
+fi
+
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Tk configuration" >&5
+printf %s "checking for Tk configuration... " >&6; }
+	if test ${ac_cv_c_tkconfig+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+
+	    # First check to see if --with-tkconfig was specified.
+	    if test x"${with_tkconfig}" != x ; then
+		case "${with_tkconfig}" in
+		    */tkConfig.sh )
+			if test -f "${with_tkconfig}"; then
+			    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: --with-tk argument should refer to directory containing tkConfig.sh, not to tkConfig.sh itself" >&5
+printf "%s\n" "$as_me: WARNING: --with-tk argument should refer to directory containing tkConfig.sh, not to tkConfig.sh itself" >&2;}
+			    with_tkconfig="`echo "${with_tkconfig}" | sed 's!/tkConfig\.sh$!!'`"
+			fi ;;
+		esac
+		if test -f "${with_tkconfig}/tkConfig.sh" ; then
+		    ac_cv_c_tkconfig="`(cd "${with_tkconfig}"; pwd)`"
+		else
+		    as_fn_error $? "${with_tkconfig} directory doesn't contain tkConfig.sh" "$LINENO" 5
+		fi
+	    fi
+
+	    # then check for a private Tk library
+	    if test x"${ac_cv_c_tkconfig}" = x ; then
+		for i in \
+			../tk \
+			`ls -dr ../tk[8-9].[0-9].[0-9]* 2>/dev/null` \
+			`ls -dr ../tk[8-9].[0-9] 2>/dev/null` \
+			`ls -dr ../tk[8-9].[0-9]* 2>/dev/null` \
+			../../tk \
+			`ls -dr ../../tk[8-9].[0-9].[0-9]* 2>/dev/null` \
+			`ls -dr ../../tk[8-9].[0-9] 2>/dev/null` \
+			`ls -dr ../../tk[8-9].[0-9]* 2>/dev/null` \
+			../../../tk \
+			`ls -dr ../../../tk[8-9].[0-9].[0-9]* 2>/dev/null` \
+			`ls -dr ../../../tk[8-9].[0-9] 2>/dev/null` \
+			`ls -dr ../../../tk[8-9].[0-9]* 2>/dev/null` ; do
+		    if test "${TEA_PLATFORM}" = "windows" \
+			    -a -f "$i/win/tkConfig.sh" ; then
+			ac_cv_c_tkconfig="`(cd $i/win; pwd)`"
+			break
+		    fi
+		    if test -f "$i/unix/tkConfig.sh" ; then
+			ac_cv_c_tkconfig="`(cd $i/unix; pwd)`"
+			break
+		    fi
+		done
+	    fi
+
+	    # on Darwin, check in Framework installation locations
+	    if test "`uname -s`" = "Darwin" -a x"${ac_cv_c_tkconfig}" = x ; then
+		for i in `ls -d ~/Library/Frameworks 2>/dev/null` \
+			`ls -d /Library/Frameworks 2>/dev/null` \
+			`ls -d /Network/Library/Frameworks 2>/dev/null` \
+			; do
+		    if test -f "$i/Tk.framework/tkConfig.sh" ; then
+			ac_cv_c_tkconfig="`(cd $i/Tk.framework; pwd)`"
+			break
+		    fi
+		done
+	    fi
+
+	    # check in a few common install locations
+	    if test x"${ac_cv_c_tkconfig}" = x ; then
+		for i in `ls -d ${libdir} 2>/dev/null` \
+			`ls -d ${exec_prefix}/lib 2>/dev/null` \
+			`ls -d ${prefix}/lib 2>/dev/null` \
+			`ls -d /usr/local/lib 2>/dev/null` \
+			`ls -d /usr/contrib/lib 2>/dev/null` \
+			`ls -d /usr/pkg/lib 2>/dev/null` \
+			`ls -d /usr/lib/tk9.0 2>/dev/null` \
+			`ls -d /usr/lib/tk8.7 2>/dev/null` \
+			`ls -d /usr/lib/tk8.6 2>/dev/null` \
+			`ls -d /usr/lib/tk8.5 2>/dev/null` \
+			`ls -d /usr/lib 2>/dev/null` \
+			`ls -d /usr/lib64 2>/dev/null` \
+			`ls -d /usr/local/lib/tk9.0 2>/dev/null` \
+			`ls -d /usr/local/lib/tk8.7 2>/dev/null` \
+			`ls -d /usr/local/lib/tk8.6 2>/dev/null` \
+			`ls -d /usr/local/lib/tk8.5 2>/dev/null` \
+			`ls -d /usr/local/lib/tcl/tk9.0 2>/dev/null` \
+			`ls -d /usr/local/lib/tcl/tk8.7 2>/dev/null` \
+			`ls -d /usr/local/lib/tcl/tk8.6 2>/dev/null` \
+			`ls -d /usr/local/lib/tcl/tk8.5 2>/dev/null` \
+			; do
+		    if test -f "$i/tkConfig.sh" ; then
+			ac_cv_c_tkconfig="`(cd $i; pwd)`"
+			break
+		    fi
+		done
+	    fi
+
+	    # TEA specific: on Windows, check in common installation locations
+	    if test "${TEA_PLATFORM}" = "windows" \
+		-a x"${ac_cv_c_tkconfig}" = x ; then
+		for i in `ls -d C:/Tcl/lib 2>/dev/null` \
+			`ls -d C:/Progra~1/Tcl/lib 2>/dev/null` \
+			; do
+		    if test -f "$i/tkConfig.sh" ; then
+			ac_cv_c_tkconfig="`(cd $i; pwd)`"
+			break
+		    fi
+		done
+	    fi
+
+	    # check in a few other private locations
+	    if test x"${ac_cv_c_tkconfig}" = x ; then
+		for i in \
+			${srcdir}/../tk \
+			`ls -dr ${srcdir}/../tk[8-9].[0-9].[0-9]* 2>/dev/null` \
+			`ls -dr ${srcdir}/../tk[8-9].[0-9] 2>/dev/null` \
+			`ls -dr ${srcdir}/../tk[8-9].[0-9]* 2>/dev/null` ; do
+		    if test "${TEA_PLATFORM}" = "windows" \
+			    -a -f "$i/win/tkConfig.sh" ; then
+			ac_cv_c_tkconfig="`(cd $i/win; pwd)`"
+			break
+		    fi
+		    if test -f "$i/unix/tkConfig.sh" ; then
+			ac_cv_c_tkconfig="`(cd $i/unix; pwd)`"
+			break
+		    fi
+		done
+	    fi
+	 ;;
+esac
+fi
+
+
+	if test x"${ac_cv_c_tkconfig}" = x ; then
+	    TK_BIN_DIR="# no Tk configs found"
+	    as_fn_error $? "Can't find Tk configuration definitions. Use --with-tk to specify a directory containing tkConfig.sh" "$LINENO" 5
+	else
+	    no_tk=
+	    TK_BIN_DIR="${ac_cv_c_tkconfig}"
+	    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: found ${TK_BIN_DIR}/tkConfig.sh" >&5
+printf "%s\n" "found ${TK_BIN_DIR}/tkConfig.sh" >&6; }
+	fi
+    fi
+
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for existence of ${TK_BIN_DIR}/tkConfig.sh" >&5
+printf %s "checking for existence of ${TK_BIN_DIR}/tkConfig.sh... " >&6; }
+
+    if test -f "${TK_BIN_DIR}/tkConfig.sh" ; then
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: loading" >&5
+printf "%s\n" "loading" >&6; }
+	. "${TK_BIN_DIR}/tkConfig.sh"
+    else
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: could not find ${TK_BIN_DIR}/tkConfig.sh" >&5
+printf "%s\n" "could not find ${TK_BIN_DIR}/tkConfig.sh" >&6; }
+    fi
+
+    # If the TK_BIN_DIR is the build directory (not the install directory),
+    # then set the common variable name to the value of the build variables.
+    # For example, the variable TK_LIB_SPEC will be set to the value
+    # of TK_BUILD_LIB_SPEC. An extension should make use of TK_LIB_SPEC
+    # instead of TK_BUILD_LIB_SPEC since it will work with both an
+    # installed and uninstalled version of Tcl.
+    if test -f "${TK_BIN_DIR}/Makefile" ; then
+	TK_LIB_SPEC="${TK_BUILD_LIB_SPEC}"
+	TK_STUB_LIB_SPEC="${TK_BUILD_STUB_LIB_SPEC}"
+	TK_STUB_LIB_PATH="${TK_BUILD_STUB_LIB_PATH}"
+    elif test "`uname -s`" = "Darwin"; then
+	# If Tk was built as a framework, attempt to use the libraries
+	# from the framework at the given location so that linking works
+	# against Tk.framework installed in an arbitrary location.
+	case ${TK_DEFS} in
+	    *TK_FRAMEWORK*)
+		if test -f "${TK_BIN_DIR}/${TK_LIB_FILE}"; then
+		    for i in "`cd "${TK_BIN_DIR}"; pwd`" \
+			     "`cd "${TK_BIN_DIR}"/../..; pwd`"; do
+			if test "`basename "$i"`" = "${TK_LIB_FILE}.framework"; then
+			    TK_LIB_SPEC="-F`dirname "$i" | sed -e 's/ /\\\\ /g'` -framework ${TK_LIB_FILE}"
+			    break
+			fi
+		    done
+		fi
+		if test -f "${TK_BIN_DIR}/${TK_STUB_LIB_FILE}"; then
+		    TK_STUB_LIB_SPEC="-L` echo "${TK_BIN_DIR}"  | sed -e 's/ /\\\\ /g'` ${TK_STUB_LIB_FLAG}"
+		    TK_STUB_LIB_PATH="${TK_BIN_DIR}/${TK_STUB_LIB_FILE}"
+		fi
+		;;
+	esac
+    fi
+
+    # TEA specific: Ensure windowingsystem is defined
+    if test "${TEA_PLATFORM}" = "unix" ; then
+	case ${TK_DEFS} in
+	    *MAC_OSX_TK*)
+
+printf "%s\n" "#define MAC_OSX_TK 1" >>confdefs.h
+
+		TEA_WINDOWINGSYSTEM="aqua"
+		;;
+	    *)
+		TEA_WINDOWINGSYSTEM="x11"
+		;;
+	esac
+    elif test "${TEA_PLATFORM}" = "windows" ; then
+	TEA_WINDOWINGSYSTEM="win32"
+    fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # TEA specific:
+
+
+
 
 #-----------------------------------------------------------------------
 # Handle the --prefix=... option by defaulting to what Tcl gave.
@@ -5732,7 +5993,109 @@ printf "%s\n" "${ac_cv_c_tclh}" >&6; }
 
 #TEA_PRIVATE_TCL_HEADERS
 
-#TEA_PUBLIC_TK_HEADERS
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Tk public headers" >&5
+printf %s "checking for Tk public headers... " >&6; }
+
+
+# Check whether --with-tkinclude was given.
+if test ${with_tkinclude+y}
+then :
+  withval=$with_tkinclude; with_tkinclude=${withval}
+fi
+
+
+    if test ${ac_cv_c_tkh+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+	# Use the value from --with-tkinclude, if it was given
+
+	if test x"${with_tkinclude}" != x ; then
+	    if test -f "${with_tkinclude}/tk.h" ; then
+		ac_cv_c_tkh=${with_tkinclude}
+	    else
+		as_fn_error $? "${with_tkinclude} directory does not contain tk.h" "$LINENO" 5
+	    fi
+	else
+	    list=""
+	    if test "`uname -s`" = "Darwin"; then
+		# If Tk was built as a framework, attempt to use
+		# the framework's Headers directory.
+		case ${TK_DEFS} in
+		    *TK_FRAMEWORK*)
+			list="`ls -d ${TK_BIN_DIR}/Headers 2>/dev/null`"
+			;;
+		esac
+	    fi
+
+	    # Look in the source dir only if Tk is not installed,
+	    # and in that situation, look there before installed locations.
+	    if test -f "${TK_BIN_DIR}/Makefile" ; then
+		list="$list `ls -d ${TK_SRC_DIR}/generic 2>/dev/null`"
+	    fi
+
+	    # Check order: pkg --prefix location, Tk's --prefix location,
+	    # relative to directory of tkConfig.sh, Tcl's --prefix location,
+	    # relative to directory of tclConfig.sh.
+
+	    eval "temp_includedir=${includedir}"
+	    list="$list \
+		`ls -d ${temp_includedir}        2>/dev/null` \
+		`ls -d ${TK_PREFIX}/include      2>/dev/null` \
+		`ls -d ${TK_BIN_DIR}/../include  2>/dev/null` \
+		`ls -d ${TCL_PREFIX}/include     2>/dev/null` \
+		`ls -d ${TCL_BIN_DIR}/../include 2>/dev/null`"
+	    if test "${TEA_PLATFORM}" != "windows" -o "$GCC" = "yes"; then
+		list="$list /usr/local/include /usr/include"
+		if test x"${TK_INCLUDE_SPEC}" != x ; then
+		    d=`echo "${TK_INCLUDE_SPEC}" | sed -e 's/^-I//'`
+		    list="$list `ls -d ${d} 2>/dev/null`"
+		fi
+	    fi
+	    for i in $list ; do
+		if test -f "$i/tk.h" ; then
+		    ac_cv_c_tkh=$i
+		    break
+		fi
+	    done
+	fi
+     ;;
+esac
+fi
+
+
+    # Print a message based on how we determined the include path
+
+    if test x"${ac_cv_c_tkh}" = x ; then
+	as_fn_error $? "tk.h not found.  Please specify its location with --with-tkinclude" "$LINENO" 5
+    else
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${ac_cv_c_tkh}" >&5
+printf "%s\n" "${ac_cv_c_tkh}" >&6; }
+    fi
+
+    # Convert to a native path and substitute into the output files.
+
+    INCLUDE_DIR_NATIVE=`${CYGPATH} ${ac_cv_c_tkh}`
+
+    TK_INCLUDES=-I\"${INCLUDE_DIR_NATIVE}\"
+
+
+
+    if test "${TEA_WINDOWINGSYSTEM}" != "x11"; then
+	# On Windows and Aqua, we need the X compat headers
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for X11 header files" >&5
+printf %s "checking for X11 header files... " >&6; }
+	if test ! -r "${INCLUDE_DIR_NATIVE}/X11/Xlib.h"; then
+	    INCLUDE_DIR_NATIVE="`${CYGPATH} ${TK_SRC_DIR}/xlib`"
+	    TK_XINCLUDES=-I\"${INCLUDE_DIR_NATIVE}\"
+
+	fi
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${INCLUDE_DIR_NATIVE}" >&5
+printf "%s\n" "${INCLUDE_DIR_NATIVE}" >&6; }
+    fi
+
 #TEA_PRIVATE_TK_HEADERS
 #TEA_PATH_X
 
