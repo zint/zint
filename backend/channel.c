@@ -192,7 +192,7 @@ INTERNAL int zint_channel(struct zint_symbol *symbol, unsigned char source[], in
     }
     target_value = z_to_int(source, length);
 
-    if ((symbol->option_2 < 3) || (symbol->option_2 > 8)) {
+    if (symbol->option_2 < 3 || symbol->option_2 > 8) {
         channels = 0;
     } else {
         channels = symbol->option_2;

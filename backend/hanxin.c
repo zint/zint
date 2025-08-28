@@ -108,7 +108,7 @@ static int hx_calc_binlen(const char mode[], const unsigned int ddata[], const i
             }
             /* GB 4-byte has indicator for each character (and no terminator) so not included here */
             /* Region1/Region2 have special terminator to go directly into each other's mode so not included here */
-            if (mode[i] != 'f' || ((mode[i] == '1' && lastmode == '2') || (mode[i] == '2' && lastmode == '1'))) {
+            if (mode[i] != 'f' || (mode[i] == '1' && lastmode == '2') || (mode[i] == '2' && lastmode == '1')) {
                 est_binlen += 4;
             }
             if (mode[i] == 'b') { /* Byte mode has byte count (and no terminator) */
@@ -177,17 +177,17 @@ static int hx_isRegion1(const unsigned int glyph) {
 
     byte = glyph >> 8;
 
-    if ((byte >= 0xb0) && (byte <= 0xd7)) {
-        byte = glyph & 0xff;
-        if ((byte >= 0xa1) && (byte <= 0xfe)) {
+    if (byte >= 0xB0 && byte <= 0xD7) {
+        byte = glyph & 0xFF;
+        if (byte >= 0xA1 && byte <= 0xFE) {
             return 1;
         }
-    } else if ((byte >= 0xa1) && (byte <= 0xa3)) {
-        byte = glyph & 0xff;
-        if ((byte >= 0xa1) && (byte <= 0xfe)) {
+    } else if (byte >= 0xA1 && byte <= 0xA3) {
+        byte = glyph & 0xFF;
+        if (byte >= 0xA1 && byte <= 0xFE) {
             return 1;
         }
-    } else if ((glyph >= 0xa8a1) && (glyph <= 0xa8c0)) {
+    } else if (glyph >= 0xA8A1 && glyph <= 0xA8C0) {
         return 1;
     }
 
@@ -199,9 +199,9 @@ static int hx_isRegion2(const unsigned int glyph) {
 
     byte = glyph >> 8;
 
-    if ((byte >= 0xd8) && (byte <= 0xf7)) {
-        byte = glyph & 0xff;
-        if ((byte >= 0xa1) && (byte <= 0xfe)) {
+    if (byte >= 0xD8 && byte <= 0xF7) {
+        byte = glyph & 0xFF;
+        if (byte >= 0xA1 && byte <= 0xFE) {
             return 1;
         }
     }
@@ -214,12 +214,12 @@ static int hx_isDoubleByte(const unsigned int glyph) {
 
     byte = glyph >> 8;
 
-    if ((byte >= 0x81) && (byte <= 0xfe)) {
-        byte = glyph & 0xff;
-        if ((byte >= 0x40) && (byte <= 0x7e)) {
+    if (byte >= 0x81 && byte <= 0xFE) {
+        byte = glyph & 0xFF;
+        if (byte >= 0x40 && byte <= 0x7E) {
             return 1;
         }
-        if ((byte >= 0x80) && (byte <= 0xfe)) {
+        if (byte >= 0x80 && byte <= 0xFE) {
             return 1;
         }
     }
@@ -232,13 +232,13 @@ static int hx_isFourByte(const unsigned int glyph, const unsigned int glyph2) {
 
     byte = glyph >> 8;
 
-    if ((byte >= 0x81) && (byte <= 0xfe)) {
-        byte = glyph & 0xff;
-        if ((byte >= 0x30) && (byte <= 0x39)) {
+    if (byte >= 0x81 && byte <= 0xFE) {
+        byte = glyph & 0xFF;
+        if (byte >= 0x30 && byte <= 0x39) {
             byte = glyph2 >> 8;
-            if ((byte >= 0x81) && (byte <= 0xfe)) {
-                byte = glyph2 & 0xff;
-                if ((byte >= 0x30) && (byte <= 0x39)) {
+            if (byte >= 0x81 && byte <= 0xFE) {
+                byte = glyph2 & 0xFF;
+                if (byte >= 0x30 && byte <= 0x39) {
                     return 1;
                 }
             }
@@ -273,19 +273,19 @@ static int hx_lookup_text2(const unsigned int input) {
         return input;
     }
 
-    if ((input >= ' ') && (input <= '/')) {
+    if (input >= ' ' && input <= '/') {
         return input - ' ' + 28;
     }
 
-    if ((input >= ':') && (input <= '@')) {
+    if (input >= ':' && input <= '@') {
         return input - ':' + 44;
     }
 
-    if ((input >= '[') && (input <= 96)) {
+    if (input >= '[' && input <= 96) {
         return input - '[' + 51;
     }
 
-    if ((input >= '{') && (input <= 127)) {
+    if (input >= '{' && input <= 127) {
         return input - '{' + 57;
     }
 
@@ -688,22 +688,22 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 i = 0;
 
                 while (i < block_length) {
-                    first_byte = (ddata[i + position] & 0xff00) >> 8;
-                    second_byte = ddata[i + position] & 0xff;
+                    first_byte = (ddata[i + position] & 0xFF00) >> 8;
+                    second_byte = ddata[i + position] & 0xFF;
 
                     /* Subset 1 */
-                    glyph = (0x5e * (first_byte - 0xb0)) + (second_byte - 0xa1);
+                    glyph = (0x5E * (first_byte - 0xB0)) + (second_byte - 0xA1);
 
                     /* Subset 2 */
-                    if ((first_byte >= 0xa1) && (first_byte <= 0xa3)) {
-                        if ((second_byte >= 0xa1) && (second_byte <= 0xfe)) {
-                            glyph = (0x5e * (first_byte - 0xa1)) + (second_byte - 0xa1) + 0xeb0;
+                    if (first_byte >= 0xA1 && first_byte <= 0xA3) {
+                        if (second_byte >= 0xA1 && second_byte <= 0xFE) {
+                            glyph = (0x5E * (first_byte - 0xA1)) + (second_byte - 0xA1) + 0xEB0;
                         }
                     }
 
                     /* Subset 3 */
-                    if ((ddata[i + position] >= 0xa8a1) && (ddata[i + position] <= 0xa8c0)) {
-                        glyph = (second_byte - 0xa1) + 0xfca;
+                    if (ddata[i + position] >= 0xA8A1 && ddata[i + position] <= 0xA8C0) {
+                        glyph = (second_byte - 0xA1) + 0xFCA;
                     }
 
                     if (debug_print) {
@@ -739,10 +739,10 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 i = 0;
 
                 while (i < block_length) {
-                    first_byte = (ddata[i + position] & 0xff00) >> 8;
-                    second_byte = ddata[i + position] & 0xff;
+                    first_byte = (ddata[i + position] & 0xFF00) >> 8;
+                    second_byte = ddata[i + position] & 0xFF;
 
-                    glyph = (0x5e * (first_byte - 0xd8)) + (second_byte - 0xa1);
+                    glyph = (0x5E * (first_byte - 0xD8)) + (second_byte - 0xA1);
 
                     if (debug_print) {
                         printf(" %.3x[GB %.4x]", glyph, ddata[i + position]);
@@ -774,13 +774,13 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 i = 0;
 
                 while (i < block_length) {
-                    first_byte = (ddata[i + position] & 0xff00) >> 8;
-                    second_byte = ddata[i + position] & 0xff;
+                    first_byte = (ddata[i + position] & 0xFF00) >> 8;
+                    second_byte = ddata[i + position] & 0xFF;
 
-                    if (second_byte <= 0x7e) {
-                        glyph = (0xbe * (first_byte - 0x81)) + (second_byte - 0x40);
+                    if (second_byte <= 0x7E) {
+                        glyph = (0xBE * (first_byte - 0x81)) + (second_byte - 0x40);
                     } else {
-                        glyph = (0xbe * (first_byte - 0x81)) + (second_byte - 0x41);
+                        glyph = (0xBE * (first_byte - 0x81)) + (second_byte - 0x41);
                     }
 
                     if (debug_print) {
@@ -813,13 +813,13 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                     /* Mode indicator */
                     bp = z_bin_append_posn(7, 4, binary, bp);
 
-                    first_byte = (ddata[i + position] & 0xff00) >> 8;
-                    second_byte = ddata[i + position] & 0xff;
-                    third_byte = (ddata[i + position + 1] & 0xff00) >> 8;
-                    fourth_byte = ddata[i + position + 1] & 0xff;
+                    first_byte = (ddata[i + position] & 0xFF00) >> 8;
+                    second_byte = ddata[i + position] & 0xFF;
+                    third_byte = (ddata[i + position + 1] & 0xFF00) >> 8;
+                    fourth_byte = ddata[i + position + 1] & 0xFF;
 
-                    glyph = (0x3138 * (first_byte - 0x81)) + (0x04ec * (second_byte - 0x30)) +
-                            (0x0a * (third_byte - 0x81)) + (fourth_byte - 0x30);
+                    glyph = (0x3138 * (first_byte - 0x81)) + (0x04EC * (second_byte - 0x30))
+                                + (0x0A * (third_byte - 0x81)) + (fourth_byte - 0x30);
 
                     if (debug_print) {
                         printf(" %d", glyph);
@@ -916,8 +916,8 @@ static void hx_place_finder_bottom_right(unsigned char *grid, const int size) {
 
 /* Avoid plotting outside symbol or over finder patterns */
 static void hx_safe_plot(unsigned char *grid, const int size, const int x, const int y, const int value) {
-    if ((x >= 0) && (x < size)) {
-        if ((y >= 0) && (y < size)) {
+    if (x >= 0 && x < size) {
+        if (y >= 0 && y < size) {
             if (grid[(y * size) + x] == 0) {
                 grid[(y * size) + x] = value;
             }
@@ -1120,7 +1120,7 @@ static void hx_add_ecc(unsigned char fullstream[], const unsigned char datastrea
     int i, j, block;
     int input_position = 0;
     int output_position = 0;
-    const int table_d1_pos = ((version - 1) * 36) + ((ecc_level - 1) * 9);
+    const int table_d1_pos = (version - 1) * 36 + (ecc_level - 1) * 9;
     rs_t rs;
 
     zint_rs_init_gf(&rs, 0x163); /* x^8 + x^6 + x^5 + x + 1 = 0 */
@@ -1396,16 +1396,16 @@ static int hx_apply_bitmask(unsigned char *grid, const int size, const int versi
         for (x = 0; x < size; x++) {
             k = r + x;
 
-            if (!(grid[k] & 0xf0)) {
+            if (!(grid[k] & 0xF0)) {
                 j = x + 1;
                 i = y + 1;
                 if (((i + j) & 1) == 0) {
                     mask[k] |= 0x02;
                 }
-                if (((((i + j) % 3) + (j % 3)) & 1) == 0) {
+                if ((((i + j) % 3 + j % 3) & 1) == 0) {
                     mask[k] |= 0x04;
                 }
-                if ((((i % j) + (j % i) + (i % 3) + (j % 3)) & 1) == 0) {
+                if (((i % j + j % i + i % 3 + j % 3) & 1) == 0) {
                     mask[k] |= 0x08;
                 }
             }
@@ -1420,7 +1420,7 @@ static int hx_apply_bitmask(unsigned char *grid, const int size, const int versi
         /* Do null pattern 00 separately first */
         pattern = 0;
         for (k = 0; k < size_squared; k++) {
-            local[k] = grid[k] & 0x0f;
+            local[k] = grid[k] & 0x0F;
         }
         /* Set the Structural Info */
         hx_set_function_info(local, size, version, ecc_level, pattern, 0 /*debug_print*/);
@@ -1435,7 +1435,7 @@ static int hx_apply_bitmask(unsigned char *grid, const int size, const int versi
                 if (mask[k] & bit) {
                     local[k] = grid[k] ^ 0x01;
                 } else {
-                    local[k] = grid[k] & 0x0f;
+                    local[k] = grid[k] & 0x0F;
                 }
             }
             /* Set the Structural Info */
@@ -1560,7 +1560,7 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     binary = (char *) malloc(est_binlen + 1);
 
-    if ((ecc_level <= 0) || (ecc_level >= 5)) {
+    if (ecc_level <= 0 || ecc_level >= 5) {
         ecc_level = 1;
     }
 
@@ -1587,7 +1587,7 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
                         codewords);
     }
 
-    if ((symbol->option_2 < 0) || (symbol->option_2 > 84)) {
+    if (symbol->option_2 < 0 || symbol->option_2 > 84) {
         symbol->option_2 = 0;
     }
 
@@ -1595,7 +1595,7 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
         version = symbol->option_2;
     }
 
-    if ((symbol->option_2 != 0) && (symbol->option_2 < version)) {
+    if (symbol->option_2 != 0 && symbol->option_2 < version) {
         free(binary);
         if (ecc_level == 1) {
             return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 542,

@@ -83,10 +83,10 @@ static int buffer_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf
         {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, /* 0x20-2F */
         {0} /*bg*/, {0} /*fg*/, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, /* 0-9 */
         {0}, {0}, {0}, {0}, {0}, {0}, {0}, /* :;<=>?@ */
-        {0}, { 0, 0, 0xff } /*Blue*/, { 0, 0xff, 0xff } /*Cyan*/, {0}, {0}, {0}, { 0, 0xff, 0 } /*Green*/, /* A-G */
-        {0}, {0}, {0}, { 0, 0, 0 } /*blacK*/, {0}, { 0xff, 0, 0xff } /*Magenta*/, {0}, /* H-N */
-        {0}, {0}, {0}, { 0xff, 0, 0 } /*Red*/, {0}, {0}, {0}, {0}, /* O-V */
-        { 0xff, 0xff, 0xff } /*White*/, {0}, { 0xff, 0xff, 0 } /*Yellow*/, {0} /* W-Z */
+        {0}, { 0, 0, 0xFF } /*Blue*/, { 0, 0xFF, 0xFF } /*Cyan*/, {0}, {0}, {0}, { 0, 0xFF, 0 } /*Green*/, /* A-G */
+        {0}, {0}, {0}, { 0, 0, 0 } /*blacK*/, {0}, { 0xFF, 0, 0xFF } /*Magenta*/, {0}, /* H-N */
+        {0}, {0}, {0}, { 0xFF, 0, 0 } /*Red*/, {0}, {0}, {0}, {0}, /* O-V */
+        { 0xFF, 0xFF, 0xFF } /*White*/, {0}, { 0xFF, 0xFF, 0 } /*Yellow*/, {0} /* W-Z */
     };
     int row;
     int plot_alpha = 0;
@@ -340,7 +340,7 @@ static void draw_letter(unsigned char *pixelbuf, const unsigned char letter, int
         return;
     }
 
-    if ((letter >= 127) && (letter < 161)) {
+    if (letter >= 127 && letter < 161) {
         return;
     }
 
@@ -493,7 +493,7 @@ static void draw_circle(unsigned char *pixelbuf, const int image_width, const in
     for (y = -radius_i; y <= radius_i; y++) {
         const int y_squared = y * y;
         for (x = -radius_i; x <= radius_i; x++) {
-            if ((x * x) + y_squared <= radius_squared) {
+            if (x * x + y_squared <= radius_squared) {
                 draw_pt(pixelbuf, image_width, image_height, x0 + x, y0 + y, fill);
             }
         }
@@ -1080,7 +1080,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
                 const int fill = z_module_is_set(symbol, r, i);
                 for (block_width = 1; (i + block_width < symbol->width)
                                         && z_module_is_set(symbol, r, i + block_width) == fill; block_width++);
-                if ((r == (symbol->rows - 1)) && (i > main_width) && (addon_latch == 0)) {
+                if (r == symbol->rows - 1 && i > main_width && addon_latch == 0) {
                     int addon_row_height_si;
                     const int addon_row_adj_si = (int) ceilf((font_height + symbol->text_gap) * si);
                     copy_bar_line(pixelbuf, xoffset_si, main_width * si, yposn_si, row_height_si, image_width,

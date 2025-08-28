@@ -39,9 +39,9 @@
 INTERNAL int z_ctoi(const char source) {
     if (z_isdigit(source))
         return (source - '0');
-    if ((source >= 'A') && (source <= 'F'))
+    if (source >= 'A' && source <= 'F')
         return (source - 'A' + 10);
-    if ((source >= 'a') && (source <= 'f'))
+    if (source >= 'a' && source <= 'f')
         return (source - 'a' + 10);
     return -1;
 }
@@ -662,7 +662,7 @@ INTERNAL int z_is_fixed_ratio(const int symbology) {
 
 /* Whether next two characters are digits */
 INTERNAL int z_is_twodigits(const unsigned char source[], const int length, const int position) {
-    if ((position + 1 < length) && z_isdigit(source[position]) && z_isdigit(source[position + 1])) {
+    if (position + 1 < length && z_isdigit(source[position]) && z_isdigit(source[position + 1])) {
         return 1;
     }
 
@@ -719,7 +719,7 @@ INTERNAL unsigned int z_decode_utf8(unsigned int *state, unsigned int *codep, co
 
     const unsigned int type = utf8d[byte];
 
-    *codep = *state != 0 ? (byte & 0x3fu) | (*codep << 6) : (0xff >> type) & byte;
+    *codep = *state != 0 ? (byte & 0x3Fu) | (*codep << 6) : (0xFF >> type) & byte;
 
     *state = utf8d[256 + *state + type];
 
@@ -759,7 +759,7 @@ INTERNAL int z_utf8_to_unicode(struct zint_symbol *symbol, const unsigned char s
         if (state != 0) {
             return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 240, "Corrupt Unicode data");
         }
-        if (disallow_4byte && codepoint > 0xffff) {
+        if (disallow_4byte && codepoint > 0xFFFF) {
             return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 242,
                             "Unicode sequences of more than 3 bytes not supported");
         }

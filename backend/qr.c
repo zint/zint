@@ -438,45 +438,44 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
     modebits = qr_mode_bits(version);
 
     do {
-        char data_block = mode[position];
-        int short_data_block_length = 0;
+        const char block_mode = mode[position];
+        int block_length = 0;
         int double_byte = 0;
         do {
-            if (data_block == 'B' && ddata[position + short_data_block_length] > 0xFF) {
+            if (block_mode == 'B' && ddata[position + block_length] > 0xFF) {
                 double_byte++;
             }
-            short_data_block_length++;
-        } while (((short_data_block_length + position) < length)
-                && (mode[position + short_data_block_length] == data_block));
+            block_length++;
+        } while (position + block_length < length && mode[position + block_length] == block_mode);
 
         /* Mode indicator */
         if (modebits) {
-            bp = z_bin_append_posn(qr_mode_indicator(version, data_block), modebits, binary, bp);
+            bp = z_bin_append_posn(qr_mode_indicator(version, block_mode), modebits, binary, bp);
         }
 
-        switch (data_block) {
+        switch (block_mode) {
             case 'K':
                 /* Kanji mode */
 
                 /* Character count indicator */
-                bp = z_bin_append_posn(short_data_block_length, qr_cci_bits(version, data_block), binary, bp);
+                bp = z_bin_append_posn(block_length, qr_cci_bits(version, block_mode), binary, bp);
 
                 if (debug_print) {
-                    printf("Kanji block (length %d)\n\t", short_data_block_length);
+                    printf("Kanji block (length %d)\n\t", block_length);
                 }
 
                 /* Character representation */
-                for (i = 0; i < short_data_block_length; i++) {
+                for (i = 0; i < block_length; i++) {
                     unsigned int jis = ddata[position + i];
                     int prod;
 
-                    if (jis >= 0x8140 && jis <= 0x9ffc)
+                    if (jis >= 0x8140 && jis <= 0x9FFC)
                         jis -= 0x8140;
 
-                    else if (jis >= 0xe040 && jis <= 0xebbf)
-                        jis -= 0xc140;
+                    else if (jis >= 0xE040 && jis <= 0xEBBF)
+                        jis -= 0xC140;
 
-                    prod = ((jis >> 8) * 0xc0) + (jis & 0xff);
+                    prod = ((jis >> 8) * 0xC0) + (jis & 0xFF);
 
                     bp = z_bin_append_posn(prod, 13, binary, bp);
 
@@ -494,15 +493,14 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 /* Byte mode */
 
                 /* Character count indicator */
-                bp = z_bin_append_posn(short_data_block_length + double_byte, qr_cci_bits(version, data_block),
-                                        binary, bp);
+                bp = z_bin_append_posn(block_length + double_byte, qr_cci_bits(version, block_mode), binary, bp);
 
                 if (debug_print) {
-                    printf("Byte block (length %d)\n\t", short_data_block_length + double_byte);
+                    printf("Byte block (length %d)\n\t", block_length + double_byte);
                 }
 
                 /* Character representation */
-                for (i = 0; i < short_data_block_length; i++) {
+                for (i = 0; i < block_length; i++) {
                     unsigned int byte = ddata[position + i];
 
                     bp = z_bin_append_posn(byte, byte > 0xFF ? 16 : 8, binary, bp);
@@ -522,7 +520,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
 
                 percent_count = 0;
                 if (gs1) {
-                    for (i = 0; i < short_data_block_length; i++) {
+                    for (i = 0; i < block_length; i++) {
                         if (ddata[position + i] == '%') {
                             percent_count++;
                         }
@@ -530,21 +528,20 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 }
 
                 /* Character count indicator */
-                bp = z_bin_append_posn(short_data_block_length + percent_count, qr_cci_bits(version, data_block),
-                                        binary, bp);
+                bp = z_bin_append_posn(block_length + percent_count, qr_cci_bits(version, block_mode), binary, bp);
 
                 if (debug_print) {
-                    printf("Alpha block (length %d)\n\t", short_data_block_length + percent_count);
+                    printf("Alpha block (length %d)\n\t", block_length + percent_count);
                 }
 
                 /* Character representation */
                 i = 0;
-                while (i < short_data_block_length) {
+                while (i < block_length) {
                     int count;
                     int first = 0, second = 0, prod;
 
                     if (percent == 0) {
-                        if (gs1 && (ddata[position + i] == '%')) {
+                        if (gs1 && ddata[position + i] == '%') {
                             first = QR_PERCENT;
                             second = QR_PERCENT;
                             count = 2;
@@ -560,8 +557,8 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                             i++;
                             prod = first;
 
-                            if (i < short_data_block_length && mode[position + i] == 'A') {
-                                if (gs1 && (ddata[position + i] == '%')) {
+                            if (i < block_length && mode[position + i] == 'A') {
+                                if (gs1 && ddata[position + i] == '%') {
                                     second = QR_PERCENT;
                                     count = 2;
                                     prod = (first * 45) + second;
@@ -585,8 +582,8 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                         prod = first;
                         percent = 0;
 
-                        if (i < short_data_block_length && mode[position + i] == 'A') {
-                            if (gs1 && (ddata[position + i] == '%')) {
+                        if (i < block_length && mode[position + i] == 'A') {
+                            if (gs1 && ddata[position + i] == '%') {
                                 second = QR_PERCENT;
                                 count = 2;
                                 prod = (first * 45) + second;
@@ -620,15 +617,15 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 /* Numeric mode */
 
                 /* Character count indicator */
-                bp = z_bin_append_posn(short_data_block_length, qr_cci_bits(version, data_block), binary, bp);
+                bp = z_bin_append_posn(block_length, qr_cci_bits(version, block_mode), binary, bp);
 
                 if (debug_print) {
-                    printf("Number block (length %d)\n\t", short_data_block_length);
+                    printf("Number block (length %d)\n\t", block_length);
                 }
 
                 /* Character representation */
                 i = 0;
-                while (i < short_data_block_length) {
+                while (i < block_length) {
                     int count;
                     int first = 0, prod;
 
@@ -636,12 +633,12 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                     count = 1;
                     prod = first;
 
-                    if (i + 1 < short_data_block_length && mode[position + i + 1] == 'N') {
+                    if (i + 1 < block_length && mode[position + i + 1] == 'N') {
                         int second = z_ctoi((const char) ddata[position + i + 1]);
                         count = 2;
                         prod = (prod * 10) + second;
 
-                        if (i + 2 < short_data_block_length && mode[position + i + 2] == 'N') {
+                        if (i + 2 < block_length && mode[position + i + 2] == 'N') {
                             int third = z_ctoi((const char) ddata[position + i + 2]);
                             count = 3;
                             prod = (prod * 10) + third;
@@ -664,7 +661,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 break;
         }
 
-        position += short_data_block_length;
+        position += block_length;
     } while (position < length);
 
     return bp;
@@ -682,6 +679,8 @@ static int qr_binary_segs(unsigned char datastream[], const int version, const i
     int current_bytes;
     int toggle;
     char *binary = (char *) z_alloca(est_binlen + 12);
+
+    assert(seg_count > 0); /* Suppress clang-tidy clang-analyzer-core.uninitialized.Assign warning */
 
     *binary = '\0';
 
@@ -753,7 +752,7 @@ static int qr_binary_segs(unsigned char datastream[], const int version, const i
     toggle = 0;
     for (i = current_bytes; i < target_codewords; i++) {
         if (toggle == 0) {
-            datastream[i] = 0xec;
+            datastream[i] = 0xEC;
             toggle = 1;
         } else {
             datastream[i] = 0x11;
@@ -777,7 +776,6 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
             const int data_cw, const int blocks, const int debug_print) {
     int ecc_cw;
     int short_data_block_length;
-    int qty_long_blocks;
     int qty_short_blocks;
     int ecc_block_length;
     int i, j, length_this_block, in_posn;
@@ -797,13 +795,14 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
     assert(blocks > 0);
 
     short_data_block_length = data_cw / blocks;
-    qty_long_blocks = data_cw % blocks;
-    qty_short_blocks = blocks - qty_long_blocks;
+    qty_short_blocks = blocks - data_cw % blocks;
     ecc_block_length = ecc_cw / blocks;
 
     /* Suppress some clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.Assign warnings */
-    assert(short_data_block_length > 0);
-    assert(qty_long_blocks || qty_short_blocks);
+    assert(data_cw > 0);
+    assert(short_data_block_length >= 1 && short_data_block_length <= 122);
+    assert(qty_short_blocks > 0);
+    assert(ecc_block_length > 0);
 
     data_block = (unsigned char *) z_alloca(short_data_block_length + 1);
     ecc_block = (unsigned char *) z_alloca(ecc_block_length);
@@ -816,15 +815,10 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
     in_posn = 0;
 
     for (i = 0; i < blocks; i++) {
-        if (i < qty_short_blocks) {
-            length_this_block = short_data_block_length;
-        } else {
-            length_this_block = short_data_block_length + 1;
-        }
+        length_this_block = short_data_block_length + (i >= qty_short_blocks);
 
         for (j = 0; j < length_this_block; j++) {
-            /* This false-positive popped up with clang-tidy 14.0.1 */
-            data_block[j] = datastream[in_posn + j]; /* NOLINT(clang-analyzer-core.uninitialized.Assign) */
+            data_block[j] = datastream[in_posn + j];
         }
 
         zint_rs_encode(&rs, length_this_block, data_block, ecc_block);
@@ -845,8 +839,7 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
         }
 
         for (j = 0; j < short_data_block_length; j++) {
-            /* And another with clang-tidy 14.0.6 */
-            interleaved_data[(j * blocks) + i] = data_block[j]; /* NOLINT(clang-analyzer-core.uninitialized.Assign) */
+            interleaved_data[(j * blocks) + i] = data_block[j];
         }
 
         if (i >= qty_short_blocks) {
@@ -883,11 +876,7 @@ static void qr_place_finder(unsigned char grid[], const int size, const int x, c
 
     for (xp = 0; xp < 7; xp++) {
         for (yp = 0; yp < 7; yp++) {
-            if (finder[yp] & 0x40 >> xp) {
-                grid[((yp + y) * size) + (xp + x)] = 0x11;
-            } else {
-                grid[((yp + y) * size) + (xp + x)] = 0x10;
-            }
+            grid[((yp + y) * size) + (xp + x)] = 0x10 + !!(finder[yp] & (0x40 >> xp));
         }
     }
 }
@@ -901,11 +890,7 @@ static void qr_place_align(unsigned char grid[], const int size, int x, int y) {
 
     for (xp = 0; xp < 5; xp++) {
         for (yp = 0; yp < 5; yp++) {
-            if (alignment[yp] & 0x10 >> xp) {
-                grid[((yp + y) * size) + (xp + x)] = 0x11;
-            } else {
-                grid[((yp + y) * size) + (xp + x)] = 0x10;
-            }
+            grid[((yp + y) * size) + (xp + x)] = 0x10 + !!(alignment[yp] & (0x10 >> xp));
         }
     }
 }
@@ -1020,16 +1005,16 @@ static void qr_populate_grid(unsigned char *grid, const int h_size, const int v_
         int x = x_start - (row * 2);
         int r = y * h_size;
 
-        if ((x < 6) && (not_rmqr))
+        if (x < 6 && not_rmqr)
             x--; /* skip over vertical timing pattern */
 
-        if (!(grid[r + (x + 1)] & 0xf0)) {
+        if (!(grid[r + (x + 1)] & 0xF0)) {
             grid[r + (x + 1)] = qr_cwbit(fullstream, i);
             i++;
         }
 
         if (i < n) {
-            if (!(grid[r + x] & 0xf0)) {
+            if (!(grid[r + x] & 0xF0)) {
                 grid[r + x] = qr_cwbit(fullstream, i);
                 i++;
             }
@@ -1159,9 +1144,8 @@ static int qr_evaluate(unsigned char *local, const int size) {
     for (x = 0; x < size - 1; x++) {
         for (y = 0; y < size - 1; y++) {
             k = local[(y * size) + x];
-            if (((k == local[((y + 1) * size) + x]) &&
-                    (k == local[(y * size) + (x + 1)])) &&
-                    (k == local[((y + 1) * size) + (x + 1)])) {
+            if (k == local[((y + 1) * size) + x] && k == local[(y * size) + (x + 1)]
+                    && k == local[((y + 1) * size) + (x + 1)]) {
                 result += 3;
             }
         }
@@ -1178,12 +1162,12 @@ static int qr_evaluate(unsigned char *local, const int size) {
     /* Vertical */
     for (x = 0; x < size; x++) {
         for (y = 0; y <= (size - 7); y++) {
-            if (local[y * size + x] && !local[(y + 1) * size + x] && local[(y + 2) * size + x] &&
-                    local[(y + 3) * size + x] && local[(y + 4) * size + x] &&
-                    !local[(y + 5) * size + x] && local[(y + 6) * size + x]) {
+            if (local[y * size + x] && !local[(y + 1) * size + x] && local[(y + 2) * size + x]
+                    && local[(y + 3) * size + x] && local[(y + 4) * size + x]
+                    && !local[(y + 5) * size + x] && local[(y + 6) * size + x]) {
                 /* Pattern found, check before and after */
                 beforeCount = 0;
-                for (b = (y - 1); b >= (y - 4); b--) {
+                for (b = y - 1; b >= y - 4; b--) {
                     if (b < 0) { /* Count < edge as whitespace */
                         beforeCount = 4;
                         break;
@@ -1198,7 +1182,7 @@ static int qr_evaluate(unsigned char *local, const int size) {
                     result += 40;
                 } else {
                     afterCount = 0;
-                    for (a = (y + 7); a <= (y + 10); a++) {
+                    for (a = y + 7; a <= y + 10; a++) {
                         if (a >= size) { /* Count > edge as whitespace */
                             afterCount = 4;
                             break;
@@ -1225,7 +1209,7 @@ static int qr_evaluate(unsigned char *local, const int size) {
             if (memcmp(local + r + x, h1011101, 7) == 0) {
                 /* Pattern found, check before and after */
                 beforeCount = 0;
-                for (b = (x - 1); b >= (x - 4); b--) {
+                for (b = x - 1; b >= x - 4; b--) {
                     if (b < 0) { /* Count < edge as whitespace */
                         beforeCount = 4;
                         break;
@@ -1241,7 +1225,7 @@ static int qr_evaluate(unsigned char *local, const int size) {
                     result += 40;
                 } else {
                     afterCount = 0;
-                    for (a = (x + 7); a <= (x + 10); a++) {
+                    for (a = x + 7; a <= x + 10; a++) {
                         if (a >= size) { /* Count > edge as whitespace */
                             afterCount = 4;
                             break;
@@ -1342,7 +1326,7 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
         for (x = 0; x < size; x++) {
 
             /* all eight bitmask variants are encoded in the 8 bits of the bytes that make up the mask array. */
-            if (!(grid[r + x] & 0xf0)) { /* exclude areas not to be masked. */
+            if (!(grid[r + x] & 0xF0)) { /* exclude areas not to be masked. */
                 if (((y + x) & 1) == 0) {
                     mask[r + x] |= 0x01;
                 }
@@ -1351,26 +1335,26 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
                         mask[r + x] |= 0x02;
                     }
                 }
-                if ((x % 3) == 0) {
+                if (x % 3 == 0) {
                     mask[r + x] |= 0x04;
                 }
                 if (!fast_encode) {
-                    if (((y + x) % 3) == 0) {
+                    if ((y + x) % 3 == 0) {
                         mask[r + x] |= 0x08;
                     }
                 }
-                if ((((y / 2) + (x / 3)) & 1) == 0) {
+                if (((y / 2 + x / 3) & 1) == 0) {
                     mask[r + x] |= 0x10;
                 }
                 if (!fast_encode) {
                     if ((y * x) % 6 == 0) { /* Equivalent to (y * x) % 2 + (y * x) % 3 == 0 */
                         mask[r + x] |= 0x20;
                     }
-                    if (((((y * x) & 1) + ((y * x) % 3)) & 1) == 0) {
+                    if (((((y * x) & 1) + (y * x) % 3) & 1) == 0) {
                         mask[r + x] |= 0x40;
                     }
                 }
-                if (((((y + x) & 1) + ((y * x) % 3)) & 1) == 0) {
+                if (((((y + x) & 1) + (y * x) % 3) & 1) == 0) {
                     mask[r + x] |= 0x80;
                 }
             }
@@ -1393,7 +1377,7 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
                 if (mask[k] & bit) {
                     local[k] = grid[k] ^ 0x01;
                 } else {
-                    local[k] = grid[k] & 0x0f;
+                    local[k] = grid[k] & 0x0F;
                 }
             }
             qr_add_format_info(local, size, ecc_level, pattern);
@@ -1464,7 +1448,7 @@ static int qr_blockLength(const int start, const char mode[], const int length) 
 
     do {
         count++;
-    } while (((i + count) < length) && (mode[i + count] == start_mode));
+    } while (i + count < length && mode[i + count] == start_mode);
 
     return count;
 }
@@ -1505,7 +1489,7 @@ static int qr_calc_binlen(const int version, char mode[], const unsigned int dda
                     break;
                 case 'B':
                     for (j = i; j < (i + blocklength); j++) {
-                        if (ddata[j] > 0xff) {
+                        if (ddata[j] > 0xFF) {
                             count += 16;
                         } else {
                             count += 8;
@@ -1726,14 +1710,14 @@ INTERNAL int zint_qrcode(struct zint_symbol *symbol, struct zint_seg segs[], con
     est_binlen = qr_calc_binlen_segs(40, mode, ddata, local_segs, seg_count, p_structapp, 0 /*mode_preset*/, gs1,
                     debug_print);
 
-    if ((symbol->option_1 >= 1) && (symbol->option_1 <= 4)) {
+    if (symbol->option_1 >= 1 && symbol->option_1 <= 4) {
         ecc_level = symbol->option_1 - 1;
     } else {
         ecc_level = QR_LEVEL_L;
     }
     max_cw = qr_data_codewords[ecc_level][39];
 
-    if (est_binlen > (8 * max_cw)) {
+    if (est_binlen > 8 * max_cw) {
         if (ecc_level == QR_LEVEL_L) {
             return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 567,
                                     "Input too long, requires %1$d codewords (maximum %2$d)", (est_binlen + 7) / 8,
@@ -1746,7 +1730,7 @@ INTERNAL int zint_qrcode(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     autosize = 40;
     for (i = 39; i >= 0; i--) {
-        if ((8 * qr_data_codewords[ecc_level][i]) >= est_binlen) {
+        if (8 * qr_data_codewords[ecc_level][i] >= est_binlen) {
             autosize = i + 1;
         }
     }
@@ -1777,7 +1761,7 @@ INTERNAL int zint_qrcode(struct zint_symbol *symbol, struct zint_seg segs[], con
             est_binlen = qr_calc_binlen_segs(autosize - 1, mode, ddata, local_segs, seg_count, p_structapp,
                             0 /*mode_preset*/, gs1, debug_print);
 
-            if ((8 * qr_data_codewords[ecc_level][autosize - 2]) < est_binlen) {
+            if (8 * qr_data_codewords[ecc_level][autosize - 2] < est_binlen) {
                 canShrink = 0;
             }
 
@@ -1794,7 +1778,7 @@ INTERNAL int zint_qrcode(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     version = autosize;
 
-    if ((symbol->option_2 >= 1) && (symbol->option_2 <= 40)) {
+    if (symbol->option_2 >= 1 && symbol->option_2 <= 40) {
         /* If the user has selected a larger symbol than the smallest available,
          then use the size the user has selected, and re-optimise for this
          symbol size.
@@ -1981,15 +1965,9 @@ static void microqr_setup_grid(unsigned char *grid, const int size) {
 
     /* Add timing patterns */
     for (i = 0; i < size; i++) {
-        if (toggle == 1) {
-            grid[i] = 0x21;
-            grid[(i * size)] = 0x21;
-            toggle = 0;
-        } else {
-            grid[i] = 0x20;
-            grid[(i * size)] = 0x20;
-            toggle = 1;
-        }
+        grid[i] = 0x20 + toggle;
+        grid[i * size] = 0x20 + toggle;
+        toggle = !toggle;
     }
 
     /* Add finder patterns */
@@ -2022,22 +2000,14 @@ static void microqr_populate_grid(unsigned char *grid, const int size, const cha
     do {
         int x = (size - 2) - (row * 2);
 
-        if (!(grid[(y * size) + (x + 1)] & 0xf0)) {
-            if (full_stream[i] == '1') {
-                grid[(y * size) + (x + 1)] = 0x01;
-            } else {
-                grid[(y * size) + (x + 1)] = 0x00;
-            }
+        if (!(grid[(y * size) + (x + 1)] & 0xF0)) {
+            grid[(y * size) + (x + 1)] = full_stream[i] == '1';
             i++;
         }
 
         if (i < bp) {
-            if (!(grid[(y * size) + x] & 0xf0)) {
-                if (full_stream[i] == '1') {
-                    grid[(y * size) + x] = 0x01;
-                } else {
-                    grid[(y * size) + x] = 0x00;
-                }
+            if (!(grid[(y * size) + x] & 0xF0)) {
+                grid[(y * size) + x] = full_stream[i] == '1';
                 i++;
             }
         }
@@ -2108,20 +2078,20 @@ static int microqr_apply_bitmask(unsigned char *grid, const int size, const int 
         r = y * size;
         for (x = 0; x < size; x++) {
 
-            if (!(grid[r + x] & 0xf0)) {
+            if (!(grid[r + x] & 0xF0)) {
                 if ((y & 1) == 0) {
                     mask[r + x] |= 0x01;
                 }
 
-                if ((((y / 2) + (x / 3)) & 1) == 0) {
+                if (((y / 2 + x / 3) & 1) == 0) {
                     mask[r + x] |= 0x02;
                 }
 
-                if (((((y * x) & 1) + ((y * x) % 3)) & 1) == 0) {
+                if (((((y * x) & 1) + (y * x) % 3) & 1) == 0) {
                     mask[r + x] |= 0x04;
                 }
 
-                if (((((y + x) & 1) + ((y * x) % 3)) & 1) == 0) {
+                if (((((y + x) & 1) + (y * x) % 3) & 1) == 0) {
                     mask[r + x] |= 0x08;
                 }
             }
@@ -2133,7 +2103,7 @@ static int microqr_apply_bitmask(unsigned char *grid, const int size, const int 
     } else {
         for (k = 0; k < size_squared; k++) {
             if (grid[k] & 0x01) {
-                eval[k] = mask[k] ^ 0xff;
+                eval[k] = mask[k] ^ 0xFF;
             } else {
                 eval[k] = mask[k];
             }
@@ -2312,7 +2282,7 @@ INTERNAL int zint_microqr(struct zint_symbol *symbol, unsigned char source[], in
     }
 
     /* Get version from user */
-    if ((symbol->option_2 >= 1) && (symbol->option_2 <= 4)) {
+    if (symbol->option_2 >= 1 && symbol->option_2 <= 4) {
         if (symbol->option_2 == 1 && (i = z_not_sane(NEON_F, source, length))) {
             return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 758,
                             "Invalid character at position %d in input for Version M1 (digits only)", i);
@@ -2530,24 +2500,14 @@ static void rmqr_setup_grid(unsigned char *grid, const int h_size, const int v_s
 
     /* Add timing patterns - top and bottom */
     for (i = 0; i < h_size; i++) {
-        if (i % 2) {
-            grid[i] = 0x20;
-            grid[((v_size - 1) * h_size) + i] = 0x20;
-        } else {
-            grid[i] = 0x21;
-            grid[((v_size - 1) * h_size) + i] = 0x21;
-        }
+        grid[i] = 0x20 + !(i & 1);
+        grid[((v_size - 1) * h_size) + i] = 0x20 + !(i & 1);
     }
 
     /* Add timing patterns - left and right */
     for (i = 0; i < v_size; i++) {
-        if (i % 2) {
-            grid[i * h_size] = 0x20;
-            grid[(i * h_size) + (h_size - 1)] = 0x20;
-        } else {
-            grid[i * h_size] = 0x21;
-            grid[(i * h_size) + (h_size - 1)] = 0x21;
-        }
+        grid[i * h_size] = 0x20 + !(i & 1);
+        grid[(i * h_size) + (h_size - 1)] = 0x20 + !(i & 1);
     }
 
     /* Add finder pattern */
@@ -2556,11 +2516,7 @@ static void rmqr_setup_grid(unsigned char *grid, const int h_size, const int v_s
     /* Add finder sub-pattern to bottom right */
     for (i = 0; i < 5; i++) {
         for (j = 0; j < 5; j++) {
-            if (alignment[j] & 0x10 >> i) {
-                grid[((v_size - 5) * h_size) + (h_size * i) + (h_size - 5) + j] = 0x11;
-            } else {
-                grid[((v_size - 5) * h_size) + (h_size * i) + (h_size - 5) + j] = 0x10;
-            }
+            grid[((i + v_size - 5) * h_size) + (h_size - 5) + j] = 0x10 + !!(alignment[j] & (0x10 >> i));
         }
     }
 
@@ -2600,11 +2556,7 @@ static void rmqr_setup_grid(unsigned char *grid, const int h_size, const int v_s
 
             if (finder_position != 0) {
                 for (j = 0; j < v_size; j++) {
-                    if (j % 2) {
-                        grid[(j * h_size) + finder_position] = 0x10;
-                    } else {
-                        grid[(j * h_size) + finder_position] = 0x11;
-                    }
+                    grid[(j * h_size) + finder_position] = 0x10 + !(j & 1);
                 }
 
                 /* Top square */
@@ -2661,7 +2613,7 @@ INTERNAL int zint_rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const
         return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 577, "Error correction level Q not available in rMQR");
     }
 
-    if ((symbol->option_2 < 0) || (symbol->option_2 > 38)) {
+    if (symbol->option_2 < 0 || symbol->option_2 > 38) {
         return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 579, "Version '%d' out of range (1 to 38)",
                         symbol->option_2);
     }
@@ -2691,7 +2643,7 @@ INTERNAL int zint_rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const
     ecc_level = symbol->option_1 == 4 ? QR_LEVEL_H : QR_LEVEL_M;
     max_cw = rmqr_data_codewords[ecc_level >> 1][31];
 
-    if (est_binlen > (8 * max_cw)) {
+    if (est_binlen > 8 * max_cw) {
         return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 578,
                                 "Input too long for ECC level %1$c, requires %2$d codewords (maximum %3$d)",
                                 qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, max_cw);
@@ -2719,7 +2671,7 @@ INTERNAL int zint_rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const
                         NULL /*p_structapp*/, 0 /*mode_preset*/, gs1, debug_print);
     }
 
-    if ((symbol->option_2 >= 1) && (symbol->option_2 <= 32)) {
+    if (symbol->option_2 >= 1 && symbol->option_2 <= 32) {
         /* User specified symbol size */
         version = symbol->option_2 - 1;
         est_binlen = qr_calc_binlen_segs(RMQR_VERSION + version, mode, ddata, local_segs, seg_count,
@@ -2750,7 +2702,7 @@ INTERNAL int zint_rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const
     target_codewords = rmqr_data_codewords[ecc_level >> 1][version];
     blocks = rmqr_blocks[ecc_level >> 1][version];
 
-    if (est_binlen > (target_codewords * 8)) {
+    if (est_binlen > target_codewords * 8) {
         /* User has selected a symbol too small for the data */
         assert(symbol->option_2 > 0);
         return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 560,
@@ -2794,9 +2746,9 @@ INTERNAL int zint_rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const
     for (i = 0; i < v_size; i++) {
         int r = i * h_size;
         for (j = 0; j < h_size; j++) {
-            if ((grid[r + j] & 0xf0) == 0) {
+            if ((grid[r + j] & 0xF0) == 0) {
                 /* This is a data module */
-                if (((i / 2) + (j / 3)) % 2 == 0) { /* < This is the data mask from section 7.8.2 */
+                if ((i / 2 + j / 3) % 2 == 0) { /* < This is the data mask from section 7.8.2 */
                     /* This module needs to be changed */
                     grid[r + j] ^= 0x01;
                 }
@@ -2815,8 +2767,7 @@ INTERNAL int zint_rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const
     for (i = 0; i < 5; i++) {
         for (j = 0; j < 3; j++) {
             grid[(h_size * (i + 1)) + j + 8] = (left_format_info >> ((j * 5) + i)) & 0x01;
-            grid[(h_size * (v_size - 6)) + (h_size * i) + j + (h_size - 8)]
-                = (right_format_info >> ((j * 5) + i)) & 0x01;
+            grid[(h_size * (i + v_size - 6)) + j + (h_size - 8)] = (right_format_info >> ((j * 5) + i)) & 0x01;
         }
     }
     grid[(h_size * 1) + 11] = (left_format_info >> 15) & 0x01;

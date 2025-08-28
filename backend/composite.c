@@ -1449,9 +1449,9 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
             }
         }
     }
-    if ((linear->width + bottom_shift) > symbol->width + top_shift) {
+    if (linear->width + bottom_shift > symbol->width + top_shift) {
         symbol->width = linear->width + bottom_shift;
-    } else if ((symbol->width + top_shift) > linear->width + bottom_shift) {
+    } else if (symbol->width + top_shift > linear->width + bottom_shift) {
         symbol->width += top_shift;
     }
     symbol->rows += linear->rows;

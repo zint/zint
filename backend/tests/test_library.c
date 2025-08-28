@@ -1577,7 +1577,7 @@ static void test_encode_print_outfile_directory(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol *symbol = NULL;
     char dirname[] = "outdir.txt";
-    char expected[] = "Error 201: Could not open output file";
+    char expected[] = "Error 201: Could not open TXT output file"; /* Excluding OS-dependent `errno` stuff */
 
     (void)p_ctx;
 
@@ -1593,7 +1593,8 @@ static void test_encode_print_outfile_directory(const testCtx *const p_ctx) {
     strcpy(symbol->outfile, dirname);
     ret = ZBarcode_Encode_and_Print(symbol, TCU("1"), 0, 0);
     assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "ret %d != ZINT_ERROR_FILE_ACCESS (%s)\n", ret, symbol->errtxt);
-    assert_zero(strcmp(symbol->errtxt, expected), "strcmp(%s, %s) != 0\n", symbol->errtxt, expected);
+    assert_zero(strncmp(symbol->errtxt, expected, sizeof(expected) - 1), "strncmp(%s, %s) != 0\n",
+                symbol->errtxt, expected);
 
     ret = testUtilRmDir(dirname);
     assert_zero(ret, "testUtilRmDir(%s) %d != 0 (%d: %s)\n", dirname, ret, errno, strerror(errno));

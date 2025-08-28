@@ -97,7 +97,7 @@ INTERNAL int zint_code49(struct zint_symbol *symbol, unsigned char source[], int
                 block_remain = j % 5;
 
                 for (c = 0; c < block_count; c++) {
-                    if ((c == block_count - 1) && (block_remain == 2)) {
+                    if (c == block_count - 1 && block_remain == 2) {
                         /* Rule (d) */
                         block_value = 100000 + z_to_int(ZCUCP(intermediate + i), 4);
 
@@ -207,7 +207,7 @@ INTERNAL int zint_code49(struct zint_symbol *symbol, unsigned char source[], int
     rows = 0;
     do {
         for (i = 0; i < 7; i++) {
-            if (((rows * 7) + i) < codeword_count) {
+            if (rows * 7 + i < codeword_count) {
                 c_grid[rows][i] = codewords[(rows * 7) + i];
             } else {
                 c_grid[rows][i] = 48; /* Pad */
@@ -215,9 +215,9 @@ INTERNAL int zint_code49(struct zint_symbol *symbol, unsigned char source[], int
             }
         }
         rows++;
-    } while ((rows * 7) < codeword_count);
+    } while (rows * 7 < codeword_count);
 
-    if ((((rows <= 6) && (pad_count < 5))) || (rows > 6) || (rows == 1)) {
+    if ((rows <= 6 && pad_count < 5) || rows > 6 || rows == 1) {
         /* Add a row */
         for (i = 0; i < 7; i++) {
             c_grid[rows][i] = 48; /* Pad */
@@ -328,7 +328,7 @@ INTERNAL int zint_code49(struct zint_symbol *symbol, unsigned char source[], int
         bp = 0;
         bp = z_bin_append_posn(2, 2, pattern, bp); /* Start character "10" */
         for (j = 0; j < 4; j++) {
-            if (i != (rows - 1)) {
+            if (i != rows - 1) {
                 if (c49_table4[i][j] == 'E') {
                     /* Even Parity */
                     bp = z_bin_append_posn(c49_even_bitpattern[w_grid[i][j]], 16, pattern, bp);

@@ -194,13 +194,13 @@ INTERNAL int zint_out_colour_char_to_rgb(const unsigned char ch, unsigned char *
                 unsigned char *blue) {
     static const char chars[] = "WCBMRYGK";
     static const unsigned char colours[8][3] = {
-        { 0xff, 0xff, 0xff, }, /* White */
-        {    0, 0xff, 0xff, }, /* Cyan */
-        {    0,    0, 0xff, }, /* Blue */
-        { 0xff,    0, 0xff, }, /* Magenta */
-        { 0xff,    0,    0, }, /* Red */
-        { 0xff, 0xff,    0, }, /* Yellow */
-        {    0, 0xff,    0, }, /* Green */
+        { 0xFF, 0xFF, 0xFF, }, /* White */
+        {    0, 0xFF, 0xFF, }, /* Cyan */
+        {    0,    0, 0xFF, }, /* Blue */
+        { 0xFF,    0, 0xFF, }, /* Magenta */
+        { 0xFF,    0,    0, }, /* Red */
+        { 0xFF, 0xFF,    0, }, /* Yellow */
+        {    0, 0xFF,    0, }, /* Green */
         {    0,    0,    0, }, /* Black */
     };
     int i = z_posn(chars, (const char) ch);
@@ -801,12 +801,12 @@ INTERNAL int zint_out_process_upcean(const struct zint_symbol *symbol, const int
                 upceanflag = 8;
                 break;
         }
-    } else if ((symbol->symbology == BARCODE_UPCA) || (symbol->symbology == BARCODE_UPCA_CHK)
-            || (symbol->symbology == BARCODE_UPCA_CC)) {
+    } else if (symbol->symbology == BARCODE_UPCA || symbol->symbology == BARCODE_UPCA_CHK
+                || symbol->symbology == BARCODE_UPCA_CC) {
         main_width = 95 + comp_xoffset; /* UPC-A main symbol 95 modules wide */
         upceanflag = 12;
-    } else if ((symbol->symbology == BARCODE_UPCE) || (symbol->symbology == BARCODE_UPCE_CHK)
-            || (symbol->symbology == BARCODE_UPCE_CC)) {
+    } else if (symbol->symbology == BARCODE_UPCE || symbol->symbology == BARCODE_UPCE_CHK
+                || symbol->symbology == BARCODE_UPCE_CC) {
         main_width = 51 + comp_xoffset; /* UPC-E main symbol 51 modules wide */
         upceanflag = 6;
     }

@@ -71,12 +71,11 @@ INTERNAL int zint_codabar(struct zint_symbol *symbol, unsigned char source[], in
     z_to_upper(source, length);
 
     /* Codabar must begin and end with the characters A, B, C or D */
-    if ((source[0] != 'A') && (source[0] != 'B') && (source[0] != 'C')
-            && (source[0] != 'D')) {
+    if (source[0] != 'A' && source[0] != 'B' && source[0] != 'C' && source[0] != 'D') {
         return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 358, "Does not begin with \"A\", \"B\", \"C\" or \"D\"");
     }
-    if ((source[length - 1] != 'A') && (source[length - 1] != 'B') &&
-            (source[length - 1] != 'C') && (source[length - 1] != 'D')) {
+    if (source[length - 1] != 'A' && source[length - 1] != 'B' && source[length - 1] != 'C'
+            && source[length - 1] != 'D') {
         return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 359, "Does not end with \"A\", \"B\", \"C\" or \"D\"");
     }
     if ((i = z_not_sane_lookup(CALCIUM, sizeof(CALCIUM) - 1, source, length, posns))) {

@@ -206,7 +206,7 @@ INTERNAL int zint_mailmark_4s(struct zint_symbol *symbol, unsigned char source[]
         }
         memset(local_source + length, ' ', 22 - length);
         length = 22;
-    } else if ((length > 22) && (length < 26)) {
+    } else if (length > 22 && length < 26) {
         memset(local_source + length, ' ', 26 - length);
         length = 26;
     }
@@ -224,19 +224,19 @@ INTERNAL int zint_mailmark_4s(struct zint_symbol *symbol, unsigned char source[]
 
     /* Format is in the range 0-4 */
     format = z_ctoi(local_source[0]);
-    if ((format < 0) || (format > 4)) {
+    if (format < 0 || format > 4) {
         return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 582, "Format (1st character) out of range (0 to 4)");
     }
 
     /* Version ID is in the range 1-4 */
     version_id = z_ctoi(local_source[1]) - 1;
-    if ((version_id < 0) || (version_id > 3)) {
+    if (version_id < 0 || version_id > 3) {
         return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 583, "Version ID (2nd character) out of range (1 to 4)");
     }
 
     /* Class is in the range 0-9,A-E */
     mail_class = z_ctoi(local_source[2]);
-    if ((mail_class < 0) || (mail_class > 14)) {
+    if (mail_class < 0 || mail_class > 14) {
         return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 584,
                         "Class (3rd character) out of range (0 to 9 and A to E)");
     }
@@ -468,11 +468,11 @@ INTERNAL int zint_mailmark_4s(struct zint_symbol *symbol, unsigned char source[]
     /* Translate 4-state data pattern to symbol */
     j = 0;
     for (i = 0, len = d - bar; i < len; i++) {
-        if ((bar[i] == 'F') || (bar[i] == 'A')) {
+        if (bar[i] == 'F' || bar[i] == 'A') {
             z_set_module(symbol, 0, j);
         }
         z_set_module(symbol, 1, j);
-        if ((bar[i] == 'F') || (bar[i] == 'D')) {
+        if (bar[i] == 'F' || bar[i] == 'D') {
             z_set_module(symbol, 2, j);
         }
         j += 2;

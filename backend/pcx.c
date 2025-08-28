@@ -129,11 +129,11 @@ INTERNAL int zint_pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char
             previous = rle_row[0];
             run_count = 1;
             for (column = 1; column < bytes_per_line; column++) { /* Note going up to bytes_per_line */
-                if ((previous == rle_row[column]) && (run_count < 63)) {
+                if (previous == rle_row[column] && run_count < 63) {
                     run_count++;
                 } else {
-                    if (run_count > 1 || (previous & 0xc0) == 0xc0) {
-                        run_count += 0xc0;
+                    if (run_count > 1 || (previous & 0xC0) == 0xC0) {
+                        run_count += 0xC0;
                         zint_fm_putc(run_count, fmp);
                     }
                     zint_fm_putc(previous, fmp);
@@ -142,8 +142,8 @@ INTERNAL int zint_pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char
                 }
             }
 
-            if (run_count > 1 || (previous & 0xc0) == 0xc0) {
-                run_count += 0xc0;
+            if (run_count > 1 || (previous & 0xC0) == 0xC0) {
+                run_count += 0xC0;
                 zint_fm_putc(run_count, fmp);
             }
             zint_fm_putc(previous, fmp);

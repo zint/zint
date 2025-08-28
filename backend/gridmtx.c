@@ -456,22 +456,22 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
         switch (current_mode) {
             case GM_CHINESE:
                 done = 0;
-                if (ddata[sp] > 0xff) {
+                if (ddata[sp] > 0xFF) {
                     /* GB2312 character */
-                    c1 = (ddata[sp] & 0xff00) >> 8;
-                    c2 = ddata[sp] & 0xff;
+                    c1 = (ddata[sp] & 0xFF00) >> 8;
+                    c2 = ddata[sp] & 0xFF;
 
-                    if ((c1 >= 0xa1) && (c1 <= 0xa9)) {
-                        glyph = (0x60 * (c1 - 0xa1)) + (c2 - 0xa0);
-                    } else if ((c1 >= 0xb0) && (c1 <= 0xf7)) {
-                        glyph = (0x60 * (c1 - 0xb0 + 9)) + (c2 - 0xa0);
+                    if (c1 >= 0xA1 && c1 <= 0xA9) {
+                        glyph = 0x60 * (c1 - 0xA1) + (c2 - 0xA0);
+                    } else if (c1 >= 0xB0 && c1 <= 0xF7) {
+                        glyph = 0x60 * (c1 - 0xB0 + 9) + (c2 - 0xA0);
                     }
                     done = 1; /* GB 2312 always within above ranges */
                     /* Note not using the unallocated glyphs 7776 to 8191 mentioned in AIMD014 section 6.3.1.2 */
                 }
-                if (!(done)) {
-                    if (sp != (length - 1)) {
-                        if ((ddata[sp] == 13) && (ddata[sp + 1] == 10)) {
+                if (!done) {
+                    if (sp != length - 1) {
+                        if (ddata[sp] == 13 && ddata[sp + 1] == 10) {
                             /* End of Line */
                             glyph = 7776;
                             sp++;
@@ -479,8 +479,8 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                         }
                     }
                 }
-                if (!(done)) {
-                    if (sp != (length - 1)) {
+                if (!done) {
+                    if (sp != length - 1) {
                         if (z_isdigit(ddata[sp]) && z_isdigit(ddata[sp + 1])) {
                             /* Two digits */
                             glyph = 8033 + (10 * (ddata[sp] - '0')) + (ddata[sp + 1] - '0');
@@ -489,7 +489,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                         }
                     }
                 }
-                if (!(done)) {
+                if (!done) {
                     /* Byte value */
                     glyph = 7777 + ddata[sp];
                 }
@@ -527,7 +527,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                         }
                         punt = ddata[sp];
                         ppos = p;
-                    } else if (sp < (length - 1) && (ddata[sp] == 13) && (ddata[sp + 1] == 10)) {
+                    } else if (sp < length - 1 && ddata[sp] == 13 && ddata[sp + 1] == 10) {
                         /* <end of line> */
                         if (ppos != -1) {
                             break;
@@ -539,7 +539,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                         break;
                     }
                     sp++;
-                } while ((p < 3) && (sp < length) && mode[sp] == GM_NUMBER);
+                } while (p < 3 && sp < length && mode[sp] == GM_NUMBER);
 
                 if (ppos != -1) {
                     switch (punt) {
@@ -804,7 +804,7 @@ static void gm_add_ecc(const char binary[], const int data_posn, const int layer
     data[data_posn] = 0x00;
     for (i = (data_posn + 1); i < data_cw; i++) {
         if (i & 1) {
-            data[i] = 0x7e;
+            data[i] = 0x7E;
         } else {
             data[i] = 0x00;
         }
@@ -1097,7 +1097,7 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     }
     layers = auto_layers;
 
-    if ((symbol->option_2 >= 1) && (symbol->option_2 <= 13)) {
+    if (symbol->option_2 >= 1 && symbol->option_2 <= 13) {
         input_latch = 1;
         if (symbol->option_2 >= min_layers) {
             layers = symbol->option_2;
@@ -1111,7 +1111,7 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     auto_ecc_level = 3;
     if (layers == 1) {
         auto_ecc_level = 5;
-    } else if ((layers == 2) || (layers == 3)) {
+    } else if (layers == 2 || layers == 3) {
         auto_ecc_level = 4;
     }
     ecc_level = auto_ecc_level;
@@ -1123,26 +1123,25 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
         min_ecc_level = 2;
     }
 
-    if ((symbol->option_1 >= 1) && (symbol->option_1 <= 5)) {
+    if (symbol->option_1 >= 1 && symbol->option_1 <= 5) {
         if (symbol->option_1 >= min_ecc_level) {
             ecc_level = symbol->option_1;
         } else {
             ecc_level = min_ecc_level;
         }
     }
-    if (data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)]) {
+    if (data_cw > gm_data_codewords[5 * (layers - 1) + (ecc_level - 1)]) {
         /* If layers user-specified (option_2), try reducing ECC level first */
         if (input_latch && ecc_level > min_ecc_level) {
             do {
                 ecc_level--;
-            } while ((data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)])
-                        && (ecc_level > min_ecc_level));
+            } while (data_cw > gm_data_codewords[5 * (layers - 1) + (ecc_level - 1)] && ecc_level > min_ecc_level);
         }
-        while (data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)] && (layers < 13)) {
+        while (data_cw > gm_data_codewords[5 * (layers - 1) + (ecc_level - 1)] && layers < 13) {
             layers++;
         }
         /* ECC min level 1 for layers > 2 */
-        while (data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)] && ecc_level > 1) {
+        while (data_cw > gm_data_codewords[5 * (layers - 1) + (ecc_level - 1)] && ecc_level > 1) {
             ecc_level--;
         }
     }

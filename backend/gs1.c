@@ -1767,8 +1767,8 @@ INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, unsigned char source[],
                 data_location[i] = ai_location[i] + 3;
             }
             data_length[i] = 0;
-            while ((data_location[i] + data_length[i] < length)
-                        && (source[data_location[i] + data_length[i]] != obracket)) {
+            while (data_location[i] + data_length[i] < length
+                    && source[data_location[i] + data_length[i]] != obracket) {
                 data_length[i]++;
             }
             if (data_length[i] == 0) {

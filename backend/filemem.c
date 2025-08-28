@@ -261,11 +261,10 @@ static int fm_vprintf(struct filemem *restrict const fmp, const char *fmt, va_li
 #endif
 
     va_copy(cpy, ap);
-    /* The clang-tidy warning is a bug https://github.com/llvm/llvm-project/issues/40656 */
 #ifdef FM_NO_VSNPRINTF
-    size = vfprintf(fmp->fp_null, fmt, cpy); /* NOLINT(clang-analyzer-valist.Uninitialized) */
+    size = vfprintf(fmp->fp_null, fmt, cpy);
 #else
-    size = vsnprintf(NULL, 0, fmt, cpy); /* NOLINT(clang-analyzer-valist.Uninitialized) */
+    size = vsnprintf(NULL, 0, fmt, cpy);
 #endif
     va_end(cpy);
 
@@ -278,10 +277,8 @@ static int fm_vprintf(struct filemem *restrict const fmp, const char *fmt, va_li
     }
 
 #ifdef FM_NO_VSNPRINTF
-    /* NOLINTNEXTLINE(clang-analyzer-valist.Uninitialized) - see above */
     check = vsprintf((char *) fmp->mem + fmp->mempos, fmt, ap);
 #else
-    /* NOLINTNEXTLINE(clang-analyzer-valist.Uninitialized) - see above */
     check = vsnprintf((char *) fmp->mem + fmp->mempos, size + 1, fmt, ap);
 #endif
 
@@ -309,7 +306,7 @@ INTERNAL int zint_fm_printf(struct filemem *restrict const fmp, const char *fmt,
         return ret;
     }
     va_start(ap, fmt);
-    ret = vfprintf(fmp->fp, fmt, ap) >= 0; /* NOLINT(clang-analyzer-valist.Uninitialized) - see above */
+    ret = vfprintf(fmp->fp, fmt, ap) >= 0;
     va_end(ap);
     return ret ? 1 : fm_seterr(fmp, errno);
 }

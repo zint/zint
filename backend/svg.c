@@ -103,7 +103,7 @@ static void svg_put_fattrib(const char *prefix, const int dp, const float val, s
 
 /* Helper to output opacity attribute attribute and close tag (maybe) */
 static void svg_put_opacity_close(const unsigned char alpha, const float val, const int close, struct filemem *fmp) {
-    if (alpha != 0xff) {
+    if (alpha != 0xFF) {
         svg_put_fattrib(" opacity=\"", 3, val, fmp);
     }
     if (close) {
@@ -139,12 +139,12 @@ INTERNAL int zint_svg_plot(struct zint_symbol *symbol) {
     char *html_string;
 
     (void) zint_out_colour_get_rgb(symbol->fgcolour, &fgred, &fggreen, &fgblue, &fg_alpha);
-    if (fg_alpha != 0xff) {
+    if (fg_alpha != 0xFF) {
         fg_alpha_opacity = fg_alpha / 255.0f;
     }
     sprintf(fgcolour_string, "%02X%02X%02X", fgred, fggreen, fgblue);
     (void) zint_out_colour_get_rgb(symbol->bgcolour, &bgred, &bggreen, &bgblue, &bg_alpha);
-    if (bg_alpha != 0xff) {
+    if (bg_alpha != 0xFF) {
         bg_alpha_opacity = bg_alpha / 255.0f;
     }
     sprintf(bgcolour_string, "%02X%02X%02X", bgred, bggreen, bgblue);
@@ -242,7 +242,7 @@ INTERNAL int zint_svg_plot(struct zint_symbol *symbol) {
                 half_radius = 0.25f * previous_diameter;
                 half_sqrt3_radius = 0.43301270189221932338f * previous_diameter;
             }
-            if ((hex->rotation == 0) || (hex->rotation == 180)) {
+            if (hex->rotation == 0 || hex->rotation == 180) {
                 zint_fm_putsf("M", 2, hex->x, fmp);
                 zint_fm_putsf(" ", 2, hex->y + radius, fmp);
                 zint_fm_putsf("L", 2, hex->x + half_sqrt3_radius, fmp);

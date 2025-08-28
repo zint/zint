@@ -129,15 +129,15 @@ INTERNAL int zint_code39(struct zint_symbol *symbol, unsigned char source[], int
     int error_number = 0;
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
-    if ((symbol->option_2 < 0) || (symbol->option_2 > 2)) {
+    if (symbol->option_2 < 0 || symbol->option_2 > 2) {
         symbol->option_2 = 0;
     }
 
     /* LOGMARS MIL-STD-1189 Rev. B https://apps.dtic.mil/dtic/tr/fulltext/u2/a473534.pdf */
-    if ((symbol->symbology == BARCODE_LOGMARS) && (length > 30)) { /* MIL-STD-1189 Rev. B Section 5.2.6.2 */
+    if (symbol->symbology == BARCODE_LOGMARS && length > 30) { /* MIL-STD-1189 Rev. B Section 5.2.6.2 */
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 322, "Input length %d too long (maximum 30)", length);
     /* Prevent encoded_data out-of-bounds >= 143 for BARCODE_HIBC_39 due to wider 'wide' bars */
-    } else if ((symbol->symbology == BARCODE_HIBC_39) && (length > 70)) { /* 16 (Start) + 70*16 + 15 (Stop) = 1151 */
+    } else if (symbol->symbology == BARCODE_HIBC_39 && length > 70) { /* 16 (Start) + 70*16 + 15 (Stop) = 1151 */
         /* 70 less '+' and check */
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 319, "Input length %d too long (maximum 68)", length - 2);
     } else if (length > 86) { /* 13 (Start) + 86*13 + 12 (Stop) = 1143 */
@@ -172,7 +172,7 @@ INTERNAL int zint_code39(struct zint_symbol *symbol, unsigned char source[], int
     memcpy(d, C39Table[43], 9);
     d += 9;
 
-    if ((symbol->symbology == BARCODE_LOGMARS) || (symbol->symbology == BARCODE_HIBC_39)) {
+    if (symbol->symbology == BARCODE_LOGMARS || symbol->symbology == BARCODE_HIBC_39) {
         /* LOGMARS and HIBC use wider 'wide' bars than normal Code 39 */
         counter = d - dest;
         for (i = 0; i < counter; i++) {

@@ -492,11 +492,11 @@ INTERNAL int zint_rm4scc(struct zint_symbol *symbol, unsigned char source[], int
     writer = 0;
     h = (int) strlen(height_pattern);
     for (loopey = 0; loopey < h; loopey++) {
-        if ((height_pattern[loopey] == '1') || (height_pattern[loopey] == '0')) {
+        if (height_pattern[loopey] == '1' || height_pattern[loopey] == '0') {
             z_set_module(symbol, 0, writer);
         }
         z_set_module(symbol, 1, writer);
-        if ((height_pattern[loopey] == '2') || (height_pattern[loopey] == '0')) {
+        if (height_pattern[loopey] == '2' || height_pattern[loopey] == '0') {
             z_set_module(symbol, 2, writer);
         }
         writer += 2;
@@ -559,11 +559,11 @@ INTERNAL int zint_kix(struct zint_symbol *symbol, unsigned char source[], int le
     writer = 0;
     h = d - height_pattern;
     for (loopey = 0; loopey < h; loopey++) {
-        if ((height_pattern[loopey] == '1') || (height_pattern[loopey] == '0')) {
+        if (height_pattern[loopey] == '1' || height_pattern[loopey] == '0') {
             z_set_module(symbol, 0, writer);
         }
         z_set_module(symbol, 1, writer);
-        if ((height_pattern[loopey] == '2') || (height_pattern[loopey] == '0')) {
+        if (height_pattern[loopey] == '2' || height_pattern[loopey] == '0') {
             z_set_module(symbol, 2, writer);
         }
         writer += 2;
@@ -612,11 +612,11 @@ INTERNAL int zint_daft(struct zint_symbol *symbol, unsigned char source[], int l
 
     writer = 0;
     for (loopey = 0; loopey < length; loopey++) {
-        if ((posns[loopey] == 1) || (posns[loopey] == 0)) {
+        if (posns[loopey] == 1 || posns[loopey] == 0) {
             z_set_module(symbol, 0, writer);
         }
         z_set_module(symbol, 1, writer);
-        if ((posns[loopey] == 2) || (posns[loopey] == 0)) {
+        if (posns[loopey] == 2 || posns[loopey] == 0) {
             z_set_module(symbol, 2, writer);
         }
         writer += 2;
@@ -705,7 +705,7 @@ INTERNAL int zint_japanpost(struct zint_symbol *symbol, unsigned char source[], 
     i = 0;
     inter_posn = 0;
     do {
-        if (z_isdigit(source[i]) || (source[i] == '-')) {
+        if (z_isdigit(source[i]) || source[i] == '-') {
             inter[inter_posn] = source[i];
             inter_posn++;
         } else {
@@ -722,7 +722,7 @@ INTERNAL int zint_japanpost(struct zint_symbol *symbol, unsigned char source[], 
             inter_posn += 2;
         }
         i++;
-    } while ((i < length) && (inter_posn < 20));
+    } while (i < length && inter_posn < 20);
 
     if (i != length || inter[20] != '\0') {
         return z_errtxt(ZINT_ERROR_TOO_LONG, symbol, 477,
@@ -762,11 +762,11 @@ INTERNAL int zint_japanpost(struct zint_symbol *symbol, unsigned char source[], 
     writer = 0;
     h = d - pattern;
     for (loopey = 0; loopey < h; loopey++) {
-        if ((pattern[loopey] == '2') || (pattern[loopey] == '1')) {
+        if (pattern[loopey] == '2' || pattern[loopey] == '1') {
             z_set_module(symbol, 0, writer);
         }
         z_set_module(symbol, 1, writer);
-        if ((pattern[loopey] == '3') || (pattern[loopey] == '1')) {
+        if (pattern[loopey] == '3' || pattern[loopey] == '1') {
             z_set_module(symbol, 2, writer);
         }
         writer += 2;

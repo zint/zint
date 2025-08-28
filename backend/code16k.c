@@ -71,7 +71,7 @@ static int c16k_parunmodd(const unsigned char llyth, const int check_fnc1) {
 
     if (llyth <= 31) {
         modd = check_fnc1 && llyth == '\x1D' ? C16K_ABORC : C16K_SHIFTA;
-    } else if ((llyth >= 48) && (llyth <= 57)) {
+    } else if (llyth >= 48 && llyth <= 57) {
         modd = C16K_ABORC;
     } else if (llyth <= 95) {
         modd = C16K_AORB;
@@ -136,7 +136,7 @@ static void c16k_dxsmooth(int list[2][C128_MAX], int *p_indexliste) {
 
         if (i == 0) { /* First block */
             if (current == C16K_ABORC) {
-                if ((indexliste == 1) && (length == 2)) {
+                if (indexliste == 1 && length == 2) {
                     /* Rule 1a */
                     list[1][i] = C16K_LATCHC;
                     current = C16K_LATCHC;
@@ -362,7 +362,7 @@ INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], in
 
     do {
         list[1][indexliste] = mode;
-        while ((list[1][indexliste] == mode) && (indexchaine < length)) {
+        while (list[1][indexliste] == mode && indexchaine < length) {
             list[0][indexliste]++;
             indexchaine++;
             if (indexchaine == length) {
@@ -393,7 +393,7 @@ INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], in
         }
         if (m == 2) {
             m = 5;
-        } else if ((set[0] == 'B') && (set[1] == 'C') && fset[0] != 'f') {
+        } else if (set[0] == 'B' && set[1] == 'C' && fset[0] != 'f') {
             m = 6;
         }
         values[1] = 96; /* FNC3 */
@@ -406,9 +406,9 @@ INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], in
                 case 'C': m = 4; break;
             }
         } else {
-            if ((set[0] == 'B') && (set[1] == 'C')) {
+            if (set[0] == 'B' && set[1] == 'C') {
                 m = fset[0] == 'f' ? 6 : 5;
-            } else if ((set[0] == 'B') && (set[1] == 'B') && (set[2] == 'C') && fset[0] != 'f' && fset[1] != 'f') {
+            } else if (set[0] == 'B' && set[1] == 'B' && set[2] == 'C' && fset[0] != 'f' && fset[1] != 'f') {
                 m = 6;
             }
         }
@@ -422,7 +422,7 @@ INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], in
     /* TODO: make use of extra (non-CODE128) shifts: 1SB, 2SA/B/C, 3SB/C */
     do {
 
-        if ((read != 0) && (set[read] != current_set)) {
+        if (read != 0 && set[read] != current_set) {
             /* Latch different code set */
             switch (set[read]) {
                 case 'A':
@@ -455,7 +455,7 @@ INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], in
             }
         }
 
-        if ((set[read] == 'a') || (set[read] == 'b')) {
+        if (set[read] == 'a' || set[read] == 'b') {
             /* Insert shift character */
             values[bar_characters++] = 98;
         }
@@ -492,7 +492,7 @@ INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], in
     if (pads_needed == 5) {
         pads_needed = 0;
     }
-    if ((bar_characters + pads_needed) < 8) {
+    if (bar_characters + pads_needed < 8) {
         pads_needed += 8 - (bar_characters + pads_needed);
     }
 

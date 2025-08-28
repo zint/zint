@@ -418,11 +418,11 @@ INTERNAL int zint_usps_imail(struct zint_symbol *symbol, unsigned char source[],
     /* Translate 4-state data pattern to symbol */
     read = 0;
     for (i = 0; i < 65; i++) {
-        if ((data_pattern[i] == '1') || (data_pattern[i] == '0')) {
+        if (data_pattern[i] == '1' || data_pattern[i] == '0') {
             z_set_module(symbol, 0, read);
         }
         z_set_module(symbol, 1, read);
-        if ((data_pattern[i] == '2') || (data_pattern[i] == '0')) {
+        if (data_pattern[i] == '2' || data_pattern[i] == '0') {
             z_set_module(symbol, 2, read);
         }
         read += 2;

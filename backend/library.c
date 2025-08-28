@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include "common.h"
 #include "eci.h"
+#include "filemem.h"
 #include "gs1.h"
 #include "output.h"
 #include "zfiletypes.h"
@@ -127,8 +128,6 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     symbol->memfile_size = 0;
 
     z_rt_free_segs(symbol);
-
-    /* If there is a rendered version, ensure its memory is released */
     zint_vector_free(symbol);
 }
 
@@ -286,77 +285,59 @@ INTERNAL int zint_test_error_tag(int error_number, struct zint_symbol *symbol, c
 }
 #endif
 
-/* Output a hexadecimal representation of the rendered symbol */
-static int dump_plot(struct zint_symbol *symbol) {
-    FILE *f;
-    int i, r;
-    static const char hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    int space = 0;
-    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
+/* Output a hexadecimal representation of the rendered symbol (TXT files - includes frontend "--dump" option) */
+static int txt_hex_plot(struct zint_symbol *symbol) {
+    static const char hex[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+    struct filemem fm;
+    struct filemem *const fmp = &fm;
+    int r;
 
-    if (output_to_stdout) {
-        f = stdout;
-    } else {
-#ifdef _WIN32
-        f = zint_out_win_fopen(symbol->outfile, "w");
-#else
-        f = fopen(symbol->outfile, "w");
-#endif
-        if (!f) {
-            return z_errtxt(ZINT_ERROR_FILE_ACCESS, symbol, 201, "Could not open output file");
-        }
+    if (!zint_fm_open(fmp, symbol, "w")) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 201, "Could not open TXT output file (%1$d: %2$s)",
+                                fmp->err, strerror(fmp->err));
     }
 
     for (r = 0; r < symbol->rows; r++) {
-        int byt = 0;
+        int space = 0, byt = 0;
+        int i;
         for (i = 0; i < symbol->width; i++) {
-            byt = byt << 1;
+            byt <<= 1;
             if (symbol->symbology == BARCODE_ULTRA) {
                 if (z_module_colour_is_set(symbol, r, i)) {
-                    byt += 1;
+                    byt++;
                 }
             } else {
                 if (z_module_is_set(symbol, r, i)) {
-                    byt += 1;
+                    byt++;
                 }
             }
-            if ((i + 1) % 4 == 0) {
-                fputc(hex[byt], f);
+            if (((i + 1) & 0x3) == 0) {
+                zint_fm_putc(hex[byt], fmp);
                 space++;
                 byt = 0;
             }
             if (space == 2 && i + 1 < symbol->width) {
-                fputc(' ', f);
+                zint_fm_putc(' ', fmp);
                 space = 0;
             }
         }
 
-        if (symbol->width % 4 != 0) {
-            byt = byt << (4 - (symbol->width % 4));
-            fputc(hex[byt], f);
+        if (symbol->width & 0x03) {
+            byt <<= 4 - (symbol->width & 0x03);
+            zint_fm_putc(hex[byt], fmp);
         }
-        fputc('\n', f);
-        space = 0;
+        zint_fm_putc('\n', fmp);
     }
 
-    if (ferror(f)) {
-        ZEXT z_errtxtf(0, symbol, 795, "Incomplete write to output (%1$d: %2$s)", errno, strerror(errno));
-        if (!output_to_stdout) {
-            (void) fclose(f);
-        }
+    if (zint_fm_error(fmp)) {
+        ZEXT z_errtxtf(0, symbol, 795, "Incomplete write of TXT output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
+        (void) zint_fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (output_to_stdout) {
-        if (fflush(f) != 0) {
-            return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 796, "Incomplete flush to output (%1$d: %2$s)",
-                                    errno, strerror(errno));
-        }
-    } else {
-        if (fclose(f) != 0) {
-            return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 792, "Failure on closing output file (%1$d: %2$s)",
-                                    errno, strerror(errno));
-        }
+    if (!zint_fm_close(fmp, symbol)) {
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 792, "Failure on closing TXT output file (%1$d: %2$s)",
+                                fmp->err, strerror(fmp->err));
     }
 
     return 0;
@@ -698,7 +679,7 @@ static void strip_bom(unsigned char *source, int *input_length) {
     int i;
 
     /* Note if BOM is only data then not stripped */
-    if (*input_length > 3 && (source[0] == 0xef) && (source[1] == 0xbb) && (source[2] == 0xbf)) {
+    if (*input_length > 3 && source[0] == 0xEF && source[1] == 0xBB && source[2] == 0xBF) {
         /* BOM at start of input data, strip in accordance with RFC 3629 */
         for (i = 3; i <= *input_length; i++) { /* Include terminating NUL */
             source[i - 3] = source[i];
@@ -862,7 +843,7 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
                         }
                     }
                     /* Exclude reversed BOM and surrogates and out-of-range */
-                    if (unicode == 0xfffe || (unicode >= 0xd800 && unicode < 0xe000) || unicode > 0x10ffff) {
+                    if (unicode == 0xFFFE || (unicode >= 0xD800 && unicode < 0xE000) || unicode > 0x10FFFF) {
                         return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 246,
                                         "Value of escape sequence '%.*s' in input out of range",
                                         ch == 'u' ? 6 : 8, input_string + in_posn);
@@ -1266,7 +1247,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
 
     error_number = extended_or_reduced_charset(symbol, local_segs, seg_count);
 
-    if ((error_number == ZINT_ERROR_INVALID_DATA) && have_zero_eci && supports_eci(symbol->symbology)
+    if (error_number == ZINT_ERROR_INVALID_DATA && have_zero_eci && supports_eci(symbol->symbology)
             && (symbol->input_mode & 0x07) == UNICODE_MODE) {
         /* Try another ECI mode */
         const int first_eci_set = zint_get_best_eci_segs(symbol, local_segs, seg_count);
@@ -1369,7 +1350,7 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
                     error_number = zint_plot_vector(symbol, rotate_angle, filetypes[i].filetype);
                 }
             } else {
-                error_number = dump_plot(symbol);
+                error_number = txt_hex_plot(symbol);
             }
         } else {
             return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 225, "Unknown output format");
@@ -1573,7 +1554,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
         nRead += n;
-    } while (!feof(file) && (0 < n) && ((long) nRead < fileLen));
+    } while (!feof(file) && n > 0 && (long) nRead < fileLen);
 
     if (file_opened) {
         if (fclose(file) != 0) {

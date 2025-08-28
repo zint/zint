@@ -69,7 +69,7 @@ INTERNAL int zint_pharma(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     tester = z_to_int(source, length);
-    if ((tester < 3) || (tester > 131070)) {
+    if (tester < 3 || tester > 131070) {
         return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 352, "Input value '%d' out of range (3 to 131070)", tester);
     }
 
@@ -162,7 +162,7 @@ INTERNAL int zint_pharma_two(struct zint_symbol *symbol, unsigned char source[],
     }
 
     tester = z_to_int(source, length);
-    if ((tester < 4) || (tester > 64570080)) {
+    if (tester < 4 || tester > 64570080) {
         return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 353, "Input value '%d' out of range (4 to 64570080)",
                         tester);
     }
@@ -170,10 +170,10 @@ INTERNAL int zint_pharma_two(struct zint_symbol *symbol, unsigned char source[],
 
     writer = 0;
     for (loopey = 0; loopey < h; loopey++) {
-        if ((height_pattern[loopey] == '2') || (height_pattern[loopey] == '3')) {
+        if (height_pattern[loopey] == '2' || height_pattern[loopey] == '3') {
             z_set_module(symbol, 0, writer);
         }
-        if ((height_pattern[loopey] == '1') || (height_pattern[loopey] == '3')) {
+        if (height_pattern[loopey] == '1' || height_pattern[loopey] == '3') {
             z_set_module(symbol, 1, writer);
         }
         writer += 2;

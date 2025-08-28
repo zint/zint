@@ -346,7 +346,7 @@ INTERNAL int zint_msi_plessey(struct zint_symbol *symbol, unsigned char source[]
         check_option -= 10;
         no_checktext = 1;
     }
-    if ((check_option < 0) || (check_option > 6)) {
+    if (check_option < 0 || check_option > 6) {
         check_option = 0;
     }
 

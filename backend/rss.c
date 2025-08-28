@@ -72,7 +72,7 @@
 /* `combins()' in ISO/IEC 24724:2011 Annex B */
 /****************************************************************************
  * dbar_combins(n,r): returns the number of Combinations of r selected from n:
- *   Combinations = n! / ((n - r)! * r!)
+ *   Combinations = n! / (n - r)! * r!
  ****************************************************************************/
 static int dbar_combins(const int n, const int r) {
     int i;
@@ -126,7 +126,7 @@ static void dbar_getWidths(int widths[], int val, int n, const int elements, con
             /* Get all combinations */
             subVal = dbar_combins(n - elmWidth - 1, elements - bar - 2);
             /* Less combinations with no single-module element */
-            if (noNarrow && !narrowMask && (n - elmWidth - (elements - bar - 1) >= elements - bar - 1)) {
+            if (noNarrow && !narrowMask && n - elmWidth - (elements - bar - 1) >= elements - bar - 1) {
                 subVal -= dbar_combins(n - elmWidth - (elements - bar), elements - bar - 2);
             }
             /* Less combinations with elements > maxVal */
@@ -1256,7 +1256,7 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
         cols_per_row = 2; /* Default */
         if (symbol->option_2 >= 1 && symbol->option_2 <= 11) {
             cols_per_row = symbol->option_2;
-            if (cc_rows && (cols_per_row == 1)) {
+            if (cc_rows && cols_per_row == 1) {
                 /* "There shall be a minimum of four symbol characters in the
                    first row of an RSS Expanded Stacked symbol when it is the linear
                    component of an EAN.UCC Composite symbol." */
@@ -1450,7 +1450,7 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
                 }
                 reader++;
                 current_block++;
-            } while ((reader < cols_per_row) && (current_block < codeblocks));
+            } while (reader < cols_per_row && current_block < codeblocks);
 
             /* Row Stop */
             sub_elements[elements_in_sub++] = 1; /* Right guard */

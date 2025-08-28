@@ -218,7 +218,7 @@ static void vector_scale(struct zint_symbol *symbol, const int file_type) {
         scale = 0.2f;
     }
 
-    if ((file_type == OUT_EMF_FILE) && (symbol->symbology == BARCODE_MAXICODE)) {
+    if (file_type == OUT_EMF_FILE && symbol->symbology == BARCODE_MAXICODE) {
         /* Increase size to overcome limitations in EMF file format */
         scale *= 20;
     }
@@ -355,7 +355,7 @@ static void vector_rotate(struct zint_symbol *symbol, const int rotate_angle) {
         string = string->next;
     }
 
-    if ((rotate_angle == 90) || (rotate_angle == 270)) {
+    if (rotate_angle == 90 || rotate_angle == 270) {
         temp = symbol->vector->height;
         symbol->vector->height = symbol->vector->width;
         symbol->vector->width = temp;
@@ -372,8 +372,8 @@ static void vector_reduce_rectangles(struct zint_symbol *symbol) {
         target = prev->next;
 
         while (target) {
-            if ((rect->x == target->x) && (rect->width == target->width)
-                    && (z_stripf(rect->y + rect->height) == target->y) && (rect->colour == target->colour)) {
+            if (rect->x == target->x && rect->width == target->width && z_stripf(rect->y + rect->height) == target->y
+                    && rect->colour == target->colour) {
                 rect->height += target->height;
                 prev->next = target->next;
                 free(target);
@@ -492,7 +492,7 @@ INTERNAL int zint_plot_vector(struct zint_symbol *symbol, int rotate_angle, int 
 
     xoffset_comp = xoffset + comp_xoffset;
 
-    if ((symbol->symbology != BARCODE_MAXICODE) && (symbol->output_options & BARCODE_DOTTY_MODE)) {
+    if (symbol->symbology != BARCODE_MAXICODE && (symbol->output_options & BARCODE_DOTTY_MODE)) {
         if (symbol->dot_size < 1.0f) {
             dot_overspill = 0.0f;
             /* Offset (1 - dot_size) / 2 + dot_radius == (1 - dot_size + dot_size) / 2 == 1 / 2 */
@@ -623,7 +623,7 @@ INTERNAL int zint_plot_vector(struct zint_symbol *symbol, int rotate_angle, int 
                 for (block_width = 1; (i + block_width < symbol->width)
                                         && z_module_is_set(symbol, r, i + block_width) == fill; block_width++);
 
-                if ((r == (symbol->rows - 1)) && (i > main_width) && (addon_latch == 0)) {
+                if (r == symbol->rows - 1 && i > main_width && addon_latch == 0) {
                     addon_text_yposn = yposn + font_height - digit_ascender;
                     if (addon_text_yposn < 0.0f) {
                         addon_text_yposn = 0.0f;

@@ -222,7 +222,7 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[3] = source[2];
             equivalent[9] = source[3];
             equivalent[10] = source[4];
-            if (((source[2] == '0') || (source[2] == '1')) || (source[2] == '2')) {
+            if (source[2] == '0' || source[2] == '1' || source[2] == '2') {
                 /* Note 1 - "X3 shall not be equal to 0, 1 or 2" */
                 return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 271,
                             "For this UPC-E zero suppression, 3rd character cannot be \"0\", \"1\" or \"2\" (%.*s)",
@@ -432,7 +432,7 @@ static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], in
             d += 5;
         }
 
-        if (((i > 1) && (i < 7)) && (parity[i - 2] == 'B')) {
+        if (i > 1 && i < 7 && parity[i - 2] == 'B') {
             memcpy(d, EANsetB[gtin[i] - '0'], 4);
         } else {
             memcpy(d, EANsetA[gtin[i] - '0'], 4);
@@ -561,8 +561,7 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int l
     }
 
     if (length == 13) /* Using 13 character ISBN */ {
-        if (!(((source[0] == '9') && (source[1] == '7')) &&
-                ((source[2] == '8') || (source[2] == '9')))) {
+        if (source[0] != '9' || source[1] != '7' || (source[2] != '8' && source[2] != '9')) {
             return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 279,
                             "Invalid ISBN (must begin with \"978\" or \"979\")");
         }

@@ -39,7 +39,7 @@
 #include "../common.h"
 #include "../filemem.h"
 
-static void test_svg(const testCtx *const p_ctx) {
+static void test_file(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
@@ -67,6 +67,9 @@ static void test_svg(const testCtx *const p_ctx) {
                     "  </text>\n"
                     " </g>\n"
                     "</svg>\n"
+                },
+        /*  1*/ { BARCODE_TELEPEN, BARCODE_MEMORY_FILE, "out.txt", "ABCD", -1, 0,
+                    "AA B8 BB B8 E3 B8 AE EA EB B8 AE AA E2 AA\n"
                 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -96,10 +99,12 @@ static void test_svg(const testCtx *const p_ctx) {
 
             assert_nonnull(symbol->memfile, "i:%d memfile NULL (%s)\n", i, symbol->errtxt);
 
-            assert_equal(symbol->memfile_size, expected_size, "i:%d memfile_size %d != %d (%s)\n",
-                            i, symbol->memfile_size, expected_size, symbol->errtxt);
+            assert_equal(symbol->memfile_size, expected_size, "i:%d memfile_size %d != %d (\"%.*s\", \"%s\") (%s)\n",
+                            i, symbol->memfile_size, expected_size, symbol->memfile_size, symbol->memfile,
+                            data[i].expected, symbol->errtxt);
             ret = memcmp(symbol->memfile, data[i].expected, expected_size);
-            assert_zero(ret, "i:%d memcmp() %d != 0\n", i, ret);
+            assert_zero(ret, "i:%d memcmp(\"%.*s\", \"%s\") %d != 0 (%s)\n",
+                            i, symbol->memfile_size, symbol->memfile, data[i].expected, ret, symbol->errtxt);
         } else {
             assert_null(symbol->memfile, "i:%d memfile != NULL (%s)\n", i, symbol->errtxt);
             assert_zero(symbol->memfile_size, "i:%d memfile_size != 0 (%s)\n", i, symbol->errtxt);
@@ -467,7 +472,7 @@ static void test_large(const testCtx *const p_ctx) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
-        { "test_svg", test_svg },
+        { "test_file", test_file },
         { "test_putsf", test_putsf },
         { "test_printf", test_printf },
         { "test_seek", test_seek },

@@ -453,8 +453,8 @@ static int dc_ahead_b(const unsigned char source[], const int length, const int 
     int count = 0;
     int i, incr;
 
-    for (i = position; i < length && (incr = dc_datum_b(source, length, i))
-            && dc_try_c(source, length, i) < 2; i += incr) {
+    for (i = position; i < length && (incr = dc_datum_b(source, length, i)) && dc_try_c(source, length, i) < 2;
+            i += incr) {
         count++;
     }
 
@@ -545,8 +545,8 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
         } else if (length > 5) { /* Note assuming macro headers don't straddle segments */
             /* Step C1 */
             if (source[0] == '[' && source[1] == ')' && source[2] == '>' && source[3] == 30 /*RS*/ && last_EOT) {
-                int format_050612 = (source[4] == '0' && (source[5] == '5' || source[5] == '6'))
-                                    || (source[4] == '1' && source[5] == '2');
+                const int format_050612 = (source[4] == '0' && (source[5] == '5' || source[5] == '6'))
+                                            || (source[4] == '1' && source[5] == '2');
                 inside_macro = 0;
                 if (length > 6 && format_050612 && source[6] == 29 /*GS*/ && last_RSEOT) {
                     if (source[5] == '5') {
@@ -613,7 +613,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
     while (position < length) {
         /* Step A */
-        if (last_seg && (position == length - 2) && (inside_macro != 0) && (inside_macro != 100)) {
+        if (last_seg && position == length - 2 && inside_macro != 0 && inside_macro != 100) {
             /* inside_macro only gets set to 97, 98 or 99 if the last two characters are RS/EOT */
             position += 2;
             if (debug_print) fputs("A ", stdout);
@@ -621,7 +621,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
         }
 
         /* Step B */
-        if (last_seg && (position == length - 1) && (inside_macro == 100)) {
+        if (last_seg && position == length - 1 && inside_macro == 100) {
             /* inside_macro only gets set to 100 if the last character is EOT */
             position++;
             if (debug_print) fputs("B ", stdout);
@@ -657,7 +657,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             if (dc_binary(source, length, position)) {
                 /* z_cnt_digits(position + 1) > 0 */
                 if (position + 1 < length && z_isdigit(source[position + 1])) {
-                    if ((source[position] - 128) < 32) {
+                    if (source[position] - 128 < 32) {
                         codeword_array[ap++] = 110; /* Upper Shift A */
                         codeword_array[ap++] = source[position] - 128 + 64;
                     } else {
@@ -740,7 +740,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             if (dc_datum_b(source, length, position)) {
                 int done = 0;
 
-                if ((source[position] >= 32) && (source[position] <= 127)) {
+                if (source[position] >= 32 && source[position] <= 127) {
                     codeword_array[ap++] = source[position] - 32;
                     done = 1;
 
@@ -772,7 +772,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             /* Step D3 */
             if (dc_binary(source, length, position)) {
                 if (dc_datum_b(source, length, position + 1)) {
-                    if ((source[position] - 128) < 32) {
+                    if (source[position] - 128 < 32) {
                         codeword_array[ap++] = 110; /* Bin Shift A */
                         codeword_array[ap++] = source[position] - 128 + 64;
                     } else {
@@ -845,7 +845,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             /* Step E3 */
             if (dc_binary(source, length, position)) {
                 if (dc_datum_a(source, length, position + 1)) {
-                    if ((source[position] - 128) < 32) {
+                    if (source[position] - 128 < 32) {
                         codeword_array[ap++] = 110; /* Bin Shift A */
                         codeword_array[ap++] = source[position] - 128 + 64;
                     } else {
@@ -1044,37 +1044,34 @@ static int dc_make_dotstream(const unsigned char masked_array[], const int array
 static int dc_is_corner(const int column, const int row, const int width, const int height) {
 
     /* Top Left */
-    if ((column == 0) && (row == 0)) {
+    if (column == 0 && row == 0) {
         return 1;
     }
 
     /* Top Right */
     if (height & 1) {
-        if (((column == width - 2) && (row == 0))
-                || ((column == width - 1) && (row == 1))) {
+        if ((column == width - 2 && row == 0) || (column == width - 1 && row == 1)) {
             return 1;
         }
     } else {
-        if ((column == width - 1) && (row == 0)) {
+        if (column == width - 1 && row == 0) {
             return 1;
         }
     }
 
     /* Bottom Left */
     if (height & 1) {
-        if ((column == 0) && (row == height - 1)) {
+        if (column == 0 && row == height - 1) {
             return 1;
         }
     } else {
-        if (((column == 0) && (row == height - 2))
-                || ((column == 1) && (row == height - 1))) {
+        if ((column == 0 && row == height - 2) || (column == 1 && row == height - 1)) {
             return 1;
         }
     }
 
     /* Bottom Right */
-    if (((column == width - 2) && (row == height - 1))
-            || ((column == width - 1) && (row == height - 2))) {
+    if ((column == width - 2 && row == height - 1) || (column == width - 1 && row == height - 2)) {
         return 1;
     }
 
@@ -1296,26 +1293,26 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
         width = (int) w;
 
         if (((width + height) & 1) == 1) {
-            if ((width * height) < min_area) {
+            if (width * height < min_area) {
                 width++;
                 height++;
             }
         } else {
-            if ((h * width) < (w * height)) {
+            if (h * width < w * height) {
                 width++;
-                if ((width * height) < min_area) {
+                if (width * height < min_area) {
                     width--;
                     height++;
-                    if ((width * height) < min_area) {
+                    if (width * height < min_area) {
                         width += 2;
                     }
                 }
             } else {
                 height++;
-                if ((width * height) < min_area) {
+                if (width * height < min_area) {
                     width++;
                     height--;
-                    if ((width * height) < min_area) {
+                    if (width * height < min_area) {
                         height += 2;
                     }
                 }

@@ -265,9 +265,9 @@ static int pdf_text_submode_length(const unsigned char chaine[], const int start
         } else {
             /* Obliged to change table */
             int newtable;
-            if (j == (length - 1) || !(listet[j] & listet[j + 1])) {
+            if (j == length - 1 || !(listet[j] & listet[j + 1])) {
                 /* We change only one character - look for temporary switch */
-                if ((listet[j] & T_ALPHA) && (curtable == T_LOWER)) {
+                if ((listet[j] & T_ALPHA) && curtable == T_LOWER) {
                     wnet += 2; /* AS+char */
                     continue;
                 }
@@ -341,16 +341,16 @@ static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PD
 
     while (i < indexliste) {
 
-        if ((liste[1][i] == PDF_NUM) && pdf_num_stay(chaine, indexliste, liste, i)) {
+        if (liste[1][i] == PDF_NUM && pdf_num_stay(chaine, indexliste, liste, i)) {
             /* Leave as numeric */
             liste[0][last] = liste[0][i];
             liste[1][last] = PDF_NUM;
             liste[2][last] = liste[2][i];
             stayintext = 0;
             last++;
-        } else if (((liste[1][i] == PDF_TEX) || (liste[1][i] == PDF_NUM))
-                && (stayintext || i == indexliste - 1 || (liste[0][i] >= 5)
-                    || (pdf_text_num_length(liste, indexliste, i) >= 5))) {
+        } else if ((liste[1][i] == PDF_TEX || liste[1][i] == PDF_NUM)
+                    && (stayintext || i == indexliste - 1 || liste[0][i] >= 5
+                        || pdf_text_num_length(liste, indexliste, i) >= 5)) {
             /* Set to text and combine additional text/short numeric segments */
             liste[0][last] = liste[0][i];
             liste[1][last] = PDF_TEX;
@@ -359,7 +359,7 @@ static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PD
 
             next = i + 1;
             while (next < indexliste) {
-                if ((liste[1][next] == PDF_NUM) && pdf_num_stay(chaine, indexliste, liste, next)) {
+                if (liste[1][next] == PDF_NUM && pdf_num_stay(chaine, indexliste, liste, next)) {
                     break;
                 } else if (liste[1][next] == PDF_BYT) {
                     break;
@@ -383,12 +383,12 @@ static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PD
             while (next < indexliste) {
                 if (liste[1][next] != PDF_BYT) {
                     /* Check for case of a single byte shift from text mode */
-                    if ((liste[0][last] == 1) && (last > 0) && (liste[1][last - 1] == PDF_TEX)) {
+                    if (liste[0][last] == 1 && last > 0 && liste[1][last - 1] == PDF_TEX) {
                         stayintext = 1;
                         break;
                     }
 
-                    if ((liste[0][next] >= 5) || (pdf_text_num_length(liste, indexliste, next) >= 5)) {
+                    if (liste[0][next] >= 5 || pdf_text_num_length(liste, indexliste, next) >= 5) {
                         break;
                     }
                 }
@@ -465,9 +465,9 @@ static void pdf_textprocess(short *chainemc, int *p_mclength, const unsigned cha
         } else {
             /* Obliged to change table */
             int newtable;
-            if (j == (length - 1) || !(listet[0][j] & listet[0][j + 1])) {
+            if (j == length - 1 || !(listet[0][j] & listet[0][j + 1])) {
                 /* We change only one character - look for temporary switch */
-                if ((listet[0][j] & T_ALPHA) && (curtable == T_LOWER)) {
+                if ((listet[0][j] & T_ALPHA) && curtable == T_LOWER) {
                     chainet[wnet++] = 27; /* AS */
                     chainet[wnet++] = listet[1][j];
                     continue;
@@ -1021,7 +1021,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
         do {
             liste[1][indexliste] = mode;
             liste[2][indexliste] = indexchaine;
-            while ((liste[1][indexliste] == mode) && (indexchaine < length)) {
+            while (liste[1][indexliste] == mode && indexchaine < length) {
                 liste[0][indexliste]++;
                 indexchaine++;
                 mode = pdf_quelmode(chaine[indexchaine]);
@@ -1469,7 +1469,7 @@ INTERNAL int zint_pdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     error_number = 0;
 
-    if ((symbol->option_1 < -1) || (symbol->option_1 > 8)) {
+    if (symbol->option_1 < -1 || symbol->option_1 > 8) {
         z_errtxtf(0, symbol, 460, "Error correction level '%d' out of range (0 to 8)", symbol->option_1);
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
@@ -1477,7 +1477,7 @@ INTERNAL int zint_pdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
         error_number = z_errtxt_adj(ZINT_WARN_INVALID_OPTION, symbol, "%1$s%2$s", ", ignoring");
         symbol->option_1 = -1;
     }
-    if ((symbol->option_2 < 0) || (symbol->option_2 > 30)) {
+    if (symbol->option_2 < 0 || symbol->option_2 > 30) {
         z_errtxtf(0, symbol, 461, "Number of columns '%d' out of range (1 to 30)", symbol->option_2);
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;

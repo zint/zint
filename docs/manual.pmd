@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.15.0.9
-% April 2025
+% August 2025
 
 # 1. Introduction
 
@@ -1638,7 +1638,8 @@ The `-e` or `--ecinos` option gives a list of the ECI codes.
 
 Zint can output a representation of the symbol data as a set of hexadecimal
 values if asked to output to a text file (`"*.txt"`) or if given the option
-`--filetype=txt`. This can be used for test and diagnostic purposes.
+`--filetype=txt` or the option `--dump`. This can be used for test and
+diagnostic purposes.
 
 Additional options are available which are specific to certain symbologies.
 These may, for example, control the amount of error correction data or the size
