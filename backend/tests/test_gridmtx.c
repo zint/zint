@@ -926,11 +926,11 @@ static void test_rt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\250\246", -1, 29 },
+        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 29 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
-        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "\241", -1, 13 },
+        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
         /*  4*/ { UNICODE_MODE, -1, -1, -1, "电", -1, 0, 0, "", -1, 0 },
-        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "电", -1, 0, 0, "\265\347", -1, 29 },
+        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "电", -1, 0, 0, "电", -1, 29 },
         /*  6*/ { DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
         /*  7*/ { DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 29 },
         /*  8*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\351", -1, 0, 0, "", -1, 0 },
@@ -1014,15 +1014,15 @@ static void test_rt_segs(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, ZINT_WARN_USES_ECI, 30, 30, {{0}}, 0 },
-        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 30, 30, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 30, 30, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, ZINT_WARN_USES_ECI, 30, 30, {{0}}, 0 },
-        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 30, 30, { { TU("\241"), 1, 13 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 30, 30, { { TU("ก"), 3, 13 }, { TU("Ж"), 2, 7 }, {0} }, 2 },
         /*  4*/ { UNICODE_MODE, -1, { { TU("电"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 30, 30, {{0}}, 0 },
-        /*  5*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("电"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 30, 30, { { TU("\265\347"), 2, 29 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  5*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("电"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 30, 30, { { TU("电"), 3, 29 }, { TU("Ж"), 2, 7 }, {0} }, 2 },
         /*  6*/ { UNICODE_MODE, -1, { { TU("电电"), -1, 0 }, { TU("กขฯ"), -1, 13 }, { TU("βββ"), -1, 9 } }, 0, 30, 30, {{0}}, 0 },
-        /*  7*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("电电"), -1, 0 }, { TU("กขฯ"), -1, 13 }, { TU("βββ"), -1, 9 } }, 0, 30, 30, { { TU("\265\347\265\347"), 4, 29 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  7*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("电电"), -1, 0 }, { TU("กขฯ"), -1, 13 }, { TU("βββ"), -1, 9 } }, 0, 30, 30, { { TU("电电"), 6, 29 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /*  8*/ { UNICODE_MODE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("点"), -1, 20 } }, 0, 30, 30, {{0}}, 0 },
-        /*  9*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("点"), -1, 20 } }, 0, 30, 30, { { TU("¶"), 2, 26 }, { TU("\247\250"), 2, 29 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /*  9*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("点"), -1, 20 } }, 0, 30, 30, { { TU("¶"), 2, 26 }, { TU("Ж"), 2, 29 }, { TU("点"), 3, 20 } }, 3 },
         /* 10*/ { DATA_MODE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 30, 30, {{0}}, 0 },
         /* 11*/ { DATA_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 30, 30, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 29 }, { TU("\223\137"), 2, 20 } }, 3 },
     };

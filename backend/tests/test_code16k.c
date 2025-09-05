@@ -470,7 +470,7 @@ static void test_rt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { DATA_MODE, -1, "\351", -1, 0, 0, "", -1, 0 },
         /*  3*/ { DATA_MODE, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
         /*  4*/ { GS1_MODE, -1, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "", -1, 0 },

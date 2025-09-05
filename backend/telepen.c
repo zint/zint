@@ -105,7 +105,7 @@ INTERNAL int zint_telepen(struct zint_symbol *symbol, unsigned char source[], in
     d += 12;
 
     for (i = 0; i < length; i++) {
-        if (source[i] > 127) {
+        if (!z_isascii(source[i])) {
             /* Cannot encode extended ASCII */
             return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 391,
                             "Invalid character at position %d in input, extended ASCII not allowed", i + 1);

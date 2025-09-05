@@ -4910,9 +4910,9 @@ static void test_rt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_PDF417, UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { BARCODE_PDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  1*/ { BARCODE_PDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { BARCODE_PDF417, UNICODE_MODE, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
-        /*  3*/ { BARCODE_PDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "\241", -1, 13 },
+        /*  3*/ { BARCODE_PDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
         /*  4*/ { BARCODE_PDF417, DATA_MODE, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
         /*  5*/ { BARCODE_PDF417, DATA_MODE, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
         /*  6*/ { BARCODE_PDF417, UNICODE_MODE, 26, -1, "é", -1, 0, 26, "", -1, 0 },
@@ -4922,11 +4922,11 @@ static void test_rt(const testCtx *const p_ctx) {
         /* 10*/ { BARCODE_HIBC_PDF, UNICODE_MODE, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
         /* 11*/ { BARCODE_HIBC_PDF, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
         /* 12*/ { BARCODE_PDF417COMP, UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /* 13*/ { BARCODE_PDF417COMP, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /* 13*/ { BARCODE_PDF417COMP, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 },
         /* 14*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /* 15*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /* 15*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 },
         /* 16*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
-        /* 17*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "\241", -1, 13 },
+        /* 17*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
         /* 18*/ { BARCODE_MICROPDF417, DATA_MODE, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
         /* 19*/ { BARCODE_MICROPDF417, DATA_MODE, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
         /* 20*/ { BARCODE_MICROPDF417, UNICODE_MODE, 26, -1, "é", -1, 0, 26, "", -1, 0 },
@@ -5010,17 +5010,17 @@ static void test_rt_segs(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_PDF417, UNICODE_MODE, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 8, 103, {{0}}, 0 },
-        /*  1*/ { BARCODE_PDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 8, 103, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  1*/ { BARCODE_PDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 8, 103, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
         /*  2*/ { BARCODE_PDF417, UNICODE_MODE, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 8, 120, {{0}}, 0 },
-        /*  3*/ { BARCODE_PDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 8, 120, { { TU("\351\351"), 2, 3 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  3*/ { BARCODE_PDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 8, 120, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /*  4*/ { BARCODE_PDF417, DATA_MODE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 8, 120, {{0}}, 0 },
         /*  5*/ { BARCODE_PDF417, DATA_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 8, 120, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
         /*  6*/ { BARCODE_PDF417COMP, UNICODE_MODE, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 8, 69, {{0}}, 0 },
-        /*  7*/ { BARCODE_PDF417COMP, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 8, 69, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  7*/ { BARCODE_PDF417COMP, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 8, 69, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 },
         /*  8*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 6, 82, {{0}}, 0 },
-        /*  9*/ { BARCODE_MICROPDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 6, 82, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  9*/ { BARCODE_MICROPDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 6, 82, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 },
         /* 10*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 24, 38, {{0}}, 0 },
-        /* 11*/ { BARCODE_MICROPDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 24, 38, { { TU("\351\351"), 2, 3 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /* 11*/ { BARCODE_MICROPDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 24, 38, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /* 12*/ { BARCODE_MICROPDF417, DATA_MODE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 24, 38, {{0}}, 0 },
         /* 13*/ { BARCODE_MICROPDF417, DATA_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 24, 38, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
     };

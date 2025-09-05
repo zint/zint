@@ -140,7 +140,7 @@ typedef unsigned __int64 uint64_t;
 #define z_isdigit(c) ((c) <= '9' && (c) >= '0')
 #define z_isupper(c) ((c) >= 'A' && (c) <= 'Z')
 #define z_islower(c) ((c) >= 'a' && (c) <= 'z')
-#define z_isascii(c) (((c) & 0x7F) == (c))
+#define z_isascii(c) (!((c) & ~0x7F))
 #define z_iscntrl(c) (z_isascii(c) && ((c) < 32 || (c) == 127))
 
 /* Shorthands to cast away char pointer signedness */
@@ -306,6 +306,7 @@ INTERNAL int z_is_valid_utf8(const unsigned char source[], const int length);
 INTERNAL int z_utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
                 int *length, const int disallow_4byte);
 
+
 /* Treats source as ISO/IEC 8859-1 and copies into `symbol->text`, converting to UTF-8. Control chars (incl. DEL) and
    non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces. Returns warning if truncated, else 0 */
 INTERNAL int z_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
@@ -341,14 +342,12 @@ INTERNAL int z_rt_init_segs(struct zint_symbol *symbol, const int seg_count);
 /* Free `raw_segs` along with any `source` buffers */
 INTERNAL void z_rt_free_segs(struct zint_symbol *symbol);
 
-/* Copy `seg` to raw seg `seg_idx`. If `seg->eci` not set, raw seg eci set to 3. On error sets `errtxt`, returning
-   BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy_seg(struct zint_symbol *symbol, const int seg_idx, const struct zint_seg *seg);
+/* Copy `segs` to raw segs. Seg source copied as-is. If seg length <= 0, raw reg length set to `strlen()`.
+   If seg eci not set, raw seg eci set to 3. On error sets `errxtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_rt_cpy_segs(struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count);
 
-/* Copy `seg` to raw seg `seg_idx` using `ddata` converted to chars as source. If `eci` set, used instead of
-  `seg->eci`, and if neither set, sets raw seg eci to 3. On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy_seg_ddata(struct zint_symbol *symbol, const int seg_idx, const struct zint_seg *seg,
-                const int eci, const unsigned int *ddata);
+/* Update the ECI of raw seg `seg_idx` to `eci`, to reflect (feedback) the actual ECI used */
+INTERNAL void z_rt_set_seg_eci(struct zint_symbol *symbol, const int seg_idx, const int eci);
 
 /* Copy `source` to raw seg 0 buffer, setting raw seg ECI to 3. On error sets `errtxt`, returning
    BARCODE_ERROR_MEMORY */
@@ -358,6 +357,10 @@ INTERNAL int z_rt_cpy(struct zint_symbol *symbol, const unsigned char source[], 
    setting raw seg ECI to 3.  On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
 INTERNAL int z_rt_cpy_cat(struct zint_symbol *symbol, const unsigned char source[], const int length,
                 const char separator, const unsigned char cat[], const int cat_length);
+
+/* Convert ISO/IEC 8859-1 (binary) `source` to UTF-8, and copy to raw seg 0 buffer, setting raw seg ECI to 3.
+   On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_rt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
 
 /* `sprintf()` into raw seg 0 buffer, assuming formatted data less than 256 bytes. Sets raw seg ECI to 3. On error
    sets `errtxt`, returning BARCODE_ERROR_MEMORY */

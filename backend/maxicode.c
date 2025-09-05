@@ -555,6 +555,7 @@ INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], c
     unsigned char codewords[144];
     int scm_vv = -1;
     int structapp_cw = 0;
+    /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
@@ -695,12 +696,9 @@ INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], c
     }
 
     if (raw_text) {
-        if (z_rt_init_segs(symbol, seg_count)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
-        }
         for (i = 0; i < seg_count; i++) {
-            if (z_rt_cpy_seg(symbol, i, &segs[i])) {
-                return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
+            if (segs[i].eci) {
+                z_rt_set_seg_eci(symbol, i, segs[i].eci);
             }
         }
     }

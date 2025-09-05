@@ -981,17 +981,14 @@ static int c1_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
             unsigned int target[], int *p_data_length, int *p_last_mode) {
     int i;
     int tp = 0;
-    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
+    /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback.
+       Note not updating `eci` for GS1 mode as not converted (and ignored & not written anyway) */
     const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
-
-    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
-    }
 
     for (i = 0; i < seg_count; i++) {
         tp = c1_encode(symbol, segs[i].source, segs[i].length, segs[i].eci, seg_count, gs1, target, &tp, p_last_mode);
-        if (raw_text && z_rt_cpy_seg(symbol, i, &segs[i])) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
+        if (raw_text && segs[i].eci) {
+            z_rt_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 
@@ -1073,7 +1070,6 @@ INTERNAL int zint_codeone(struct zint_symbol *symbol, struct zint_seg segs[], co
         large_uint elreg;
         unsigned int target[30], ecc[15];
         int block_width;
-        const int raw_text = symbol->output_options & BARCODE_RAW_TEXT; /* GS1 mode ignored for Version S */
 
         if (seg_count > 1) {
             return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 715, "Multiple segments not supported for Version S");
@@ -1107,10 +1103,6 @@ INTERNAL int zint_codeone(struct zint_symbol *symbol, struct zint_seg segs[], co
 
         if (debug_print) {
             printf("Subversion: %d\n", sub_version);
-        }
-
-        if (raw_text && z_rt_cpy(symbol, segs[0].source, segs[0].length)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
         }
 
         /* Convert value plus one to binary */
@@ -1151,6 +1143,8 @@ INTERNAL int zint_codeone(struct zint_symbol *symbol, struct zint_seg segs[], co
 
         symbol->rows = 8;
         symbol->width = 10 * sub_version + 1;
+
+        /* Raw text dealt with by `ZBarcode_Encode_Segs()`, and `eci` feedback can't change as numeric only */
 
     } else if (symbol->option_2 == 10) {
         /* Version T */

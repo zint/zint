@@ -110,7 +110,7 @@ static int aztec_text_process(const unsigned char source[], int length, int bp, 
     char *reduced_encode_mode = (char *) z_alloca(length + 1);
 
     for (i = 0; i < length; i++) {
-        if (source[i] >= 128) {
+        if (!z_isascii(source[i])) {
             encode_mode[i] = 'B';
         } else if (gs1 && source[i] == '\x1D') {
             encode_mode[i] = 'P'; /* For FLG(n) & FLG(0) = FNC1 */
@@ -678,20 +678,17 @@ static int aztec_text_process_segs(struct zint_symbol *symbol, struct zint_seg s
             char binary_string[], const int gs1, const int gs1_bp, int *data_length, const int debug_print) {
     int i;
     char current_mode = 'U';
-    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
-    const int raw_text = (symbol->input_mode & 0x07) != GS1_MODE && (symbol->output_options & BARCODE_RAW_TEXT);
-
-    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
-    }
+    /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback.
+       Note not updating `eci` for GS1 mode as not converted */
+    const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
 
     for (i = 0; i < seg_count; i++) {
         if (!aztec_text_process(segs[i].source, segs[i].length, bp, binary_string, gs1, gs1_bp, segs[i].eci,
                 &current_mode, &bp, debug_print)) {
             return ZINT_ERROR_TOO_LONG; /* `aztec_text_process()` only fails with too long */
         }
-        if (raw_text && z_rt_cpy_seg(symbol, i, &segs[i])) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
+        if (raw_text && segs[i].eci) {
+            z_rt_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 

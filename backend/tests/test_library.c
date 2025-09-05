@@ -603,8 +603,9 @@ static void test_input_mode(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        const char *data;
         int input_mode;
+        int eci;
+        const char *data;
         int ret;
 
         int expected_input_mode;
@@ -612,21 +613,32 @@ static void test_input_mode(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { "1234", DATA_MODE, 0, DATA_MODE, "" },
-        /*  1*/ { "1234", DATA_MODE | ESCAPE_MODE, 0, DATA_MODE | ESCAPE_MODE, "" },
-        /*  2*/ { "1234", UNICODE_MODE, 0, UNICODE_MODE, "" },
-        /*  3*/ { "1234", UNICODE_MODE | ESCAPE_MODE, 0, UNICODE_MODE | ESCAPE_MODE, "" },
-        /*  4*/ { "[01]12345678901231", GS1_MODE, 0, GS1_MODE, "" },
-        /*  5*/ { "[01]12345678901231", GS1_MODE | ESCAPE_MODE, 0, GS1_MODE | ESCAPE_MODE, "" },
-        /*  6*/ { "1234", 4 | ESCAPE_MODE, ZINT_WARN_INVALID_OPTION, DATA_MODE, "Warning 212: Invalid input mode - reset to DATA_MODE" }, /* Unknown mode reset to bare DATA_MODE. Note: now warns */
-        /*  7*/ { "1234", -1, 0, DATA_MODE, "" },
-        /*  8*/ { "1234", DATA_MODE | 0x10, 0, DATA_MODE | 0x10, "" }, /* Unknown flags kept (but ignored) */
-        /*  9*/ { "1234", UNICODE_MODE | 0x10, 0, UNICODE_MODE | 0x10, "" },
-        /* 10*/ { "[01]12345678901231", GS1_MODE | 0x20, 0, GS1_MODE | 0x20, "" },
+        /*  0*/ { DATA_MODE, -1, "1234", 0, DATA_MODE, "" },
+        /*  1*/ { DATA_MODE | ESCAPE_MODE, -1, "1234", 0, DATA_MODE | ESCAPE_MODE, "" },
+        /*  2*/ { UNICODE_MODE, -1, "1234", 0, UNICODE_MODE, "" },
+        /*  3*/ { UNICODE_MODE | ESCAPE_MODE, -1, "1234", 0, UNICODE_MODE | ESCAPE_MODE, "" },
+        /*  4*/ { GS1_MODE, -1, "[01]12345678901231", 0, GS1_MODE, "" },
+        /*  5*/ { GS1_MODE | ESCAPE_MODE, -1, "[01]12345678901231", 0, GS1_MODE | ESCAPE_MODE, "" },
+        /*  6*/ { 4 | ESCAPE_MODE, -1, "1234", ZINT_WARN_INVALID_OPTION, DATA_MODE, "Warning 212: Invalid input mode - reset to DATA_MODE" }, /* Unknown mode reset to bare DATA_MODE. Note: now warns */
+        /*  7*/ { -1, -1, "1234", 0, DATA_MODE, "" },
+        /*  8*/ { DATA_MODE | 0x10, -1, "1234", 0, DATA_MODE | 0x10, "" }, /* Unknown flags kept (but ignored) */
+        /*  9*/ { UNICODE_MODE | 0x10, -1, "1234", 0, UNICODE_MODE | 0x10, "" },
+        /* 10*/ { GS1_MODE | 0x20, -1, "[01]12345678901231", 0, GS1_MODE | 0x20, "" },
+        /* 11*/ { GS1_MODE, 3, "[01]12345678901231", 0, GS1_MODE, "" },
+        /* 12*/ { GS1_MODE, 20, "[01]12345678901231", 0, GS1_MODE, "" }, /* Shift JIS (ok as backslash not in CSET82) */
+        /* 12*/ { GS1_MODE, 24, "[01]12345678901231", 0, GS1_MODE, "" }, /* Windows 1256 - Arabic */
+        /* 13*/ { GS1_MODE, 25, "[01]12345678901231", ZINT_ERROR_INVALID_OPTION, GS1_MODE, "Error 856: In GS1 mode ECI must be ASCII compatible" }, /* UTF-16BE */
+        /* 12*/ { GS1_MODE, 26, "[01]12345678901231", 0, GS1_MODE, "" }, /* UTF-8*/
+        /* 12*/ { GS1_MODE, 32, "[01]12345678901231", 0, GS1_MODE, "" }, /* GB 18030 */
+        /* 14*/ { GS1_MODE, 33, "[01]12345678901231", ZINT_ERROR_INVALID_OPTION, GS1_MODE, "Error 856: In GS1 mode ECI must be ASCII compatible" }, /* UTF-16LE */
+        /* 15*/ { GS1_MODE, 34, "[01]12345678901231", ZINT_ERROR_INVALID_OPTION, GS1_MODE, "Error 856: In GS1 mode ECI must be ASCII compatible" }, /* UTF-32BE */
+        /* 16*/ { GS1_MODE, 35, "[01]12345678901231", ZINT_ERROR_INVALID_OPTION, GS1_MODE, "Error 856: In GS1 mode ECI must be ASCII compatible" }, /* UTF-32LE */
+        /* 17*/ { GS1_MODE, 170, "[01]12345678901231", 0, GS1_MODE, "" }, /* ASCII Invariant */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int symbology;
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -637,7 +649,8 @@ static void test_input_mode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODE49 /*Supports GS1*/, data[i].input_mode, -1 /*eci*/,
+        symbology = data[i].eci != -1 ? BARCODE_AZTEC : BARCODE_CODE49; /* Both support GS1 */
+        length = testUtilSetSymbol(symbol, symbology, data[i].input_mode, data[i].eci,
                                     -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
                                     data[i].data, -1, debug);
 
@@ -1848,6 +1861,7 @@ static void test_stacking(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
     const char *data = "1";
     const char *expected_error = "Error 770: Too many stacked symbols";
+    const char *expected_error_raw = "Error 857: Cannot use BARCODE_RAW_TEXT output option if stacking symbols";
     int i;
 
     (void)p_ctx;
@@ -1866,6 +1880,18 @@ static void test_stacking(const testCtx *const p_ctx) {
                 i, ret, symbol->errtxt);
     assert_zero(strcmp(symbol->errtxt, expected_error), "i:%d strcmp(%s, %s) != 0\n",
                 i, symbol->errtxt, expected_error);
+
+    ZBarcode_Clear(symbol);
+
+    ret = ZBarcode_Encode(symbol, TCU(data), 0);
+    assert_zero(ret, "i:%d ZBarcode_Encode(%s) ret %d != 0 (%s)\n", i, data, ret, symbol->errtxt);
+
+    symbol->output_options |= BARCODE_RAW_TEXT;
+    ret = ZBarcode_Encode(symbol, TCU(data), 0);
+    assert_equal(ret, ZINT_ERROR_INVALID_OPTION, "i:%d ZBarcode_Encode ret %d != ZINT_ERROR_INVALID_OPTION (%s)\n",
+                i, ret, symbol->errtxt);
+    assert_zero(strcmp(symbol->errtxt, expected_error_raw), "i:%d strcmp(%s, %s) != 0\n",
+                i, symbol->errtxt, expected_error_raw);
 
     ZBarcode_Delete(symbol);
 

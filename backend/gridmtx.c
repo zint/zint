@@ -43,7 +43,7 @@ static const char EUROPIUM[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl
 static const char EUROPIUM_UPR[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 static const char EUROPIUM_LWR[] = "abcdefghijklmnopqrstuvwxyz ";
 
-/* gm_define_mode() stuff */
+/* gm_define_modes() stuff */
 
 /* Bits multiplied by this for costs, so as to be whole integer divisible by 2 and 3 */
 #define GM_MULT 6
@@ -126,7 +126,7 @@ static int gm_in_numeral(const unsigned int ddata[], const int length, const int
 
 /* Calculate optimized encoding modes. Adapted from Project Nayuki */
 /* Copyright (c) Project Nayuki. (MIT License) See qr.c for detailed notice */
-static void gm_define_mode(char *mode, const unsigned int ddata[], const int length, const int debug_print) {
+static void gm_define_modes(char *modes, const unsigned int ddata[], const int length, const int debug_print) {
     /* Must be in same order as GM_H etc */
     static const char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE, '\0' };
 
@@ -281,11 +281,11 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
     for (i = length - 1; i >= 0; i--) {
         j = z_posn(mode_types, cur_mode);
         cur_mode = char_modes[i][j];
-        mode[i] = cur_mode;
+        modes[i] = cur_mode;
     }
 
     if (debug_print) {
-        printf("  Mode: %.*s\n", length, mode);
+        printf("  Modes: %.*s\n", length, modes);
     }
 }
 
@@ -338,7 +338,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
     int byte_count = 0;
     int shift;
     int bp = *p_bp;
-    char *mode = (char *) z_alloca(length);
+    char *modes = (char *) z_alloca(length);
 
     if (eci != 0) {
         /* ECI assignment according to Table 8 */
@@ -354,10 +354,10 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
         }
     }
 
-    gm_define_mode(mode, ddata, length, debug_print);
+    gm_define_modes(modes, ddata, length, debug_print);
 
     do {
-        const int next_mode = mode[sp];
+        const int next_mode = modes[sp];
 
         if (next_mode != current_mode) {
             switch (current_mode) {
@@ -539,7 +539,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                         break;
                     }
                     sp++;
-                } while (p < 3 && sp < length && mode[sp] == GM_NUMBER);
+                } while (p < 3 && sp < length && modes[sp] == GM_NUMBER);
 
                 if (ppos != -1) {
                     switch (punt) {
@@ -986,6 +986,7 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     const struct zint_structapp *p_structapp = NULL;
     int size_squared;
     int bin_len;
+    /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = zint_get_eci_length_segs(segs, seg_count);
@@ -998,14 +999,8 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 2312 in UNICODE_MODE */
     full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
 
-    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
-    }
-
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        if (zint_gb2312_cpy_segs(symbol, local_segs, seg_count, ddata, full_multibyte)) {
-            return ZINT_ERROR_MEMORY; /* `zint_gb18030_cpy_segs()` only fails with OOM */
-        }
+        zint_gb2312_cpy_segs(symbol, local_segs, seg_count, ddata, full_multibyte);
     } else {
         unsigned int *dd = ddata;
         for (i = 0; i < seg_count; i++) {
@@ -1029,8 +1024,8 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
                 }
                 eci = 29;
             }
-            if (raw_text && z_rt_cpy_seg_ddata(symbol, i, &local_segs[i], eci, dd)) {
-                return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg_ddata()` only fails with OOM */
+            if (raw_text && eci) {
+                z_rt_set_seg_eci(symbol, i, eci);
             }
             dd += local_segs[i].length;
         }

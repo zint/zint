@@ -920,7 +920,7 @@ static void pdf_addEdges(const unsigned char source[], const int length, const i
 }
 
 /* Calculate optimized encoding modes */
-static int pdf_define_mode(short liste[3][PDF_MAX_LEN], int *p_indexliste, const unsigned char source[],
+static int pdf_define_modes(short liste[3][PDF_MAX_LEN], int *p_indexliste, const unsigned char source[],
             const int length, const int lastmode, const int debug_print) {
 
     int i, j, v_i;
@@ -1040,7 +1040,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
 
         pdf_appendix_d_encode(chaine, liste, &indexliste);
      } else {
-        if (!pdf_define_mode(liste, &indexliste, chaine, length, *p_lastmode, debug_print)) {
+        if (!pdf_define_modes(liste, &indexliste, chaine, length, *p_lastmode, debug_print)) {
             return z_errtxt(ZINT_ERROR_MEMORY, symbol, 749, "Insufficient memory for mode buffers");
         }
     }
@@ -1134,6 +1134,7 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
     int lastmode;
     int curtable;
     int tex_padded;
+    /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     *p_mclength = 0;
@@ -1196,18 +1197,14 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
     /* Start in upper alpha - tracked across calls to `pdf_textprocess()` to allow for interleaving byte shifts */
     curtable = T_ALPHA;
 
-    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
-    }
-
     for (i = 0; i < seg_count; i++) {
         if ((error_number = pdf_initial(symbol, segs[i].source, segs[i].length, segs[i].eci, is_micro,
                                     i + 1 == seg_count, &lastmode, &curtable, &tex_padded, chainemc, p_mclength))) {
             assert(error_number >= ZINT_ERROR);
             return error_number;
         }
-        if (raw_text && z_rt_cpy_seg(symbol, i, &segs[i])) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
+        if (raw_text && segs[i].eci) {
+            z_rt_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 

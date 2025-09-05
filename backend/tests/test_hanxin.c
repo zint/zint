@@ -3627,13 +3627,13 @@ static void test_rt(const testCtx *const p_ctx) {
     };
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
-        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_NONCOMPLIANT, 0, "\2012\3169", -1, 32 }, /* When single segment will try ECI 32 as secondary default */
+        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_NONCOMPLIANT, 0, "ก", -1, 32 }, /* When single segment will try ECI 32 as secondary default */
         /*  4*/ { UNICODE_MODE, -1, -1, -1, "啊", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
-        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "啊", -1, ZINT_WARN_NONCOMPLIANT, 0, "\260\241", -1, 32 },
+        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "啊", -1, ZINT_WARN_NONCOMPLIANT, 0, "啊", -1, 32 },
         /*  6*/ { UNICODE_MODE, -1, -1, -1, "\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
-        /*  7*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "\201\060\201\060", -1, 32 },
+        /*  7*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "\302\200", -1, 32 },
         /*  8*/ { DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
         /*  9*/ { DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
         /* 10*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
@@ -3717,13 +3717,13 @@ static void test_rt_segs(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 23, 23, {{0}}, 0 },
-        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 23, 23, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 23, 23, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, ZINT_WARN_USES_ECI, 23, 23, {{0}}, 0 },
-        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 23, 23, { { TU("\241"), 1, 13 }, { TU("\266"), 1, 7 }, {0} }, 2 }, /* When multiple segments, ECI 32 is not used as secondary default, so fails and retries with `get_best_eci()` */
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 23, 23, { { TU("ก"), 3, 13 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* When multiple segments, ECI 32 is not used as secondary default, so fails and retries with `get_best_eci()` */
         /*  4*/ { UNICODE_MODE, -1, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 23, 23, {{0}}, 0 },
-        /*  5*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 23, 23, { { TU("\351\351"), 2, 3 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  5*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 23, 23, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /*  6*/ { UNICODE_MODE, -1, -1, { { TU("啊啊"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 25, 25, {{0}}, 0 },
-        /*  7*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("啊啊"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 25, 25, { { TU("啊啊"), 6, 26 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 }, /* Note chooses 26 (UTF-8) for 啊 as multiple segments */
+        /*  7*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("啊啊"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 25, 25, { { TU("啊啊"), 6, 26 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 }, /* Note chooses 26 (UTF-8) for 啊 as multiple segments */
         /*  8*/ { DATA_MODE, -1, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\260\241"), -1, 32 } }, 0, 23, 23, {{0}}, 0 },
         /*  9*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\260\241"), -1, 32 } }, 0, 23, 23, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\260\241"), 2, 32 } }, 3 },
         /* 10*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\260\241"), -1, 32 } }, 0, 23, 23, {{0}}, 0 },

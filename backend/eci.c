@@ -913,20 +913,15 @@ INTERNAL void zint_sjis_cpy(const unsigned char source[], int *p_length, unsigne
 }
 
 /* Call `zint_sjis_cpy()` for each segment */
-INTERNAL int zint_sjis_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
-                unsigned int *ddata, const int full_multibyte) {
+INTERNAL void zint_sjis_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
+                const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT; /* Note only called for DATA_MODE */
 
     for (i = 0; i < seg_count; i++) {
         zint_sjis_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
-        if (raw_text && z_rt_cpy_seg_ddata(symbol, i, &segs[i], 0 /*eci*/, dd)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg_ddata()` only fails with OOM */
-        }
         dd += segs[i].length;
     }
-    return 0;
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints using `zint_sjis_cpy()` */
@@ -1020,21 +1015,20 @@ INTERNAL void zint_test_gb2312_cpy(const unsigned char source[], int *p_length, 
 #endif
 
 /* Call `gb2312_cpy()` for each segment */
-INTERNAL int zint_gb2312_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+INTERNAL void zint_gb2312_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
                 unsigned int *ddata, const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     for (i = 0; i < seg_count; i++) {
-        const int eci = segs[i].eci ? segs[i].eci : 29; /* Need to set as `z_rt_cpy_seg_ddata()` defaults to 3 */
         gb2312_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
-        if (raw_text && z_rt_cpy_seg_ddata(symbol, i, &segs[i], eci, dd)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg_ddata()` only fails with OOM */
+        if (raw_text) {
+            /* Need to set as `z_rt_cpy_segs()` defaults to 3 */
+            z_rt_set_seg_eci(symbol, i, segs[i].eci ? segs[i].eci : 29);
         }
         dd += segs[i].length;
     }
-    return 0;
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints using `gb2312_cpy()` */
@@ -1145,20 +1139,15 @@ INTERNAL void zint_test_gb18030_cpy(const unsigned char source[], int *p_length,
 #endif
 
 /* Call `gb18030_cpy()` for each segment */
-INTERNAL int zint_gb18030_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
-                unsigned int *ddata, const int full_multibyte) {
+INTERNAL void zint_gb18030_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
+                const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     for (i = 0; i < seg_count; i++) {
         gb18030_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
-        if (raw_text && z_rt_cpy_seg_ddata(symbol, i, &segs[i], 0 /*eci*/, dd)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg_ddata()` only fails with OOM */
-        }
         dd += segs[i].length;
     }
-    return 0;
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints using `gb18030_cpy()` */

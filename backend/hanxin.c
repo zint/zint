@@ -82,7 +82,7 @@ static int hx_terminator_length(const char mode) {
 }
 
 /* Calculate the length of the binary string */
-static int hx_calc_binlen(const char mode[], const unsigned int ddata[], const int length, const int eci) {
+static int hx_calc_binlen(const char modes[], const unsigned int ddata[], const int length, const int eci) {
     int i;
     char lastmode = '\0';
     int est_binlen = 0;
@@ -102,23 +102,23 @@ static int hx_calc_binlen(const char mode[], const unsigned int ddata[], const i
 
     i = 0;
     do {
-        if (mode[i] != lastmode) {
+        if (modes[i] != lastmode) {
             if (i > 0) {
                 est_binlen += hx_terminator_length(lastmode);
             }
             /* GB 4-byte has indicator for each character (and no terminator) so not included here */
             /* Region1/Region2 have special terminator to go directly into each other's mode so not included here */
-            if (mode[i] != 'f' || (mode[i] == '1' && lastmode == '2') || (mode[i] == '2' && lastmode == '1')) {
+            if (modes[i] != 'f' || (modes[i] == '1' && lastmode == '2') || (modes[i] == '2' && lastmode == '1')) {
                 est_binlen += 4;
             }
-            if (mode[i] == 'b') { /* Byte mode has byte count (and no terminator) */
+            if (modes[i] == 'b') { /* Byte mode has byte count (and no terminator) */
                 est_binlen += 13;
             }
-            lastmode = mode[i];
+            lastmode = modes[i];
             submode = 1;
             numeric_run = 0;
         }
-        switch (mode[i]) {
+        switch (modes[i]) {
             case 'n':
                 if (numeric_run % 3 == 0) {
                     est_binlen += 10;
@@ -156,16 +156,16 @@ static int hx_calc_binlen(const char mode[], const unsigned int ddata[], const i
 }
 
 /* Call `hx_calc_binlen()` for each segment */
-static int hx_calc_binlen_segs(const char mode[], const unsigned int ddata[], const struct zint_seg segs[],
+static int hx_calc_binlen_segs(const char modes[], const unsigned int ddata[], const struct zint_seg segs[],
             const int seg_count) {
     int i;
     int count = 0;
     const unsigned int *dd = ddata;
-    const char *m = mode;
+    const char *mds = modes;
 
     for (i = 0; i < seg_count; i++) {
-        count += hx_calc_binlen(m, dd, segs[i].length, segs[i].eci);
-        m += segs[i].length;
+        count += hx_calc_binlen(mds, dd, segs[i].length, segs[i].eci);
+        mds += segs[i].length;
         dd += segs[i].length;
     }
 
@@ -292,7 +292,7 @@ static int hx_lookup_text2(const unsigned int input) {
     return -1;
 }
 
-/* hx_define_mode() stuff */
+/* hx_define_modes() stuff */
 
 /* Bits multiplied by this for costs, so as to be whole integer divisible by 2 and 3 */
 #define HX_MULT 6
@@ -353,7 +353,7 @@ static int hx_in_fourbyte(const unsigned int ddata[], const int length, const in
 
 /* Calculate optimized encoding modes. Adapted from Project Nayuki */
 /* Copyright (c) Project Nayuki. (MIT License) See qr.c for detailed notice */
-static void hx_define_mode(char *mode, const unsigned int ddata[], const int length, const int debug_print) {
+static void hx_define_modes(char *modes, const unsigned int ddata[], const int length, const int debug_print) {
     /* Must be in same order as HX_N etc */
     static const char mode_types[] = { 'n', 't', 'b', '1', '2', 'd', 'f', '\0' };
 
@@ -484,30 +484,30 @@ static void hx_define_mode(char *mode, const unsigned int ddata[], const int len
     for (i = length - 1; i >= 0; i--) {
         j = z_posn(mode_types, cur_mode);
         cur_mode = char_modes[i][j];
-        mode[i] = cur_mode;
+        modes[i] = cur_mode;
     }
 
     if (debug_print) {
-        printf("  Mode: %.*s\n", length, mode);
+        printf("  Modes: %.*s\n", length, modes);
     }
 }
 
-/* Call `hx_define_mode()` for each segment */
-static void hx_define_mode_segs(char mode[], const unsigned int ddata[], const struct zint_seg segs[],
+/* Call `hx_define_modes()` for each segment */
+static void hx_define_modes_segs(char modes[], const unsigned int ddata[], const struct zint_seg segs[],
             const int seg_count, const int debug_print) {
     int i;
     const unsigned int *dd = ddata;
-    char *m = mode;
+    char *mds = modes;
 
     for (i = 0; i < seg_count; i++) {
-        hx_define_mode(m, dd, segs[i].length, debug_print);
-        m += segs[i].length;
+        hx_define_modes(mds, dd, segs[i].length, debug_print);
+        mds += segs[i].length;
         dd += segs[i].length;
     }
 }
 
 /* Convert input data to binary stream */
-static void hx_calculate_binary(char binary[], const char mode[], const unsigned int ddata[], const int length,
+static void hx_calculate_binary(char binary[], const char modes[], const unsigned int ddata[], const int length,
             const int eci, int *p_bp, const int debug_print) {
     int position = 0;
     int i, count, encoding_value;
@@ -535,13 +535,13 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
         int block_length = 0;
         int double_byte = 0;
         do {
-            if (mode[position] == 'b' && ddata[position + block_length] > 0xFF) {
+            if (modes[position] == 'b' && ddata[position + block_length] > 0xFF) {
                 double_byte++;
             }
             block_length++;
-        } while (position + block_length < length && mode[position + block_length] == mode[position]);
+        } while (position + block_length < length && modes[position + block_length] == modes[position]);
 
-        switch (mode[position]) {
+        switch (modes[position]) {
             case 'n':
                 /* Numeric mode */
                 /* Mode indicator */
@@ -559,12 +559,12 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                     count = 1;
                     encoding_value = first;
 
-                    if (i + 1 < block_length && mode[position + i + 1] == 'n') {
+                    if (i + 1 < block_length && modes[position + i + 1] == 'n') {
                         const int second = z_ctoi((const char) ddata[position + i + 1]);
                         count = 2;
                         encoding_value = (encoding_value * 10) + second;
 
-                        if (i + 2 < block_length && mode[position + i + 2] == 'n') {
+                        if (i + 2 < block_length && modes[position + i + 2] == 'n') {
                             const int third = z_ctoi((const char) ddata[position + i + 2]);
                             count = 3;
                             encoding_value = (encoding_value * 10) + third;
@@ -676,13 +676,13 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
             case '1':
                 /* Region One encoding */
                 /* Mode indicator */
-                if (position == 0 || mode[position - 1] != '2') { /* Unless previous mode Region Two */
+                if (position == 0 || modes[position - 1] != '2') { /* Unless previous mode Region Two */
                     bp = z_bin_append_posn(4, 4, binary, bp);
                 }
 
                 if (debug_print) {
                     printf("Region One%s H(1)%d:",
-                        position == 0 || mode[position - 1] != '2' ? "" : " (NO indicator)", block_length);
+                        position == 0 || modes[position - 1] != '2' ? "" : " (NO indicator)", block_length);
                 }
 
                 i = 0;
@@ -715,11 +715,11 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 }
 
                 /* Terminator */
-                bp = z_bin_append_posn(position + block_length == length || mode[position + block_length] != '2'
+                bp = z_bin_append_posn(position + block_length == length || modes[position + block_length] != '2'
                                         ? 4095 : 4094, 12, binary, bp);
 
                 if (debug_print) {
-                    printf(" (TERM %x)\n", position + block_length == length || mode[position + block_length] != '2'
+                    printf(" (TERM %x)\n", position + block_length == length || modes[position + block_length] != '2'
                             ? 4095 : 4094);
                 }
 
@@ -727,13 +727,13 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
             case '2':
                 /* Region Two encoding */
                 /* Mode indicator */
-                if (position == 0 || mode[position - 1] != '1') { /* Unless previous mode Region One */
+                if (position == 0 || modes[position - 1] != '1') { /* Unless previous mode Region One */
                     bp = z_bin_append_posn(5, 4, binary, bp);
                 }
 
                 if (debug_print) {
                     printf("Region Two%s H(2)%d:",
-                            position == 0 || mode[position - 1] != '1' ? "" : " (NO indicator)", block_length);
+                            position == 0 || modes[position - 1] != '1' ? "" : " (NO indicator)", block_length);
                 }
 
                 i = 0;
@@ -753,11 +753,11 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 }
 
                 /* Terminator */
-                bp = z_bin_append_posn(position + block_length == length || mode[position + block_length] != '1'
+                bp = z_bin_append_posn(position + block_length == length || modes[position + block_length] != '1'
                                         ? 4095 : 4094, 12, binary, bp);
 
                 if (debug_print) {
-                    printf(" (TERM %x)\n", position + block_length == length || mode[position + block_length] != '1'
+                    printf(" (TERM %x)\n", position + block_length == length || modes[position + block_length] != '1'
                             ? 4095 : 4094);
                 }
 
@@ -847,16 +847,16 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
 }
 
 /* Call `hx_calculate_binary()` for each segment */
-static void hx_calculate_binary_segs(char binary[], const char mode[], const unsigned int ddata[],
+static void hx_calculate_binary_segs(char binary[], const char modes[], const unsigned int ddata[],
             const struct zint_seg segs[], const int seg_count, int *p_bin_len, const int debug_print) {
     int i;
     const unsigned int *dd = ddata;
-    const char *m = mode;
+    const char *mds = modes;
     int bp = 0;
 
     for (i = 0; i < seg_count; i++) {
-        hx_calculate_binary(binary, m, dd, segs[i].length, segs[i].eci, &bp, debug_print);
-        m += segs[i].length;
+        hx_calculate_binary(binary, mds, dd, segs[i].length, segs[i].eci, &bp, debug_print);
+        mds += segs[i].length;
         dd += segs[i].length;
     }
 
@@ -1488,12 +1488,13 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
     int size_squared;
     int codewords;
     int bin_len;
+    /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = zint_get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
     unsigned int *ddata = (unsigned int *) z_alloca(sizeof(unsigned int) * eci_length_segs);
-    char *mode = (char *) z_alloca(eci_length_segs);
+    char *modes = (char *) z_alloca(eci_length_segs);
     char *binary;
     unsigned char *datastream;
     unsigned char *fullstream;
@@ -1509,14 +1510,8 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
         user_mask = 0; /* Ignore */
     }
 
-    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
-    }
-
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        if (zint_gb18030_cpy_segs(symbol, local_segs, seg_count, ddata, full_multibyte)) {
-            return ZINT_ERROR_MEMORY; /* `zint_gb18030_cpy_segs()` only fails with OOM */
-        }
+        zint_gb18030_cpy_segs(local_segs, seg_count, ddata, full_multibyte);
     } else {
         unsigned int *dd = ddata;
         for (i = 0; i < seg_count; i++) {
@@ -1544,16 +1539,16 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
                 }
                 eci = 32;
             }
-            if (raw_text && z_rt_cpy_seg_ddata(symbol, i, &local_segs[i], eci, dd)) {
-                return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg_ddata()` only fails with OOM */
+            if (raw_text && eci) {
+                z_rt_set_seg_eci(symbol, i, eci);
             }
             dd += local_segs[i].length;
         }
     }
 
-    hx_define_mode_segs(mode, ddata, local_segs, seg_count, debug_print);
+    hx_define_modes_segs(modes, ddata, local_segs, seg_count, debug_print);
 
-    est_binlen = hx_calc_binlen_segs(mode, ddata, local_segs, seg_count);
+    est_binlen = hx_calc_binlen_segs(modes, ddata, local_segs, seg_count);
     if (debug_print) {
         printf("Estimated binary length: %d\n", est_binlen);
     }
@@ -1564,7 +1559,7 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
         ecc_level = 1;
     }
 
-    hx_calculate_binary_segs(binary, mode, ddata, local_segs, seg_count, &bin_len, debug_print);
+    hx_calculate_binary_segs(binary, modes, ddata, local_segs, seg_count, &bin_len, debug_print);
     codewords = bin_len >> 3;
     if (bin_len & 0x07) {
         codewords++;

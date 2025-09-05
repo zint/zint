@@ -982,7 +982,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 }
 
 /* Call `dc_encode_message()` for each segment */
-static int dc_encode_message_segs(struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
+static void dc_encode_message_segs(struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
             unsigned char *codeword_array, int *p_binary_finish, int *p_data_length, unsigned char structapp_array[],
             int *p_structapp_size) {
     int i;
@@ -994,7 +994,8 @@ static int dc_encode_message_segs(struct zint_symbol *symbol, const struct zint_
     int inside_macro = 0;
     uint64_t bin_buf = 0;
     int bin_buf_size = 0;
-    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
+    /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback.
+       Note not updating `eci` for GS1 mode as not converted */
     const int raw_text = (symbol->input_mode & 0x07) != GS1_MODE && (symbol->output_options & BARCODE_RAW_TEXT);
 
     const struct zint_seg *last_seg = &segs[seg_count - 1];
@@ -1004,23 +1005,17 @@ static int dc_encode_message_segs(struct zint_symbol *symbol, const struct zint_
         last_RSEOT = last_seg->source[last_seg->length - 2] == 30; /* RS */
     }
 
-    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
-    }
-
     for (i = 0; i < seg_count; i++) {
         ap = dc_encode_message(symbol, segs[i].source, segs[i].length, segs[i].eci, i == seg_count - 1 /*last_seg*/,
                 last_EOT, last_RSEOT, ap, codeword_array, &encoding_mode, &inside_macro, &bin_buf, &bin_buf_size,
                 structapp_array, p_structapp_size);
-        if (raw_text && z_rt_cpy_seg(symbol, i, &segs[i])) { /* Note including macro header and RS + EOT */
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
+        if (raw_text && segs[i].eci) {
+            z_rt_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 
     *p_binary_finish = encoding_mode == 'X';
     *p_data_length = ap + *p_structapp_size;
-
-    return 0;
 }
 
 /* Convert codewords to binary data stream */
@@ -1267,10 +1262,8 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
         }
     }
 
-    if (dc_encode_message_segs(symbol, segs, seg_count, codeword_array, &binary_finish, &data_length,
-                                        structapp_array, &structapp_size)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` etc. only fail with OOM */
-    }
+    dc_encode_message_segs(symbol, segs, seg_count, codeword_array, &binary_finish, &data_length, structapp_array,
+                            &structapp_size);
 
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.ArraySubscript
      * warnings */

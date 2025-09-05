@@ -974,7 +974,7 @@ static void dm_addEdges(struct zint_symbol *symbol, const unsigned char source[]
 }
 
 /* Calculate optimized encoding modes */
-static int dm_define_mode(struct zint_symbol *symbol, char modes[], const unsigned char source[], const int length,
+static int dm_define_modes(struct zint_symbol *symbol, char modes[], const unsigned char source[], const int length,
             const int last_seg, const int gs1, const int debug_print) {
 
     int i, j, v_i;
@@ -1062,7 +1062,7 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
 
     assert(length <= 10921); /* Can only handle (10921 + 1) * 6 = 65532 < 65536 (2*16) due to sizeof(previous) */
 
-    if (!dm_define_mode(symbol, modes, source, length, last_seg, gs1, debug_print)) {
+    if (!dm_define_modes(symbol, modes, source, length, last_seg, gs1, debug_print)) {
         return z_errtxt(ZINT_ERROR_MEMORY, symbol, 728, "Insufficient memory for mode buffers");
     }
 
@@ -1684,11 +1684,13 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
     int error_number;
     int i;
     int tp = 0;
-    int gs1;
     int in_macro = 0;
     const struct zint_seg *last_seg = &segs[seg_count - 1];
-    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
-    const int raw_text = (symbol->input_mode & 0x07) != GS1_MODE && (symbol->output_options & BARCODE_RAW_TEXT);
+    /* gs1 flag values: 0: no GS1, 1: GS1 with FNC1 serparator, 2: GS separator */
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE ? 1 + !!(symbol->output_options & GS1_GS_SEPARATOR) : 0;
+    /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback.
+       Note not updating `eci` for GS1 mode as not converted */
+    const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if ((i = z_segs_length(segs, seg_count)) > 3116) { /* Max is 3166 digits */
@@ -1751,17 +1753,6 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
         target[tp++] = id2;
     }
 
-    /* gs1 flag values: 0: no gs1, 1: gs1 with FNC1 serparator, 2: GS separator */
-    if ((symbol->input_mode & 0x07) == GS1_MODE) {
-        if (symbol->output_options & GS1_GS_SEPARATOR) {
-            gs1 = 2;
-        } else {
-            gs1 = 1;
-        }
-    } else {
-        gs1 = 0;
-    }
-
     if (gs1) {
         target[tp++] = 232;
         if (debug_print) fputs("FN1 ", stdout);
@@ -1802,10 +1793,6 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
         in_macro = 1;
     }
 
-    if (raw_text && z_rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
-    }
-
     for (i = 0; i < seg_count; i++) {
         int src_inc = 0, len_dec = 0;
         if (in_macro) {
@@ -1821,8 +1808,8 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
             assert(error_number >= ZINT_ERROR);
             return error_number;
         }
-        if (raw_text && z_rt_cpy_seg(symbol, i, &segs[i])) { /* Note including macro header and RS + EOT */
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
+        if (raw_text && segs[i].eci) {
+            z_rt_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 

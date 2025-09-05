@@ -344,7 +344,7 @@ static float ult_look_ahead_ascii(unsigned char source[], const int length, cons
             }
         }
 
-        if (!done && source[i] < 0x80) {
+        if (!done && z_isascii(source[i])) {
             if (gs1 && source[i] == '\x1D') {
                 cw[codeword_count] = 272; /* FNC1 */
             } else {
@@ -353,7 +353,7 @@ static float ult_look_ahead_ascii(unsigned char source[], const int length, cons
             codeword_count++;
             i++;
         }
-    } while (i < length && i < end_char && source[i] < 0x80);
+    } while (i < length && i < end_char && z_isascii(source[i]));
 
     letters_encoded = i - in_locn;
     if (encoded != NULL) {
@@ -802,7 +802,8 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
     int length = segs[0].length;
     const int eci = segs[0].eci;
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
-    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
+    /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback.
+       Note not updating `eci` for GS1 mode as not converted */
     const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
 
     for (i = 0; i < seg_count; i++) {
@@ -819,7 +820,7 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
         /* Decide start character codeword (from Table 5) */
         symbol_mode = ULT_ASCII_MODE;
         for (i = 0; i < length; i++) {
-            if (source[i] >= 0x80) {
+            if (!z_isascii(source[i])) {
                 symbol_mode = ULT_EIGHTBIT_MODE;
                 break;
             }
@@ -905,16 +906,15 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
     current_mode = symbol_mode;
     codeword_count = ult_generate_codewords(symbol, source, length, 0 /*eci*/, gs1, symbol_mode, &current_mode,
                                             codewords, codeword_count);
-
-    if (raw_text && (z_rt_init_segs(symbol, seg_count) || z_rt_cpy_seg(symbol, 0, &segs[0]))) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` & `z_rt_cpy_seg()` only fail with OOM */
+    if (raw_text && segs[0].eci) {
+        z_rt_set_seg_eci(symbol, 0, segs[0].eci);
     }
 
     for (i = 1; i < seg_count; i++) {
         codeword_count = ult_generate_codewords(symbol, segs[i].source, segs[i].length, segs[i].eci, gs1, symbol_mode,
                                                 &current_mode, codewords, codeword_count);
-        if (raw_text && z_rt_cpy_seg(symbol, i, &segs[i])) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_seg()` only fails with OOM */
+        if (raw_text && segs[i].eci) {
+            z_rt_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 

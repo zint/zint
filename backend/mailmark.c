@@ -518,6 +518,7 @@ INTERNAL int zint_mailmark_2d(struct zint_symbol *symbol, unsigned char source[]
     char postcode[10];
     int i;
     struct zint_seg segs[1];
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 90) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 589, "Input length %d too long (maximum 90)", length);
@@ -659,6 +660,16 @@ INTERNAL int zint_mailmark_2d(struct zint_symbol *symbol, unsigned char source[]
     segs[0].eci = 0;
     segs[0].source = local_source;
     segs[0].length = length;
+
+    if (raw_text) {
+        if ((symbol->input_mode & 0x07) == DATA_MODE) {
+            if (z_rt_cpy(symbol, local_source, length)) {
+                return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+            }
+        } else if (z_rt_cpy_iso8859_1(symbol, local_source, length)) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_iso8859_1()` only fails with OOM */
+        }
+    }
 
     return zint_datamatrix(symbol, segs, 1);
 }

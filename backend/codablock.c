@@ -566,7 +566,7 @@ INTERNAL int zint_codablockf(struct zint_symbol *symbol, unsigned char source[],
             if (symbol->border_width == 0) { /* Allow override if non-zero */
                 symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
             }
-            z_hrt_cpy_nochk(symbol, (const unsigned char *) "", 0); /* Zap HRT for compatibility with CODABLOCKF */
+            z_hrt_cpy_nochk(symbol, ZCUCP(""), 0); /* Zap HRT for compatibility with CODABLOCKF */
             /* Use `raw_text` from `zint_code128()` */
             if (symbol->output_options & COMPLIANT_HEIGHT) {
                 /* AIM ISS-X-24 Section 4.6.1 minimum row height 8X (for compatibility with CODABLOCKF, not specced
@@ -603,7 +603,7 @@ INTERNAL int zint_codablockf(struct zint_symbol *symbol, unsigned char source[],
     }
     /* Replace all Codes>127 with <fnc4>Code-128 */
     for (charCur = 0; charCur < length; charCur++) {
-        if (source[charCur] > 127) {
+        if (!z_isascii(source[charCur])) {
             data[dataLength++] = aFNC4;
             data[dataLength++] = (unsigned char) (source[charCur] & 127);
         } else
@@ -882,8 +882,14 @@ INTERNAL int zint_codablockf(struct zint_symbol *symbol, unsigned char source[],
         symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
     }
 
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (raw_text) {
+        if ((symbol->input_mode & 0x07) == DATA_MODE) {
+            if (z_rt_cpy(symbol, source, length)) {
+                return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+            }
+        } else if (z_rt_cpy_iso8859_1(symbol, source, length)) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_iso8859_1()` only fails with OOM */
+        }
     }
 
     return error_number;

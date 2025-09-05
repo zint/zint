@@ -593,8 +593,14 @@ INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], in
         symbol->border_width = 1; /* BS EN 12323:2005 Section 4.3.7 minimum (note change from previous default 2) */
     }
 
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (raw_text) {
+        if ((symbol->input_mode & 0x07) == DATA_MODE) {
+            if (z_rt_cpy(symbol, source, length)) {
+                return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+            }
+        } else if (z_rt_cpy_iso8859_1(symbol, source, length)) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_iso8859_1()` only fails with OOM */
+        }
     }
 
     return error_number;

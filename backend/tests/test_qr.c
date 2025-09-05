@@ -4873,11 +4873,11 @@ static void test_qr_rt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
-        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "\241", -1, 13 },
+        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
         /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
-        /*  5*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "\223\137", -1, 20 }, /* When single segment will try ECI 20 as secondary default */
+        /*  5*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "点", -1, 20 }, /* When single segment will try ECI 20 as secondary default */
         /*  6*/ { BARCODE_QRCODE, DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
         /*  7*/ { BARCODE_QRCODE, DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
         /*  8*/ { BARCODE_QRCODE, DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
@@ -4889,9 +4889,10 @@ static void test_qr_rt(const testCtx *const p_ctx) {
         /* 14*/ { BARCODE_QRCODE, UNICODE_MODE, 899, -1, -1, "é", -1, 0, 899, "", -1, 0 },
         /* 15*/ { BARCODE_QRCODE, UNICODE_MODE, 899, -1, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
         /* 16*/ { BARCODE_QRCODE, GS1_MODE, -1, -1, -1, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "", -1, 0 },
-        /* 17*/ { BARCODE_QRCODE, GS1_MODE, -1, -1, BARCODE_RAW_TEXT, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "01049123451234591597033130128\03510ABC123", -1, 3 },
-        /* 18*/ { BARCODE_HIBC_QR, UNICODE_MODE, -1, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
-        /* 19*/ { BARCODE_HIBC_QR, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
+        /* 17*/ { BARCODE_QRCODE, GS1_MODE, -1, -1, BARCODE_RAW_TEXT, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "01049123451234591597033130128\03510ABC123", -1, 3 }, /* Note raw text ECI set as is converted */
+        /* 18*/ { BARCODE_QRCODE, GS1_MODE, 170, -1, BARCODE_RAW_TEXT, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, ZINT_WARN_NONCOMPLIANT, 170, "01049123451234591597033130128\03510ABC123", -1, 170 },
+        /* 19*/ { BARCODE_HIBC_QR, UNICODE_MODE, -1, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
+        /* 20*/ { BARCODE_HIBC_QR, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -4967,11 +4968,11 @@ static void test_qr_rt_segs(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 21, 21, {{0}}, 0 },
-        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 21, 21, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 21, 21, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, { { TU("点"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, ZINT_WARN_USES_ECI, 21, 21, {{0}}, 0 },
-        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("点"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("点"), 3, 26 }, { TU("\266"), 1, 7 }, {0} }, 2 }, /* When multiple segments, ECI 20 is not used as secondary default, so fails and retries with `get_best_eci()` */
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("点"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("点"), 3, 26 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* When multiple segments, ECI 20 is not used as secondary default, so fails and retries with `get_best_eci()` */
         /*  4*/ { UNICODE_MODE, -1, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 21, 21, {{0}}, 0 },
-        /*  5*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("\351\351"), 2, 3 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  5*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /*  6*/ { DATA_MODE, -1, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, {{0}}, 0 },
         /*  7*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
         /*  8*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, {{0}}, 0 },
@@ -6687,9 +6688,9 @@ static void test_microqr_rt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, "点", -1, 0, 0, "", -1, 0 },
-        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, "点", -1, 0, 0, "\223\137", -1, 20 },
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, "点", -1, 0, 0, "点", -1, 20 },
         /*  4*/ { DATA_MODE, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
         /*  5*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
         /*  6*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
@@ -7477,9 +7478,9 @@ static void test_upnqr_rt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 4 },
+        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 4 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, "Ŕ", -1, 0, 0, "", -1, 0 },
-        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 4 },
+        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "Ŕ", -1, 0, 0, "Ŕ", -1, 4 },
         /*  4*/ { DATA_MODE, -1, "\300", -1, 0, 0, "", -1, 0 },
         /*  5*/ { DATA_MODE, BARCODE_RAW_TEXT, "\300", -1, 0, 0, "\300", -1, 4 },
     };
@@ -9524,11 +9525,11 @@ static void test_rmqr_rt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
-        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "\241", -1, 13 },
+        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
         /*  4*/ { UNICODE_MODE, -1, -1, -1, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
-        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "\223\137", -1, 20 },
+        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "点", -1, 20 },
         /*  6*/ { DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
         /*  7*/ { DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
         /*  8*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
@@ -9539,6 +9540,10 @@ static void test_rmqr_rt(const testCtx *const p_ctx) {
         /* 13*/ { UNICODE_MODE, 26, -1, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
         /* 14*/ { UNICODE_MODE, 899, -1, -1, "é", -1, 0, 899, "", -1, 0 },
         /* 15*/ { UNICODE_MODE, 899, -1, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+        /* 16*/ { GS1_MODE, -1, -1, -1, "[20]12", -1, 0, 0, "", -1, 0 },
+        /* 17*/ { GS1_MODE, -1, -1, BARCODE_RAW_TEXT, "[20]12", -1, 0, 0, "2012", -1, 3 },
+        /* 18*/ { GS1_MODE, 32, -1, -1, "[20]12", -1, ZINT_WARN_NONCOMPLIANT, 32, "", -1, 0 },
+        /* 19*/ { GS1_MODE, 32, -1, BARCODE_RAW_TEXT, "[20]12", -1, ZINT_WARN_NONCOMPLIANT, 32, "2012", -1, 32 }, /* Note raw text ECI set as is converted */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -9614,9 +9619,9 @@ static void test_rmqr_rt_segs(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 11, 27, {{0}}, 0 },
-        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 11, 27, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 11, 27, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 11, 43, {{0}}, 0 },
-        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 11, 43, { { TU("\351\351"), 2, 3 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 11, 43, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /*  4*/ { DATA_MODE, -1, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, {{0}}, 0 },
         /*  5*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
         /*  6*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, {{0}}, 0 },

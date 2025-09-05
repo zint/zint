@@ -497,8 +497,14 @@ INTERNAL int zint_code128(struct zint_symbol *symbol, unsigned char source[], in
     }
     error_number = z_hrt_cpy_iso8859_1(symbol, src, length); /* Returns warning only */
 
-    if (raw_text && z_rt_cpy(symbol, src, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (raw_text) {
+        if ((symbol->input_mode & 0x07) == DATA_MODE) {
+            if (z_rt_cpy(symbol, src, length)) {
+                return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+            }
+        } else if (z_rt_cpy_iso8859_1(symbol, src, length)) {
+            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_iso8859_1()` only fails with OOM */
+        }
     }
 
     return error_number;

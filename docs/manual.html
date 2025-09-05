@@ -333,7 +333,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.15.0.9</p>
-<p class="date">August 2025</p>
+<p class="date">September 2025</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -4369,9 +4369,9 @@ Segments</a> for the format), one for each segment specified, the size
 of the array being set in <code>raw_seg_count</code> - which will always
 be at least one.</p>
 <p>The <code>source</code>, <code>length</code> and <code>eci</code>
-members of <code>zint_seg</code> will be set accordingly - the data in
-<code>source</code>, the data length in <code>length</code>, and the
-character set the data is in (UTF-8 data will be converted) in
+members of <code>zint_seg</code> will be set accordingly - the
+unconverted data in <code>source</code>, the data length in
+<code>length</code>, and the character set the data was converted to in
 <code>eci</code>. Any check characters encoded will be included,<a
 href="#fn16" class="footnote-ref" id="fnref16"
 role="doc-noteref"><sup>16</sup></a> and for GS1 data any
@@ -4382,6 +4382,11 @@ as will EAN-8 but only if it has an add-on (otherwise it will remain at
 separator). GS1 Composite data if any will be separated from the primary
 data (including any EAN/UPC add-ons) by a pipe (<code>|</code>)
 character.</p>
+<p>The <code>source</code> member is not NUL-terminated, and is not
+converted: if <code>input_mode</code> is <code>DATA_MODE</code>, it
+remains in binary; otherwise it will be in UTF-8. The UTF-8 source may
+be converted to the character set of the corresponding <code>eci</code>
+member using the two helper functions discussed next.</p>
 <h2 id="utf-8-to-eci-convenience-functions">5.17 UTF-8 to ECI
 convenience functions</h2>
 <p>As a convenience the conversion done by Zint from UTF-8 to ECIs is
@@ -8359,7 +8364,7 @@ bcsample source code</li>
 <li>PNG: The Definitive Guide and wpng source code by Greg Reolofs</li>
 <li>PDF417 specification and pdf417 source code by Grand Zebu</li>
 <li>Barcode Reference, TBarCode/X User Documentation and TBarCode/X
-demonstration program from Tec-It</li>
+demonstration program from TEC-IT</li>
 <li>IEC16022 source code by Stefan Schmidt et al</li>
 <li>United States Postal Service Specification USPS-B-3200</li>
 <li>Adobe Systems Incorporated Encapsulated PostScript File Format
@@ -9737,7 +9742,7 @@ class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 characters undefined: <code>#</code>, <code>$</code>, <code>@</code>,
 <code>[</code>, <code>\</code>, <code>]</code>, <code>^</code>,
 <code>`</code>, <code>{</code>, <code>|</code>, <code>}</code>,
-<code>~</code>.<a href="#fnref7" class="footnote-back"
+<code>~</code> (tilde).<a href="#fnref7" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
 <li id="fn8"><p>BARCODE_MEMORY_FILE textual formats EPS and SVG will
 have Unix newlines (LF) on both Windows and Unix, i.e. not CR+LF on

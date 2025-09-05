@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-08-25)
+Version 2.15.0.9 (dev) not released yet (2025-09-05)
 ====================================================
 
 **Incompatible changes**
@@ -21,7 +21,8 @@ Version 2.15.0.9 (dev) not released yet (2025-08-25)
 Changes
 -------
 - Add new `BARCODE_RAW_TEXT` option for `output_options` which sets new fields
-  `raw_segs` and `raw_seg_count` with encoded data
+  `raw_segs` and `raw_seg_count` with encoded data (pre-converted, i.e. UTF-8
+  unless input mode is `DATA_MODE`)
 - Add API funcs `ZBarcode_UTF8_To_ECI()` and `ZBarcode_Dest_Len_ECI()`
 - Set `option_1`, `option_2`, `option_3` to values used in encodation, and add
   new access methods `encodedOption1()` etc. to Qt Backend, and use in GUI to
