@@ -65,7 +65,7 @@ public:
     int inputMode() const; // `symbol->input_mode`
     void setInputMode(int input_mode);
 
-    /* Note text/eci and segs are mutally exclusive */
+    /* Note text/eci and segs are mutually exclusive */
 
     /* Input data (segment 0 text) */
     QString text() const;

@@ -31,7 +31,7 @@ def isolate_tag(tag):
         else:
             stage += tag
 
-# Add the right amount of indendation (indentation X 4 spaces)
+# Add the right amount of indentation (indentation X 4 spaces)
 def add_indent():
     global indentation
     retval = ""

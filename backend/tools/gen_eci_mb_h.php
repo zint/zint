@@ -2,7 +2,7 @@
 /* Generate ECI multibyte tables from unicode.org mapping files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2022-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2025 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
@@ -357,7 +357,7 @@ foreach ($lines as $line) {
             continue;
         }
         $u = hexdec($matches[2]);
-        // PUA characters (user-defined range), dealt with programatically by `u_sjis()`
+        // PUA characters (user-defined range), dealt with programmatically by `u_sjis()`
         // See CJKV Information Processing by Ken Lunde, 2nd ed., Table 4-86, p.286
         // https://file.allitebooks.com/20160708/CJKV%20Information%20Processing.pdf
         if ($u >= 0xE000 && $u <= 0xE757) {
@@ -621,7 +621,7 @@ foreach ($lines as $line) {
             if (isset($in_gbk[$u])) {
                 continue;
             }
-            // User-defined, dealt with programatically by `u_gb18030()`
+            // User-defined, dealt with programmatically by `u_gb18030()`
             if ($u >= 0xE000 && $u <= 0xE765) {
                 continue;
             }

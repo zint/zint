@@ -851,7 +851,7 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
                 /* ECI indicates use of character set within ISO/IEC 8859 */
                 codewords[0] = 257 + (eci - 3);
                 if (codewords[0] > 267) {
-                    /* Avoids ECI 14 for non-existant ISO/IEC 8859-12 */
+                    /* Avoids ECI 14 for non-existent ISO/IEC 8859-12 */
                     codewords[0]--;
                 }
             } else if (eci > 18 && eci <= 898) {

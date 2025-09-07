@@ -1198,7 +1198,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             if (symbol->eci) {
                 /* Check that ECI is at least CSET82 (an ASCII Invariant subset) compatible */
                 if (symbol->eci == 25 || (symbol->eci >= 33 && symbol->eci <= 35)) { /* UTF-16/32 BE/LE */
-                    return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 856, "In GS1 mode ECI must be ASCII compatible");
+                    return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 856,
+                                    "In GS1 mode ECI must be ASCII compatible");
                 }
                 /* Note not warning here that ECI is not supported in GS1 mode, leaving it up to individual
                    symbologies, as standards are inconsistent in mentioning it */
@@ -2019,8 +2020,8 @@ float ZBarcode_Default_Xdim(int symbol_id) {
         case BARCODE_HIBC_PDF:
         case BARCODE_MICROPDF417:
         case BARCODE_HIBC_MICPDF:
-            /* Fairly arbitrarily using ISO/IEC 15416:2016 Section 5.3.1 Table 1, aperature diameters 0.125 & 0.250
-              (also fits in 0.25 <= X < 0.5 range for aperature 0.2 from ISO/IEC 15415:2011 Annex D Table D.1) */
+            /* Fairly arbitrarily using ISO/IEC 15416:2016 Section 5.3.1 Table 1, aperture diameters 0.125 & 0.250
+              (also fits in 0.25 <= X < 0.5 range for aperture 0.2 from ISO/IEC 15415:2011 Annex D Table D.1) */
             x_dim_mm = 0.33f;
             break;
 

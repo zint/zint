@@ -31,7 +31,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 /*
- * Developed in accordance with "Royal Mail Mailmark barcode C encoding and deconding instructions"
+ * Developed in accordance with "Royal Mail Mailmark barcode C encoding and decoding instructions"
  * (https://www.royalmail.com/sites/default/files/
  *  Mailmark-4-state-barcode-C-encoding-and-decoding-instructions-Sept-2015.pdf)
  * and "Royal Mail Mailmark barcode L encoding and decoding"

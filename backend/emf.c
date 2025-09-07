@@ -480,7 +480,7 @@ INTERNAL int zint_emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     while (circ) {
         /* Note using circle width the proper way, with a non-null pen of specified width and a null brush for fill,
            causes various different rendering issues for LibreOffice Draw and Inkscape, so using following hack */
-        if (previous_diameter != circ->diameter + circ->width) { /* Drawing MaxiCode bullseye using overlayed discs */
+        if (previous_diameter != circ->diameter + circ->width) { /* Drawing MaxiCode bullseye using overlaid discs */
             previous_diameter = circ->diameter + circ->width;
             radius = emf_mul3dpf(0.5f, previous_diameter);
         }
@@ -494,7 +494,7 @@ INTERNAL int zint_emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         bytecount += 24;
         recordcount++;
 
-        if (symbol->symbology == BARCODE_MAXICODE) { /* Drawing MaxiCode bullseye using overlayed discs */
+        if (symbol->symbology == BARCODE_MAXICODE) { /* Drawing MaxiCode bullseye using overlaid discs */
             float inner_radius = radius - circ->width;
             zint_out_le_u32(circle[this_circle].type, 0x0000002a); /* EMR_ELLIPSE */
             zint_out_le_u32(circle[this_circle].size, 24);

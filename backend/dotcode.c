@@ -141,7 +141,7 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
     int x, y, worstedge, first, last, sum;
     int penalty;
 
-    /* First, guard against "pathelogical" gaps in the array
+    /* First, guard against "pathological" gaps in the array
        subtract a penalty score for empty rows/columns from total code score for each mask,
        where the penalty is Sum(N ^ n), where N is the number of positions in a column/row,
        and n is the number of consecutive empty rows/columns */

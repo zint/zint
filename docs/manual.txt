@@ -552,7 +552,7 @@ which invoke a colour picker.
 
 [The colour picker tool]
 
-(Note that to change the colours visually, the luminence slider, the long narrow
+(Note that to change the colours visually, the luminance slider, the long narrow
 column on the right, must be adjusted.) The color picker only deals in RGB(A),
 and will overwrite any CMYK values with RGB(A) values once "OK" is selected.
 
@@ -3282,7 +3282,7 @@ A warning will be generated if the Service Code, the Destination Country Code,
 or the last 10 characters of the Tracking Number are non-numeric.
 
 Zint formats the Human Readable Text as specified by DPD, leaving out the
-identication tag, and adds a modulo-36 check character to the text (not to the
+identification tag, and adds a modulo-36 check character to the text (not to the
 barcode itself), thus:
 
 PPPP PPP TTTT TTTT TTTT TT SSS CCC D
@@ -4749,7 +4749,7 @@ countries.
 Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other
 countries.
 
-The Zint logo is derived from “SF Planetary Orbiter” font by ShyFoundary.
+The Zint logo is derived from “SF Planetary Orbiter” font by ShyFoundry.
 
 Zint.org.uk website design and hosting provided by Robert Elliott.
 
@@ -5000,7 +5000,7 @@ and ignoring the Tk window click back to the command prompt "%" and type:
     package require zint
     zint help
 
-which will show the usage message, with options very similiar to the Zint CLI.
+which will show the usage message, with options very similar to the Zint CLI.
 (One notable difference is that boolean options such as -bold take a 1 or 0 as
 an argument.)
 
@@ -5701,8 +5701,8 @@ Please send bug reports to https://sourceforge.net/p/zint/tickets/.
 
 SEE ALSO
 
-Full documention for zint (and the API libzint and the GUI zint-qt) is available
-from
+Full documentation for zint (and the API libzint and the GUI zint-qt) is
+available from
 
         https://zint.org.uk/manual/
 

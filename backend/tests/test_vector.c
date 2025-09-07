@@ -79,7 +79,7 @@ static struct zint_vector_circle *find_circle(struct zint_symbol *symbol, float 
     y = rnd3dpf(y);
     diameter = rnd3dpf(diameter);
     for (circle = symbol->vector->circles; circle != NULL; circle = circle->next) {
-        /* printf("x %.9g, y %.9g, diamter %.9g\n", circle->x, circle->y, circle->diameter); */
+        /* printf("x %.9g, y %.9g, diameter %.9g\n", circle->x, circle->y, circle->diameter); */
         if (rnd3dpf(circle->x) == x && rnd3dpf(circle->y) == y) {
             if (diameter) {
                 if (rnd3dpf(circle->diameter) == diameter) {

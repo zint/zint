@@ -3277,7 +3277,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "0000110101011010101000"
                     "0110000110100100110110"
                 },
-        /* 10*/ { UNICODE_MODE, 9, { 0, 0, "" }, { { TU("A"), -1, 3 }, { TU("B"), -1, 4 }, { TU("C"), -1, 5 } }, ZINT_ERROR_INVALID_OPTION, 0, 0, 1, "Multiple segments not suppoted for Version S",
+        /* 10*/ { UNICODE_MODE, 9, { 0, 0, "" }, { { TU("A"), -1, 3 }, { TU("B"), -1, 4 }, { TU("C"), -1, 5 } }, ZINT_ERROR_INVALID_OPTION, 0, 0, 1, "Multiple segments not supported for Version S",
                     ""
                 },
     };

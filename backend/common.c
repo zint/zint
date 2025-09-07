@@ -387,7 +387,7 @@ INTERNAL int z_errtxtf(const int error_number, struct zint_symbol *symbol, const
                 if (arg == -1) {
                     if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
                     return z_errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
-                                    "Internal error: invalid numbered format specifer");
+                                    "Internal error: invalid numbered format specifier");
                 }
                 if (i >= 9) {
                     if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);

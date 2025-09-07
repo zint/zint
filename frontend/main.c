@@ -319,7 +319,7 @@ static int validate_float(const char source[], const int allow_neg, float *p_val
 
     int_len = dot ? (int) (dot - source) : (int) strlen(source);
     if (int_len > 9) {
-        cpy_str(errbuf, 64, "integer part must be 7 digits maximum"); /* Say 7 not 9 to "manage expections" */
+        cpy_str(errbuf, 64, "integer part must be 7 digits maximum"); /* Say 7 not 9 to "manage expectations" */
         return 0;
     }
     if (int_len) {

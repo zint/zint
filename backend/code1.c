@@ -1514,7 +1514,7 @@ INTERNAL int zint_codeone(struct zint_symbol *symbol, struct zint_seg segs[], co
                     c1_block_copy(symbol, datagrid, 0, 0, 10, 16, 0, 0);
                     c1_block_copy(symbol, datagrid, 0, 16, 10, 16, 0, 1);
                     break;
-                case 3: /* Verion T-48 */
+                case 3: /* Version T-48 */
                     z_set_module(symbol, 0, 24);
                     z_set_module(symbol, 10, 24);
                     z_set_module(symbol, 12, 24);

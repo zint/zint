@@ -83,7 +83,7 @@ static void wpng_flush(png_structp png_ptr) {
     (void) zint_fm_flush(fmp);
 }
 
-/* Guestimate best compression strategy */
+/* Guesstimate best compression strategy */
 static int wpng_guess_compression_strategy(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
     (void)pixelbuf;
 

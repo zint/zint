@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-09-05)
+Version 2.15.0.9 (dev) not released yet (2025-09-07)
 ====================================================
 
 **Incompatible changes**
@@ -650,7 +650,7 @@ Changes
   sanitizer flag detection, and many other improvements, props Alonso Schaich
 - PLESSEY: add options NCR weighted mod-10, hide check digit(s) in HRT
 - Fuller error messages; more comments zint.h
-- CMake: simplication and modernization, Qt5/6 version, props Null Void (atom)
+- CMake: simplification and modernization, Qt5/6 version, props Null Void (atom)
 - POSTNET/PLANET: allow up to 38 chars (ZINT_WARN_NONCOMPLIANT) (see [d7ac9c])
 - RMQR: update to new draft ISO/IEC JTC1/SC31N000 (Draft 2019-6-24)
 - ULTRA: update max size and min cols based on BWIPP 2021-07-14 update
@@ -806,7 +806,7 @@ Bugs
   - Code128 routines for Codablock&Code16K
   - output.c has common routines from raster.c and symbologies.
 - HIBC_39: restrict max length to 68 otherwise to avoid overrun
-- Code One: protect agains overrun
+- Code One: protect against overrun
 - Telepen: allow DEL
 - GS1 Databar/ GS1-128 Composite:
   - Separator bar corrections
@@ -830,7 +830,7 @@ Changes
   upcean, all output formats
 - QR, Han Xin, Grid Matrix: the multi byte compaction schemes (ex: Kanji)
   are used by some decoders as codepage information (Ex: GB2312) and output
-  may be translated to UTF-8. This may destroy the data in a not controlable
+  may be translated to UTF-8. This may destroy the data in a not controllable
   manner.
   In consequence, multibyte compaction schemes are disabled by default.
   The new option --fullmultibyte (option_3 = ZINT_FULL_MULTIBYTE) enables this
@@ -960,7 +960,7 @@ Fixed bugs: EMF output, maxicode plot/content
 Datamatrix DMRE updated to the ISO/IEC29158 version. This is incompatible in the
 way that the old -vers numbers for DMRE are re-assigned.
 The separator of GS1-datamatrix may be switched from FNC1 to GS.
-GS1 field length check AI 8009 and 7230 to 7239 currected.
+GS1 field length check AI 8009 and 7230 to 7239 corrected.
 
 
 Version 2.6.3 2018-02-15

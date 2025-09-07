@@ -264,7 +264,7 @@ INTERNAL int zint_upu_s10(struct zint_symbol *symbol, unsigned char source[], in
 
     if (!z_isupper(local_source[0]) || !z_isupper(local_source[1])) {
         return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 835,
-                        "Invalid character in Service Indictor (first 2 characters) (alphabetic only)");
+                        "Invalid character in Service Indicator (first 2 characters) (alphabetic only)");
     }
     if (z_not_sane(NEON_F, local_source + 2, 12 - 4) || (have_check_digit && !z_isdigit(have_check_digit))) {
         return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 836,

@@ -432,7 +432,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "78878361115516163138317"
                     "77777777777777777777777"
                 },
-        /*  4*/ { UNICODE_MODE, 10, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "אולטרה-קוד1234", 0, 13, 19, 1, "AIMD/TSC15032-43 Figure G.3 Same except DCC correct whereas DCC in Figure G.3 is incorrent",
+        /*  4*/ { UNICODE_MODE, 10, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "אולטרה-קוד1234", 0, 13, 19, 1, "AIMD/TSC15032-43 Figure G.3 Same except DCC correct whereas DCC in Figure G.3 is incorrect",
                     "7777777777777777777"
                     "7857865565566616657"
                     "7737853333613351517"
