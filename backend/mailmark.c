@@ -513,7 +513,7 @@ INTERNAL int zint_datamatrix(struct zint_symbol *symbol, struct zint_seg segs[],
 /* Royal Mail 2D Mailmark (CMDM) (Data Matrix) */
 /* https://www.royalmailtechnical.com/rmt_docs/User_Guides_2021/Mailmark_Barcode_definition_document_20210215.pdf */
 INTERNAL int zint_mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int length) {
-    static const char spaces[9] = "         ";
+    static const char spaces[9] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
     unsigned char local_source[90 + 1];
     char postcode[10];
     int i;

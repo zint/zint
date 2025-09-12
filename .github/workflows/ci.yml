@@ -161,10 +161,13 @@ jobs:
       shell: bash
       run: git config --global --add safe.directory ${GITHUB_WORKSPACE} && cmake -E make_directory build
 
+    - name: Install GS1 Syntax Engine
+      run: git clone https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && (sudo make install || true)
+
     - name: Configure CMake
       working-directory: build
       shell: bash
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_PNG=OFF -DZINT_USE_QT=OFF
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_C_FLAGS='-I /usr/local/include' -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_PNG=OFF -DZINT_USE_QT=OFF
 
     - name: Build
       working-directory: build

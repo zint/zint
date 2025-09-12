@@ -614,7 +614,7 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int l
 
 /* Check if GTIN-13 `source` is UPC-E compatible and convert as UPC-E into `out` if so */
 static int ean_is_upce(const unsigned char source[], unsigned char *out) {
-    static const char zeroes[5] = "00000";
+    static const char zeroes[5] = { '0', '0', '0', '0', '0' };
 
     if (source[0] != '0' || source[1] > '1') {
         return 0;
