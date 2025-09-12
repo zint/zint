@@ -90,7 +90,7 @@ else()
     message(STATUS "Not using PNG")
 endif()
 
-if(ZINT_USE_GS1SE AND NOT GS1SE-NOTFOUND)
+if(ZINT_USE_GS1SE AND GS1SE)
     zint_target_link_libraries(${GS1SE})
     zint_target_compile_definitions(PRIVATE ZINT_HAVE_GS1SE)
     message(STATUS "Using GS1 Syntax Engine")
