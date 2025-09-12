@@ -8,6 +8,9 @@ project(zint)
 if(ZINT_USE_PNG)
     find_package(PNG)
 endif()
+if(ZINT_USE_GS1SE)
+    find_library(GS1SE gs1encoders)
+endif()
 
 set(zint_COMMON_SRCS common.c eci.c filemem.c general_field.c gs1.c large.c library.c reedsol.c)
 set(zint_ONEDIM_SRCS 2of5.c 2of5inter.c 2of5inter_based.c bc412.c channel.c codabar.c code.c code11.c code128.c
@@ -15,10 +18,9 @@ set(zint_ONEDIM_SRCS 2of5.c 2of5inter.c 2of5inter_based.c bc412.c channel.c coda
 set(zint_POSTAL_SRCS auspost.c imail.c mailmark.c postal.c)
 set(zint_TWODIM_SRCS aztec.c codablock.c code1.c code16k.c code49.c composite.c dmatrix.c dotcode.c gridmtx.c
                      hanxin.c maxicode.c pdf417.c qr.c ultra.c)
+set(zint_OUTPUT_SRCS bmp.c emf.c gif.c output.c pcx.c ps.c raster.c svg.c tif.c vector.c)
 if(ZINT_USE_PNG AND PNG_FOUND)
-    set(zint_OUTPUT_SRCS bmp.c emf.c gif.c output.c pcx.c png.c ps.c raster.c svg.c tif.c vector.c)
-else()
-    set(zint_OUTPUT_SRCS bmp.c emf.c gif.c output.c pcx.c ps.c raster.c svg.c tif.c vector.c)
+    set(zint_OUTPUT_SRCS ${zint_OUTPUT_SRCS} png.c)
 endif()
 set(zint_SRCS ${zint_OUTPUT_SRCS} ${zint_COMMON_SRCS} ${zint_ONEDIM_SRCS} ${zint_POSTAL_SRCS} ${zint_TWODIM_SRCS})
 
@@ -86,6 +88,14 @@ if(ZINT_USE_PNG AND PNG_FOUND)
 else()
     zint_target_compile_definitions(PRIVATE ZINT_NO_PNG)
     message(STATUS "Not using PNG")
+endif()
+
+if(ZINT_USE_GS1SE AND NOT GS1SE-NOTFOUND)
+    zint_target_link_libraries(${GS1SE})
+    zint_target_compile_definitions(PRIVATE ZINT_HAVE_GS1SE)
+    message(STATUS "Using GS1 Syntax Engine")
+else()
+    message(STATUS "Not using GS1 Syntax Engine")
 endif()
 
 # Incompatible with ZINT_SANITIZE (and also with ZINT_USE_PNG unless libpng instrumented)

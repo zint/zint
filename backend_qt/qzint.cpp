@@ -199,7 +199,7 @@ namespace Zint {
             m_compliant_height(false),
             m_rotate_angle(0),
             m_eci(0),
-            m_gs1parens(false), m_gs1nocheck(false),
+            m_gs1parens(false), m_gs1nocheck(false), m_gs1syntaxengine(false),
             m_reader_init(false),
             m_guard_whitespace(false),
             m_embed_vector_font(false),
@@ -277,6 +277,9 @@ namespace Zint {
         }
         if (m_gs1nocheck) {
             m_zintSymbol->input_mode |= GS1NOCHECK_MODE;
+        }
+        if (m_gs1syntaxengine) {
+            m_zintSymbol->input_mode |= GS1SYNTAXENGINE_MODE;
         }
         m_zintSymbol->eci = m_eci;
         m_zintSymbol->dpmm = m_dpmm;
@@ -736,6 +739,15 @@ namespace Zint {
 
     void QZint::setGS1NoCheck(bool gs1NoCheck) {
         m_gs1nocheck = gs1NoCheck;
+    }
+
+    /* Use GS1 Syntax Engine to validate GS1 data */
+    bool QZint::gs1SyntaxEngine() const {
+        return m_gs1syntaxengine;
+    }
+
+    void QZint::setGS1SyntaxEngine(bool gs1SyntaxEngine) {
+        m_gs1syntaxengine = gs1SyntaxEngine;
     }
 
     /* Reader Initialisation (Programming) */
@@ -1231,6 +1243,11 @@ namespace Zint {
     /* Whether Zint library "libzint" built with PNG support or not */
     bool QZint::noPng() {
         return ZBarcode_NoPng() == 1;
+    }
+
+    /* Whether Zint library "libzint" built with PNG support or not */
+    bool QZint::haveGS1SyntaxEngine() {
+        return ZBarcode_HaveGS1SyntaxEngine() == 1;
     }
 
     /* Version of Zint library "libzint" linked to */

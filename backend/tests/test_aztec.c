@@ -306,7 +306,7 @@ static void test_options(const testCtx *const p_ctx) {
         /* 25*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "", (41 << 8) | 3, 1 },
         /* 26*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "", (41 << 8) | 3, 1 },
         /* 27*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)(", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 253: Malformed AI in input (brackets don't match)", -1, 0 },
-        /* 28*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)\\(", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 253: Malformed AI in input (brackets don't match)", -1, 0 },
+        /* 28*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)\\(", 0, 15, 15, "", (41 << 8) | 3, 1 }, /* Escaped parens now work without ESCAPE_MODE */
         /* 29*/ { BARCODE_AZTEC, GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)\\(", 0, 15, 15, "", (41 << 8) | 3, 1 },
         /* 30*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "", (99 << 8) | 4, 26 }, /* 22 layers */
         /* 31*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 709: Version '27' out of range for Reader Initialisation symbols (maximum 26)", -1, 27 }, /* 23 layers */

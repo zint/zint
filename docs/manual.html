@@ -912,14 +912,16 @@ into bitmaps.</p>
 <h1 id="installing-zint">2. Installing Zint</h1>
 <h2 id="linux">2.1 Linux</h2>
 <p>The easiest way to configure compilation is to take advantage of the
-CMake utilities. You will need to install CMake and
+CMake utilities. You will need to install CMake, and
 <code>libpng-dev</code> first. For instance on <code>apt</code>
 systems:</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install git cmake build-essential libpng-dev</span></code></pre></div>
 <p>If you want to take advantage of Zint Barcode Studio you will also
 need to have Qt and its component <code>"Desktop gcc 64-bit"</code>
-installed, as well as <code>mesa</code>. For details see
+installed, as well as <code>mesa</code>. Other steps are required to
+avail of the GS1 Syntax Engine.<a href="#fn1" class="footnote-ref"
+id="fnref1" role="doc-noteref"><sup>1</sup></a> For details see
 <code>"README.linux"</code> in the project root directory.</p>
 <p>Once you have fulfilled these requirements unzip the source code
 tarball or clone the latest source</p>
@@ -979,8 +981,8 @@ $664 per year to have the application digitally signed by Microsoft.</p>
 <code>"win32/README"</code>.</p>
 <h2 id="apple-macos">2.4 Apple macOS</h2>
 <p>The latest Zint CLI and <code>libzint</code> can be installed using
-Homebrew.<a href="#fn1" class="footnote-ref" id="fnref1"
-role="doc-noteref"><sup>1</sup></a> To install Homebrew input the
+Homebrew.<a href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a> To install Homebrew input the
 following line into the macOS terminal</p>
 <div class="sourceCode" id="cb9"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">/bin/bash</span> <span class="at">-c</span> <span class="st">&quot;</span><span class="va">$(</span><span class="ex">curl</span> <span class="at">-fsSL</span> <span class="dt">\</span></span>
@@ -1448,8 +1450,8 @@ hexadecimal (00-FF)</td>
 <td style="text-align: left;"><code>\uNNNN</code></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
-<td style="text-align: left;">Any 16-bit Unicode BMP<a href="#fn2"
-class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>
+<td style="text-align: left;">Any 16-bit Unicode BMP<a href="#fn3"
+class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>
 character where NNNN is hexadecimal (0000-FFFF)</td>
 </tr>
 <tr>
@@ -1571,8 +1573,8 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href=
 <thead>
 <tr>
 <th style="text-align: left;">Numeric Value</th>
-<th style="text-align: left;">Name<a href="#fn3" class="footnote-ref"
-id="fnref3" role="doc-noteref"><sup>3</sup></a></th>
+<th style="text-align: left;">Name<a href="#fn4" class="footnote-ref"
+id="fnref4" role="doc-noteref"><sup>4</sup></a></th>
 <th style="text-align: left;">Barcode Name</th>
 </tr>
 </thead>
@@ -2262,8 +2264,8 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb34-1"><a href=
 <p>will give different results for PNG and SVG. Experimentation is
 advised!</p>
 <p>In addition the <code>--nobackground</code> option will remove the
-background from all output formats except BMP.<a href="#fn4"
-class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+background from all output formats except BMP.<a href="#fn5"
+class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
 <p>The <code>--cmyk</code> option is specific to output in Encapsulated
 PostScript (EPS) and TIF, and selects the CMYK colour space. Custom
 colours should then usually be given in the comma-separated
@@ -2417,8 +2419,8 @@ X-dimension at 600 dpi specify:</p>
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> MAXICODE <span class="at">-d</span> <span class="st">&quot;MaxiCode (19 chars)&quot;</span> <span class="at">--scalexdimdp</span><span class="op">=</span>0,600dpi</span></code></pre></div>
 <h2 id="human-readable-text-hrt-options">4.10 Human Readable Text (HRT)
 Options</h2>
-<p>For linear barcodes the text present<a href="#fn5"
-class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> in
+<p>For linear barcodes the text present<a href="#fn6"
+class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> in
 the output image can be removed by using the <code>--notext</code>
 option. Note also that for raster output text will not be printed for
 scales less than 1 (see <a href="#adjusting-image-size-x-dimension">4.9
@@ -2536,8 +2538,8 @@ data-tag=": Default Character Sets">
 <tr>
 <td style="text-align: left;">Micro QR Code</td>
 <td style="text-align: left;">Latin-1</td>
-<td>Shift JIS (includes ASCII<a href="#fn6" class="footnote-ref"
-id="fnref6" role="doc-noteref"><sup>6</sup></a>)</td>
+<td>Shift JIS (includes ASCII<a href="#fn7" class="footnote-ref"
+id="fnref7" role="doc-noteref"><sup>7</sup></a>)</td>
 </tr>
 <tr>
 <td style="text-align: left;">PDF417</td>
@@ -2580,11 +2582,12 @@ Modes and ECI</a> below.</p>
 <p>GS1 data can be encoded in a number of symbologies. Application
 Identifiers (AIs) should be enclosed in <code>[square brackets]</code>
 followed by the data to be encoded (see <a href="#gs1-128">6.1.10.3
-GS1-128</a>). To encode GS1 data use the <code>--gs1</code> option. GS1
-mode is assumed (and doesn’t need to be set) for GS1-128, EAN-14, GS1
-DataBar and GS1 Composite symbologies but is also available for Aztec
-Code, Code 16K, Code 49, Code One, Data Matrix, DotCode, QR Code and
-Ultracode.</p>
+GS1-128</a>). GS1 Digital Link URIs are also supported. To encode GS1
+data use the <code>--gs1</code> option. Also recommended is the
+<code>--gs1strict</code> option, which verifies the GS1 data. GS1 mode
+is assumed (and doesn’t need to be set) for GS1-128, EAN-14, GS1 DataBar
+and GS1 Composite symbologies but is also available for Aztec Code, Code
+16K, Code 49, Code One, Data Matrix, DotCode, QR Code and Ultracode.</p>
 <p>Health Industry Barcode (HIBC) data may also be encoded in the
 symbologies Aztec Code, Codablock-F, Code 128, Code 39, Data Matrix,
 MicroPDF417, PDF417 and QR Code. Within this mode, the leading
@@ -2785,8 +2788,8 @@ translates the data into the target encoding.</p>
 </tr>
 <tr>
 <td>170</td>
-<td>ISO/IEC 646 Invariant<a href="#fn7" class="footnote-ref" id="fnref7"
-role="doc-noteref"><sup>7</sup></a></td>
+<td>ISO/IEC 646 Invariant<a href="#fn8" class="footnote-ref" id="fnref8"
+role="doc-noteref"><sup>8</sup></a></td>
 </tr>
 <tr>
 <td>899</td>
@@ -3371,8 +3374,8 @@ member <code>memfile</code> instead of to the output file
 <span id="cb63-16"><a href="#cb63-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>will print the SVG output to <code>stdout</code> (the file
 <code>"mem.svg"</code> is not created). This is particularly useful for
-the textual formats EPS and SVG,<a href="#fn8" class="footnote-ref"
-id="fnref8" role="doc-noteref"><sup>8</sup></a> allowing the output to
+the textual formats EPS and SVG,<a href="#fn9" class="footnote-ref"
+id="fnref9" role="doc-noteref"><sup>9</sup></a> allowing the output to
 be manipulated and processed by the client.</p>
 <h2 id="setting-options">5.7 Setting Options</h2>
 <p>So far our application is not very useful unless we plan to only make
@@ -3412,8 +3415,8 @@ href="#specifying-a-symbology">5.9 Specifying a Symbology</a>.</td>
 <td style="text-align: left;"><code>height</code></td>
 <td style="text-align: left;">float</td>
 <td style="text-align: left;">Symbol height in X-dimensions, excluding
-fixed width-to-height symbols.<a href="#fn9" class="footnote-ref"
-id="fnref9" role="doc-noteref"><sup>9</sup></a></td>
+fixed width-to-height symbols.<a href="#fn10" class="footnote-ref"
+id="fnref10" role="doc-noteref"><sup>10</sup></a></td>
 <td style="text-align: left;">Symbol dependent</td>
 </tr>
 <tr>
@@ -3488,8 +3491,8 @@ resulting barcode symbol to. Must end in <code>.png</code>,
 <code>.gif</code>, <code>.bmp</code>, <code>.emf</code>,
 <code>.eps</code>, <code>.pcx</code>, <code>.svg</code>,
 <code>.tif</code> or <code>.txt</code> followed by a terminating
-<code>NUL</code>.<a href="#fn10" class="footnote-ref" id="fnref10"
-role="doc-noteref"><sup>10</sup></a></td>
+<code>NUL</code>.<a href="#fn11" class="footnote-ref" id="fnref11"
+role="doc-noteref"><sup>11</sup></a></td>
 <td style="text-align: left;"><code>"out.png"</code></td>
 </tr>
 <tr>
@@ -3905,15 +3908,15 @@ value:</p>
 <tr>
 <td style="text-align: left;"><code>BARCODE_BIND_TOP</code></td>
 <td style="text-align: left;">Boundary bar above the symbol only.<a
-href="#fn11" class="footnote-ref" id="fnref11"
-role="doc-noteref"><sup>11</sup></a></td>
+href="#fn12" class="footnote-ref" id="fnref12"
+role="doc-noteref"><sup>12</sup></a></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_BIND</code></td>
 <td style="text-align: left;">Boundary bars above and below the symbol
-and between rows if stacking multiple symbols.<a href="#fn12"
-class="footnote-ref" id="fnref12"
-role="doc-noteref"><sup>12</sup></a></td>
+and between rows if stacking multiple symbols.<a href="#fn13"
+class="footnote-ref" id="fnref13"
+role="doc-noteref"><sup>13</sup></a></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_BOX</code></td>
@@ -3963,8 +3966,8 @@ Memory (raster)</a>.</td>
 <tr>
 <td style="text-align: left;"><code>BARCODE_QUIET_ZONES</code></td>
 <td style="text-align: left;">Add compliant quiet zones (additional to
-any specified whitespace).<a href="#fn13" class="footnote-ref"
-id="fnref13" role="doc-noteref"><sup>13</sup></a></td>
+any specified whitespace).<a href="#fn14" class="footnote-ref"
+id="fnref14" role="doc-noteref"><sup>14</sup></a></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_NO_QUIET_ZONES</code></td>
@@ -4011,8 +4014,8 @@ below.</p>
 <caption><span>Table <span class="math inline"> </span>:</span> API
 <code>input_mode</code> Values </caption>
 <colgroup>
-<col style="width: 25%" />
-<col style="width: 74%" />
+<col style="width: 30%" />
+<col style="width: 69%" />
 </colgroup>
 <thead>
 <tr>
@@ -4049,14 +4052,13 @@ sequences.</td>
 <td style="text-align: left;"><code>GS1PARENS_MODE</code></td>
 <td style="text-align: left;">Parentheses (round brackets) used in GS1
 data instead of square brackets to delimit Application Identifiers
-(parentheses in the data must be escaped and <code>ESCAPE_MODE</code>
-selected).</td>
+(parentheses in the data must be escaped).</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>GS1NOCHECK_MODE</code></td>
 <td style="text-align: left;">Do not check GS1 data for validity,
 i.e. suppress checks for valid AIs and data lengths. Invalid characters
-(e.g. control characters, extended ASCII characters) are still checked
+(e.g. control characters, extended ASCII characters) are still checked
 for.</td>
 </tr>
 <tr>
@@ -4076,18 +4078,24 @@ other shortcuts if available (affects <code>DATAMATRIX</code>,
 <td style="text-align: left;">Process special symbology-specific escape
 sequences (<code>CODE128</code> only).</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>GS1SYNTAXENGINE_MODE</code></td>
+<td style="text-align: left;">Use the GS1 Syntax Engine (if available)
+to strictly validate GS1 input.</td>
+</tr>
 </tbody>
 </table>
 </div>
-<p>The default mode is <code>DATA_MODE</code>. (Note that this differs
-from the default for the CLI and GUI, which is
-<code>UNICODE_MODE</code>.)</p>
+<p>The default mode is <code>DATA_MODE</code> (CLI option
+<code>--binary</code>). (Note that this differs from the default for the
+CLI and GUI, which is <code>UNICODE_MODE</code>.)</p>
 <p><code>DATA_MODE</code>, <code>UNICODE_MODE</code> and
 <code>GS1_MODE</code> are mutually exclusive, whereas
 <code>ESCAPE_MODE</code>, <code>GS1PARENS_MODE</code>,
 <code>GS1NOCHECK_MODE</code>, <code>HEIGHTPERROW_MODE</code>,
-<code>FAST_MODE</code> and <code>EXTRA_ESCAPE_MODE</code> are optional.
-So, for example, you can set</p>
+<code>FAST_MODE</code>, <code>EXTRA_ESCAPE_MODE</code> and
+<code>GS1SYNTAXENGINE_MODE</code> are optional. So, for example, you can
+set</p>
 <div class="sourceCode" id="cb71"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> UNICODE_MODE <span class="op">|</span> ESCAPE_MODE<span class="op">;</span></span></code></pre></div>
 <p>or</p>
 <div class="sourceCode" id="cb72"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> GS1_MODE <span class="op">|</span> GS1PARENS_MODE <span class="op">|</span> GS1NOCHECK_MODE<span class="op">;</span></span></code></pre></div>
@@ -4100,14 +4108,20 @@ special Code 128-only <code>EXTRA_ESCAPE_MODE</code> escape sequences
 are given in <a href="#standard-code-128-iso-15417">6.1.10.1 Standard
 Code 128 (ISO 15417)</a>. An example of <code>GS1PARENS_MODE</code>
 usage is given in section <a href="#gs1-128">6.1.10.3 GS1-128</a>.</p>
-<p><code>GS1NOCHECK_MODE</code> is for use with legacy systems that have
-data that does not conform to the current GS1 standard. Printable ASCII
-input is still checked for, as is the validity of GS1 data specified
-without AIs (e.g. linear data for GS1 DataBar
-Omnidirectional/Limited/etc.). Also checked is GS1 DataBar Expanded and
-GS1 Composite input that is not in the GS1 encodable character set 82
-(see GS1 General Specifications Figure 7.11.1 ‘GS1 AI encodable
-character set 82’), otherwise encodation would fail.</p>
+<p><code>GS1NOCHECK_MODE</code> (CLI <code>--gs1nocheck</code>) is for
+use with legacy systems that have data that does not conform to the
+current GS1 standard. Printable ASCII input is still checked for, as is
+the validity of GS1 data specified without AIs (e.g. linear data for GS1
+DataBar Omnidirectional/Limited/etc.). Also checked is GS1 DataBar
+Expanded and GS1 Composite input that is not in the GS1 encodable
+character set 82 (see GS1 General Specifications Figure 7.11.1 ‘GS1 AI
+encodable character set 82’), otherwise encodation would fail.</p>
+<p>In contrast <code>GS1SYNTAXENGINE_MODE</code> (CLI
+<code>--gs1strict</code>) enables the use the GS1 Syntax Engine to
+strictly validate GS1 data, including GS1 Digital Link URIs (by default
+ZINT does not validate Digital Links at all). It requires that the
+<code>gs1encoders</code> library was present when Zint was built,
+otherwise the default built-in validation will be used.</p>
 <p>For <code>HEIGHTPERROW_MODE</code>, see <code>--heightperrow</code>
 in section <a href="#adjusting-height">4.4 Adjusting Height</a>. The
 <code>height</code> member should be set to the desired per-row value on
@@ -4262,8 +4276,8 @@ stacked symbologies are not stackable.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>ZINT_CAP_EANUPC</code><a
-href="#fn14" class="footnote-ref" id="fnref14"
-role="doc-noteref"><sup>14</sup></a></td>
+href="#fn15" class="footnote-ref" id="fnref15"
+role="doc-noteref"><sup>15</sup></a></td>
 <td style="text-align: left;">Is the symbology EAN/UPC?</td>
 </tr>
 <tr>
@@ -4349,8 +4363,8 @@ etc.) the <code>option_1</code>, <code>option_2</code> and
 <code>option_3</code> members will be set to the values used by Zint to
 create the barcode. This is useful for feedback if the values were left
 as defaults or were overridden by Zint.</p>
-<p>In particular for symbologies that have masks,<a href="#fn15"
-class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a>
+<p>In particular for symbologies that have masks,<a href="#fn16"
+class="footnote-ref" id="fnref16" role="doc-noteref"><sup>16</sup></a>
 <code>option_3</code> will contain the mask used as
 <code>(N + 1) &lt;&lt; 8</code>, N being the mask. Also Aztec Code will
 return the actual ECC percentage used in <code>option_1</code> as
@@ -4373,8 +4387,8 @@ members of <code>zint_seg</code> will be set accordingly - the
 unconverted data in <code>source</code>, the data length in
 <code>length</code>, and the character set the data was converted to in
 <code>eci</code>. Any check characters encoded will be included,<a
-href="#fn16" class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a> and for GS1 data any
+href="#fn17" class="footnote-ref" id="fnref17"
+role="doc-noteref"><sup>17</sup></a> and for GS1 data any
 <code>FNC1</code> separators will be represented as <code>GS</code>
 (ASCII 29) characters. UPC-A and UPC-E data will be expanded to EAN-13,
 as will EAN-8 but only if it has an add-on (otherwise it will remain at
@@ -4391,8 +4405,8 @@ member using the two helper functions discussed next.</p>
 convenience functions</h2>
 <p>As a convenience the conversion done by Zint from UTF-8 to ECIs is
 exposed in two helper functions (compatible with the
-<code>libzueci</code><a href="#fn17" class="footnote-ref" id="fnref17"
-role="doc-noteref"><sup>17</sup></a> functions
+<code>libzueci</code><a href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a> functions
 <code>zueci_utf8_to_eci()</code> and
 <code>zueci_dest_len_eci()</code>):</p>
 <div class="sourceCode" id="cb85"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> ZBarcode_UTF8_To_ECI<span class="op">(</span><span class="dt">int</span> eci<span class="op">,</span> <span class="dt">const</span> <span class="dt">unsigned</span> <span class="dt">char</span> <span class="op">*</span>source<span class="op">,</span> <span class="dt">int</span> length<span class="op">,</span></span>
@@ -5062,8 +5076,8 @@ aria-hidden="true"><code>zint -b CODE128AB -d "130170X178"</code></figcaption>
 </figure>
 <p>It is sometimes advantageous to stop Code 128 from using Code Set C
 which compresses numerical data. The <code>BARCODE_CODE128AB</code><a
-href="#fn18" class="footnote-ref" id="fnref18"
-role="doc-noteref"><sup>18</sup></a> variant (symbology 60) suppresses
+href="#fn19" class="footnote-ref" id="fnref19"
+role="doc-noteref"><sup>19</sup></a> variant (symbology 60) suppresses
 Code Set C in favour of Code Sets A and B.</p>
 <p>Note that the special extra escapes mentioned above are not available
 for this variant (nor for any other).</p>
@@ -5812,8 +5826,8 @@ the 6-digit version the first and last digit are ignored, leaving a
 2047. The second format <code>"NNN-NN"</code> represents the DX Extract
 as two numbers separated by a dash (<code>-</code>), the first number
 being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
-0 to 15).<a href="#fn19" class="footnote-ref" id="fnref19"
-role="doc-noteref"><sup>19</sup></a></p>
+0 to 15).<a href="#fn20" class="footnote-ref" id="fnref20"
+role="doc-noteref"><sup>20</sup></a></p>
 <p>The optional frame number is a number in the range 0 to 63, and may
 have a half frame indicator <code>"A"</code> appended. Special character
 sequences (with or without a half frame indicator appended) may also be
@@ -9212,6 +9226,11 @@ than square brackets <code>"[]"</code>. If the AI data contains
 parentheses, they must be backslashed (<code>"\("</code> or
 <code>"\)"</code>) and the <code>--esc</code> option selected.</p>
 </dd>
+<dt><code>--gs1strict</code></dt>
+<dd>
+<p>Uses the GS1 Syntax Engine (if available) to strictly verify GS1
+data. Ignored if <code>--gs1nocheck</code> also given.</p>
+</dd>
 <dt><code>--gssep</code></dt>
 <dd>
 <p>For Data Matrix in GS1 mode, use <code>GS</code> (0x1D) as the GS1
@@ -9703,91 +9722,97 @@ class="email">robin@zint.org.uk</a></p>
 role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1"><p>See the Homebrew website <a
-href="https://brew.sh">https://brew.sh</a>.<a href="#fnref1"
+<li id="fn1"><p>The GS1 Syntax Engine (<code>gs1encoders</code>
+library), which is officially sanctioned by GS1, offers strict
+validation of GS1 data, including GS1 Digital Link URIs - see “GS1
+Barcode Syntax Engine” at <a
+href="https://github.com/gs1/gs1-syntax-engine">https://github.com/gs1/gs1-syntax-engine</a>.<a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>See the Homebrew website <a
+href="https://brew.sh">https://brew.sh</a>.<a href="#fnref2"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>In Unicode contexts, BMP stands for Basic Multilingual
+<li id="fn3"><p>In Unicode contexts, BMP stands for Basic Multilingual
 Plane, the plane 0 codeset from U+0000 to U+D7FF and U+E000 to U+FFFF
 (i.e. excluding surrogates). Not to be confused with the Windows Bitmap
-file format BMP!<a href="#fnref2" class="footnote-back"
+file format BMP!<a href="#fnref3" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>The symbology names marked with an asterisk
+<li id="fn4"><p>The symbology names marked with an asterisk
 (<code>*</code>) in Table <a href="#tbl:barcode_types">: Barcode Types
 (Symbologies)</a> above used different names in previous versions of
 Zint. These names are now deprecated but are still recognised by Zint.
 Those marked with a dagger (<code>†</code>) are replacements for
 <code>BARCODE_EANX</code> (13), <code>BARCODE_EANX_CHK</code> (14) and
 <code>BARCODE_EANX_CC</code> (130), which are still recognised by
-Zint.<a href="#fnref3" class="footnote-back"
+Zint.<a href="#fnref4" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>The background is omitted for vector outputs EMF, EPS
+<li id="fn5"><p>The background is omitted for vector outputs EMF, EPS
 and SVG when <code>--nobackground</code> is given. For raster outputs
 GIF, PCX, PNG and TIF, the background’s alpha channel is set to zero
-(fully transparent).<a href="#fnref4" class="footnote-back"
+(fully transparent).<a href="#fnref5" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>For linear barcodes, Human Readable Text (HRT) is not
+<li id="fn6"><p>For linear barcodes, Human Readable Text (HRT) is not
 shown for the postal codes Australia Post (all variants), USPS
 Intelligent Mail, POSTNET and PLANET, Brazilian CEPNet, Royal Mail
 4-State Customer Code and 4-State Mailmark, Dutch Post KIX Code,
 Japanese Postal Code, DAFT Code and FIM, the pharma codes Pharmacode
 One-Track and Pharmacode Two-Track, and the specialist codes DX Film
 Edge Barcode and Flattermarken. Note that HRT is never shown for stacked
-and matrix barcodes.<a href="#fnref5" class="footnote-back"
+and matrix barcodes.<a href="#fnref6" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>Shift JIS (JIS X 0201 Roman) re-maps two ASCII
+<li id="fn7"><p>Shift JIS (JIS X 0201 Roman) re-maps two ASCII
 characters: backslash (<code>\</code>) to the yen sign (¥), and tilde
-(<code>~</code>) to overline (U+203E).<a href="#fnref6"
+(<code>~</code>) to overline (U+203E).<a href="#fnref7"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn7"><p>ISO/IEC 646 Invariant is a subset of ASCII with 12
+<li id="fn8"><p>ISO/IEC 646 Invariant is a subset of ASCII with 12
 characters undefined: <code>#</code>, <code>$</code>, <code>@</code>,
 <code>[</code>, <code>\</code>, <code>]</code>, <code>^</code>,
 <code>`</code>, <code>{</code>, <code>|</code>, <code>}</code>,
-<code>~</code> (tilde).<a href="#fnref7" class="footnote-back"
+<code>~</code> (tilde).<a href="#fnref8" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>BARCODE_MEMORY_FILE textual formats EPS and SVG will
+<li id="fn9"><p>BARCODE_MEMORY_FILE textual formats EPS and SVG will
 have Unix newlines (LF) on both Windows and Unix, i.e. not CR+LF on
-Windows.<a href="#fnref8" class="footnote-back"
+Windows.<a href="#fnref9" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>The <code>height</code> value is ignored for Aztec
+<li id="fn10"><p>The <code>height</code> value is ignored for Aztec
 (including HIBC and Aztec Rune), Code One, Data Matrix (including HIBC),
 DotCode, Grid Matrix, Han Xin, MaxiCode, QR Code (including HIBC, Micro
 QR, rMQR and UPNQR), and Ultracode - all of which have a fixed
 width-to-height ratio (or, in the case of Code One, a fixed height).<a
-href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>For Windows, <code>outfile</code> is assumed to be
-UTF-8 encoded.<a href="#fnref10" class="footnote-back"
+href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>For Windows, <code>outfile</code> is assumed to be
+UTF-8 encoded.<a href="#fnref11" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>The <code>BARCODE_BIND_TOP</code> flag is set by
+<li id="fn12"><p>The <code>BARCODE_BIND_TOP</code> flag is set by
 default for DPD - see <a href="#dpd-code">6.1.10.7 DPD Code</a>.<a
-href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn12"><p>The <code>BARCODE_BIND</code> flag is always set for
+href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn13"><p>The <code>BARCODE_BIND</code> flag is always set for
 Codablock-F, Code 16K and Code 49. Special considerations apply to
-ITF-14 - see <a href="#itf-14">6.1.2.6 ITF-14</a>.<a href="#fnref12"
+ITF-14 - see <a href="#itf-14">6.1.2.6 ITF-14</a>.<a href="#fnref13"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>Codablock-F, Code 16K, Code 49, EAN-13, EAN-8, EAN/UPC
+<li id="fn14"><p>Codablock-F, Code 16K, Code 49, EAN-13, EAN-8, EAN/UPC
 add-ons, ISBN, ITF-14, UPC-A and UPC-E have compliant quiet zones added
-by default.<a href="#fnref13" class="footnote-back"
+by default.<a href="#fnref14" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p><code>ZINT_CAP_EANUPC</code> was previously named
+<li id="fn15"><p><code>ZINT_CAP_EANUPC</code> was previously named
 <code>ZINT_CAP_EXTENDABLE</code>, which is still recognised.<a
-href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>DotCode, Han Xin, Micro QR Code, QR Code and UPNQR have
-variable masks. Rectangular Micro QR Code has a fixed mask (4).<a
 href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>Except for Japanese Postal Code, whose check character
-is not truly representable in the encoded data.<a href="#fnref16"
+<li id="fn16"><p>DotCode, Han Xin, Micro QR Code, QR Code and UPNQR have
+variable masks. Rectangular Micro QR Code has a fixed mask (4).<a
+href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn17"><p>Except for Japanese Postal Code, whose check character
+is not truly representable in the encoded data.<a href="#fnref17"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>The library <code>libzueci</code>, which can convert
+<li id="fn18"><p>The library <code>libzueci</code>, which can convert
 both to and from UTF-8 and ECI, is available at <a
 href="https://sourceforge.net/projects/libzueci/">https://sourceforge.net/projects/libzueci/</a>.<a
-href="#fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p><code>BARCODE_CODE128AB</code> previously used the name
-<code>BARCODE_CODE128B</code>, which is still recognised.<a
 href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p>The DX number may be looked up in The (Modified) Big
+<li id="fn19"><p><code>BARCODE_CODE128AB</code> previously used the name
+<code>BARCODE_CODE128B</code>, which is still recognised.<a
+href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn20"><p>The DX number may be looked up in The (Modified) Big
 Film Database at <a
 href="https://thebigfilmdatabase.merinorus.com">https://thebigfilmdatabase.merinorus.com</a>.<a
-href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+href="#fnref20" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>

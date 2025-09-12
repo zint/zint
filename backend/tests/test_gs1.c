@@ -395,77 +395,88 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 31*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12", "" }, /* Incorrect check digit */
         /* 32*/ { BARCODE_GS1_128, -1, -1, "[91]ABCDEF)GH", "", 0, "(91)ABCDEF)GH", "" },
         /* 33*/ { BARCODE_GS1_128, -1, BARCODE_RAW_TEXT, "[91]ABCDEF)GH", "", 0, "(91)ABCDEF)GH", "91ABCDEF)GH" },
-        /* 34*/ { BARCODE_GS1_128, ESCAPE_MODE | GS1PARENS_MODE, -1, "(91)ABCDEF\\)GH", "", 0, "(91)ABCDEF)GH", "" },
-        /* 35*/ { BARCODE_GS1_128, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(91)ABCDEF\\)GH", "", 0, "(91)ABCDEF)GH", "91ABCDEF)GH" },
-        /* 36*/ { BARCODE_GS1_128, -1, -1, "[91]ABCDEF(GH", "", 0, "(91)ABCDEF(GH", "" },
-        /* 37*/ { BARCODE_GS1_128, -1, BARCODE_RAW_TEXT, "[91]ABCDEF(GH", "", 0, "(91)ABCDEF(GH", "91ABCDEF(GH" },
-        /* 38*/ { BARCODE_GS1_128, ESCAPE_MODE | GS1PARENS_MODE, -1, "(91)ABCDEF\\(GH", "", 0, "(91)ABCDEF(GH", "" },
-        /* 39*/ { BARCODE_GS1_128, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(91)ABCDEF\\(GH", "", 0, "(91)ABCDEF(GH", "91ABCDEF(GH" },
-        /* 40*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "[21]12345", 0, "(01)12345678901234(20)12", "" },
-        /* 41*/ { BARCODE_GS1_128_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12", "01123456789012342012|2112345" },
-        /* 42*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[20]12", "[21]12345", 0, "(01)12345678901231(20)12", "" },
-        /* 43*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[10]12[20]AB", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB", "" }, /* AI (20) should be 2 nos. */
-        /* 44*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]12[20]AB", "[21]12345", 0, "(01)12345678901231(10)12(20)AB", "" },
-        /* 45*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[10]AB[20]12", "[21]12345", 0, "(01)12345678901231(10)AB(20)12", "" },
-        /* 46*/ { BARCODE_GS1_128_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12", "[21]12345", 0, "(01)12345678901231(10)AB(20)12", "011234567890123110AB\0352012|2112345" },
-        /* 47*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[10]AB[20]12", "[30]1234567A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)AB(20)12", "" },
-        /* 48*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]AB[20]12", "[30]1234567A", 0, "(01)12345678901231(10)AB(20)12", "" },
-        /* 49*/ { BARCODE_EAN14, -1, -1, "1234567890123", "", 0, "(01)12345678901231", "" },
-        /* 50*/ { BARCODE_EAN14, -1, BARCODE_RAW_TEXT, "1234567890123", "", 0, "(01)12345678901231", "0112345678901231" },
-        /* 51*/ { BARCODE_EAN14, -1, -1, "1234", "", 0, "(01)00000000012348", "" },
-        /* 52*/ { BARCODE_EAN14, -1, BARCODE_RAW_TEXT, "1234", "", 0, "(01)00000000012348", "0100000000012348" },
-        /* 53*/ { BARCODE_EAN14, -1, -1, "12345", "", 0, "(01)00000000123457", "" },
-        /* 54*/ { BARCODE_EAN14, -1, -1, "12340", "", 0, "(01)00000000123402", "" },
-        /* 55*/ { BARCODE_NVE18, -1, -1, "12345678901234567", "", 0, "(00)123456789012345675", "" },
-        /* 56*/ { BARCODE_NVE18, -1, BARCODE_RAW_TEXT, "12345678901234567", "", 0, "(00)123456789012345675", "00123456789012345675" },
-        /* 57*/ { BARCODE_NVE18, -1, -1, "1234", "", 0, "(00)000000000000012348", "" },
-        /* 58*/ { BARCODE_NVE18, -1, BARCODE_RAW_TEXT, "1234", "", 0, "(00)000000000000012348", "00000000000000012348" },
-        /* 59*/ { BARCODE_NVE18, -1, -1, "12345", "", 0, "(00)000000000000123457", "" },
-        /* 60*/ { BARCODE_NVE18, -1, -1, "12340", "", 0, "(00)000000000000123402", "" },
-        /* 61*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12", "" }, /* Incorrect check digit */
-        /* 62*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "", 0, "(01)12345678901234(20)12", "" },
-        /* 63*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12", "01123456789012342012" },
-        /* 64*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12", "" },
-        /* 65*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12", "01123456789012312012" },
-        /* 66*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB", "" }, /* AI (20) should be 2 nos. */
-        /* 67*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]12[20]AB", "", 0, "(01)12345678901231(10)12(20)AB", "" },
-        /* 68*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB", "01123456789012311012\03520AB" },
-        /* 69*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12", "" },
-        /* 70*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12", "011234567890123110AB\0352012" },
-        /* 71*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC(2012", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(2012", "" },
-        /* 72*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC(2012", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(2012", "011234567890123110AB\035201290ABC(2012" },
-        /* 73*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC20)12", "" },
-        /* 74*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC20)12", "011234567890123110AB\035201290ABC20)12" },
-        /* 75*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC(20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12", "" },
-        /* 76*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC(20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12", "011234567890123110AB\035201290ABC(20)12" },
-        /* 77*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC(20)12[91]12(", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12(91)12(" , ""},
-        /* 78*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC(20)12[91]12(", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12(91)12(" , "011234567890123110AB\035201290ABC(20)12\0359112(" },
-        /* 79*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234", "" },
-        /* 80*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, -1, "[01]12345678901234", "[21]12345", 0, "(01)12345678901234", "" },
-        /* 81*/ { BARCODE_DBAR_EXP_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234", "0112345678901234|2112345" },
-        /* 82*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901231", "[21]12345", 0, "(01)12345678901231", "" },
-        /* 83*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901231[20]12[21]12345", "[21]12345", 0, "(01)12345678901231(20)12(21)12345", "" },
-        /* 84*/ { BARCODE_DBAR_EXP_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901231[20]12[21]12345", "[21]12345", 0, "(01)12345678901231(20)12(21)12345", "011234567890123120122112345|2112345" },
-        /* 85*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901231[10](", "[21]123()", 0, "(01)12345678901231(10)(", "" },
-        /* 86*/ { BARCODE_DBAR_EXP_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10](", "[21]123()", 0, "(01)12345678901231(10)(", "011234567890123110(|21123()" },
-        /* 87*/ { BARCODE_DBAR_EXP_CC, ESCAPE_MODE | GS1PARENS_MODE, -1, "(01)12345678901231(10)\\(", "(21)123\\(\\)", 0, "(01)12345678901231(10)(", "" },
-        /* 88*/ { BARCODE_DBAR_EXP_CC, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(01)12345678901231(10)\\(", "(21)123\\(\\)", 0, "(01)12345678901231(10)(", "011234567890123110(|21123()" },
-        /* 89*/ { BARCODE_DBAR_EXPSTK, -1, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "", "" },
-        /* 90*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "", 0, "", "" },
-        /* 91*/ { BARCODE_DBAR_EXPSTK, -1, BARCODE_RAW_TEXT, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "", "01123456789012342012" },
-        /* 92*/ { BARCODE_DBAR_EXPSTK, -1, -1, "[01]12345678901231[20]12", "", 0, "", "" },
-        /* 93*/ { BARCODE_DBAR_EXPSTK, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "", "" },
-        /* 94*/ { BARCODE_DBAR_EXPSTK, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "", "011234567890123110AB\035201290ABC20)12" },
-        /* 95*/ { BARCODE_DBAR_EXPSTK, ESCAPE_MODE | GS1PARENS_MODE, -1, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "", 0, "", "" },
-        /* 96*/ { BARCODE_DBAR_EXPSTK, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "", 0, "", "011234567890123110AB\035201290ABC20)12" },
-        /* 97*/ { BARCODE_DBAR_EXPSTK_CC, -1, -1, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "" , ""},
-        /* 98*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "[21]12345", 0, "", "" },
-        /* 99*/ { BARCODE_DBAR_EXPSTK_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "", "01123456789012342012|2112345" },
-        /*100*/ { BARCODE_DBAR_EXPSTK_CC, -1, -1, "[01]12345678901231[20]12", "[21]12345", 0, "", "" },
-        /*101*/ { BARCODE_DBAR_EXPSTK_CC, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "[21]12345", 0, "", "" },
-        /*102*/ { BARCODE_DBAR_EXPSTK_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "[21]12345", 0, "", "011234567890123110AB\035201290ABC20)12|2112345" },
-        /*103*/ { BARCODE_DBAR_EXPSTK_CC, ESCAPE_MODE | GS1PARENS_MODE, -1, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "(21)12345", 0, "", "" },
-        /*104*/ { BARCODE_DBAR_EXPSTK_CC, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "(21)12345", 0, "", "011234567890123110AB\035201290ABC20)12|2112345" },
+        /* 34*/ { BARCODE_GS1_128, GS1PARENS_MODE, -1, "(91)ABCDEF\\)GH", "", 0, "(91)ABCDEF\\)GH", "" }, /* Escaped parens now work without ESCAPE_MODE & now kept in HRT */
+        /* 35*/ { BARCODE_GS1_128, ESCAPE_MODE | GS1PARENS_MODE, -1, "(91)ABCDEF\\)GH", "", 0, "(91)ABCDEF\\)GH", "" }, /* Escaped parens now kept in HRT */
+        /* 36*/ { BARCODE_GS1_128, GS1PARENS_MODE, BARCODE_RAW_TEXT, "(91)ABCDEF\\)GH", "", 0, "(91)ABCDEF\\)GH", "91ABCDEF)GH" },
+        /* 37*/ { BARCODE_GS1_128, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(91)ABCDEF\\)GH", "", 0, "(91)ABCDEF\\)GH", "91ABCDEF)GH" },
+        /* 38*/ { BARCODE_GS1_128, -1, -1, "[91]ABCDEF(GH", "", 0, "(91)ABCDEF(GH", "" },
+        /* 39*/ { BARCODE_GS1_128, -1, BARCODE_RAW_TEXT, "[91]ABCDEF(GH", "", 0, "(91)ABCDEF(GH", "91ABCDEF(GH" },
+        /* 40*/ { BARCODE_GS1_128, GS1PARENS_MODE, -1, "(91)ABCDEF\\(GH", "", 0, "(91)ABCDEF\\(GH", "" },
+        /* 41*/ { BARCODE_GS1_128, ESCAPE_MODE | GS1PARENS_MODE, -1, "(91)ABCDEF\\(GH", "", 0, "(91)ABCDEF\\(GH", "" },
+        /* 42*/ { BARCODE_GS1_128, GS1PARENS_MODE, BARCODE_RAW_TEXT, "(91)ABCDEF\\(GH", "", 0, "(91)ABCDEF\\(GH", "91ABCDEF(GH" },
+        /* 43*/ { BARCODE_GS1_128, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(91)ABCDEF\\(GH", "", 0, "(91)ABCDEF\\(GH", "91ABCDEF(GH" },
+        /* 44*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "[21]12345", 0, "(01)12345678901234(20)12", "" },
+        /* 45*/ { BARCODE_GS1_128_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12", "01123456789012342012|2112345" },
+        /* 46*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[20]12", "[21]12345", 0, "(01)12345678901231(20)12", "" },
+        /* 47*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[10]12[20]AB", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB", "" }, /* AI (20) should be 2 nos. */
+        /* 48*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]12[20]AB", "[21]12345", 0, "(01)12345678901231(10)12(20)AB", "" },
+        /* 49*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[10]AB[20]12", "[21]12345", 0, "(01)12345678901231(10)AB(20)12", "" },
+        /* 50*/ { BARCODE_GS1_128_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12", "[21]12345", 0, "(01)12345678901231(10)AB(20)12", "011234567890123110AB\0352012|2112345" },
+        /* 51*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[10]AB[20]12", "[30]1234567A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)AB(20)12", "" },
+        /* 52*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]AB[20]12", "[30]1234567A", 0, "(01)12345678901231(10)AB(20)12", "" },
+        /* 53*/ { BARCODE_EAN14, -1, -1, "1234567890123", "", 0, "(01)12345678901231", "" },
+        /* 54*/ { BARCODE_EAN14, -1, BARCODE_RAW_TEXT, "1234567890123", "", 0, "(01)12345678901231", "0112345678901231" },
+        /* 55*/ { BARCODE_EAN14, -1, -1, "1234", "", 0, "(01)00000000012348", "" },
+        /* 56*/ { BARCODE_EAN14, -1, BARCODE_RAW_TEXT, "1234", "", 0, "(01)00000000012348", "0100000000012348" },
+        /* 57*/ { BARCODE_EAN14, -1, -1, "12345", "", 0, "(01)00000000123457", "" },
+        /* 58*/ { BARCODE_EAN14, -1, -1, "12340", "", 0, "(01)00000000123402", "" },
+        /* 59*/ { BARCODE_NVE18, -1, -1, "12345678901234567", "", 0, "(00)123456789012345675", "" },
+        /* 60*/ { BARCODE_NVE18, -1, BARCODE_RAW_TEXT, "12345678901234567", "", 0, "(00)123456789012345675", "00123456789012345675" },
+        /* 61*/ { BARCODE_NVE18, -1, -1, "1234", "", 0, "(00)000000000000012348", "" },
+        /* 62*/ { BARCODE_NVE18, -1, BARCODE_RAW_TEXT, "1234", "", 0, "(00)000000000000012348", "00000000000000012348" },
+        /* 63*/ { BARCODE_NVE18, -1, -1, "12345", "", 0, "(00)000000000000123457", "" },
+        /* 64*/ { BARCODE_NVE18, -1, -1, "12340", "", 0, "(00)000000000000123402", "" },
+        /* 65*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12", "" }, /* Incorrect check digit */
+        /* 66*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "", 0, "(01)12345678901234(20)12", "" },
+        /* 67*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12", "01123456789012342012" },
+        /* 68*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12", "" },
+        /* 69*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12", "01123456789012312012" },
+        /* 70*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB", "" }, /* AI (20) should be 2 nos. */
+        /* 71*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]12[20]AB", "", 0, "(01)12345678901231(10)12(20)AB", "" },
+        /* 72*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB", "01123456789012311012\03520AB" },
+        /* 73*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12", "" },
+        /* 74*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12", "011234567890123110AB\0352012" },
+        /* 75*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC(2012", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(2012", "" },
+        /* 76*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC(2012", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(2012", "011234567890123110AB\035201290ABC(2012" },
+        /* 77*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC20)12", "" },
+        /* 78*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC20)12", "011234567890123110AB\035201290ABC20)12" },
+        /* 79*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC(20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12", "" },
+        /* 80*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC(20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12", "011234567890123110AB\035201290ABC(20)12" },
+        /* 81*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC(20)12[91]12(", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12(91)12(" , ""},
+        /* 82*/ { BARCODE_DBAR_EXP, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC(20)12[91]12(", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12(91)12(" , "011234567890123110AB\035201290ABC(20)12\0359112(" },
+        /* 83*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234", "" },
+        /* 84*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, -1, "[01]12345678901234", "[21]12345", 0, "(01)12345678901234", "" },
+        /* 85*/ { BARCODE_DBAR_EXP_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234", "0112345678901234|2112345" },
+        /* 86*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901231", "[21]12345", 0, "(01)12345678901231", "" },
+        /* 87*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901231[20]12[21]12345", "[21]12345", 0, "(01)12345678901231(20)12(21)12345", "" },
+        /* 88*/ { BARCODE_DBAR_EXP_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901231[20]12[21]12345", "[21]12345", 0, "(01)12345678901231(20)12(21)12345", "011234567890123120122112345|2112345" },
+        /* 89*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901231[10](", "[21]123()", 0, "(01)12345678901231(10)(", "" },
+        /* 90*/ { BARCODE_DBAR_EXP_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10](", "[21]123()", 0, "(01)12345678901231(10)(", "011234567890123110(|21123()" },
+        /* 91*/ { BARCODE_DBAR_EXP_CC, GS1PARENS_MODE, -1, "(01)12345678901231(10)\\(", "(21)123\\(\\)", 0, "(01)12345678901231(10)\\(", "" }, /* Escaped parens now work without ESCAPE_MODE & now kept in HRT */
+        /* 92*/ { BARCODE_DBAR_EXP_CC, ESCAPE_MODE | GS1PARENS_MODE, -1, "(01)12345678901231(10)\\(", "(21)123\\(\\)", 0, "(01)12345678901231(10)\\(", "" },
+        /* 93*/ { BARCODE_DBAR_EXP_CC, GS1PARENS_MODE, BARCODE_RAW_TEXT, "(01)12345678901231(10)\\(", "(21)123\\(\\)", 0, "(01)12345678901231(10)\\(", "011234567890123110(|21123()" },
+        /* 94*/ { BARCODE_DBAR_EXP_CC, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(01)12345678901231(10)\\(", "(21)123\\(\\)", 0, "(01)12345678901231(10)\\(", "011234567890123110(|21123()" },
+        /* 95*/ { BARCODE_DBAR_EXPSTK, -1, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "", "" },
+        /* 96*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "", 0, "", "" },
+        /* 97*/ { BARCODE_DBAR_EXPSTK, -1, BARCODE_RAW_TEXT, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "", "01123456789012342012" },
+        /* 98*/ { BARCODE_DBAR_EXPSTK, -1, -1, "[01]12345678901231[20]12", "", 0, "", "" },
+        /* 99*/ { BARCODE_DBAR_EXPSTK, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "", "" },
+        /*100*/ { BARCODE_DBAR_EXPSTK, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "", "011234567890123110AB\035201290ABC20)12" },
+        /*101*/ { BARCODE_DBAR_EXPSTK, GS1PARENS_MODE, -1, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "", 0, "", "" },
+        /*102*/ { BARCODE_DBAR_EXPSTK, ESCAPE_MODE | GS1PARENS_MODE, -1, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "", 0, "", "" },
+        /*103*/ { BARCODE_DBAR_EXPSTK, GS1PARENS_MODE, BARCODE_RAW_TEXT, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "", 0, "", "011234567890123110AB\035201290ABC20)12" },
+        /*104*/ { BARCODE_DBAR_EXPSTK, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "", 0, "", "011234567890123110AB\035201290ABC20)12" },
+        /*105*/ { BARCODE_DBAR_EXPSTK_CC, -1, -1, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "" , ""},
+        /*106*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "[21]12345", 0, "", "" },
+        /*107*/ { BARCODE_DBAR_EXPSTK_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "", "01123456789012342012|2112345" },
+        /*108*/ { BARCODE_DBAR_EXPSTK_CC, -1, -1, "[01]12345678901231[20]12", "[21]12345", 0, "", "" },
+        /*109*/ { BARCODE_DBAR_EXPSTK_CC, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "[21]12345", 0, "", "" },
+        /*110*/ { BARCODE_DBAR_EXPSTK_CC, -1, BARCODE_RAW_TEXT, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "[21]12345", 0, "", "011234567890123110AB\035201290ABC20)12|2112345" },
+        /*111*/ { BARCODE_DBAR_EXPSTK_CC, GS1PARENS_MODE, -1, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "(21)12345", 0, "", "" },
+        /*112*/ { BARCODE_DBAR_EXPSTK_CC, ESCAPE_MODE | GS1PARENS_MODE, -1, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "(21)12345", 0, "", "" },
+        /*113*/ { BARCODE_DBAR_EXPSTK_CC, GS1PARENS_MODE, -1, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "(21)12345", 0, "", "" },
+        /*114*/ { BARCODE_DBAR_EXPSTK_CC, ESCAPE_MODE | GS1PARENS_MODE, BARCODE_RAW_TEXT, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "(21)12345", 0, "", "011234567890123110AB\035201290ABC20)12|2112345" },
+        /*115*/ { BARCODE_DBAR_EXPSTK_CC, GS1PARENS_MODE, BARCODE_RAW_TEXT, "(01)12345678901231(10)AB(20)12(90)ABC20\\)12", "(21)12345", 0, "", "011234567890123110AB\035201290ABC20)12|2112345" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -497,7 +508,7 @@ static void test_hrt(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, TCU(text), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
-                    i, data[i].ret, ret, symbol->errtxt);
+                    i, ret, data[i].ret, symbol->errtxt);
 
         assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
                     i, symbol->text_length, expected_length);
@@ -1584,7 +1595,7 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
 
         length = (int) strlen(data[i].data);
 
-        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), &length, ZUCP(reduced), &reduced_length);
+        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), length, ZUCP(reduced), &reduced_length);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, \"%s\", \"%s\" },\n",
@@ -2294,7 +2305,7 @@ static void test_gs1_lint(const testCtx *const p_ctx) {
 
         length = (int) strlen(data[i].data);
 
-        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), &length, ZUCP(reduced), &reduced_length);
+        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), length, ZUCP(reduced), &reduced_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") (%s)\n",
                     i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
 
@@ -2595,122 +2606,124 @@ static void test_gs1nocheck_mode(const testCtx *const p_ctx) {
         /* 63*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901231", "[20]123", 0, "" },
         /* 64*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' (2D component)" },
         /* 65*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901231", "[20]1A", 0, "" },
-        /* 66*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" },
-        /* 67*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" }, /* Nonprintable ASCII still checked */
-        /* 68*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121\200", "[20]12", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (linear component)" },
-        /* 69*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121\200", "[20]12", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (linear component)" },
-        /* 70*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" },
-        /* 71*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" }, /* Extended ASCII still checked */
-        /* 72*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" },
-        /* 73*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" }, /* Format still checked */
-        /* 74*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input (2D component)" },
-        /* 75*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]", 0, "" }, /* Zero-length data not checked */
-        /* 76*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[2]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
-        /* 77*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[2]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 1 AI still checked */
-        /* 78*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
-        /* 79*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]12", 0, "" }, /* Length 0 AI with data not checked */
-        /* 80*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[1]2[]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 5 in input (AI too short) (2D component)" },
-        /* 81*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[1]2[]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 5 in input (AI too short) (2D component)" }, /* Length 1 AI still checked */
-        /* 82*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
-        /* 83*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
-        /* 84*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[][20]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
-        /* 85*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[][20]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
-        /* 86*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]12[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short) (2D component)" },
-        /* 87*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]12[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
-        /* 88*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" },
-        /* 89*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901231", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" }, /* Non-CSET 82 always checked for composite data */
-        /* 90*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", "", 0, "" },
-        /* 91*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231", "", 0, "" },
-        /* 92*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]123[11]1234", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
-        /* 93*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234", "", 0, "" },
-        /* 94*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]123[11]1234A", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
-        /* 95*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234A", "", 0, "" },
-        /* 96*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]123[11]12345A", "", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 6: Non-numeric character 'A'" },
-        /* 97*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]12345A", "", 0, "" },
-        /* 98*/ { BARCODE_DBAR_EXP, -1, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" },
-        /* 99*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, /* Nonprintable ASCII still checked */
-        /*100*/ { BARCODE_DBAR_EXP, -1, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
-        /*101*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, /* Extended ASCII still checked */
-        /*102*/ { BARCODE_DBAR_EXP, -1, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" },
-        /*103*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, /* Format still checked */
-        /*104*/ { BARCODE_DBAR_EXP, -1, "[10]", "", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input" },
-        /*105*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[10]", "", 0, "" }, /* Zero-length data not checked */
-        /*106*/ { BARCODE_DBAR_EXP, -1, "[2]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" },
-        /*107*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[2]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" }, /* Length 1 AI still checked */
-        /*108*/ { BARCODE_DBAR_EXP, -1, "[]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" },
-        /*109*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[]1", "", 0, "" }, /* Length 0 AI with data not checked */
-        /*110*/ { BARCODE_DBAR_EXP, -1, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" },
-        /*111*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" }, /* Length 0 AI with no data still checked */
-        /*112*/ { BARCODE_DBAR_EXP, -1, "[20]12[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short)" },
-        /*113*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[20]12[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short)" }, /* Length 0 AI with no data still checked */
-        /*114*/ { BARCODE_DBAR_EXP, -1, "[90]12]34", "", ZINT_ERROR_INVALID_DATA, "Error 386: Invalid character in General Field data" },
-        /*115*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[90]12]34", "", ZINT_ERROR_INVALID_DATA, "Error 386: Invalid character in General Field data" }, /* Non-CSET 82 always checked for DBAR_EXP */
-        /*116*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
-        /*117*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
-        /*118*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11) (linear component)" },
-        /*119*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", 0, "" },
-        /*120*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]123456", "[21]ABC123[22]12345", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 3: Invalid month '34' (linear component)" },
-        /*121*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]123456", "[21]ABC123[22]12345", 0, "" },
-        /*122*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]123456789", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (30) (2D component)" },
-        /*123*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]123456789", 0, "" },
-        /*124*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (30) position 8: Non-numeric character 'A' (2D component)" },
-        /*125*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", 0, "" },
-        /*126*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" },
-        /*127*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" }, /* Nonprintable ASCII still checked */
-        /*128*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" },
-        /*129*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" }, /* Extended ASCII still checked */
-        /*130*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" },
-        /*131*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" }, /* Format still checked */
-        /*132*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[10]", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input (2D component)" },
-        /*133*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[10]", 0, "" }, /* Zero-length data not checked */
-        /*134*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[2]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
-        /*135*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[2]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 1 AI still checked */
-        /*136*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
-        /*137*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]12", 0, "" }, /* Length 0 AI with data not checked */
-        /*138*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
-        /*139*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
-        /*140*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[20]12[][10]123", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short) (2D component)" },
-        /*141*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]12[][10]123", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
-        /*142*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" },
-        /*143*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" }, /* Non-CSET 82 always checked for composite */
-        /*144*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", "", 0, "" },
-        /*145*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231", "", 0, "" },
-        /*146*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231[10]123[11]1234", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
-        /*147*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234", "", 0, "" },
-        /*148*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231[10]123[11]1234A", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
-        /*149*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234A", "", 0, "" },
-        /*150*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231[10]123[11]12345A", "", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 6: Non-numeric character 'A'" },
-        /*151*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]12345A", "", 0, "" },
-        /*152*/ { BARCODE_DBAR_EXPSTK, -1, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" },
-        /*153*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, /* Nonprintable ASCII still checked */
-        /*154*/ { BARCODE_DBAR_EXPSTK, -1, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
-        /*155*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, /* Extended ASCII still checked */
-        /*156*/ { BARCODE_DBAR_EXPSTK, -1, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" },
-        /*157*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, /* Format still checked */
-        /*158*/ { BARCODE_DBAR_EXPSTK, -1, "[01]", "", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input" },
-        /*159*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]", "", 0, "" }, /* Zero-length data not checked */
-        /*160*/ { BARCODE_DBAR_EXPSTK, -1, "[90]12]34", "", ZINT_ERROR_INVALID_DATA, "Error 386: Invalid character in General Field data" },
-        /*161*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[90]12]34", "", ZINT_ERROR_INVALID_DATA, "Error 386: Invalid character in General Field data" }, /* Non-CSET 82 always checked for DBAR_EXPSTK */
-        /*162*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
-        /*163*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
-        /*164*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11) (linear component)" },
-        /*165*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", 0, "" },
-        /*166*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]123456", "[21]ABC123[22]12345", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 3: Invalid month '34' (linear component)" },
-        /*167*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]123456", "[21]ABC123[22]12345", 0, "" },
-        /*168*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]123456789", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (30) (2D component)" },
-        /*169*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]123456789", 0, "" },
-        /*170*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (30) position 8: Non-numeric character 'A' (2D component)" },
-        /*171*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", 0, "" },
-        /*172*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" },
-        /*173*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" }, /* Nonprintable ASCII still checked */
-        /*174*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" },
-        /*175*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" }, /* Extended ASCII still checked */
-        /*176*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" },
-        /*177*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" }, /* Format still checked */
-        /*178*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[235]", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input (2D component)" },
-        /*179*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[235]", 0, "" }, /* Zero-length data not checked */
-        /*180*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" },
-        /*181*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" }, /* Non-CSET 82 always checked for composite */
+        /* 66*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121\177", "[20]12", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (linear component)" },
+        /* 67*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121\177", "[20]12", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (linear component)" }, /* Nonprintable ASCII still checked */
+        /* 68*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" },
+        /* 69*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" }, /* Nonprintable ASCII still checked */
+        /* 70*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121\200", "[20]12", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (linear component)" },
+        /* 71*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121\200", "[20]12", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (linear component)" },
+        /* 72*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" },
+        /* 73*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" }, /* Extended ASCII still checked */
+        /* 74*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" },
+        /* 75*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" }, /* Format still checked */
+        /* 76*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input (2D component)" },
+        /* 77*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]", 0, "" }, /* Zero-length data not checked */
+        /* 78*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[2]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
+        /* 79*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[2]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 1 AI still checked */
+        /* 80*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
+        /* 81*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]12", 0, "" }, /* Length 0 AI with data not checked */
+        /* 82*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[1]2[]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 5 in input (AI too short) (2D component)" },
+        /* 83*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[1]2[]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 5 in input (AI too short) (2D component)" }, /* Length 1 AI still checked */
+        /* 84*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
+        /* 85*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
+        /* 86*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[][20]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
+        /* 87*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[][20]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
+        /* 88*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]12[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short) (2D component)" },
+        /* 89*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]12[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
+        /* 90*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" },
+        /* 91*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901231", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" }, /* Non-CSET 82 always checked for composite data */
+        /* 92*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", "", 0, "" },
+        /* 93*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231", "", 0, "" },
+        /* 94*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]123[11]1234", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
+        /* 95*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234", "", 0, "" },
+        /* 96*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]123[11]1234A", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
+        /* 97*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234A", "", 0, "" },
+        /* 98*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]123[11]12345A", "", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 6: Non-numeric character 'A'" },
+        /* 99*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]12345A", "", 0, "" },
+        /*100*/ { BARCODE_DBAR_EXP, -1, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" },
+        /*101*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, /* Nonprintable ASCII still checked */
+        /*102*/ { BARCODE_DBAR_EXP, -1, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
+        /*103*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, /* Extended ASCII still checked */
+        /*104*/ { BARCODE_DBAR_EXP, -1, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" },
+        /*105*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, /* Format still checked */
+        /*106*/ { BARCODE_DBAR_EXP, -1, "[10]", "", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input" },
+        /*107*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[10]", "", 0, "" }, /* Zero-length data not checked */
+        /*108*/ { BARCODE_DBAR_EXP, -1, "[2]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" },
+        /*109*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[2]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" }, /* Length 1 AI still checked */
+        /*110*/ { BARCODE_DBAR_EXP, -1, "[]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" },
+        /*111*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[]1", "", 0, "" }, /* Length 0 AI with data not checked */
+        /*112*/ { BARCODE_DBAR_EXP, -1, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" },
+        /*113*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short)" }, /* Length 0 AI with no data still checked */
+        /*114*/ { BARCODE_DBAR_EXP, -1, "[20]12[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short)" },
+        /*115*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[20]12[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short)" }, /* Length 0 AI with no data still checked */
+        /*116*/ { BARCODE_DBAR_EXP, -1, "[90]12]34", "", ZINT_ERROR_INVALID_DATA, "Error 386: Invalid character in General Field data" },
+        /*117*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[90]12]34", "", ZINT_ERROR_INVALID_DATA, "Error 386: Invalid character in General Field data" }, /* Non-CSET 82 always checked for DBAR_EXP */
+        /*118*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
+        /*119*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
+        /*120*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11) (linear component)" },
+        /*121*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", 0, "" },
+        /*122*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]123456", "[21]ABC123[22]12345", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 3: Invalid month '34' (linear component)" },
+        /*123*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]123456", "[21]ABC123[22]12345", 0, "" },
+        /*124*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]123456789", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (30) (2D component)" },
+        /*125*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]123456789", 0, "" },
+        /*126*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (30) position 8: Non-numeric character 'A' (2D component)" },
+        /*127*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", 0, "" },
+        /*128*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" },
+        /*129*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" }, /* Nonprintable ASCII still checked */
+        /*130*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" },
+        /*131*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" }, /* Extended ASCII still checked */
+        /*132*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" },
+        /*133*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" }, /* Format still checked */
+        /*134*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[10]", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input (2D component)" },
+        /*135*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[10]", 0, "" }, /* Zero-length data not checked */
+        /*136*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[2]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
+        /*137*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[2]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 1 AI still checked */
+        /*138*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
+        /*139*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]12", 0, "" }, /* Length 0 AI with data not checked */
+        /*140*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" },
+        /*141*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 1 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
+        /*142*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[20]12[][10]123", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short) (2D component)" },
+        /*143*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]12[][10]123", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI at position 7 in input (AI too short) (2D component)" }, /* Length 0 AI with no data still checked */
+        /*144*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" },
+        /*145*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" }, /* Non-CSET 82 always checked for composite */
+        /*146*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", "", 0, "" },
+        /*147*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231", "", 0, "" },
+        /*148*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231[10]123[11]1234", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
+        /*149*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234", "", 0, "" },
+        /*150*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231[10]123[11]1234A", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
+        /*151*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234A", "", 0, "" },
+        /*152*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231[10]123[11]12345A", "", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 6: Non-numeric character 'A'" },
+        /*153*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]12345A", "", 0, "" },
+        /*154*/ { BARCODE_DBAR_EXPSTK, -1, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" },
+        /*155*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, /* Nonprintable ASCII still checked */
+        /*156*/ { BARCODE_DBAR_EXPSTK, -1, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
+        /*157*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, /* Extended ASCII still checked */
+        /*158*/ { BARCODE_DBAR_EXPSTK, -1, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" },
+        /*159*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, /* Format still checked */
+        /*160*/ { BARCODE_DBAR_EXPSTK, -1, "[01]", "", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input" },
+        /*161*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]", "", 0, "" }, /* Zero-length data not checked */
+        /*162*/ { BARCODE_DBAR_EXPSTK, -1, "[90]12]34", "", ZINT_ERROR_INVALID_DATA, "Error 386: Invalid character in General Field data" },
+        /*163*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[90]12]34", "", ZINT_ERROR_INVALID_DATA, "Error 386: Invalid character in General Field data" }, /* Non-CSET 82 always checked for DBAR_EXPSTK */
+        /*164*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
+        /*165*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
+        /*166*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11) (linear component)" },
+        /*167*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", 0, "" },
+        /*168*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]123456", "[21]ABC123[22]12345", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 3: Invalid month '34' (linear component)" },
+        /*169*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]123456", "[21]ABC123[22]12345", 0, "" },
+        /*170*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]123456789", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (30) (2D component)" },
+        /*171*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]123456789", 0, "" },
+        /*172*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (30) position 8: Non-numeric character 'A' (2D component)" },
+        /*173*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", 0, "" },
+        /*174*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" },
+        /*175*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 (2D component)" }, /* Nonprintable ASCII still checked */
+        /*176*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" },
+        /*177*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 (2D component)" }, /* Extended ASCII still checked */
+        /*178*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" },
+        /*179*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI (2D component)" }, /* Format still checked */
+        /*180*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[235]", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input (2D component)" },
+        /*181*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[235]", 0, "" }, /* Zero-length data not checked */
+        /*182*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" },
+        /*183*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[90]12]34", ZINT_ERROR_INVALID_DATA, "Error 441: Invalid character in input (2D component)" }, /* Non-CSET 82 always checked for composite */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

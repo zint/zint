@@ -1,4 +1,4 @@
-% win32/README 2024-01-18
+% win32/README 2025-09-12
 
 Visual Studio 2022
 ------------------
@@ -17,8 +17,8 @@ Make sure git and cmake are in your PATH, e.g. (your paths may differ)
   set "PATH=C:\Program Files\Git\cmd;%PATH%"
   set "PATH=C:\Program Files\CMake\bin;%PATH%"
 
-Download zint, zlib and libpng by going to the directory you want to clone them
-into:
+Download zint, zlib, libpng and gs1encoders (GS1 Syntax Engine) by going to the
+directory you want to clone them into:
 
   cd <project-directory>
 
@@ -27,6 +27,7 @@ and cloning each:
   git clone https://git.code.sf.net/p/zint/code zint
   git clone https://git.code.sf.net/p/libpng/code lpng
   git clone https://github.com/madler/zlib.git zlib
+  git clone https://github.com/gs1/gs1-syntax-engine
 
 First build zlib:
 
@@ -41,6 +42,16 @@ and then lpng:
   nmake -f scripts\makefile.vcwin32 clean
   nmake -f scripts\makefile.vcwin32
   cd ..
+
+and then gs1encoders:
+
+  cd gs1-syntax-engine\src
+  msbuild /p:Configuration=Release;Platform=x86 gs1encoders.sln /t:gs1encoders
+  cd ..\..
+
+and add the location of gs1encoders.dll to your path:
+
+  set "PATH=%cd%\gs1-syntax-engine\src\c-lib\build\library\Win32\Release;%PATH%"
 
 If you now open "%cd%\zint\win32\zint.sln" with Visual Studio 2022, you
 should be able to build the Release configuration for Win32.
@@ -117,16 +128,23 @@ CMake and Visual Studio
 Zint can also be built using CMake with Visual Studio 2022, 2019, 2017 or 2015.
 The following example uses Visual Studio 2019 to build for x86/Win32:
 
-As above, follow the steps to build zlib and lpng.
+As above, follow the steps to build zlib, lpng and gs1encoders.
 
-CMake needs to be able to find zlib and lpng. One way to do this (requires
-Administrator privileges) is to create two sub-directories in
-"C:\Program Files (x86)" called "include" and "lib", and then copy
+CMake needs to be able to find zlib, lpng and gs1encoders. One way to do this
+(requires Administrator privileges) is to create two sub-directories in
+"C:\Program Files (x86)" called "include" and "lib", and then copy:
 
-  "zlib\zlib.h", "zlib\zconf.h", "lpng\png.h", "lpng\pngconf.h" and
-  "lpng\pnglibconf.h" into "include", and
+  for %I in (zlib\zlib.h zlib\zconf.h ^
+    lpng\png.h lpng\pngconf.h lpng\pnglibconf.h ^
+	gs1-syntax-engine\src\c-lib\build\library\Win32\Release\gs1encoders.h) ^
+	do copy %I "C:\Program Files (x86)\include"
+  for %I in (zlib\zlib.lib lpng\libpng.lib ^
+    gs1-syntax-engine\src\c-lib\build\library\Win32\Release\gs1encoders.lib) ^
+	do copy %I "C:\Program Files (x86)\lib"
 
-  "zlib\zlib.lib" and "lpng\libpng.lib" into "lib".
+and add the location of gs1encoders.dll to your path:
+
+  set "PATH=%cd%\gs1-syntax-engine\src\c-lib\build\library\Win32\Release;%PATH%"
 
 This example uses Qt 5.15.2 and component "MSVC 2019 32-bit" so install them and
 add to path (your path may differ):

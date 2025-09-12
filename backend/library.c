@@ -1192,7 +1192,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         if (gs1_compliant(symbol->symbology)) {
             /* Reduce input for composite and non-forced symbologies, others (GS1_128 and DBAR_EXP based) will
                handle it themselves */
-            const int have_composite = z_is_composite(symbol->symbology);
+            const int is_composite = z_is_composite(symbol->symbology);
 
             /* Deal with any ECI first */
             if (symbol->eci) {
@@ -1205,15 +1205,20 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                    symbologies, as standards are inconsistent in mentioning it */
             }
 
-            if (have_composite || !check_force_gs1(symbol->symbology)) {
+            if (is_composite || !check_force_gs1(symbol->symbology)) {
                 unsigned char *reduced = (unsigned char *) z_alloca(local_segs[0].length + 1);
-                int source_len = local_segs[0].length;
-                error_number = zint_gs1_verify(symbol, local_segs[0].source, &source_len, reduced,
+                error_number = zint_gs1_verify(symbol, local_segs[0].source, local_segs[0].length, reduced,
                                                 &local_segs[0].length);
                 if (error_number) {
-                    if (have_composite) {
+#ifdef ZINT_HAVE_GS1SE
+                    if (is_composite && !(symbol->input_mode & GS1SYNTAXENGINE_MODE)) {
                         z_errtxt_adj(0, symbol, "%1$s%2$s", " (2D component)");
                     }
+#else
+                    if (is_composite) {
+                        z_errtxt_adj(0, symbol, "%1$s%2$s", " (2D component)");
+                    }
+#endif
                     error_number = error_tag(error_number, symbol, -1, NULL);
                     if (error_number >= ZINT_ERROR) {
                         return error_number;
@@ -1222,7 +1227,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                 }
                 memcpy(local_segs[0].source, reduced, local_segs[0].length + 1); /* Include terminating NUL */
                 /* Set raw text for non-composites (composites set their own raw text) */
-                if (!have_composite && raw_text && z_rt_cpy(symbol, reduced, local_segs[0].length)) {
+                if (!is_composite && raw_text && z_rt_cpy(symbol, reduced, local_segs[0].length)) {
                     return error_tag(ZINT_ERROR_MEMORY, symbol, -1, NULL); /* `z_rt_cpy()` only fails with OOM */
                 }
             }
@@ -2212,6 +2217,15 @@ int ZBarcode_Dest_Len_ECI(int eci, const unsigned char *source, int length, int 
 /* Whether Zint built without PNG support */
 int ZBarcode_NoPng(void) {
 #ifdef ZINT_NO_PNG
+    return 1;
+#else
+    return 0;
+#endif
+}
+
+/* Whether Zint built with GS1 Syntext Engine support */
+int ZBarcode_HaveGS1SyntaxEngine(void) {
+#ifdef ZINT_HAVE_GS1SE
     return 1;
 #else
     return 0;

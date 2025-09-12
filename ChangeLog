@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-09-07)
+Version 2.15.0.9 (dev) not released yet (2025-09-12)
 ====================================================
 
 **Incompatible changes**
@@ -11,6 +11,8 @@ Version 2.15.0.9 (dev) not released yet (2025-09-07)
   after `ZBarcode_Encode()` and variants are called, and there are three new
   methods in the Qt Backend to access to them
 - New Qt Backend method `isBindable()` for new flag `ZINT_CAP_BINDABLE`
+- New Qt Backend methods `gs1SyntaxEngine()`, `setGS1SyntaxEngine()` and
+  `haveGS1SyntaxEngine()` to access newly added GS1 Syntax Engine support
 - GS1 Composites now return warning if CC type upped from requested due to size
   of composite data
 - EAN-8 with add-on now returns warning that it's non-standard
@@ -50,6 +52,10 @@ Changes
 - Prefix all `INTERNAL` funcs/tables with `zint_`, except for those in
   "backend/common.h", which are prefixed by `z_` - makes symbol clashes more
   unlikely when zint is statically linked (ticket #337, props Ulrich Becker)
+- Add support for GS1 Syntax Engine with new `input_mode` flag
+  `GS1SYNTAXENGINE_MODE` (CLI --gs1strict, GUI "GS1 Strict" checkbox)
+- GS1_MODE: allow GS1 Digital Link URIs (no validation unless
+  `GS1SYNTAXENGINE_MODE` set)
 
 Bugs
 ----

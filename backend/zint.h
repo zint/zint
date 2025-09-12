@@ -325,6 +325,7 @@ extern "C" {
                                         /* Note: affects DATAMATRIX, MICROPDF417, PDF417, QRCODE & UPNQR only */
 #define EXTRA_ESCAPE_MODE       0x0100  /* Process special symbology-specific escape sequences as well as others */
                                         /* Note: currently Code 128 only */
+#define GS1SYNTAXENGINE_MODE    0x0200  /* Use the GS1 Syntax Engine (if available) to strictly validate GS1 input */
 
 /* Data Matrix specific options (`symbol->option_3`) */
 #define DM_SQUARE               100     /* Only consider square versions on automatic symbol size selection */
@@ -510,6 +511,9 @@ extern "C" {
 
     /* Whether Zint built without PNG support */
     ZINT_EXTERN int ZBarcode_NoPng(void);
+
+    /* Whether Zint built with GS1 Syntax Engine support */
+    ZINT_EXTERN int ZBarcode_HaveGS1SyntaxEngine(void);
 
     /* Return the version of Zint linked to */
     ZINT_EXTERN int ZBarcode_Version(void);

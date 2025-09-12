@@ -1,10 +1,10 @@
-% README.bsd 2025-02-02
-% Tested on FreeBSD 14.2-RELEASE (with X11 + GNOME installed), OpenBSD 7.6 (with X11) and NetBSD 10.1 (with X11)
+% README.bsd 2025-09-12
+% Tested on FreeBSD 14.3-RELEASE (with X11 + GNOME installed), OpenBSD 7.7 (with X11) and NetBSD 10.1 (with X11)
 
 1. Prerequisites for building zint
 ==================================
 
-Prerequisites are git, cmake, make, gcc (or clang) and, for PNG support, libpng, e.g. FreeBSD
+Prerequisites are git, cmake, make, gmake, gcc (or clang) and, for PNG support, libpng, e.g. FreeBSD
 
     su
     pkg install git cmake gmake gcc graphics/png
@@ -13,16 +13,27 @@ Prerequisites are git, cmake, make, gcc (or clang) and, for PNG support, libpng,
 or OpenBSD (make and clang should already be installed):
 
     su
-    pkg_add git cmake png
+    pkg_add git cmake gmake png
     exit
 
 or NetBSD (make and gcc should already be installed):
 
     su
-    pkgin install git cmake png
+    pkgin install git cmake gmake png
     exit
 
-Then clone the latest source
+To install the gs1encoders library, optional but needed for GS1 Syntax Engine support, clone, gmake and install:
+
+    git clone https://github.com/gs1/gs1-syntax-engine
+    cd gs1-syntax-engine/src/c-lib
+    gmake CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib
+    su
+    gmake install
+    exit
+
+(on FreeBSD, the ldconfig not found error can be ignored)
+
+Then clone the latest zint source
 
     git clone https://git.code.sf.net/p/zint/code zint
     cd zint

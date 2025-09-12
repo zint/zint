@@ -1,6 +1,6 @@
-% README.linux 2025-03-28
+% README.linux 2025-09-12
 % Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
-% Fedora Linux 41 (Workstation Edition)
+% Fedora Linux 42 (Workstation Edition)
 
 1. Prerequisites for building zint
 ==================================
@@ -21,7 +21,16 @@ or Fedora
 
     sudo dnf install libpng-devel
 
-Then either download the source code tarball
+gs1encoders is optional but necessary for GS1 Syntax Engine support. To install clone the repo:
+
+    git clone https://github.com/gs1/gs1-syntax-engine
+
+and navigate to "src/c-lib" and make with EXCLUDE_SYNTAX_DICTIONARY_LOADER defined:
+
+    cd gs1-syntax-engine/src/c-lib
+    make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && sudo make install
+
+Now either download the zint source code tarball
 
     wget -O zint-2.15.0-src.tar.gz \
         https://sourceforge.net/projects/zint/files/zint/2.15.0/zint-2.15.0-src.tar.gz/download
@@ -122,19 +131,20 @@ On Fedora you may have to set LD_LIBRARY_PATH for zint ("libzint.so") and zint-q
 
 A number of options are available:
 
-ZINT_COVERAGE:BOOL=OFF  # Set code coverage flags
 ZINT_DEBUG:BOOL=OFF     # Set debug compile flags
-ZINT_FRONTEND:BOOL=ON   # Build frontend
 ZINT_NOOPT:BOOL=OFF     # Set no optimize compile flags
 ZINT_SANITIZE:BOOL=OFF  # Set sanitize address/undefined
 ZINT_SANITIZEM:BOOL=OFF # Set sanitize memory (ignored if ZINT_SANITIZE)
+ZINT_TEST:BOOL=OFF      # Set test compile flag
+ZINT_COVERAGE:BOOL=OFF  # Set code coverage flags
 ZINT_SHARED:BOOL=ON     # Build shared library
 ZINT_STATIC:BOOL=OFF    # Build static library
-ZINT_TEST:BOOL=OFF      # Set test compile flag
-ZINT_UNINSTALL:BOOL=ON  # Add uninstall target
+ZINT_FRONTEND:BOOL=ON   # Build frontend
+ZINT_USE_GS1SE:BOOL=ON  # Build with GS1 Syntax Engine
 ZINT_USE_PNG:BOOL=ON    # Build with PNG support
 ZINT_USE_QT:BOOL=ON     # Build with Qt support
 ZINT_QT6:BOOL=OFF       # If ZINT_USE_QT, use Qt6
+ZINT_UNINSTALL:BOOL=ON  # Add uninstall target
 
 which can be set by doing e.g.
 

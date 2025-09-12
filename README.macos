@@ -1,4 +1,4 @@
-% README.macos 2024-01-18
+% README.macos 2025-09-12
 % Tested on macOS 12.7.2 Monterey VirtualBox (thanks to https://github.com/myspaghetti/macos-virtualbox)
 
 1. Prerequisites for building zint and zint-qt
@@ -28,6 +28,12 @@ Install CMake, libpng and Qt5 (git, make, cc & c++ should already be available w
     brew install cmake
     brew install libpng
     brew install qt5
+
+Clone and install the gs1encoders library (optional but necessary for GS1 Syntax Engine support):
+
+    git clone https://github.com/gs1/gs1-syntax-engine
+    cd gs1-syntax-engine/src/c-lib
+    make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && sudo make install
 
 Add the Qt5 bin directory to the PATH
 

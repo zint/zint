@@ -122,8 +122,9 @@ static void types(void) {
 }
 
 /* Output version information */
-static void version(const int no_png) {
+static void version(const int no_png, const int have_gs1syntaxengine) {
     const char *no_png_lib = no_png ? " (no libpng)" : "";
+    const char *have_gs1syntaxengine_lib = !have_gs1syntaxengine ? " (no GS1 Syntax Engine)" : "";
     const int zint_version = ZBarcode_Version();
     const int version_major = zint_version / 10000;
     const int version_minor = (zint_version % 10000) / 100;
@@ -134,20 +135,21 @@ static void version(const int no_png) {
         /* This is a test release */
         version_release = version_release / 10;
         version_build = zint_version % 10;
-        printf("Zint version %d.%d.%d.%d (dev)%s\n", version_major, version_minor, version_release, version_build,
-                no_png_lib);
+        printf("Zint version %d.%d.%d.%d (dev)%s%s\n", version_major, version_minor, version_release, version_build,
+                no_png_lib, have_gs1syntaxengine_lib);
     } else {
         /* This is a stable release */
-        printf("Zint version %d.%d.%d%s\n", version_major, version_minor, version_release, no_png_lib);
+        printf("Zint version %d.%d.%d%s%s\n", version_major, version_minor, version_release, no_png_lib,
+                have_gs1syntaxengine_lib);
     }
 }
 
 /* Output usage information */
-static void usage(const int no_png) {
+static void usage(const int no_png, const int have_gs1syntaxengine) {
     const char *no_png_type = no_png ? "" : "/PNG";
     const char *no_png_ext = no_png ? "gif" : "png";
 
-    version(no_png);
+    version(no_png, have_gs1syntaxengine);
 
     /* Breaking up strings so don't get too long (i.e. 500 or so) */
     printf("Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n\n", no_png_type);
@@ -182,8 +184,11 @@ static void usage(const int no_png) {
     fputs( "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
            "  --gs1                 Treat input as GS1 compatible data\n"
            "  --gs1nocheck          Do not check validity of GS1 data\n"
-           "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
-           "  --gssep               Use separator GS for GS1 (Data Matrix)\n", stdout);
+           "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n", stdout);
+if (have_gs1syntaxengine) {
+    fputs( "  --gs1strict           Use GS1 Syntax Engine to strictly validate GS1 data\n", stdout);
+}
+    fputs( "  --gssep               Use separator GS for GS1 (Data Matrix)\n", stdout);
     fputs( "  --guarddescent=NUMBER Set height of guard bar descent in X-dims (EAN/UPC)\n"
            "  --guardwhitespace     Add quiet zone indicators (\"<\"/\">\") to HRT (EAN/UPC)\n"
            "  -h, --help            Display help message\n"
@@ -1454,9 +1459,10 @@ int main(int argc, char **argv) {
     arg_opt *arg_opts = (arg_opt *) z_alloca(sizeof(arg_opt) * argc);
 
     const int no_png = ZBarcode_NoPng();
+    const int have_gs1syntaxengine = ZBarcode_HaveGS1SyntaxEngine();
 
     if (argc == 1) {
-        usage(no_png);
+        usage(no_png, have_gs1syntaxengine);
         exit(ZINT_ERROR_INVALID_DATA);
     }
 
@@ -1478,7 +1484,8 @@ int main(int argc, char **argv) {
             OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT,
             OPT_DIRECT, OPT_DMISO144, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FULLMULTIBYTE,
-            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT, OPT_GUARDWHITESPACE,
+            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/,
+            OPT_GSSEP, OPT_GUARDDESCENT, OPT_GUARDWHITESPACE,
             OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
             OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
@@ -1523,6 +1530,7 @@ int main(int argc, char **argv) {
             {"gs1", 0, 0, OPT_GS1},
             {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
             {"gs1parens", 0, NULL, OPT_GS1PARENS},
+            {"gs1strict", 0, NULL, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/},
             {"gssep", 0, NULL, OPT_GSSEP},
             {"guarddescent", 1, NULL, OPT_GUARDDESCENT},
             {"guardwhitespace", 0, NULL, OPT_GUARDWHITESPACE},
@@ -1733,6 +1741,9 @@ int main(int argc, char **argv) {
                 break;
             case OPT_GS1PARENS:
                 my_symbol->input_mode |= GS1PARENS_MODE;
+                break;
+            case OPT_GS1STRICT:
+                my_symbol->input_mode |= GS1SYNTAXENGINE_MODE;
                 break;
             case OPT_GSSEP:
                 my_symbol->output_options |= GS1_GS_SEPARATOR;
@@ -2023,11 +2034,11 @@ int main(int argc, char **argv) {
                 break;
 
             case 'h':
-                usage(no_png);
+                usage(no_png, have_gs1syntaxengine);
                 help = 1;
                 break;
             case 'v':
-                version(no_png);
+                version(no_png, have_gs1syntaxengine);
                 help = 1;
                 break;
             case 't':

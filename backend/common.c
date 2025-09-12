@@ -74,6 +74,7 @@ INTERNAL void z_to_upper(unsigned char source[], const int length) {
 INTERNAL int z_chr_cnt(const unsigned char source[], const int length, const unsigned char c) {
     int count = 0;
     int i;
+
     for (i = 0; i < length; i++) {
         count += source[i] == c;
     }
@@ -240,6 +241,7 @@ INTERNAL void z_expand(struct zint_symbol *symbol, const char data[], const int 
 /* Helper for `z_errtxt()` & `z_errtxtf()` to set "err_id: " part of error message, returning length */
 static int errtxt_id_str(char *errtxt, int num) {
     int len = 0;
+
     if (num == -1) {
         errtxt[0] = '\0';
         return 0;
@@ -258,6 +260,7 @@ static int errtxt_id_str(char *errtxt, int num) {
     errtxt[len++] = '0' + num;
     errtxt[len++] = ':';
     errtxt[len++] = ' ';
+
     return len;
 }
 
@@ -285,6 +288,7 @@ static int errtxtf_dpad(const char *fmt); /* Forward reference */
 static int errtxtf_num_arg(const char *fmt, int *p_arg) {
     int ret = 0;
     int arg = -2;
+
     if (!errtxtf_dpad(fmt) && z_isdigit(fmt[0])) {
         arg = fmt[1] == '$' ? fmt[0] - '0' - 1 : -1;
         ret = 2;
@@ -299,6 +303,7 @@ static int errtxtf_num_arg(const char *fmt, int *p_arg) {
 static int errtxtf_slen(const char *fmt, const int arg, int *p_arg_cnt, int *p_len) {
     int ret = 0;
     int len = -1;
+
     if (fmt[0] == '.') {
         if (z_isdigit(fmt[1]) && fmt[1] != '0') {
             len = fmt[1] - '0';
@@ -326,6 +331,7 @@ static int errtxtf_slen(const char *fmt, const int arg, int *p_arg_cnt, int *p_l
     if (p_len) {
         *p_len = len;
     }
+
     return ret;
 }
 
@@ -662,11 +668,7 @@ INTERNAL int z_is_fixed_ratio(const int symbology) {
 
 /* Whether next two characters are digits */
 INTERNAL int z_is_twodigits(const unsigned char source[], const int length, const int position) {
-    if (position + 1 < length && z_isdigit(source[position]) && z_isdigit(source[position + 1])) {
-        return 1;
-    }
-
-    return 0;
+    return position + 1 < length && z_isdigit(source[position]) && z_isdigit(source[position + 1]);
 }
 
 /* Returns how many consecutive digits lie immediately ahead up to `max`, or all if `max` is -1 */

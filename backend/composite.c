@@ -1094,16 +1094,17 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 }
 
 /* Calculate the width of the linear part (primary) */
-static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source, int *p_length) {
+static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source, int length) {
     struct zint_symbol dummy = {0};
     int error_number;
     int linear_width;
 
     dummy.symbology = BARCODE_GS1_128_CC;
     dummy.option_1 = -1;
-    dummy.input_mode = symbol->input_mode;
+    /* Verified later via `linear` symbol (unless GS1SYNTAXENGINE_MODE, when already verified) */
+    dummy.input_mode = symbol->input_mode | GS1NOCHECK_MODE;
     dummy.debug = symbol->debug;
-    error_number = zint_gs1_128_cc(&dummy, source, *p_length, 3 /*cc_mode*/, 0 /*cc_rows*/);
+    error_number = zint_gs1_128_cc(&dummy, source, length, 3 /*cc_mode*/, 0 /*cc_rows*/);
     linear_width = dummy.width;
     if (error_number >= ZINT_ERROR || (symbol->debug & ZINT_DEBUG_TEST)) {
         (void) z_errtxt(0, symbol, -1, dummy.errtxt);
@@ -1112,8 +1113,6 @@ static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source
     if (error_number >= ZINT_ERROR) {
         return 0;
     }
-    /* May have changed if ESCAPE_MODE & GS1PARENS_MODE and escaped parentheses */
-    *p_length = (int) z_ustrlen(source);
     return linear_width;
 }
 
@@ -1128,7 +1127,6 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
     struct zint_symbol *linear;
     int top_shift, bottom_shift;
     int linear_width = 0;
-    unsigned char primary[sizeof(symbol->primary)];
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
@@ -1155,13 +1153,10 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
                         "Invalid mode (CC-C only valid with GS1-128 linear component)");
     }
 
-    /* Take copy of primary so passed-in remains unchanged */
-    memcpy(primary, symbol->primary, primary_len + 1); /* Include terminating NUL */
-
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         /* Do a test run of encoding the linear component to establish its width */
-        linear_width = cc_linear_dummy_run(symbol, primary, &primary_len); /* Length can change */
-        if (linear_width == 0) {
+        linear_width = cc_linear_dummy_run(symbol, ZUCP(symbol->primary), primary_len);
+        if (linear_width == 0) { /* Only catches `GS1NOCHECK_MODE` errors */
             return z_errtxt_adj(ZINT_ERROR_INVALID_DATA, symbol, "%1$s%2$s", " (linear component)");
         }
         if (debug_print) {
@@ -1178,7 +1173,8 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
                 int padded_primary_len;
                 int with_addon;
                 unsigned char padded_primary[21];
-                if (!zint_ean_leading_zeroes(symbol, primary, primary_len, padded_primary, &with_addon, NULL, NULL)) {
+                if (!zint_ean_leading_zeroes(symbol, ZCUCP(symbol->primary), primary_len, padded_primary,
+                                            &with_addon, NULL, NULL)) {
                     return z_errtxt_adj(ZINT_ERROR_TOO_LONG, symbol, "%1$s%2$s", " (linear component)");
                 }
                 padded_primary_len = (int) z_ustrlen(padded_primary);
@@ -1278,6 +1274,11 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
 
     linear->symbology = symbol->symbology;
     linear->input_mode = symbol->input_mode;
+#ifdef ZINT_HAVE_GS1SE
+    if (symbol->input_mode & GS1SYNTAXENGINE_MODE) {
+        linear->input_mode |= GS1NOCHECK_MODE; /* Already verified in `ZBarcode_Encode_Segs()` */
+    }
+#endif
     linear->output_options = symbol->output_options;
     linear->show_hrt = symbol->show_hrt;
     linear->option_2 = symbol->option_2;
@@ -1295,35 +1296,35 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
         case BARCODE_EANX_CC:
         case BARCODE_EAN8_CC:
         case BARCODE_EAN13_CC:
-            error_number = zint_eanx_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_eanx_cc(linear, ZUCP(symbol->primary), primary_len, symbol->rows);
             break;
         case BARCODE_GS1_128_CC:
             /* GS1-128 needs to know which type of 2D component is used */
-            error_number = zint_gs1_128_cc(linear, primary, primary_len, cc_mode, symbol->rows);
+            error_number = zint_gs1_128_cc(linear, ZUCP(symbol->primary), primary_len, cc_mode, symbol->rows);
             break;
         case BARCODE_DBAR_OMN_CC:
-            error_number = zint_dbar_omn_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_omn_cc(linear, ZUCP(symbol->primary), primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_LTD_CC:
-            error_number = zint_dbar_ltd_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_ltd_cc(linear, ZUCP(symbol->primary), primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_EXP_CC:
-            error_number = zint_dbar_exp_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_exp_cc(linear, ZUCP(symbol->primary), primary_len, symbol->rows);
             break;
         case BARCODE_UPCA_CC:
-            error_number = zint_eanx_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_eanx_cc(linear, ZUCP(symbol->primary), primary_len, symbol->rows);
             break;
         case BARCODE_UPCE_CC:
-            error_number = zint_eanx_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_eanx_cc(linear, ZUCP(symbol->primary), primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_STK_CC:
-            error_number = zint_dbar_omn_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_omn_cc(linear, ZUCP(symbol->primary), primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_OMNSTK_CC:
-            error_number = zint_dbar_omn_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_omn_cc(linear, ZUCP(symbol->primary), primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_EXPSTK_CC:
-            error_number = zint_dbar_exp_cc(linear, primary, primary_len, symbol->rows);
+            error_number = zint_dbar_exp_cc(linear, ZUCP(symbol->primary), primary_len, symbol->rows);
             break;
     }
 
@@ -1461,7 +1462,7 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
             error_number = zint_dbar_omnstk_set_height(symbol, symbol->rows - linear->rows + 1 /*first_row*/);
         } else if (symbol->symbology == BARCODE_DBAR_EXP_CC || symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
             /* If symbol->height given then min row height was returned, else default height */
-            if (error_number == 0) { /* Avoid overwriting any `gs1_verify()` warning */
+            if (error_number == 0) { /* Avoid overwriting any `zint_gs1_verify()` warning */
                 error_number = z_set_height(symbol, symbol->height ? linear->height : 0.0f,
                                             symbol->height ? 0.0f : linear->height, 0.0f, 0 /*no_errtxt*/);
             } else {
@@ -1491,7 +1492,7 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
 
     if (raw_text) {
         assert(linear->raw_segs && linear->raw_segs[0].source);
-        /* First linear, then pipe '|' separator (following BWIPP), then composite */
+        /* First linear, then pipe '|' separator (following BWIPP & GS1 Syntax Engine), then composite */
         if (z_rt_cpy_cat(symbol, linear->raw_segs[0].source, linear->raw_segs[0].length, '|', source, length)) {
             ZBarcode_Delete(linear);
             return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */

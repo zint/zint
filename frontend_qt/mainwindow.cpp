@@ -229,7 +229,7 @@ void MainWindow::mac_hack_statusBars(QWidget *win, const char* name)
 
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
         : QWidget(parent, fl), m_previewBgColor(0xF4, 0xF4, 0xF4), m_optionWidget(nullptr), m_symbology(0),
-          m_menu(nullptr),
+          m_menu(nullptr), m_chkGS1SyntaxEngine(nullptr),
           m_lblHeightPerRow(nullptr), m_spnHeightPerRow(nullptr),
           m_btnHeightPerRowDisable(nullptr), m_btnHeightPerRowDefault(nullptr),
           m_scaleWindow(nullptr)
@@ -354,6 +354,14 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(chkRInit, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(chkGS1Parens, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(chkGS1NoCheck, SIGNAL(toggled(bool)), SLOT(update_preview()));
+    if (m_bc.bc.haveGS1SyntaxEngine()) {
+        m_chkGS1SyntaxEngine = new QCheckBox(tr("GS1 St&rict"));
+        m_chkGS1SyntaxEngine->setToolTip(tr("Use GS1 Syntax Engine to\n"
+                                              "strictly verify GS1 data\n"
+                                              "(ignored if disabled)"));
+        hLayoutChks->insertWidget(-1, m_chkGS1SyntaxEngine);
+        connect(m_chkGS1SyntaxEngine, SIGNAL(toggled(bool)), SLOT(update_preview()));
+    }
     connect(spnWhitespace, SIGNAL(valueChanged(int)), SLOT(update_preview()));
     connect(spnVWhitespace, SIGNAL(valueChanged(int)), SLOT(update_preview()));
     connect(btnMenu, SIGNAL(clicked(bool)), SLOT(menu()));
@@ -462,6 +470,9 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/chk_rinit"), chkRInit->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/chk_gs1parens"), chkGS1Parens->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/chk_gs1nocheck"), chkGS1NoCheck->isChecked() ? 1 : 0);
+    if (m_chkGS1SyntaxEngine) {
+        settings.setValue(QSL("studio/chk_gs1syntax"), m_chkGS1SyntaxEngine->isChecked() ? 1 : 0);
+    }
     settings.setValue(QSL("studio/appearance/autoheight"), chkAutoHeight->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/compliantheight"), chkCompliantHeight->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/height"), heightb->value());
@@ -533,6 +544,9 @@ void MainWindow::load_settings(QSettings &settings)
     chkRInit->setChecked(settings.value(QSL("studio/chk_rinit")).toInt() ? true : false);
     chkGS1Parens->setChecked(settings.value(QSL("studio/chk_gs1parens")).toInt() ? true : false);
     chkGS1NoCheck->setChecked(settings.value(QSL("studio/chk_gs1nocheck")).toInt() ? true : false);
+    if (m_chkGS1SyntaxEngine) {
+        m_chkGS1SyntaxEngine->setChecked(settings.value(QSL("studio/chk_gs1syntax")).toInt() ? true : false);
+    }
     chkAutoHeight->setChecked(settings.value(QSL("studio/appearance/autoheight"), 1).toInt() ? true : false);
     chkCompliantHeight->setChecked(
         settings.value(QSL("studio/appearance/compliantheight"), 1).toInt() ? true : false);
@@ -3348,6 +3362,9 @@ void MainWindow::update_preview()
     btnClearData->setEnabled(!txtData->text().isEmpty());
     chkGS1Parens->setEnabled(m_bc.bc.takesGS1AIData(m_symbology) || (m_bc.bc.inputMode() & 0x07) == GS1_MODE);
     chkGS1NoCheck->setEnabled(chkGS1Parens->isEnabled());
+    if (m_chkGS1SyntaxEngine) {
+        m_chkGS1SyntaxEngine->setEnabled(chkGS1Parens->isEnabled() && !chkGS1NoCheck->isChecked());
+    }
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
     chkCompliantHeight->setEnabled(m_bc.bc.hasCompliantHeight());
 
@@ -3369,6 +3386,9 @@ void MainWindow::update_preview()
     m_bc.bc.setECI(cmbECI->isEnabled() ? cmbECI->currentIndex() : 0);
     m_bc.bc.setGS1Parens(chkGS1Parens->isEnabled() && chkGS1Parens->isChecked());
     m_bc.bc.setGS1NoCheck(chkGS1NoCheck->isEnabled() && chkGS1NoCheck->isChecked());
+    if (m_chkGS1SyntaxEngine) {
+        m_bc.bc.setGS1SyntaxEngine(m_chkGS1SyntaxEngine->isEnabled() && m_chkGS1SyntaxEngine->isChecked());
+    }
     m_bc.bc.setReaderInit(chkRInit->isEnabled() && chkRInit->isChecked());
     m_bc.bc.setShowText(chkHRTShow->isEnabled() && chkHRTShow->isChecked());
     m_bc.bc.setBorderType(btype->currentIndex());

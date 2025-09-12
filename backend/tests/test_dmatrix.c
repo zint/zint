@@ -688,7 +688,7 @@ static void test_options(const testCtx *const p_ctx) {
         /* 81*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)12", 0, 10, 10, "", 1, 1, "" },
         /* 82*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[90](", 0, 10, 10, "", 1, 1, "" },
         /* 83*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)(", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 253: Malformed AI in input (brackets don't match)", 0, 1, "" },
-        /* 84*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)\\(", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 253: Malformed AI in input (brackets don't match)", 0, 1, "" },
+        /* 84*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)\\(", 0, 10, 10, "", 1, 1, "" }, /* Escaped parens now work without ESCAPE_MODE */
         /* 85*/ { BARCODE_DATAMATRIX, GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)\\(", 0, 10, 10, "", 1, 1, "" },
         /* 86*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 2, "" }, "1", 0, 12, 12, "", 2, 1, "" },
         /* 87*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 16, 16, "" }, "1", 0, 12, 12, "", 2, 1, "" },
@@ -1319,8 +1319,7 @@ static void test_input(const testCtx *const p_ctx) {
                                 i, expected_rows_width, prev_expected_rows_width);
 
                     if ((data[i].input_mode & 0x07) == GS1_MODE) {
-                        int data_len = length;
-                        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), &data_len, reduced, &length);
+                        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), length, reduced, &length);
                         assert_zero(ret, "i:%d zint_gs1_verify() ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
                         text = reduced;
                     } else {

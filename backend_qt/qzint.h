@@ -208,6 +208,10 @@ public:
     bool gs1NoCheck() const; // `symbol->input_mode | GS1NOCHECK_MODE`
     void setGS1NoCheck(bool gs1NoCheck);
 
+    /* Use GS1 Syntax Engine to validate GS1 data */
+    bool gs1SyntaxEngine() const; // `symbol->input_mode | GS1SYNTAXENGINE_MODE`
+    void setGS1SyntaxEngine(bool gs1SyntaxEngine);
+
     /* Reader Initialisation (Programming) */
     bool readerInit() const; // `symbol->output_options | READER_INIT`
     void setReaderInit(bool readerInit);
@@ -317,6 +321,9 @@ public:
     /* Whether Zint library "libzint" built with PNG support or not */
     static bool noPng(); // `ZBarcode_NoPng()`
 
+    /* Whether Zint library "libzint" built with GS1 Syntax Engine support or not */
+    static bool haveGS1SyntaxEngine(); // `ZBarcode_HaveGS1SyntaxEngine()`
+
     /* Version of Zint library "libzint" linked to */
     static int getVersion(); // `ZBarcode_Version()`
 
@@ -391,6 +398,7 @@ private:
     int m_eci;
     bool m_gs1parens;
     bool m_gs1nocheck;
+    bool m_gs1syntaxengine;
     bool m_reader_init;
     bool m_guard_whitespace;
     bool m_embed_vector_font;

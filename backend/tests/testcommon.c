@@ -4351,8 +4351,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         expected = escaped;
     }
     if (gs1 && symbology != BARCODE_EAN14 && symbology != BARCODE_NVE18) {
-        int len = expected_len;
-        ret = zint_gs1_verify(symbol, ZUCP(expected), &len, ZUCP(reduced), &expected_len);
+        ret = zint_gs1_verify(symbol, ZUCP(expected), expected_len, ZUCP(reduced), &expected_len);
         if (ret >= ZINT_ERROR) {
             sprintf(msg, "zint_gs1_verify %d != 0", ret);
             return 3;

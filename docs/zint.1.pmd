@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.15.0.9
 %
-% April 2025
+% September 2025
 
 # NAME
 
@@ -214,6 +214,10 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 :   Process parentheses `"()"` as GS1 AI delimiters, rather than square brackets `"[]"`. If the AI data contains
     parentheses, they must be backslashed (`"\("` or `"\)"`) and the `--esc` option selected.
+
+`--gs1strict`
+
+:   Uses the GS1 Syntax Engine (if available) to strictly verify GS1 data. Ignored if `--gs1nocheck` also given.
 
 `--gssep`
 
