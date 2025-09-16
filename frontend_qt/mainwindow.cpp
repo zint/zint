@@ -3360,9 +3360,7 @@ void MainWindow::update_preview()
     btnClearData->setEnabled(!txtData->text().isEmpty());
     chkGS1Parens->setEnabled(m_bc.bc.takesGS1AIData(m_symbology) || (m_bc.bc.inputMode() & 0x07) == GS1_MODE);
     chkGS1NoCheck->setEnabled(chkGS1Parens->isEnabled());
-    if (chkGS1Strict->isVisible()) {
-        chkGS1Strict->setEnabled(chkGS1Parens->isEnabled() && !chkGS1NoCheck->isChecked());
-    }
+    chkGS1Strict->setEnabled(chkGS1Parens->isEnabled() && !chkGS1NoCheck->isChecked());
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
     chkCompliantHeight->setEnabled(m_bc.bc.hasCompliantHeight());
 

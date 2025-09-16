@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-09-12)
+Version 2.15.0.9 (dev) not released yet (2025-09-16)
 ====================================================
 
 **Incompatible changes**
@@ -48,7 +48,8 @@ Changes
   `BARCODE_EANX_CC` and use in CLI/GUI (`BARCODE_EANX` etc. marked as legacy)
 - For EAN/UPC accept space as alternative add-on separator to '+', and accept
   GTIN-13 format with & without 2-digit or 5-digit add-on (no separator)
-- GS1PARENS_MODE: allow parentheses in AI data if backslashed and `ESCAPE_MODE`
+- GS1PARENS_MODE: allow parentheses in AI data if backslashed (necessary for
+  opening parentheses, optional for closing ones)
 - Prefix all `INTERNAL` funcs/tables with `zint_`, except for those in
   "backend/common.h", which are prefixed by `z_` - makes symbol clashes more
   unlikely when zint is statically linked (ticket #337, props Ulrich Becker)
@@ -56,6 +57,9 @@ Changes
   `GS1SYNTAXENGINE_MODE` (CLI --gs1strict, GUI "GS1 Strict" checkbox)
 - GS1_MODE: allow GS1 Digital Link URIs (no validation unless
   `GS1SYNTAXENGINE_MODE` set)
+- CLI: --gs1parens, --gs1nocheck and --gs1strict now imply --gs1;
+  --gs1parens no longer requires --esc if AI data includes backslashed
+  parentheses
 
 Bugs
 ----

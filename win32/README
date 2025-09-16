@@ -46,6 +46,7 @@ and then lpng:
 and then gs1encoders:
 
   cd gs1-syntax-engine\src\c-lib
+  nmake -f makefile.vcwin32 clean
   nmake -f makefile.vcwin32
   cd ..\..\..
 
@@ -133,26 +134,17 @@ The following example uses Visual Studio 2019 to build for x86/Win32:
 
 As above, follow the steps to build zlib, lpng and gs1encoders.
 
-CMake needs to be able to find zlib, lpng and gs1encoders. One way to do this
-(requires Administrator privileges) is to create two sub-directories in
-"C:\Program Files (x86)" called "include" and "lib", and then copy:
-
-  for %I in (zlib\zlib.h zlib\zconf.h lpng\png.h lpng\pngconf.h ^
-    lpng\pnglibconf.h gs1-syntax-engine\src\c-lib\gs1encoders.h) ^
-    do copy %I "C:\Program Files (x86)\include"
-  for %I in (zlib\zlib.lib lpng\libpng.lib ^
-    gs1-syntax-engine\src\c-lib\gs1encoders.lib) ^
-    do copy %I "C:\Program Files (x86)\lib"
-
 This example uses Qt 5.15.2 and component "MSVC 2019 32-bit" so install them and
 add to path (your path may differ):
 
   set "PATH=C:\Qt\5.15.2\msvc2019\bin;%PATH%"
 
-Now build zint:
+Now build zint, passing the locations zlib, lpng and gs1encoders:
 
   cd zint
-  cmake -G "Visual Studio 16 2019" -A Win32 -DCMAKE_BUILD_TYPE=Release -B build
+  cmake -G "Visual Studio 16 2019" -A Win32 -DCMAKE_BUILD_TYPE=Release -B build^
+        -DZLIB_ROOT="%cd%\..\zlib" -DPNG_ROOT="%cd%\..\lpng"^
+        -DGS1SE_PATH="%cd%\..\gs1-syntax-engine\src\c-lib"
   cmake --build build --config Release
   cd ..
 
@@ -166,11 +158,15 @@ Note that the program name for Zint Studio when built using CMake is not
 "qtZint.exe" but "zint-qt.exe".
 
 For MSVC 2015 32-bit, MSVC 2017 32-bit and MSVC 2022 32-bit, the zint cmake
-equivalents are:
+equivalents are (include the library locations as above):
 
-  cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=Release -B build
-  cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=Release -B build
-  cmake -G "Visual Studio 17 2022" -A Win32 -DCMAKE_BUILD_TYPE=Release -B build
+  cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=Release -B build^
+  cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=Release -B build^
+  cmake -G "Visual Studio 17 2022" -A Win32 -DCMAKE_BUILD_TYPE=Release -B build^
+
+To build as 64-bit, open an "x64 Native Tools" Command Prompt and follow the
+same instructions, using "MSVC 2019 64-bit" (or "MSVC 2022 64-bit") as the Qt
+component and dropping "-A Win32" from the "cmake -G" invocation if present.
 
 
 Visual C++ 6

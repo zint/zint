@@ -1738,12 +1738,15 @@ int main(int argc, char **argv) {
                 break;
             case OPT_GS1NOCHECK:
                 my_symbol->input_mode |= GS1NOCHECK_MODE;
+                my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; /* Now sets GS1_MODE also */
                 break;
             case OPT_GS1PARENS:
                 my_symbol->input_mode |= GS1PARENS_MODE;
+                my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; /* Now sets GS1_MODE also */
                 break;
             case OPT_GS1STRICT:
                 my_symbol->input_mode |= GS1SYNTAXENGINE_MODE;
+                my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; /* Now sets GS1_MODE also */
                 break;
             case OPT_GSSEP:
                 my_symbol->output_options |= GS1_GS_SEPARATOR;

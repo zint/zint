@@ -6,10 +6,15 @@ cmake_minimum_required(VERSION 3.10)
 project(zint)
 
 if(ZINT_USE_PNG)
+    cmake_policy(SET CMP0074 NEW) # Allow use of `<PackageName>_ROOT` (Windows)
     find_package(PNG)
 endif()
 if(ZINT_USE_GS1SE)
-    find_library(GS1SE gs1encoders)
+    if(WIN32)
+        find_library(GS1SE gs1encoders PATH ${GS1SE_PATH})
+    else()
+        find_library(GS1SE gs1encoders)
+    endif()
 endif()
 
 set(zint_COMMON_SRCS common.c eci.c filemem.c general_field.c gs1.c large.c library.c reedsol.c)
@@ -129,6 +134,10 @@ zint_target_include_directories(PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+if(WIN32 AND GS1SE)
+    get_filename_component(GS1SE_INC ${GS1SE} DIRECTORY)
+    zint_target_include_directories(PRIVATE ${GS1SE_INC})
+endif()
 
 # Adapted from old (2008) KDE "SetPaths.cmake" to use GNUInstallDirs
 set(INSTALL_TARGETS_DEFAULT_ARGS RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"

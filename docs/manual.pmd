@@ -1280,12 +1280,13 @@ Interpretations) mechanism to encode the data if the symbology supports it - see
 
 GS1 data can be encoded in a number of symbologies. Application Identifiers
 (AIs) should be enclosed in `[square brackets]` followed by the data to be
-encoded (see [6.1.10.3 GS1-128]). GS1 Digital Link URIs are also supported. To
-encode GS1 data use the `--gs1` option. Also recommended is the `--gs1strict`
-option, which verifies the GS1 data. GS1 mode is assumed (and doesn't need to be
-set) for GS1-128, EAN-14, GS1 DataBar and GS1 Composite symbologies but is also
-available for Aztec Code, Code 16K, Code 49, Code One, Data Matrix, DotCode, QR
-Code and Ultracode.
+encoded (see [6.1.10.3 GS1-128]). For matrix symbologies, GS1 Digital Link URIs
+are also supported. To encode GS1 data use the `--gs1` option. Alternatively,
+use the `--gs1strict` option, which strictly verifies the GS1 data.
+
+GS1 mode is assumed (and doesn't need to be set) for GS1-128, EAN-14, GS1
+DataBar and GS1 Composite symbologies but is also available for Aztec Code, Code
+16K, Code 49, Code One, Data Matrix, DotCode, QR Code and Ultracode.
 
 Health Industry Barcode (HIBC) data may also be encoded in the symbologies Aztec
 Code, Codablock-F, Code 128, Code 39, Data Matrix, MicroPDF417, PDF417 and QR
@@ -2393,7 +2394,7 @@ Value                   Effect
 
 `GS1PARENS_MODE`        Parentheses (round brackets) used in GS1 data instead
                         of square brackets to delimit Application Identifiers
-                        (parentheses in the data must be escaped).
+                        (opening parentheses in the data must be escaped).
 
 `GS1NOCHECK_MODE`       Do not check GS1 data for validity, i.e. suppress
                         checks for valid AIs and data lengths. Invalid
@@ -3355,9 +3356,9 @@ inclusion of parentheses in the AI data without escaping.
 
 For compatibility with data entry in other systems, the option `--gs1parens`
 (API `input_mode |= GS1PARENS_MODE`) may be used to signal that AIs are encased
-in parentheses. If there are any parentheses in the AI data, they must be
-escaped with a backslash (`\(` or `\)`) and the option `--esc` (API `input_mode
-|= ESCAPE_MODE`) selected.
+in parentheses. If there are any opening parentheses in the AI data, they must
+be escaped with a backslash (`\(`). Optionally, for clarity, closing parentheses
+may also be escaped,
 
 Fixed length data should be entered at the appropriate length for correct
 encoding. GS1-128 does not support extended ASCII (ISO/IEC 8859-1) characters.

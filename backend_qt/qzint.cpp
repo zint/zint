@@ -1362,9 +1362,16 @@ namespace Zint {
         arg_bool(cmd, "--fullmultibyte", supportsFullMultibyte() && (option3() & 0xFF) == ZINT_FULL_MULTIBYTE);
 
         if (supportsGS1()) {
-            arg_bool(cmd, "--gs1", (inputMode() & 0x07) == GS1_MODE);
-            arg_bool(cmd, "--gs1parens", gs1Parens() || (inputMode() & GS1PARENS_MODE));
-            arg_bool(cmd, "--gs1nocheck", gs1NoCheck() || (inputMode() & GS1NOCHECK_MODE));
+            bool done_gs1 = false;
+            if (gs1Parens() || (inputMode() & GS1PARENS_MODE)) {
+                arg_bool(cmd, "--gs1parens", (done_gs1 = true));
+            }
+            if (gs1NoCheck() || (inputMode() & GS1NOCHECK_MODE)) {
+                arg_bool(cmd, "--gs1nocheck", (done_gs1 = true));
+            } else if (gs1SyntaxEngine() || (inputMode() & GS1SYNTAXENGINE_MODE)) {
+                arg_bool(cmd, "--gs1strict", (done_gs1 = true));
+            }
+            arg_bool(cmd, "--gs1", (inputMode() & 0x07) == GS1_MODE && !done_gs1);
             arg_bool(cmd, "--gssep", gsSep());
         }
 
