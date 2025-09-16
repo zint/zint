@@ -1,5 +1,5 @@
 Harald Oehlmann
-2025-02-04
+2025-09-16
 
 How to build qzint.exe using:
 - QT 5.15.16 source package
@@ -16,6 +16,11 @@ Build static Qt:
 - Start the VS2015 x86 native console by the start menu entry:
   Visual Studio 2015\Visual Studio Tools\Windows Desktop Command Prompts\VS2015 x86 Native Tools-Eingabeaufforderung
 - ("Eingabeaufforderung" = "Command Prompt")
+
+- WARNING: MS Visual Studio 2015 will only work with up to Windows Kit 10.0.20348.0, which was removed in a recent update
+  (see https://developercommunity.visualstudio.com/t/Visual-Studio-update-171411-removed-th/10953401?sort=newest)
+  It can be reinstalled at https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/index-legacy
+  You may need to manually reset the environment variables INCLUDE, LIB, UCRTVersion, WindowsSDKLibVersion and WindowsSDKVersion.
 
 - Note: if "rc.exe" not available, install a Windows Kit and update PATH (e.g.):
   set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.20348.0\x86;%PATH%"
@@ -45,6 +50,9 @@ Zint Folder structure:
   git clone https://github.com/madler/zlib.git "%ZH%\..\zlib"
 -> %ZH%\..\zlib\zlib.h exists
 
+- gs1-syntax-engine source files in %ZH%\..\gs1-syntax-engine
+  git clone https://github.com/gitlost/gs1-syntax-engine "%ZH%\..\gs1-syntax-engine"
+
 Build libpng:
 -------------
   cd "%ZH%\..\zlib"
@@ -53,6 +61,12 @@ Build libpng:
   cd ..\lpng
   nmake -f scripts\makefile.vcwin32 clean
   nmake -f scripts\makefile.vcwin32
+
+Build gs1-syntax-engine:
+------------------------
+  cd "%ZH%\..\gs1-syntax-engine\src\c-lib"
+  nmake -f makefile.vcwin32 clean
+  nmake -f makefile.vcwin32
 
 Build zint:
 -----------

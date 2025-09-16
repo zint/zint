@@ -216,7 +216,6 @@ private:
     QGraphicsScene *scene;
     int m_symbology;
     QMenu *m_menu;
-    QCheckBox *m_chkGS1SyntaxEngine;
     QShortcut *m_saveAsShortcut;
     QShortcut *m_factoryResetShortcut;
     QShortcut *m_openCLIShortcut;

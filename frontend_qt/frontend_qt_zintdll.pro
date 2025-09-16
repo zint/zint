@@ -71,6 +71,6 @@ RC_FILE += res/qtZint.rc
 
 INCLUDEPATH += ../backend_qt ../backend
 
-LIBS += -lQtZintDLL -lzint
+LIBS += -lQtZintDLL -L"../win32/Release" -L"../win32/vs2019/Release" -L"../win32/vs2017/Release" -L"../win32/vs2015/Release" -lzint
 QMAKE_LIBDIR += ../backend_qt/release
 QMAKE_LIBDIR += ../win32/Release

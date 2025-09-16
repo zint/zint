@@ -19,10 +19,11 @@ INCLUDEPATH += ../backend
 #EDIT THIS !!!!
 DEFINES += ZINT_VERSION="\\\"2.15.0.9\\\""
 
-!contains(DEFINES, ZINT_NO_PNG) {
-    INCLUDEPATH += ../../lpng
-    INCLUDEPATH += ../../zlib
-}
+INCLUDEPATH += ../../lpng
+INCLUDEPATH += ../../zlib
+
+DEFINES += ZINT_HAVE_GS1SE
+INCLUDEPATH += ../../gs1-syntax-engine/src/c-lib
 
 HEADERS +=  ../backend/aztec.h \
             ../backend/big5.h \

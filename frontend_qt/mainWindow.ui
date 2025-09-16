@@ -1623,6 +1623,25 @@ checks necessary for encodation are still performed)
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QCheckBox" name="chkGS1Strict">
+               <property name="toolTip">
+                <string>Use GS1 Syntax Engine to
+strictly verify GS1 data,
+including GS1 Digital Link URIs
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>GS1 St&amp;rict</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+               <property name="hidden">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
           </layout>

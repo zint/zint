@@ -1,4 +1,4 @@
-% win32/README 2025-09-12
+% win32/README 2025-09-16
 
 Visual Studio 2022
 ------------------
@@ -27,7 +27,7 @@ and cloning each:
   git clone https://git.code.sf.net/p/zint/code zint
   git clone https://git.code.sf.net/p/libpng/code lpng
   git clone https://github.com/madler/zlib.git zlib
-  git clone https://github.com/gs1/gs1-syntax-engine
+  git clone https://github.com/gitlost/gs1-syntax-engine
 
 First build zlib:
 
@@ -45,13 +45,9 @@ and then lpng:
 
 and then gs1encoders:
 
-  cd gs1-syntax-engine\src
-  msbuild /p:Configuration=Release;Platform=x86 gs1encoders.sln /t:gs1encoders
-  cd ..\..
-
-and add the location of gs1encoders.dll to your path:
-
-  set "PATH=%cd%\gs1-syntax-engine\src\c-lib\build\library\Win32\Release;%PATH%"
+  cd gs1-syntax-engine\src\c-lib
+  nmake -f makefile.vcwin32
+  cd ..\..\..
 
 If you now open "%cd%\zint\win32\zint.sln" with Visual Studio 2022, you
 should be able to build the Release configuration for Win32.
@@ -102,7 +98,11 @@ Visual Studio 2019 and 2017
 ---------------------------
 
 Solutions for Visual Studio 2019 and 2017 are in sub-directories vs2019 and
-vs2017. The steps are the same as for Visual Studio 2022.
+vs2017. The steps are the same as for Visual Studio 2022. Adjust for
+sub-directory when setting PATH:
+
+  set "PATH=%cd%\zint\win32\vs2019\Release;%PATH%"
+  set "PATH=%cd%\zint\win32\vs2017\Release;%PATH%"
 
 
 Visual Studio 2015
@@ -117,6 +117,9 @@ e.g. (adjust for version):
 
 Recent versions of Qt no longer supply a specific component for Visual Studio
 2015 32-bit, but you can use "MSVC 2019 32-bit" instead as it's compatible.
+Adjust for sub-directory when setting PATH:
+
+  set "PATH=%cd%\zint\win32\vs2015\Release;%PATH%"
 
 For information on building a standalone version of Zint Studio using Visual
 Studio 2015, see "frontend_qt\howto_build_qzint_using_msvs2015.txt"
@@ -134,17 +137,12 @@ CMake needs to be able to find zlib, lpng and gs1encoders. One way to do this
 (requires Administrator privileges) is to create two sub-directories in
 "C:\Program Files (x86)" called "include" and "lib", and then copy:
 
-  for %I in (zlib\zlib.h zlib\zconf.h ^
-    lpng\png.h lpng\pngconf.h lpng\pnglibconf.h ^
-	gs1-syntax-engine\src\c-lib\build\library\Win32\Release\gs1encoders.h) ^
-	do copy %I "C:\Program Files (x86)\include"
+  for %I in (zlib\zlib.h zlib\zconf.h lpng\png.h lpng\pngconf.h ^
+    lpng\pnglibconf.h gs1-syntax-engine\src\c-lib\gs1encoders.h) ^
+    do copy %I "C:\Program Files (x86)\include"
   for %I in (zlib\zlib.lib lpng\libpng.lib ^
-    gs1-syntax-engine\src\c-lib\build\library\Win32\Release\gs1encoders.lib) ^
-	do copy %I "C:\Program Files (x86)\lib"
-
-and add the location of gs1encoders.dll to your path:
-
-  set "PATH=%cd%\gs1-syntax-engine\src\c-lib\build\library\Win32\Release;%PATH%"
+    gs1-syntax-engine\src\c-lib\gs1encoders.lib) ^
+    do copy %I "C:\Program Files (x86)\lib"
 
 This example uses Qt 5.15.2 and component "MSVC 2019 32-bit" so install them and
 add to path (your path may differ):
@@ -178,7 +176,8 @@ equivalents are:
 Visual C++ 6
 ------------
 
-The zint library and command line tool can be built using VC6.
+The zint library and command line tool can be built using VC6 (but not with GS1
+Syntax Engine support).
 
 See "win32\zint_cmdline_vc6\readme.txt"
 
