@@ -117,13 +117,13 @@ jobs:
         git clone --depth=1 https://github.com/madler/zlib.git zlib && cd zlib
         cmake -B build -DCMAKE_BUILD_TYPE=Release -DZLIB_BUILD_TESTING=OFF -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_MINIZIP=OFF -DZLIB_INSTALL_COMPAT_DLL=OFF
         cmake --build build --config Release
-        cmake -E rename build\Release\zs.lib zlib.lib
+        cmake -E rename build/Release/zs.lib zlib.lib
 
     - name: Install libpng
       shell: bash
       run: |
         git clone --depth=1 https://git.code.sf.net/p/libpng/code lpng && cd lpng
-        cmake -B build -DCMAKE_BUILD_TYPE=Release -DPNG_SHARED=OFF -DPNG_TESTS=OFF -DPNG_TOOLS=OFF -DZLIB_ROOT="..\zlib"
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DPNG_SHARED=OFF -DPNG_TESTS=OFF -DPNG_TOOLS=OFF -DZLIB_ROOT="../zlib"
         cmake --build build --config Release
 
     - name: Configure CMake
