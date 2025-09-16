@@ -128,11 +128,16 @@ jobs:
         cmake --build build --config Release
         cmake -E rename build/Release/libpng16_static.lib libpng.lib
         cmake -E rename build/pnglibconf.h pnglibconf.h
+        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+        ls $GITHUB_WORKSPACE
 
     - name: Configure CMake
       working-directory: build
       shell: bash
-      run: cmake $GITHUB_WORKSPACE -A Win32 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF -DZLIB_ROOT="../zlib" -DPNG_ROOT="../lpng"
+      run: |
+        echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
+        ls $GITHUB_WORKSPACE
+        cmake $GITHUB_WORKSPACE -A Win32 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF -DZLIB_ROOT="${GITHUB_WORKSPACE}/zlib" -DPNG_ROOT="${GITHUB_WORKSPACE}/lpng"
 
     - name: Build
       working-directory: build
