@@ -111,10 +111,6 @@ jobs:
       shell: bash
       run: git config --global --add safe.directory ${GITHUB_WORKSPACE} && cmake -E make_directory build
 
-    - name: Install zlib
-      shell: bash
-      run: git clone https://github.com/madler/zlib.git zlib && cd zlib && nmake -f win32\Makefile.msc
-
     - name: Configure CMake
       working-directory: build
       shell: bash
