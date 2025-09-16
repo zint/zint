@@ -57,9 +57,7 @@ Changes
   `GS1SYNTAXENGINE_MODE` (CLI --gs1strict, GUI "GS1 Strict" checkbox)
 - GS1_MODE: allow GS1 Digital Link URIs (no validation unless
   `GS1SYNTAXENGINE_MODE` set)
-- CLI: --gs1parens, --gs1nocheck and --gs1strict now imply --gs1;
-  --gs1parens no longer requires --esc if AI data includes backslashed
-  parentheses
+- CLI: --gs1parens, --gs1nocheck and --gs1strict now imply --gs1
 
 Bugs
 ----

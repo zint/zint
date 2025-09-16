@@ -1353,8 +1353,8 @@ Interpretations) mechanism to encode the data if the symbology supports it - see
 
 GS1 data can be encoded in a number of symbologies. Application Identifiers
 (AIs) should be enclosed in [square brackets] followed by the data to be encoded
-(see 6.1.10.3 GS1-128). For matrix symbologies, GS1 Digital Link URIs are also
-supported. To encode GS1 data use the --gs1 option. Alternatively, use the
+(see 6.1.10.3 GS1-128). For matrix symbologies, GS1 Digital Link URIs can also
+be given. To encode GS1 data use the --gs1 option. Alternatively, use the
 --gs1strict option, which strictly verifies the GS1 data.
 
 GS1 mode is assumed (and doesn’t need to be set) for GS1-128, EAN-14, GS1
