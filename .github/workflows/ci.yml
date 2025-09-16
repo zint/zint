@@ -26,7 +26,7 @@ jobs:
       run: sudo apt-get install libpng-dev
 
     - name: Install GS1 Syntax Engine
-      run: git clone https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && sudo make install
+      run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && sudo make install
 
     - name: Install locale
       shell: bash
@@ -70,7 +70,7 @@ jobs:
       run: sudo apt-get install libpng-dev
 
     - name: Install GS1 Syntax Engine
-      run: git clone https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && sudo make install
+      run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && sudo make install
 
     - name: Install locale
       shell: bash
@@ -110,6 +110,13 @@ jobs:
     - name: Create Build Environment
       shell: bash
       run: git config --global --add safe.directory ${GITHUB_WORKSPACE} && cmake -E make_directory build
+
+    - name: Install zlib
+      shell: bash
+      run: |
+        git clone --depth=1 https://github.com/madler/zlib.git zlib && cd zlib
+        cmake -B build -DCMAKE_BUILD_TYPE=Release -DZLIB_BUILD_TESTING=OFF -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_MINIZIP=OFF -DZLIB_INSTALL_COMPAT_DLL=OFF -DZLIB_INSTALL=OFF
+        cmake --build build --config Release && cmake -E rename build\zs.lib zlib.lib && cmake -E rename build\zconf.h zconf.h
 
     - name: Configure CMake
       working-directory: build
@@ -162,7 +169,7 @@ jobs:
       run: git config --global --add safe.directory ${GITHUB_WORKSPACE} && cmake -E make_directory build
 
     - name: Install GS1 Syntax Engine
-      run: git clone https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && (sudo make install || true)
+      run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && (sudo make install || true)
 
     - name: Configure CMake
       working-directory: build
