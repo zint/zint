@@ -132,7 +132,7 @@ jobs:
     - name: Install GS1 Syntax Engine
       run: |
         git clone --depth=1 https://github.com/gitlost/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib
-        cmake WIN32 -B build -A Win32
+        cmake -B build -A Win32
         cmake --build build --config $BUILD_TYPE
         cmake -E rename build/$BUILD_TYPE/gs1encoders.lib gs1encoders.lib
 
