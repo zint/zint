@@ -141,7 +141,7 @@ jobs:
       working-directory: build
       shell: bash
       run: |
-        cmake $GITHUB_WORKSPACE -A Win32 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF -DZLIB_ROOT="${GITHUB_WORKSPACE}/zlib" -DPNG_ROOT="${GITHUB_WORKSPACE}/lpng" -DGS1SE_PATH="%{GITHUB_WORKSPACE}/gs1-syntax-engine/src/c-lib"
+        cmake $GITHUB_WORKSPACE -A Win32 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF -DZLIB_ROOT="${GITHUB_WORKSPACE}/zlib" -DPNG_ROOT="${GITHUB_WORKSPACE}/lpng" -DGS1SE_PATH="${GITHUB_WORKSPACE}/gs1-syntax-engine/src/c-lib"
 
     - name: Build
       working-directory: build
@@ -181,10 +181,18 @@ jobs:
         cmake -E rename build/$BUILD_TYPE/libpng16_static.lib libpng.lib
         cmake -E rename build/pnglibconf.h pnglibconf.h
 
+    - name: Install GS1 Syntax Engine
+      shell: bash
+      run: |
+        git clone --depth=1 https://github.com/gitlost/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib
+        cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        cmake --build build --config $BUILD_TYPE
+        cmake -E rename build/$BUILD_TYPE/gs1encoders.lib gs1encoders.lib
+
     - name: Configure CMake
       working-directory: build
       shell: bash
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF -DZLIB_ROOT="${GITHUB_WORKSPACE}/zlib" -DPNG_ROOT="${GITHUB_WORKSPACE}/lpng"
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF -DZLIB_ROOT="${GITHUB_WORKSPACE}/zlib" -DPNG_ROOT="${GITHUB_WORKSPACE}/lpng" -DGS1SE_PATH="${GITHUB_WORKSPACE}/gs1-syntax-engine/src/c-lib"
 
     - name: Build
       working-directory: build
@@ -277,4 +285,4 @@ jobs:
           cmake -B build -DCMAKE_BUILD_TYPE=Release -DZINT_TEST=ON
           cmake --build build --config Release
           cd build
-          ctest -V
+          QT_QPA_PLATFORM=offscreen ctest -V
