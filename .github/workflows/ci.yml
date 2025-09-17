@@ -132,9 +132,9 @@ jobs:
     - name: Install GS1 Syntax Engine
       run: |
         git clone --depth=1 https://github.com/gitlost/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib
-        cmake -B build -A Win32
-        cmake --build build
-        cmake -E rename build/gs1encoders.lib gs1encoders.lib
+        cmake -B build -A Win32 -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        cmake --build build --config $BUILD_TYPE
+        cmake -E rename build/$BUILD_TYPE/gs1encoders.lib gs1encoders.lib
 
     - name: Configure CMake
       working-directory: build
@@ -210,7 +210,7 @@ jobs:
       run: |
         git clone --depth=1 https://github.com/madler/zlib.git zlib && cd zlib
         cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZLIB_BUILD_TESTING=OFF -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_MINIZIP=OFF -DZLIB_INSTALL_COMPAT_DLL=OFF
-        cmake --build build --config $BUILD_TYPE
+        cd build && make && sudo make install
 
     - name: Install GS1 Syntax Engine
       run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && (sudo make install || true)
