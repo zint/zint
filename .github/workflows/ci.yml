@@ -124,7 +124,7 @@ jobs:
       shell: bash
       run: |
         git clone --depth=1 https://git.code.sf.net/p/libpng/code lpng && cd lpng
-        cmake -B build -A Win32 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DPNG_SHARED=OFF -DPNG_TESTS=OFF -DPNG_TOOLS=OFF -DZLIB_ROOT="{$GITHUB_WORKSPACE}/zlib"
+        cmake -B build -A Win32 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DPNG_SHARED=OFF -DPNG_TESTS=OFF -DPNG_TOOLS=OFF -DZLIB_ROOT="${GITHUB_WORKSPACE}/zlib"
         cmake --build build --config $BUILD_TYPE
         cmake -E rename build/$BUILD_TYPE/libpng16_static.lib libpng.lib
         cmake -E rename build/pnglibconf.h pnglibconf.h
@@ -175,7 +175,7 @@ jobs:
       shell: bash
       run: |
         git clone --depth=1 https://git.code.sf.net/p/libpng/code lpng && cd lpng
-        cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DPNG_SHARED=OFF -DPNG_TESTS=OFF -DPNG_TOOLS=OFF -DZLIB_ROOT="{$GITHUB_WORKSPACE}/zlib"
+        cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DPNG_SHARED=OFF -DPNG_TESTS=OFF -DPNG_TOOLS=OFF -DZLIB_ROOT="${GITHUB_WORKSPACE}/zlib"
         cmake --build build --config $BUILD_TYPE
         cmake -E rename build/$BUILD_TYPE/libpng16_static.lib libpng.lib
         cmake -E rename build/pnglibconf.h pnglibconf.h
@@ -183,7 +183,7 @@ jobs:
     - name: Configure CMake
       working-directory: build
       shell: bash
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF -DZLIB_ROOT="{$GITHUB_WORKSPACE}/zlib" -DPNG_ROOT="{$GITHUB_WORKSPACE}/lpng"
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF -DZLIB_ROOT="${GITHUB_WORKSPACE}/zlib" -DPNG_ROOT="${GITHUB_WORKSPACE}/lpng"
 
     - name: Build
       working-directory: build
