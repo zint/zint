@@ -212,13 +212,20 @@ jobs:
         cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZLIB_BUILD_TESTING=OFF -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_MINIZIP=OFF -DZLIB_INSTALL_COMPAT_DLL=OFF
         cd build && make && sudo make install
 
+    - name: Install libpng
+      shell: bash
+      run: |
+        git clone --depth=1 https://git.code.sf.net/p/libpng/code lpng && cd lpng
+        cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DPNG_SHARED=OFF -DPNG_TESTS=OFF -DPNG_TOOLS=OFF
+        cd build && make && sudo make install
+
     - name: Install GS1 Syntax Engine
       run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && (sudo make install || true)
 
     - name: Configure CMake
       working-directory: build
       shell: bash
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_C_FLAGS='-I /usr/local/include' -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_PNG=OFF -DZINT_USE_QT=OFF
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_C_FLAGS='-I /usr/local/include' -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF
 
     - name: Build
       working-directory: build
