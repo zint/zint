@@ -277,4 +277,4 @@ jobs:
           cmake -B build -DCMAKE_BUILD_TYPE=Release -DZINT_TEST=ON
           cmake --build build --config Release
           cd build
-          ctest -V -C $BUILD_TYPE
+          ctest -V
