@@ -210,13 +210,17 @@ jobs:
       shell: bash
       run: brew install libpng
 
+    - name: Install Qt5
+      shell: bash
+      run: brew install qt5
+
     - name: Install GS1 Syntax Engine
       run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && (sudo make install || true)
 
     - name: Configure CMake
       working-directory: build
       shell: bash
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_C_FLAGS='-I /usr/local/include' -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON -DZINT_USE_QT=OFF
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_C_FLAGS='-I /usr/local/include' -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_STATIC=ON
 
     - name: Build
       working-directory: build
@@ -270,7 +274,7 @@ jobs:
           set -e
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
           cmake -E make_directory build
-          cmake -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON
-          cmake --build build --config $BUILD_TYPE
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DZINT_TEST=ON
+          cmake --build build --config Release
           cd build
           ctest -V -C $BUILD_TYPE
