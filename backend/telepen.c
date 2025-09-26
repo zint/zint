@@ -140,7 +140,7 @@ INTERNAL int zint_telepen(struct zint_symbol *symbol, unsigned char source[], in
 
     z_hrt_cpy_iso8859_1(symbol, source, length);
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
+    if (raw_text && z_rt_cpy_cat(symbol, source, length, (char) check_digit, NULL /*cat*/, 0)) {
         return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
@@ -220,7 +220,7 @@ INTERNAL int zint_telepen_num(struct zint_symbol *symbol, unsigned char source[]
 
     z_hrt_cpy_nochk(symbol, local_source, length);
 
-    if (raw_text && z_rt_cpy_cat(symbol, local_source, length, check_digit, NULL /*cat*/, 0)) {
+    if (raw_text && z_rt_cpy_cat(symbol, local_source, length, (char) check_digit, NULL /*cat*/, 0)) {
         return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 

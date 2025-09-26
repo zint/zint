@@ -135,11 +135,11 @@ INTERNAL int zint_codabar(struct zint_symbol *symbol, unsigned char source[], in
     }
 
     /* If visible check char, place before final A/B/C/D character (BS EN 798:1995 A.3) */
-    z_hrt_cpy_cat_nochk(symbol, source, length - 1, symbol->option_2 == 2 ? CALCIUM[checksum] : '\xFF',
+    z_hrt_cpy_cat_nochk(symbol, source, length - 1, (char) (symbol->option_2 == 2 ? CALCIUM[checksum] : '\xFF'),
                         source + length - 1, 1);
 
     if (raw_text && z_rt_cpy_cat(symbol, source, length - 1,
-                                add_checksum ? CALCIUM[checksum] : '\xFF', source + length - 1, 1)) {
+                                (char) (add_checksum ? CALCIUM[checksum] : '\xFF'), source + length - 1, 1)) {
         return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 

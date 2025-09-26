@@ -1,7 +1,7 @@
 Harald Oehlmann
-2025-09-16
+2025-09-26
 
-How to build qzint.exe using:
+How to build qtZint.exe using:
 - QT 5.15.16 source package
 - MS Visual Studio 2015 (VC14)
 
@@ -20,7 +20,13 @@ Build static Qt:
 - WARNING: MS Visual Studio 2015 will only work with up to Windows Kit 10.0.20348.0, which was removed in a recent update
   (see https://developercommunity.visualstudio.com/t/Visual-Studio-update-171411-removed-th/10953401?sort=newest)
   It can be reinstalled at https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/index-legacy
-  You may need to manually reset the environment variables INCLUDE, LIB, UCRTVersion, WindowsSDKLibVersion and WindowsSDKVersion.
+  You may need to manually reset the environment variables INCLUDE, LIB, UCRTVersion, WindowsSDKLibVersion and WindowsSDKVersion, e.g.
+
+  set "INCLUDE=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\INCLUDE;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\INCLUDE;C:\Program Files (x86)\Windows Kits\10\include\10.0.20348.0\ucrt;C:\Program Files (x86)\Windows Kits\10\include\10.0.20348.0\shared;C:\Program Files (x86)\Windows Kits\10\include\10.0.20348.0\um;C:\Program Files (x86)\Windows Kits\10\include\10.0.20348.0\winrt;"
+  set "LIB=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\LIB;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\ATLMFC\LIB;C:\Program Files (x86)\Windows Kits\10\lib\10.0.20348.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\10\lib\10.0.20348.0\um\x86;"
+  set UCRTVersion=10.0.20348.0
+  set WindowsSDKLibVersion=10.0.20348.0\
+  set WindowsSDKVersion=10.0.20348.0\
 
 - Note: if "rc.exe" not available, install a Windows Kit and update PATH (e.g.):
   set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.20348.0\x86;%PATH%"

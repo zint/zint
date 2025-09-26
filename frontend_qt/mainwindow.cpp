@@ -809,7 +809,7 @@ void MainWindow::about()
     QMessageBox::about(this, tr("About Zint"),
         /*: %1 is Zint version, %2 is Qt version, %3 is QSettings file/registry path */
         tr(
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
             "<style>h2, p { font-size:11px; font-weight:normal; }</style>"
 #endif
             "<h2>Zint Barcode Studio %1</h2>"
@@ -819,7 +819,7 @@ void MainWindow::about()
             "<p>Copyright &copy; 2006-2025 Robin Stuart and others.<br>"
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"
-            "<p>Qt version %2, settings:<br>%3</p>"
+            "<p>Qt version %2. Qt settings:<br>%3</p>"
             "<p>\"Mailmark\" is a Registered Trademark of Royal Mail.<br>"
             "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
             "\"Telepen\" is a Registered Trademark of SB Electronics.</p>"

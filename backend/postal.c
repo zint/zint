@@ -182,7 +182,7 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
     /* Stop character */
     memcpy(d, "L", 2); /* Include terminating NUL */
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, z_itoc(check_digit), NULL /*cat*/, 0)) {
+    if (raw_text && z_rt_cpy_cat(symbol, source, length, (char) z_itoc(check_digit), NULL /*cat*/, 0)) {
         return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
@@ -255,7 +255,7 @@ static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], 
     /* Stop character */
     memcpy(d, "L", 2); /* Include terminating NUL */
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, z_itoc(check_digit), NULL /*cat*/, 0)) {
+    if (raw_text && z_rt_cpy_cat(symbol, source, length, (char) z_itoc(check_digit), NULL /*cat*/, 0)) {
         return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 

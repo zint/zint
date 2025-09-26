@@ -223,12 +223,13 @@ INTERNAL int zint_code39(struct zint_symbol *symbol, unsigned char source[], int
         }
         z_hrt_cat_chr_nochk(symbol, '*');
     } else {
-        z_hrt_cpy_cat_nochk(symbol, source, length, symbol->option_2 == 1 ? check_digit : '\xFF', NULL /*cat*/, 0);
+        z_hrt_cpy_cat_nochk(symbol, source, length, (char) (symbol->option_2 == 1 ? check_digit : '\xFF'),
+                            NULL /*cat*/, 0);
     }
 
     if (raw_text) {
-        if (z_rt_cpy_cat(symbol, source, length, check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF',
-                        NULL /*cat*/, 0)) {
+        if (z_rt_cpy_cat(symbol, source, length,
+                        (char) (check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF'), NULL /*cat*/, 0)) {
             return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
         }
     }
@@ -297,7 +298,8 @@ INTERNAL int zint_excode39(struct zint_symbol *symbol, unsigned char source[], i
     }
 
     if (raw_text && z_rt_cpy_cat(symbol, source, length,
-                                check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF', NULL /*cat*/, 0)) {
+                                (char) (check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF'),
+                                NULL /*cat*/, 0)) {
         return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 
@@ -506,7 +508,8 @@ INTERNAL int zint_vin(struct zint_symbol *symbol, unsigned char source[], int le
 
     z_hrt_cpy_nochk(symbol, source, length);
 
-    if (raw_text && z_rt_cpy_cat(symbol, NULL /*source*/, 0, symbol->option_2 == 1 ? 'I' : '\xFF', source, length)) {
+    if (raw_text && z_rt_cpy_cat(symbol, NULL /*source*/, 0, (char) (symbol->option_2 == 1 ? 'I' : '\xFF'),
+                                source, length)) {
         return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
     }
 

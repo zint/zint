@@ -1,4 +1,4 @@
-% win32/README 2025-09-16
+% win32/README 2025-09-26
 
 Visual Studio 2022
 ------------------
@@ -123,7 +123,7 @@ Adjust for sub-directory when setting PATH:
   set "PATH=%cd%\zint\win32\vs2015\Release;%PATH%"
 
 For information on building a standalone version of Zint Studio using Visual
-Studio 2015, see "frontend_qt\howto_build_qzint_using_msvs2015.txt"
+Studio 2015, see "frontend_qt\HOWTO_BUILD_STANDALONE_MSVS2015.txt"
 
 
 CMake and Visual Studio
@@ -175,7 +175,9 @@ Visual C++ 6
 The zint library and command line tool can be built using VC6 (but not with GS1
 Syntax Engine support).
 
-See "win32\zint_cmdline_vc6\readme.txt"
+See "win32\zint_cmdline_vc6\README.txt".
+
+To build the zint library as a DLL, see "win32\zint_dll_vc6\README.txt".
 
 
 MinGW/MSYS

@@ -1,4 +1,4 @@
-% README.bsd 2025-09-12
+% README.bsd 2025-09-26
 % Tested on FreeBSD 14.3-RELEASE (with X11 + GNOME installed), OpenBSD 7.7 (with X11) and NetBSD 10.1 (with X11)
 
 1. Prerequisites for building zint
@@ -30,8 +30,9 @@ To install the gs1encoders library, optional but needed for GS1 Syntax Engine su
     su
     gmake install
     exit
+    cd ../../..
 
-(on FreeBSD, the ldconfig not found error can be ignored)
+(on FreeBSD and NetBSD, the ldconfig not found error can be ignored)
 
 Then clone the latest zint source
 
@@ -81,7 +82,7 @@ except that on OpenBSD you need to use
 
 and on NetBSD
 
-    cmake -DCMAKE_PREFIX_PATH=/usr/pkg/qt5 ..
+    cmake -DCMAKE_PREFIX_PATH=/usr/pkg/qt5 -DCMAKE_C_FLAGS='-I /usr/local/include' ..
 
 instead.
 
@@ -102,11 +103,9 @@ Place in "~/.cshrc" to make permanent.
 5. CMake options
 ================
 
-See "README.linux". Note for running the test suite on FreeBSD, if using the default csh, to set LD_LIBRARY_PATH use:
+See "README.linux".
 
-   setenv LD_LIBRARY_PATH ${PWD}/backend
-
-Also, for Qt5 test on FreeBSD, need:
+Note if running the test suite on FreeBSD, for Qt5 test need:
 
    su
    pkg install qt5-testlib
