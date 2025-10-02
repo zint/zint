@@ -158,7 +158,7 @@ jobs:
     - name: Test
       working-directory: build
       shell: bash
-      run: PATH=$PATH:"$(pwd)/backend/$BUILD_TYPE:$(pwd)/frontend/$BUILD_TYPE" QT_QPA_PLATFORM=offscreen ctest -V -C $BUILD_TYPE
+      run: PATH=$PATH:"$(pwd)/backend/$BUILD_TYPE:$(pwd)/frontend/$BUILD_TYPE:$(pwd)backend_qt/$BUILD_TYPE" QT_QPA_PLATFORM=offscreen ctest -V -C $BUILD_TYPE
 
   build-windows-64bit:
     runs-on: windows-latest
@@ -215,7 +215,7 @@ jobs:
     - name: Test
       working-directory: build
       shell: bash
-      run: PATH=$PATH:"$(pwd)/backend/$BUILD_TYPE:$(pwd)/frontend/$BUILD_TYPE" QT_QPA_PLATFORM=offscreen ctest -V -C $BUILD_TYPE
+      run: PATH=$PATH:"$(pwd)/backend/$BUILD_TYPE:$(pwd)/frontend/$BUILD_TYPE:$(pwd)backend_qt/$BUILD_TYPE" QT_QPA_PLATFORM=offscreen ctest -V -C $BUILD_TYPE
 
   build-macOS:
     runs-on: macOS-latest
