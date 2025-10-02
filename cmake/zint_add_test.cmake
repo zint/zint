@@ -14,14 +14,8 @@ macro(zint_add_test test_name test_command)
         add_test(${test_name} ${test_command})
 
         if(MSVC)
-            if(CMAKE_VERSION VERSION_LESS "3.22")
-                set_tests_properties(${test_name} PROPERTIES ENVIRONMENT
-                    "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR};PATH=${CMAKE_BINARY_DIR}/backend/${CMAKE_BUILD_TYPE}\;${CMAKE_BINARY_DIR}/frontend/${CMAKE_BUILD_TYPE}\;$ENV{PATH}")
-            else()
-                set_tests_properties(${test_name} PROPERTIES ENVIRONMENT "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
-                set_tests_properties(${test_name} PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CMAKE_BINARY_DIR}/backend/${CMAKE_BUILD_TYPE}")
-                set_tests_properties(${test_name} PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CMAKE_BINARY_DIR}/frontend/${CMAKE_BUILD_TYPE}")
-            endif()
+            set_tests_properties(${test_name} PROPERTIES ENVIRONMENT
+                "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR};PATH=${CMAKE_BINARY_DIR}/backend/${CMAKE_BUILD_TYPE}\;${CMAKE_BINARY_DIR}/frontend/${CMAKE_BUILD_TYPE}\;$ENV{PATH}")
         else()
             set_tests_properties(${test_name} PROPERTIES ENVIRONMENT
                 "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/backend;PATH=${CMAKE_BINARY_DIR}/frontend:$ENV{PATH}")
@@ -35,14 +29,8 @@ macro(zint_add_test test_name test_command)
         endif()
         add_test(${test_name}-static ${test_command}-static)
         if(MSVC)
-            if(CMAKE_VERSION VERSION_LESS "3.22")
-                set_tests_properties(${test_name}-static PROPERTIES ENVIRONMENT
-                    "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR};PATH=${CMAKE_BINARY_DIR}/backend/${CMAKE_BUILD_TYPE}\;${CMAKE_BINARY_DIR}/frontend/${CMAKE_BUILD_TYPE}\;$ENV{PATH}")
-            else()
-                set_tests_properties(${test_name}-static PROPERTIES ENVIRONMENT "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}")
-                set_tests_properties(${test_name}-static PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CMAKE_BINARY_DIR}/backend/${CMAKE_BUILD_TYPE}")
-                set_tests_properties(${test_name}-static PROPERTIES ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${CMAKE_BINARY_DIR}/frontend/${CMAKE_BUILD_TYPE}")
-            endif()
+            set_tests_properties(${test_name}-static PROPERTIES ENVIRONMENT
+                "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR};PATH=${CMAKE_BINARY_DIR}/backend/${CMAKE_BUILD_TYPE}\;${CMAKE_BINARY_DIR}/frontend/${CMAKE_BUILD_TYPE}\;$ENV{PATH}")
         else()
             set_tests_properties(${test_name}-static PROPERTIES ENVIRONMENT
                 "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/backend;PATH=${CMAKE_BINARY_DIR}/frontend:$ENV{PATH}")
