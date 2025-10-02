@@ -1,4 +1,4 @@
-% README.linux 2025-09-16
+% README.linux 2025-10-02
 % Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
 % Fedora Linux 42 (Workstation Edition)
 
@@ -25,10 +25,10 @@ gs1encoders is optional but necessary for GS1 Syntax Engine support. To install 
 
     git clone https://github.com/gs1/gs1-syntax-engine
 
-and navigate to "src/c-lib" and make with EXCLUDE_SYNTAX_DICTIONARY_LOADER defined:
+and navigate to "src/c-lib" and make:
 
     cd gs1-syntax-engine/src/c-lib
-    make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && sudo make install
+    make lib && sudo make install
     cd ../../..
 
 Now either download the zint source code tarball

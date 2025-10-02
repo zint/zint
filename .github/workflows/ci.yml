@@ -26,7 +26,7 @@ jobs:
       run: sudo apt-get install libpng-dev
 
     - name: Install GS1 Syntax Engine
-      run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && sudo make install
+      run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make lib && sudo make install
 
     - name: Install locale
       shell: bash
@@ -70,7 +70,7 @@ jobs:
       run: sudo apt-get install libpng-dev
 
     - name: Install GS1 Syntax Engine
-      run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && sudo make install
+      run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make lib && sudo make install
 
     - name: Install locale
       shell: bash
@@ -236,7 +236,7 @@ jobs:
       run: brew install qt5
 
     - name: Install GS1 Syntax Engine
-      run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib && (sudo make install || true)
+      run: git clone --depth=1 https://github.com/gs1/gs1-syntax-engine && cd gs1-syntax-engine/src/c-lib && make lib && (sudo make install || true)
 
     - name: Configure CMake
       working-directory: build

@@ -1637,6 +1637,11 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
     unsigned char *local_source2_buf = (unsigned char *) z_alloca(ARRAY_SIZE(symbol->primary) * 2 + length
                                                                     + parens_cnt + 1);
     int is_digital_link = 0;
+    char msgBuf[120];
+    gs1_encoder_init_status_t status = GS1_ENCODERS_INIT_SUCCESS;
+    gs1_encoder_init_opts_t opts = {
+        sizeof(gs1_encoder_init_opts_t), gs1_encoder_iNO_SYNDICT | gs1_encoder_iQUIET, &status, msgBuf, sizeof(msgBuf)
+    };
     gs1_encoder *ctx;
     int gs1se_ret;
 
@@ -1702,8 +1707,10 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
         }
     }
 
-    if (!(ctx = gs1_encoder_init(NULL))) {
-        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 266, "Insufficient memory for GS1 Syntax Engine");
+    if (!(ctx = gs1_encoder_init_ex(NULL /*mem*/, &opts))) {
+        const int error_number = status == GS1_ENCODERS_INIT_FAILED_NO_MEM
+                                    ? ZINT_ERROR_MEMORY : ZINT_ERROR_ENCODING_PROBLEM;
+        return z_errtxtf(error_number, symbol, 266, "GS1 Syntax Engine: %s", opts.msgBuf);
     }
 
     if (is_digital_link) {

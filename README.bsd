@@ -1,4 +1,4 @@
-% README.bsd 2025-09-26
+% README.bsd 2025-10-02
 % Tested on FreeBSD 14.3-RELEASE (with X11 + GNOME installed), OpenBSD 7.7 (with X11) and NetBSD 10.1 (with X11)
 
 1. Prerequisites for building zint
@@ -26,7 +26,7 @@ To install the gs1encoders library, optional but needed for GS1 Syntax Engine su
 
     git clone https://github.com/gs1/gs1-syntax-engine
     cd gs1-syntax-engine/src/c-lib
-    gmake CFLAGS_G='-DEXCLUDE_SYNTAX_DICTIONARY_LOADER' lib
+    gmake lib
     su
     gmake install
     exit
