@@ -21,7 +21,7 @@ target_link_libraries(test_qzint PRIVATE QZint Qt${QT_VERSION_MAJOR}::Test)
 add_test(NAME qzint COMMAND test_qzint)
 if(MSVC)
     set_tests_properties(qzint PROPERTIES ENVIRONMENT
-        "PATH=${CMAKE_BINARY_DIR}/backend/${CMAKE_BUILD_TYPE}\;${CMAKE_BINARY_DIR}/backend_qt/${CMAKE_BUILD_TYPE}\;$ENV{PATH}")
+        "CMAKE_CURRENT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR};PATH=${CMAKE_BINARY_DIR}/backend/${CMAKE_BUILD_TYPE}\;${CMAKE_BINARY_DIR}/backend_qt/${CMAKE_BUILD_TYPE}\;$ENV{PATH}")
 else()
     set_tests_properties(qzint PROPERTIES ENVIRONMENT
         "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/backend;PATH=${CMAKE_BINARY_DIR}/backend_qt:$ENV{PATH}")
