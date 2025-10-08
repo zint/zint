@@ -32,6 +32,7 @@
 
 /* This version was developed using AIMD/TSC15032-43 v0.99c Edit 60, dated 4th Nov 2015 */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 
@@ -637,6 +638,8 @@ static int ult_generate_codewords(struct zint_symbol *symbol, const unsigned cha
     char *mode = (char *) z_alloca(length + 1);
     int *cw_fragment = (int *) z_alloca(sizeof(int) * (length * 2 + 1));
 
+    assert(length > 0); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
+
     /* Check for 06 Macro Sequence and crop accordingly */
     if (length >= 9
             && source[0] == '[' && source[1] == ')' && source[2] == '>' && source[3] == '\x1e'
@@ -694,6 +697,7 @@ static int ult_generate_codewords(struct zint_symbol *symbol, const unsigned cha
                 }
                 input_locn += ascii_encoded;
             } else if (mode[input_locn] == 'c') {
+                assert(c43_encoded >= 0); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
                 for (i = 0; i < c43_encoded; i++) {
                     mode[input_locn + i] = 'c';
                 }

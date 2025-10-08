@@ -1829,6 +1829,8 @@ INTERNAL int zint_qrcode(struct zint_symbol *symbol, struct zint_seg segs[], con
     size = qr_sizes[version - 1];
     size_squared = size * size;
 
+    assert(size >= 21); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
+
     grid = (unsigned char *) z_alloca(size_squared);
     memset(grid, 0, size_squared);
 
@@ -2735,6 +2737,8 @@ INTERNAL int zint_rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const
 
     h_size = rmqr_width[version];
     v_size = rmqr_height[version];
+
+    assert(h_size >= 27 && v_size >= 7); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
 
     grid = (unsigned char *) z_alloca(h_size * v_size);
     memset(grid, 0, h_size * v_size);

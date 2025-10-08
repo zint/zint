@@ -76,6 +76,8 @@ static void ps_convert(const unsigned char *string, unsigned char *ps_string) {
     const unsigned char *s;
     unsigned char *p = ps_string;
 
+    /* `NOLINT` required due to disconnect between `symbol->text` and vector `string`s which are always <= */
+    /* NOLINTBEGIN(clang-analyzer-security.ArrayBound) clang-tidy-21 false positive */
     for (s = string; *s; s++) {
         switch (*s) {
             case '(':
@@ -95,10 +97,10 @@ static void ps_convert(const unsigned char *string, unsigned char *ps_string) {
                     *p++ = *s;
                 }
                 break;
-
         }
     }
     *p = '\0';
+    /* NOLINTEND(clang-analyzer-security.ArrayBound) */
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
@@ -344,6 +346,7 @@ INTERNAL int zint_ps_plot(struct zint_symbol *symbol) {
         for (i = 0; i <= 8; i++) {
             for (rect = symbol->vector->rectangles; rect; rect = rect->next) {
                 if ((i == 0 && rect->colour == -1) || rect->colour == i) {
+                    assert(u_i < rect_cnt); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
                     ultra_rects[u_i++] = rect;
                 }
             }

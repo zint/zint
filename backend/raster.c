@@ -998,6 +998,8 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
 
     main_width = symbol->width;
 
+    assert(symbol->rows >= 1); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
+
     if (z_is_composite(symbol->symbology)) {
         while (!z_module_is_set(symbol, symbol->rows - 1, comp_xoffset)) {
             comp_xoffset++;

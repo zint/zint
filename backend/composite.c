@@ -572,6 +572,8 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
         chainemc[mclength++] = mccorrection[i];
     }
 
+    assert(cc_width > 0); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
+
     /* 818 - The CW string is finished */
     symbol->rows = mclength / cc_width;
     c1 = (symbol->rows - 1) / 3;

@@ -278,6 +278,7 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
 
     bytes_per_strip = rows_per_strip * ((symbol->bitmap_width + pixels_per_sample - 1) / pixels_per_sample)
                         * samples_per_pixel;
+    assert(bytes_per_strip >= 0); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
 
     strip_offset = (uint32_t *) z_alloca(sizeof(uint32_t) * strip_count);
     strip_bytes = (uint32_t *) z_alloca(sizeof(uint32_t) * strip_count);

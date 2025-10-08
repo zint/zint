@@ -1437,6 +1437,9 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
     int i;
 #endif
 
+    assert(buffer); /* Suppress clang-tidy-21 clang-analyzer-core.NonNullParamChecker */
+
+    /* Apparently `getenv()` & `getcwd()` "taint" stuff (external attack vectors) hence later NOLINTs */
     if ((cmake_src_dir = getenv("CMAKE_CURRENT_SOURCE_DIR")) != NULL) {
         len = (int) strlen(cmake_src_dir);
         if (len <= 0 || len >= buffer_size) {
@@ -1500,7 +1503,7 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
     }
 
     if (subdir_len) {
-        if (*subdir != '/' && buffer[len - 1] != '/') {
+        if (*subdir != '/' && buffer[len - 1] != '/') { /* NOLINT(clang-analyzer-security.ArrayBound) - see above */
             if (len + 1 >= buffer_size) {
                 fprintf(stderr, "testUtilDataPath: subdir len (%d) + 1 >= buffer_size (%d)\n", len, buffer_size);
                 return 0;
@@ -1518,7 +1521,7 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
     }
 
     if (filename_len) {
-        if (*filename != '/' && buffer[len - 1] != '/') {
+        if (*filename != '/' && buffer[len - 1] != '/') { /* NOLINT(clang-analyzer-security.ArrayBound) - see above */
             if (len + 1 >= buffer_size) {
                 fprintf(stderr, "testUtilDataPath: filename len (%d) + 1 >= buffer_size (%d)\n", len, buffer_size);
                 return 0;

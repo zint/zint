@@ -1395,6 +1395,8 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     if (debug_print) printf("\nSymbol size:\n%d columns x %d rows\n", cols, rows);
 
+    assert(cols > 0); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
+
     /* 818 - The CW string is finished */
     c1 = (rows - 1) / 3;
     c2 = ecc * 3 + (rows - 1) % 3;

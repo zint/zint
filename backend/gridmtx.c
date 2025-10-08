@@ -33,6 +33,7 @@
 /* This file implements Grid Matrix as specified in
    AIM Global Document Number AIMD014 Rev. 1.63 Revised 9 Dec 2008 */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "reedsol.h"
@@ -297,7 +298,7 @@ static void gm_add_byte_count(char binary[], const int byte_count_posn, const in
 }
 
 /* Add a control character to the data stream */
-static int gm_add_shift_char(char binary[], int bp, int shifty, const int debug_print) {
+static int gm_add_shift_char(char binary[], int bp, const int shifty, const int debug_print) {
     int i;
     int glyph = 0;
 
@@ -321,7 +322,7 @@ static int gm_add_shift_char(char binary[], int bp, int shifty, const int debug_
     return bp;
 }
 
-static int gm_encode(unsigned int ddata[], const int length, char binary[], const int eci, int *p_bp,
+static int gm_encode(const unsigned int ddata[], const int length, char binary[], const int eci, int *p_bp,
             const int debug_print) {
     /* Create a binary stream representation of the input data.
        7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
@@ -733,10 +734,11 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
     return 0;
 }
 
-static int gm_encode_segs(unsigned int ddata[], const struct zint_seg segs[], const int seg_count, char binary[],
-            const int reader, const struct zint_structapp *p_structapp, int *p_bin_len, const int debug_print) {
+static int gm_encode_segs(const unsigned int ddata[], const struct zint_seg segs[], const int seg_count,
+            char binary[], const int reader, const struct zint_structapp *p_structapp, int *p_bin_len,
+            const int debug_print) {
     int i;
-    unsigned int *dd = ddata;
+    const unsigned int *dd = ddata;
     int bp = 0;
     int p;
 
@@ -863,11 +865,10 @@ static void gm_add_ecc(const char binary[], const int data_posn, const int layer
     }
 }
 
-static void gm_place_macromodule(char grid[], int x, int y, int word1, int word2, int size) {
-    int i, j;
-
-    i = (x * 6) + 1;
-    j = (y * 6) + 1;
+static void gm_place_macromodule(char grid[], const int x, const int y, const int word1, const int word2,
+                const int size) {
+    const int i = (x * 6) + 1;
+    const int j = (y * 6) + 1;
 
     if (word2 & 0x40) {
         grid[(j * size) + i + 2] = '1';
@@ -913,10 +914,10 @@ static void gm_place_macromodule(char grid[], int x, int y, int word1, int word2
     }
 }
 
-static void gm_place_data_in_grid(unsigned char word[], char grid[], int modules, int size) {
-    int x, y, macromodule, offset;
+static void gm_place_data_in_grid(const unsigned char word[], char grid[], const int modules, const int size) {
+    int x, y, macromodule;
+    const int offset = 13 - ((modules - 1) / 2);
 
-    offset = 13 - ((modules - 1) / 2);
     for (y = 0; y < modules; y++) {
         for (x = 0; x < modules; x++) {
             macromodule = gm_macro_matrix[((y + offset) * 27) + (x + offset)];
@@ -926,8 +927,9 @@ static void gm_place_data_in_grid(unsigned char word[], char grid[], int modules
 }
 
 /* Place the layer ID into each macromodule */
-static void gm_place_layer_id(char *grid, int size, int layers, int modules, int ecc_level) {
+static void gm_place_layer_id(char *grid, const int size, const int layers, const int ecc_level) {
     int i, j, layer, start, stop;
+    const int modules = 1 + (layers << 1);
     int *layerid = (int *) z_alloca(sizeof(int) * (layers + 1));
     int *id = (int *) z_alloca(sizeof(int) * (modules * modules));
 
@@ -947,8 +949,8 @@ static void gm_place_layer_id(char *grid, int size, int layers, int modules, int
     }
 
     /* Calculate which value goes in each macromodule */
-    start = modules / 2;
-    stop = modules / 2;
+    start = modules >> 1;
+    stop = modules >> 1;
     for (layer = 0; layer <= layers; layer++) {
         for (i = start; i <= stop; i++) {
             id[(start * modules) + i] = layerid[layer];
@@ -1174,24 +1176,24 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     memset(grid, '0', size_squared);
 
     gm_place_data_in_grid(word, grid, modules, size);
-    gm_place_layer_id(grid, size, layers, modules, ecc_level);
+    gm_place_layer_id(grid, size, layers, ecc_level);
 
     /* Add macromodule frames */
     for (x = 0; x < modules; x++) {
-        int dark = 1 - (x & 1);
+        const int x_offset = x * 6;
+        int dark = !(x & 1);
         for (y = 0; y < modules; y++) {
-            if (dark == 1) {
+            if (dark) {
+                const int y_offset = y * 6 * size;
                 for (i = 0; i < 5; i++) {
-                    grid[((y * 6) * size) + (x * 6) + i] = '1';
-                    grid[(((y * 6) + 5) * size) + (x * 6) + i] = '1';
-                    grid[(((y * 6) + i) * size) + (x * 6)] = '1';
-                    grid[(((y * 6) + i) * size) + (x * 6) + 5] = '1';
+                    grid[y_offset + x_offset + i] = '1';
+                    grid[y_offset + 5 * size + x_offset + i] = '1';
+                    grid[y_offset + i * size + x_offset] = '1';
+                    grid[y_offset + i * size + x_offset + 5] = '1';
                 }
-                grid[(((y * 6) + 5) * size) + (x * 6) + 5] = '1';
-                dark = 0;
-            } else {
-                dark = 1;
+                grid[y_offset + 5 * size + x_offset + 5] = '1';
             }
+            dark = !dark;
         }
     }
 

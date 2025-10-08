@@ -1,22 +1,23 @@
-% README.clang-tidy 2025-02-15
-% Current as of latest clang-tidy-20 from Ubuntu 24.04 apt package
+% README.clang-tidy 2025-10-08
+% Current as of latest clang-tidy-22 via
+%   wget https://apt.llvm.org/llvm.sh; chmod +x llvm.sh; sudo ./llvm.sh 22 all
 
 Requires cmake in "build" sub-directory with -DCMAKE_EXPORT_COMPILE_COMMANDS=ON (for "build/compile_commands.json")
 and -DCMAKE_BUILD_TYPE=Debug (so `assert()`s defined), and then make (for Qt generated includes).
 
 In project root directory (warning, slow):
 
-clang-tidy-20 backend/*.c frontend/*.c backend_qt/*.cpp frontend_qt/*.cpp -p build/compile_commands.json
+clang-tidy-22 backend/*.c frontend/*.c backend_qt/*.cpp frontend_qt/*.cpp -p build/compile_commands.json
 
 For "backend_tcl", which has no "compile_commands.json", specify the tcl include directory and package define, e.g.
 
-clang-tidy-20 backend_tcl/*.c -- -I/usr/include/tcl8.6 -DPACKAGE_VERSION='"2.14.0"'
+clang-tidy-22 backend_tcl/*.c -- -I/usr/include/tcl8.6 -DPACKAGE_VERSION='"2.15.0"'
 
 Options are in ".clang-tidy" (in the project root directory). The excluded check is
 `clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling` (for `sprintf()`).
 
 The test suite (cmake given -DZINT_TEST=ON) can also be analysed with additional checks disabled:
 
-clang-tidy-20 backend/tests/*.c frontend/tests/*.c backend_qt/tests/*.cpp \
+clang-tidy-22 backend/tests/*.c frontend/tests/*.c backend_qt/tests/*.cpp \
     -checks='-clang-analyzer-security.insecureAPI.strcpy,-clang-analyzer-optin.performance.Padding' \
     -p build/compile_commands.json

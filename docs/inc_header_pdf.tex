@@ -36,46 +36,8 @@
 \let\oldparagraph\paragraph
 \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
 
-%% https://github.com/tomduck/pandoc-tablenos
-%% As using --include-in-header (this file), need to manually include the following (displayed by setting
-%% "-M tablenos-warning-level=2"):
-
-%% PDF metadata - the values are set in "docs/inc_before_body.tex" (otherwise may get overridden)
+%% PDF metadata - the values are set in "docs/inc_before_body_pdf.tex" (otherwise may get overridden)
 \usepackage{hyperref}
 
-%% pandoc-tablenos: required package
+%% pandoc-lua-crossrefs: required package
 \usepackage{caption}
-
-%% pandoc-tablenos: environment to disable table caption prefixes
-\makeatletter
-\newcounter{tableno}
-\newenvironment{tablenos:no-prefix-table-caption}{
-  \caption@ifcompatibility{}{
-    \let\oldthetable\thetable
-    \let\oldtheHtable\theHtable
-    \renewcommand{\thetable}{tableno:\thetableno}
-    \renewcommand{\theHtable}{tableno:\thetableno}
-    \stepcounter{tableno}
-    \captionsetup{labelformat=empty}
-  }
-}{
-  \caption@ifcompatibility{}{
-    \captionsetup{labelformat=default}
-    \let\thetable\oldthetable
-    \let\theHtable\oldtheHtable
-    \addtocounter{table}{-1}
-  }
-}
-\makeatother
-
-%% pandoc-tablenos: environment for tagged tables
-\newenvironment{tablenos:tagged-table}[1][]{
-  \let\oldthetable\thetable
-  \let\oldtheHtable\theHtable
-  \renewcommand{\thetable}{#1}
-  \renewcommand{\theHtable}{#1}
-}{
-  \let\thetable\oldthetable
-  \let\theHtable\oldtheHtable
-  \addtocounter{table}{-1}
-}

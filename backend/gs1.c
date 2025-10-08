@@ -1640,6 +1640,7 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
     char msgBuf[120];
     gs1_encoder_init_status_t status = GS1_ENCODERS_INIT_SUCCESS;
     gs1_encoder_init_opts_t opts = {
+        /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) suppress clang-tidy-21 warning OR-ing enums */
         sizeof(gs1_encoder_init_opts_t), gs1_encoder_iNO_SYNDICT | gs1_encoder_iQUIET, &status, msgBuf, sizeof(msgBuf)
     };
     gs1_encoder *ctx;
@@ -1847,6 +1848,7 @@ INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, const unsigned char sou
             }
         }
         if (i != length) {
+            assert(length > 0); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
             local_source = local_source_buf;
             /* Replace with control-char placeholders */
             for (i = 0, j = 0; i < length; i++) {

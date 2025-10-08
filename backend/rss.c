@@ -288,6 +288,8 @@ INTERNAL int zint_dbar_omnstk_set_height(struct zint_symbol *symbol, const int f
     const int second_row = first_row + 2; /* 2 row separator */
     int i;
 
+    assert(first_row >= 0); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
+
     for (i = 0; i < symbol->rows; i++) {
         if (i != first_row && i != second_row) {
             fixed_height += symbol->row_height[i];

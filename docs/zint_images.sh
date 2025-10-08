@@ -65,7 +65,7 @@ zint -b MSI_PLESSEY -d "6502" --vers=2 --scale=$SCALE_LINEAR -o images/msi_pless
 zint -b TELEPEN --compliantheight -d "Z80" --scale=$SCALE_LINEAR -o images/telepen.svg
 zint -b TELEPEN_NUM --compliantheight -d "466X33" --scale=$SCALE_LINEAR -o images/telepen_num.svg
 zint -b CODE39 --compliantheight -d "1A" --vers=1 --scale=$SCALE_LINEAR -o images/code39.svg
-zint -b EXCODE39 --compliantheight -d "123.45$@fd" --scale=$SCALE_LINEAR -o images/excode39.svg
+zint -b EXCODE39 --compliantheight -d "123.45#@fd" --scale=$SCALE_LINEAR -o images/excode39.svg
 zint -b CODE93 --compliantheight -d "C93" --scale=$SCALE_LINEAR -o images/code93.svg
 zint -b PZN --compliantheight -d "2758089" --scale=$SCALE_LINEAR -o images/pzn.svg
 zint -b LOGMARS --compliantheight -d "12345/ABCDE" --vers=1 --scale=$SCALE_LINEAR -o images/logmars.svg

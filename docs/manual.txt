@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.15.0.9
-September 2025
+October 2025
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -599,7 +599,7 @@ meanings as given below:
   *                     Insert leading asterisks
   Any other character   Interpreted literally
 
-  Table : Sequence Format Characters
+  Table 1: Sequence Format Characters
 
 Once you’re happy with the Sequence Data, click the "Export..." button to bring
 up the Export Dialog, discussed next.
@@ -727,7 +727,7 @@ sequences are shown in the table below.
                                    hexadecimal (000000-10FFFF)
   ------------------------------------------------------------------------------
 
-  Table : Escape Sequences
+  Table 2: Escape Sequences
 
 (Special escape sequences are available for Code 128 only to manually switch
 Code Sets and insert special FNC1 characters - see 6.1.10.1 Standard Code 128
@@ -758,7 +758,7 @@ the other supported file types:
 
     zint -o there.eps -d "This Text"
 
-The currently supported output file formats are shown in the following table.
+The currently supported output file formats are:
 
   Extension   File format
   ----------- ------------------------------------
@@ -772,7 +772,7 @@ The currently supported output file formats are shown in the following table.
   tif         Tagged Image File Format
   txt         Text file (see 4.19 Other Options)
 
-  Table : Output File Formats
+  Table 3: Output File Formats
 
 The filename can contain directories and sub-directories also, which will be
 created if they don’t already exist:
@@ -1022,7 +1022,7 @@ underscores are optional.
                                         component
   -----------------------------------------------------------------------------
 
-  Table : Barcode Types (Symbologies)
+  Table 4: Barcode Types (Symbologies)
 
 4.4 Adjusting Height
 
@@ -1225,7 +1225,7 @@ To summarize the more intricate details:
   Yes         EMF               40           0.1           N/A
   -------------------------------------------------------------------
 
-  Table : Scaling Multipliers and Minima
+  Table 5: Scaling Multipliers and Minima
 
 4.9.1 Scaling by X-dimension and Resolution
 
@@ -1344,7 +1344,7 @@ Latin-2 (ISO/IEC 8859-2 plus ASCII).
   UPNQR           Latin-2                    N/A
   All others      ASCII                      N/A
 
-  Table : Default Character Sets
+  Table 6: Default Character Sets
 
 If Zint encounters characters which can not be encoded using the default
 character encoding then it will take advantage of the ECI (Extended Channel
@@ -1386,9 +1386,9 @@ behaviour.
 4.11.2 Input Modes and ECI
 
 If your data contains characters that are not in the default character set, you
-may encode it using an ECI-aware symbology and an ECI value from Table
-: ECI Codes below. The ECI information is added to your code symbol as prefix
-data. The symbologies that support ECI are
+may encode it using an ECI-aware symbology and an ECI value from Table 8: ECI
+Codes below. The ECI information is added to your code symbol as prefix data.
+The symbologies that support ECI are
 
   ------------- -------------- -----------
   Aztec Code    Grid Matrix    PDF417
@@ -1397,7 +1397,7 @@ data. The symbologies that support ECI are
   DotCode       MicroPDF417    Ultracode
   ------------- -------------- -----------
 
-  Table : ECI-Aware Symbologies
+  Table 7: ECI-Aware Symbologies
 
 Be aware that not all barcode readers support ECI mode, so this can sometimes
 lead to unreadable barcodes. If you are using characters beyond those supported
@@ -1444,11 +1444,11 @@ formatted. Zint automatically translates the data into the target encoding.
   170        ISO/IEC 646 Invariant[8]
   899        8-bit binary data
 
-  Table : ECI Codes
+  Table 8: ECI Codes
 
 An ECI value of 0 does not encode any ECI information in the code symbol (unless
 the data contains non-default character set characters). In this case, the
-default character set applies (see Table : Default Character Sets above).
+default character set applies (see Table 6: Default Character Sets above).
 
 If no ECI is specified or a value of 0 is given, and the data does contain
 characters other than in the default character set, then Zint will automatically
@@ -1547,7 +1547,7 @@ characters in the output filename as shown in the table below:
   @                 Insert a number or * (or + on Windows)
   Any other         Insert literally
 
-  Table : Batch Filename Formatting
+  Table 9: Batch Filename Formatting
 
 For instance
 
@@ -1563,7 +1563,7 @@ The following table shows some examples to clarify this method:
   -o my~~~bar.eps   "my001bar.eps", "my002bar.eps", "my003bar.eps"
   -o t#es~t~.png    "t es0t1.png", "t es0t2.png", "t es0t3.png"
 
-  Table : Batch Filename Examples
+  Table 10: Batch Filename Examples
 
 The special characters can span directories also, which is useful when creating
 a large number of barcodes:
@@ -1573,7 +1573,7 @@ a large number of barcodes:
   -o dir~/file~~~.svg   "dir0/file001.svg", "dir0/file002.svg", …
                         "dir0/file999.svg", "dir1/file000.svg", …
 
-  Table : Batch Directory Examples
+  Table 11: Batch Directory Examples
 
 For an alternative method of naming output files see the --mirror option in 4.14
 Automatic Filenames below.
@@ -1589,7 +1589,7 @@ suffix of the file type required. For example:
     zint -b 84 --direct --filetype=pcx -d "Data to encode"
 
 This command will output the symbol as a PCX file to stdout. For the supported
-output file formats see Table : Output File Formats.
+output file formats see Table 3: Output File Formats.
 
 --------------------------------------------------------------------------------
 
@@ -1632,7 +1632,7 @@ The default and minimum scale for raster output in dotty mode is 1.
 
 If you need to specify different ECIs for different sections of the input data,
 the --seg1 to --seg9 options can be used. Each option is of the form
---segN=ECI,data where ECI is the ECI code (see Table : ECI Codes) and data is
+--segN=ECI,data where ECI is the ECI code (see Table 8: ECI Codes) and data is
 the data to which this applies. This is in addition to the ECI and data
 specified using the --eci and -d options which must still be present and which
 in effect constitute segment 0. For instance
@@ -1642,7 +1642,7 @@ in effect constitute segment 0. For instance
 specifies 3 segments: segment 0 with ECI 9 (Greek), segment 1 with ECI 7
 (Cyrillic), and segment 2 with ECI 20 (Shift JIS). Segments must be consecutive.
 
-Naturally the symbology must be ECI-aware (see Table : ECI-Aware Symbologies).
+Naturally the symbology must be ECI-aware (see Table 7: ECI-Aware Symbologies).
 
 [zint -b AZTEC --eci=9 -d "Κείμενο" --seg1=7,"Текст" --seg2=20,"文章"]
 
@@ -2138,7 +2138,7 @@ the following members:
   raw_seg_count        integer      Number of raw segments.    (output only)
   ------------------------------------------------------------------------------
 
-  : Table  : API Structure zint_symbol
+  Table 12: API Structure zint_symbol
 
 To alter these values use the syntax shown in the example below. This code has
 the same result as the previous example except the output is now taller and
@@ -2237,7 +2237,7 @@ the nature of the error. The errors generated by Zint are:
                                  ZINT_WARN_HRT_TRUNCATED occurs.
   ------------------------------------------------------------------------------
 
-  Table : API Warning and Error Return Values
+  Table 13: API Warning and Error Return Values
 
 To catch errors use an integer variable as shown in the code below:
 
@@ -2274,8 +2274,8 @@ To treat all warnings as errors, set symbol->warn_level to WARN_FAIL_ALL.
 
 5.9 Specifying a Symbology
 
-Symbologies can be specified by number or by name as shown in the Table
-: Barcode Types (Symbologies). For example
+Symbologies can be specified by number or by name as listed in Table 4: Barcode
+Types (Symbologies). For example
 
     symbol->symbology = BARCODE_LOGMARS;
 
@@ -2346,7 +2346,7 @@ together when adjusting this value:
                              symbol->raw_segs (see 5.16 Feedback).
   ------------------------------------------------------------------------------
 
-  : Table  : API output_options Values
+  Table 14: API output_options Values
 
 5.11 Setting the Input Mode
 
@@ -2390,7 +2390,7 @@ member. Valid values are shown in the table below.
                           validate GS1 input.
   ------------------------------------------------------------------------------
 
-  : Table  : API input_mode Values
+  Table 15: API input_mode Values
 
 The default mode is DATA_MODE (CLI option --binary). (Note that this differs
 from the default for the CLI and GUI, which is UNICODE_MODE.)
@@ -2412,10 +2412,10 @@ whereas
 
 is not valid.
 
-Permissible escape sequences (ESCAPE_MODE) are listed in Table
-: Escape Sequences, and the special Code 128-only EXTRA_ESCAPE_MODE escape
-sequences are given in 6.1.10.1 Standard Code 128 (ISO 15417). An example of
-GS1PARENS_MODE usage is given in section 6.1.10.3 GS1-128.
+Permissible escape sequences (ESCAPE_MODE) are listed in Table 2: Escape
+Sequences, and the special Code 128-only EXTRA_ESCAPE_MODE escape sequences are
+given in 6.1.10.1 Standard Code 128 (ISO 15417). An example of GS1PARENS_MODE
+usage is given in section 6.1.10.3 GS1-128.
 
 GS1NOCHECK_MODE (CLI --gs1nocheck) is for use with legacy systems that have data
 that does not conform to the current GS1 standard. Printable ASCII input is
@@ -2469,7 +2469,7 @@ number of elements it contains. The zint_seg structure is of the form:
         int eci;               /* Extended Channel Interpretation */
     };
 
-The symbology must support ECIs (see Table : ECI-Aware Symbologies). For
+The symbology must support ECIs (see Table 7: ECI-Aware Symbologies). For
 example:
 
     #include <zint.h>
@@ -2618,7 +2618,7 @@ see which are set.
                               linear symbologies.
   ------------------------------------------------------------------------------
 
-  Table : API Capability Flags
+  Table 16: API Capability Flags
 
 For example:
 
@@ -2645,10 +2645,10 @@ were overridden by Zint.
 In particular for symbologies that have masks,[16] option_3 will contain the
 mask used as (N + 1) << 8, N being the mask. Also Aztec Code will return the
 actual ECC percentage used in option_1 as P << 8, where P is the integer
-percentage, the low byte containing the values given in Table
-: Aztec Code Error Correction Modes (with the addition of 0 meaning less than
-5% + 3 codewords and -1 meaning minimum 3 codewords). Micro PDF417 also will
-return the ECC percentage in option_1 as P << 8.
+percentage, the low byte containing the values given in Table 39: Aztec Code
+Error Correction Modes (with the addition of 0 meaning less than 5% + 3
+codewords and -1 meaning minimum 3 codewords). Micro PDF417 also will return the
+ECC percentage in option_1 as P << 8.
 
 Detailed feedback on the data encoded may be requested by specifying the
 BARCODE_RAW_TEXT option in the output_options member, which will populate the
@@ -2693,12 +2693,19 @@ NUL-terminated. The destination buffer is not NUL-terminated. The obsolete ECIs
 
 5.18 Zint Version
 
-Whether the Zint library linked to was built with PNG support may be determined
-with:
+Whether the Zint library linked to was built without PNG support may be
+determined with:
 
     int ZBarcode_NoPng();
 
-which returns 1 if no PNG support is available, else zero.
+which returns 1 if PNG support is not available, else zero.
+
+Similarly, but with opposite sense, whether the Zint library linked to was built
+with GS1 Syntax Engine support may be determined with:
+
+    int ZBarcode_HaveGS1SyntaxEngine();
+
+which returns 1 if GS1 Syntax Engine support is available, else zero.
 
 Lastly, the version of the Zint library linked to is returned by:
 
@@ -3029,7 +3036,7 @@ below:
   5       Modulo-11 (NCR)
   6       Modulo-11 (NCR) & Modulo-10
 
-  Table : MSI Plessey Check Digit Options
+  Table 17: MSI Plessey Check Digit Options
 
 To not show the check digit or digits in the Human Readable Text, add 10 to the
 --vers value. For example --vers=12 (API option_2 = 12) will add two hidden
@@ -3071,7 +3078,7 @@ but not show it in the Human Readable Text, set --vers=2 (API option_2 = 2).
 
 6.1.7.2 Extended Code 39
 
-[zint -b EXCODE39 --compliantheight -d "123.45$@fd"]
+[zint -b EXCODE39 --compliantheight -d "123.45#@fd"]
 
 Also known as Code 39e and Code39+, this symbology expands on Standard Code 39
 to provide support for the full 7-bit ASCII character set. The check digit
@@ -3290,7 +3297,7 @@ and is of the form:
 
   -----------------------------------------------------------------------
 
-  Table : DPD Input Fields
+  Table 18: DPD Input Fields
 
 A warning will be generated if the Service Code, the Destination Country Code,
 or the last 10 characters of the Tracking Number are non-numeric.
@@ -3408,7 +3415,7 @@ the table below:
   7          000000          576688
   8          0000000         7742862
 
-  Table : Channel Value Ranges
+  Table 19: Channel Value Ranges
 
 6.1.14 BC412 (SEMI T1-95)
 
@@ -3645,7 +3652,7 @@ encoding methods. Valid values are shown below.
                                       component
   ----------------------------------------------------------------------------
 
-  Table : GS1 Composite Symbology Values
+  Table 20: GS1 Composite Symbology Values
 
 The data to be encoded in the linear component of a composite symbol should be
 entered into a primary string with the data for the 2D component being entered
@@ -3808,7 +3815,7 @@ shown in the following table.
   23        99999999999999999999999     67-bar   62    N
   ---------------------------------------------------------------
 
-  Table : Australia Post Input Formats
+  Table 21: Australia Post Input Formats
 
 6.5.1.2 Reply Paid Barcode
 
@@ -3868,7 +3875,7 @@ the following table.
 
   ------------------------------------------------------------------------------
 
-  Table : Royal Mail 4-State Mailmark Input Fields
+  Table 22: Royal Mail 4-State Mailmark Input Fields
 
 
 The 6 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
@@ -3878,7 +3885,7 @@ patterns are:
   ANNLLNLSS   AANNLLNLS   ANNNLLNLS   AANNNLLNL   ANANLLNLS   AANANLLNL
   ----------- ----------- ----------- ----------- ----------- -----------
 
-  Table : Royal Mail 4-State Mailmark Destination+DPS Patterns
+  Table 23: Royal Mail 4-State Mailmark Destination+DPS Patterns
 
 
 where 'A' stands for full alphabetic (A-Z), 'L' for limited alphabetic (A-Z less
@@ -3966,7 +3973,7 @@ standards (ECC 000 to 140) have now been removed from Zint.
   9       26 x 26          19      88 x 88          29      16 x 36
   10      32 x 32          20      96 x 96          30      16 x 48
 
-  Table : Data Matrix Sizes
+  Table 24: Data Matrix Sizes
 
 The largest version 24 (144 x 144) can encode 3116 digits, around 2335
 alphanumeric characters, or 1555 bytes of data.
@@ -3990,7 +3997,7 @@ the following values as before:
   38      12 x 88          47      26 x 48
   39      16 x 64          48      26 x 64
 
-  Table : DMRE Sizes
+  Table 25: DMRE Sizes
 
 DMRE symbol sizes may be activated in automatic size mode using the option
 --dmre (API option_3 = DM_DMRE).
@@ -4037,7 +4044,8 @@ section, as summarized below.
   Reserved           6             Spaces
   Customer Data      6, 45 or 29   Anything (Latin-1)
 
-  Table : Royal Mail 2D Mailmark Input Fields
+  Table 26: Royal Mail 2D Mailmark Input Fields
+
 
 The 12 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
 patterns are similar to those for the 4-state except that the alphabetic
@@ -4049,7 +4057,7 @@ required (the rest can be blank), and the whole field can be blank:
   ANSSSSSSS   AANSSSSSS   ANNSSSSSS   AANNSSSSS   ANASSSSSS   AANASSSSS
   ----------- ----------- ----------- ----------- ----------- -----------
 
-  Table : Royal Mail 2D Mailmark Destination+DPS Patterns
+  Table 27: Royal Mail 2D Mailmark Destination+DPS Patterns
 
 
 where 'A' is alphabetic (A-Z), 'N' numeric (0-9), and 'S' space.
@@ -4062,7 +4070,7 @@ the whole field can be):
   ANNAASS   AANNAAS   ANNNAAS   AANNNAA   ANANAAS   AANANAA
   --------- --------- --------- --------- --------- ---------
 
-  Table : Royal Mail 2D Mailmark RTS Patterns
+  Table 28: Royal Mail 2D Mailmark RTS Patterns
 
 Three sizes are defined, one rectangular, with varying maximum amounts of
 optional customer data:
@@ -4073,7 +4081,7 @@ optional customer data:
   Type 9    32 x 32   45 characters   10
   Type 29   16 x 48   29 characters   30
 
-  Table : Royal Mail 2D Mailmark Sizes
+  Table 29: Royal Mail 2D Mailmark Sizes
 
 Zint will automatically select a size based on the amount of customer data, or
 it can be specified using the --vers option (API option_2), which takes the Zint
@@ -4100,7 +4108,7 @@ option_1) as shown in the following table.
   3       Q           Approx 55% of symbol        Approx 25%
   4       H           Approx 65% of symbol        Approx 30%
 
-  Table : QR Code ECC Levels
+  Table 30: QR Code ECC Levels
 
 The size of the symbol can be specified by setting the --vers option (API
 option_2) to the QR Code version required (1-40). The size of symbol generated
@@ -4123,7 +4131,7 @@ is shown in the table below.
   13      69 x 69          27      125 x 125
   14      73 x 73          28      129 x 129
 
-  Table : QR Code Sizes
+  Table 31: QR Code Sizes
 
 The maximum capacity of a QR Code symbol (version 40) is 7089 numeric digits,
 4296 alphanumeric characters or 2953 bytes of data. QR Code symbols can also be
@@ -4181,7 +4189,7 @@ that versions M1 and M2 have restrictions on what characters can be encoded.
   4       M4        17 x 17       Latin-1 and Shift JIS
   ------------------------------------------------------------------
 
-  Table : Micro QR Code Sizes
+  Table 32: Micro QR Code Sizes
 
 Version M4 can encode up to 35 digits, 21 alphanumerics, 15 bytes or 9 Kanji
 characters.
@@ -4201,7 +4209,7 @@ not available for any version, and ECC level Q is only available for version M4:
   3        Q        Approx 55% of symbol    Approx 25%    M4
   ----------------------------------------------------------------------
 
-  Table : Micro QR ECC Levels
+  Table 33: Micro QR ECC Levels
 
 The defaults for symbol size and ECC level depend on the input and whether
 either of them is specified.
@@ -4232,7 +4240,7 @@ valid for this type of symbol.
   2       M           Approx 37% of symbol        Approx 15%
   4       H           Approx 65% of symbol        Approx 30%
 
-  Table : rMQR ECC Levels
+  Table 34: rMQR ECC Levels
 
 The preferred symbol sizes can be selected using the --vers option (API
 option_2) as shown in the table below. Input values between 33 and 38 fix the
@@ -4280,7 +4288,7 @@ height of the symbol while allowing Zint to determine the minimum symbol width.
   19      R13x59    13 x 59               38      R17xW     17 x automatic width
   ------------------------------------------------------------------------------
 
-  Table : rMQR Sizes
+  Table 35: rMQR Sizes
 
 The largest version R17x139 (32) can encode up to 361 digits, 219 alphanumerics,
 150 bytes, or 92 Kanji characters.
@@ -4334,7 +4342,7 @@ message required by Zint is given in the following table.
   13 - 15      Three-digit service code. This depends on your parcel courier.
   ----------------------------------------------------------------------------
 
-  Table : MaxiCode Structured Carrier Message Format
+  Table 36: MaxiCode Structured Carrier Message Format
 
 The primary message can be set at the command prompt using the --primary switch
 (API primary). The secondary message uses the normal data entry method. For
@@ -4358,7 +4366,7 @@ option_2 = vv + 1). For example to use the common version "96" (ASC MH10/SC 8):
 
 will prefix "[)>\R01\G96" to the secondary message. (\R, \G and \E are the
 escape sequences for Record Separator, Group Separator and End of Transmission
-respectively - see Table : Escape Sequences.)
+respectively - see Table 2: Escape Sequences.)
 
 Modes 4 to 6 can be accessed using the --mode switch (API option_1). Modes 4 to
 6 do not have a primary message. For example:
@@ -4389,7 +4397,7 @@ Example maximum data lengths are given in the table below:
   6      93                    138                   50
   ------------------------------------------------------------------------
 
-  Table : MaxiCode Data Length Maxima
+  Table 37: MaxiCode Data Length Maxima
 
 * - secondary only
 
@@ -4433,7 +4441,7 @@ a smaller bullseye pattern at the centre of the symbol.
   11      45 x 45          23      95 x 95          35      147 x 147
   12      49 x 49          24      101 x 101        36      151 x 151
 
-  Table : Aztec Code Sizes
+  Table 38: Aztec Code Sizes
 
 Note that in symbols which have a specified size the amount of error correction
 is dependent on the length of the data input and Zint will allow error
@@ -4449,7 +4457,7 @@ the --secure option (API option_1) to a value from the following table.
   3      >36% + 3 codewords
   4      >50% + 3 codewords
 
-  Table : Aztec Code Error Correction Modes
+  Table 39: Aztec Code Error Correction Modes
 
 It is not possible to select both symbol size and error correction capacity for
 the same symbol. If both options are selected then the error correction capacity
@@ -4509,7 +4517,7 @@ and variable-width versions (versions S and T). These can be selected by using
   10      T         16 x automatic width   90              55
   ------------------------------------------------------------------------
 
-  Table : Code One Sizes
+  Table 40: Code One Sizes
 
 Version S symbols can only encode numeric data. The width of version S and
 version T symbols is determined by the length of the input data.
@@ -4547,7 +4555,7 @@ using the --secure option (API option_1), according to the following tables.
   6       78 x 78          13      162 x 162
   7       90 x 90
 
-  Table : Grid Matrix Sizes
+  Table 41: Grid Matrix Sizes
 
   Mode   Error Correction Capacity
   ------ ---------------------------
@@ -4557,7 +4565,7 @@ using the --secure option (API option_1), according to the following tables.
   4      Approximately 40%
   5      Approximately 50%
 
-  Table : Grid Matrix Error Correction Modes
+  Table 42: Grid Matrix Error Correction Modes
 
 Non-ASCII data density may be maximized by using the --fullmultibyte switch (API
 option_3 = ZINT_FULL_MULTIBYTE), but check that your barcode reader supports
@@ -4635,7 +4643,7 @@ to a value between 1 and 84 according to the following table.
   27      75 x 75          55      131 x 131        83      187 x 187
   28      77 x 77          56      133 x 133        84      189 x 189
 
-  Table : Han Xin Sizes
+  Table 43: Han Xin Sizes
 
 The largest version (84) can encode 7827 digits, 4350 ASCII characters, up to
 2175 Chinese characters, or 3261 bytes, making it the most capacious of all the
@@ -4652,7 +4660,7 @@ following table.
   3      Approx 23%
   4      Approx 30%
 
-  Table : Han Xin Error Correction Modes
+  Table 44: Han Xin Error Correction Modes
 
 Non-ASCII data density may be maximized by using the --fullmultibyte switch (API
 option_3 = ZINT_FULL_MULTIBYTE), but check that your barcode reader supports
@@ -4682,7 +4690,7 @@ modes are supported. The amount of error correction can be set using the
   5       EC4        Approx 25%
   6       EC5        Approx 33%
 
-  Table : Ultracode Error Correction Values
+  Table 45: Ultracode Error Correction Values
 
 Zint does not currently implement data compression by default, but this can be
 initiated through the API by setting
@@ -4726,7 +4734,7 @@ generated using the characters A-E as shown in the table below.
   D             Used for Information Based Indicia (IBI) postage.
   E             Used for customized mail with a USPS Intelligent Mail barcode.
 
-  Table : Valid FIM Characters
+  Table 46: Valid FIM Characters
 
 6.7.2 Flattermarken
 
@@ -4914,13 +4922,13 @@ reproduced here for reference.
   E     SO    RS    .       >   N   ^   n   ~
   F     SI    US    /       ?   O   _   o   DEL
 
-  Table : ASCII
+  Table 47: ASCII
 
 A.2 Latin Alphabet No. 1 (ISO/IEC 8859-1)
 
 ISO/IEC 8859-1 defines additional characters common in western European
 languages like French, German, Italian and Spanish. This extension is the
-default encoding of many barcodes (see Table : Default Character Sets) when a
+default encoding of many barcodes (see Table 6: Default Character Sets) when a
 codepoint above hex 9F is encoded. Note that codepoints hex 80 to 9F are not
 defined.
 
@@ -4943,7 +4951,7 @@ defined.
   E             ®      ¾   Î   Þ   î   þ
   F             ¯      ¿   Ï   ß   ï   ÿ
 
-  Table : ISO/IEC 8859-1
+  Table 48: ISO/IEC 8859-1
 
 Annex B. Qt Backend QZint
 
@@ -5033,7 +5041,7 @@ configured barcode is updated when the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.15.0.9 % % September 2025
+% ZINT(1) Version 2.15.0.9 % % October 2025
 
 NAME
 
@@ -5763,12 +5771,11 @@ see “GS1 Barcode Syntax Engine” at https://github.com/gs1/gs1-syntax-engine.
 codeset from U+0000 to U+D7FF and U+E000 to U+FFFF (i.e. excluding surrogates).
 Not to be confused with the Windows Bitmap file format BMP!
 
-[4] The symbology names marked with an asterisk (*) in Table
-: Barcode Types (Symbologies) above used different names in previous versions of
-Zint. These names are now deprecated but are still recognised by Zint. Those
-marked with a dagger (†) are replacements for BARCODE_EANX (13),
-BARCODE_EANX_CHK (14) and BARCODE_EANX_CC (130), which are still recognised by
-Zint.
+[4] The symbology names marked with an asterisk (*) in Table 4: Barcode Types
+(Symbologies) above used different names in previous versions of Zint. These
+names are now deprecated but are still recognised by Zint. Those marked with a
+dagger (†) are replacements for BARCODE_EANX (13), BARCODE_EANX_CHK (14) and
+BARCODE_EANX_CC (130), which are still recognised by Zint.
 
 [5] The background is omitted for vector outputs EMF, EPS and SVG when
 --nobackground is given. For raster outputs GIF, PCX, PNG and TIF, the

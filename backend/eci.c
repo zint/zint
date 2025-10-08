@@ -151,6 +151,10 @@ static int u_ascii_inv(const unsigned int u, unsigned char *dest) {
     return 0;
 }
 
+/* `NOLINT`s required due to disconnect between `z_decode_utf8()` decoding lengths and `zint_get_eci_length()` */
+
+/* NOLINTBEGIN(clang-analyzer-security.ArrayBound) clang-tidy-21 false positive */
+
 /* ECI 25 UTF-16 Big Endian (ISO/IEC 10646) - assumes valid Unicode */
 static int u_utf16be(const unsigned int u, unsigned char *dest) {
     unsigned int u2, v;
@@ -204,6 +208,8 @@ static int u_utf32le(const unsigned int u, unsigned char *dest) {
     dest[3] = 0;
     return 4;
 }
+
+/* NOLINTEND(clang-analyzer-security.ArrayBound) */
 
 /* ECI 899 Binary, included for libzueci compatibility - assumes valid Unicode */
 static int u_binary(const unsigned int u, unsigned char *dest) {
@@ -634,6 +640,7 @@ static int u_gb18030(const unsigned int u, unsigned char *dest) {
     unsigned int d1, d2;
     int ret = u_gb18030_int(u, &d1, &d2);
     if (ret) {
+        /* NOLINTBEGIN(clang-analyzer-security.ArrayBound) clang-tidy-21 false positive */
         if (ret == 1) {
             dest[0] = (unsigned char) d1;
         } else {
@@ -644,6 +651,7 @@ static int u_gb18030(const unsigned int u, unsigned char *dest) {
                 dest[3] = (unsigned char) d2;
             }
         }
+        /* NOLINTEND(clang-analyzer-security.ArrayBound) */
     }
     return ret;
 }
@@ -794,7 +802,7 @@ INTERNAL int zint_utf8_to_eci(const int eci, const unsigned char source[], unsig
         }
         out_posn += incr;
     }
-    dest[out_posn] = '\0';
+    dest[out_posn] = '\0'; /* NOLINT(clang-analyzer-security.ArrayBound) clang-tidy-21 false positive */
     *p_length = out_posn;
 
     return 0;

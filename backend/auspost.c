@@ -30,8 +30,8 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-static const char GDSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #";
-#define GDSET_F (IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F)
+static const char AusGDSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #";
+#define AUS_GDSET_F (IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F)
 
 static const char AusNTable[10][2] = {
     {'0','0'}, {'0','1'}, {'0','2'}, {'1','0'}, {'1','1'}, {'1','2'}, {'2','0'}, {'2','1'}, {'2','2'}, {'3','0'}
@@ -65,25 +65,27 @@ static const char AusBarTable[64][3] = {
     {'3','3','0'}, {'3','3','1'}, {'3','3','2'}, {'3','3','3'}
 };
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "reedsol.h"
 
-static char aus_convert_pattern(char data, int shift) {
+static unsigned char aus_convert_pattern(const char data, const int shift) {
     return (data - '0') << shift;
 }
 
 /* Adds Reed-Solomon error correction to auspost */
-static char *aus_rs_error(char data_pattern[], char *d) {
-    int reader, length, triple_writer = 0;
+static char *aus_rs_error(const char data_pattern[], char *d) {
+    const int length = d - data_pattern;
+    int reader, triple_writer;
     unsigned char triple[31];
     unsigned char result[5];
     rs_t rs;
 
-    for (reader = 2, length = d - data_pattern; reader < length; reader += 3, triple_writer++) {
+    for (reader = 2, triple_writer = 0; reader < length; reader += 3, triple_writer++) {
         triple[triple_writer] = aus_convert_pattern(data_pattern[reader], 4)
-                + aus_convert_pattern(data_pattern[reader + 1], 2)
-                + aus_convert_pattern(data_pattern[reader + 2], 0);
+                                | aus_convert_pattern(data_pattern[reader + 1], 2)
+                                | aus_convert_pattern(data_pattern[reader + 2], 0);
     }
 
     zint_rs_init_gf(&rs, 0x43);
@@ -97,6 +99,7 @@ static char *aus_rs_error(char data_pattern[], char *d) {
     return d;
 }
 
+/* In "postal.c" */
 INTERNAL int zint_daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
 
 /* Handles Australia Posts's 4 State Codes */
@@ -119,10 +122,13 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
     char data_pattern[200];
     char *d = data_pattern;
     unsigned char fcc[2] = {0}; /* Suppress clang-tidy warning clang-analyzer-core.UndefinedBinaryOperatorResult */
-    unsigned char dpid[9];
     unsigned char local_source[30];
     int zeroes = 0;
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+
+    /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
+    assert(symbol->symbology == BARCODE_AUSPOST || symbol->symbology == BARCODE_AUSREPLY
+            || symbol->symbology == BARCODE_AUSROUTE || symbol->symbology == BARCODE_AUSREDIRECT);
 
     /* Do all of the length checking first to avoid stack smashing */
     if (symbol->symbology == BARCODE_AUSPOST) {
@@ -134,8 +140,8 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 403, "Input length %d too long (maximum 8)", length);
     }
 
-    /* Check input immediately to catch nuls */
-    if ((i = z_not_sane(GDSET_F, source, length))) {
+    /* Check input immediately to catch invalid chars */
+    if ((i = z_not_sane(AUS_GDSET_F, source, length))) {
         return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 404,
                         "Invalid character at position %d in input (alphanumerics, space and \"#\" only)", i);
     }
@@ -187,9 +193,9 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
 
     memcpy(local_source + zeroes, source, length);
     length += zeroes;
+
     /* Verify that the first 8 characters are numbers */
-    memcpy(dpid, local_source, 8);
-    if ((i = z_not_sane(NEON_F, dpid, 8))) {
+    if ((i = z_not_sane(NEON_F, local_source, 8))) {
         return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 405,
                         "Invalid character at position %d in DPID (first 8 characters) (digits only)", i);
     }
@@ -205,16 +211,16 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
 
     /* Delivery Point Identifier (DPID) */
     for (reader = 0; reader < 8; reader++, d += 2) {
-        memcpy(d, AusNTable[dpid[reader] - '0'], 2);
+        memcpy(d, AusNTable[local_source[reader] - '0'], 2);
     }
 
     /* Customer Information */
     if (length > 8) {
-        if ((length == 13) || (length == 18)) {
+        if (length == 13 || length == 18) {
             for (reader = 8; reader < length; reader++, d += 3) {
-                memcpy(d, AusCTable[z_posn(GDSET, local_source[reader])], 3);
+                memcpy(d, AusCTable[z_posn(AusGDSET, local_source[reader])], 3);
             }
-        } else if ((length == 16) || (length == 23)) {
+        } else if (length == 16 || length == 23) {
             for (reader = 8; reader < length; reader++, d += 2) {
                 memcpy(d, AusNTable[local_source[reader] - '0'], 2);
             }
@@ -244,11 +250,11 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
     writer = 0;
     h = d - data_pattern;
     for (loopey = 0; loopey < h; loopey++) {
-        if ((data_pattern[loopey] == '1') || (data_pattern[loopey] == '0')) {
+        if (data_pattern[loopey] == '1' || data_pattern[loopey] == '0') {
             z_set_module(symbol, 0, writer);
         }
         z_set_module(symbol, 1, writer);
-        if ((data_pattern[loopey] == '2') || (data_pattern[loopey] == '0')) {
+        if (data_pattern[loopey] == '2' || data_pattern[loopey] == '0') {
             z_set_module(symbol, 2, writer);
         }
         writer += 2;
@@ -272,7 +278,7 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
         symbol->row_height[1] = 2.0f;
         error_number = zint_daft_set_height(symbol, 0.0f, 0.0f);
     }
-    symbol->rows = 3;
+    symbol->rows = 3; /* Not stackable */
     symbol->width = writer - 1;
 
     if (raw_text && z_rt_cpy_cat(symbol, fcc, 2, '\xFF' /*separator (none)*/, local_source, length)) {

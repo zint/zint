@@ -59,6 +59,8 @@ static void svg_pick_colour(const int colour, char colour_code[7]) {
 /* Convert text to use HTML entity codes */
 static void svg_make_html_friendly(const unsigned char *string, char *html_version) {
 
+    /* `NOLINT` required due to disconnect between `symbol->text` and vector `string`s which are always <= */
+    /* NOLINTBEGIN(clang-analyzer-security.ArrayBound) clang-tidy-21 false positive */
     for (; *string; string++) {
         switch (*string) {
             case '>':
@@ -93,6 +95,7 @@ static void svg_make_html_friendly(const unsigned char *string, char *html_versi
     }
 
     *html_version = '\0';
+    /* NOLINTEND(clang-analyzer-security.ArrayBound) */
 }
 
 /* Helper to output floating point attribute */

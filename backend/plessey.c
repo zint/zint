@@ -30,10 +30,11 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 
-#define SSET_F  (IS_NUM_F | IS_UHX_F) /* SSET "0123456789ABCDEF" */
+#define PLESS_SSET_F  (IS_NUM_F | IS_UHX_F) /* SSET "0123456789ABCDEF" */
 
 static const char PlessTable[16][8] = {
     {'1','3','1','3','1','3','1','3'}, {'3','1','1','3','1','3','1','3'}, {'1','3','3','1','1','3','1','3'},
@@ -67,7 +68,7 @@ INTERNAL int zint_plessey(struct zint_symbol *symbol, unsigned char source[], in
     if (length > 67) { /* 16 + 67 * 16 + 4 * 8 + 19 = 1139 */
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 370, "Input length %d too long (maximum 67)", length);
     }
-    if ((i = z_not_sane(SSET_F, source, length))) {
+    if ((i = z_not_sane(PLESS_SSET_F, source, length))) {
         return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 371,
                         "Invalid character at position %d in input (digits and \"ABCDEF\" only)", i);
     }
@@ -333,6 +334,8 @@ INTERNAL int zint_msi_plessey(struct zint_symbol *symbol, unsigned char source[]
     int check_option = symbol->option_2;
     int no_checktext = 0;
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+
+    assert(length > 0); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
 
     if (length > 92) { /* 3 (Start) + 92 * 12 + 3 * 12 + 4 (Stop) = 1147 */
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 372, "Input length %d too long (maximum 92)", length);
