@@ -9,6 +9,7 @@ SOURCE = manual.pmd
 OUT_PDF = manual.pdf
 OUT_TXT = manual.txt
 OUT_HTML = manual.html
+HIGHLIGHT_THEME = haddock.theme
 INC_HEADER_PDF = inc_header_pdf.tex
 INC_BEFORE_BODY_PDF = inc_before_body_pdf.tex
 INC_PDF = --include-in-header $(INC_HEADER_PDF) --include-before-body $(INC_BEFORE_BODY_PDF)
@@ -17,7 +18,7 @@ INC_TXT = --include-in-header $(INCLUDES_TXT)
 SOURCE_MAN_PAGE = zint.1.pmd
 OUT_MAN_PAGE = zint.1
 LUA_FILTER = lua-crossrefs/lua-crossrefs.lua
-INFRASTRUCTURE = Makefile $(LUA_FILTER)
+INFRASTRUCTURE = Makefile $(LUA_FILTER) $(HIGHLIGHT_THEME)
 IMAGES = \
 	images/zint.png \
 	images/zint-qt.png \
@@ -152,7 +153,7 @@ MONO_FONT = monofont="Liberation Mono"
 CJK_FONT = CJKmainfont="WenQuanYi Micro Hei Mono"
 PDF_OPTS = --pdf-engine=xelatex \
 			--lua-filter=$(LUA_FILTER) \
-			--syntax-highlighting=haddock -V colorlinks -V geometry:margin=20mm -V papersize=a4 \
+			--syntax-highlighting=$(HIGHLIGHT_THEME) -V colorlinks -V geometry:margin=20mm -V papersize=a4 \
 			-V csquotes=true --dpi=300
 TEX_MAN_PAGE = zint.1.tex
 TXT_OPTS = --lua-filter=$(LUA_FILTER) \
@@ -210,7 +211,7 @@ manual.tex : $(SOURCE) $(SOURCE_MAN_PAGE) $(INC_HEADER_PDF) $(INC_BEFORE_BODY_PD
 # HTML one-page (uses modified "templates/styles.html", unchanged "templates/default.html")
 
 HTML_OPTS = --lua-filter=$(LUA_FILTER) \
-			--syntax-highlighting=haddock \
+			--syntax-highlighting=$(HIGHLIGHT_THEME) \
 			--template=templates/default.html --eol=lf -s -t html
 INC_BEFORE_BODY_HTML = inc_before_body_html.html
 INC_HTML = --include-before-body $(INC_BEFORE_BODY_HTML)

@@ -5,12 +5,14 @@
 -- © 2025 R. N. West. Released under the GPL version 2 or greater.
 -- SPDX-License-Identifier: GPL-2.0-or-later
 
+PANDOC_VERSION:must_be_at_least '3.8.2'
+
 -- Hacked from "pandoc-lua-crossrefs/init.lua"
 
 -- Table of Ids and corresponding cross-referenceable elements. To be populated
 -- by various element numbering functions.
 ---@type table<string, {type: ('fig'|'tbl'), number: string, caption: string}>
-IDs = {}
+local IDs = {}
 
 -- Hacked from "pandoc-lua-crossrefs/lib/crossrefs.lua"
 
@@ -26,8 +28,8 @@ end
 ---@param str Str
 ---@return Inline[] | nil
 local _parse_crossref = function(str)
-   local opening_bracket, prefix_suppressor, id, closing_bracket1, punctuation, closing_bracket2 =
-      str.text:match('^(%[?)(%-?)#([%a%d-_:%.]-)(%]?)([\\%.!:?,;)]-)(%]?)$')
+   local opening_paren, opening_bracket, prefix_suppressor, id, closing_bracket1, punctuation, closing_bracket2 =
+      str.text:match('^(%(?)(%[?)(%-?)#([%a%d-_:%.]-)(%]?)([\\%.!:?,;)]-)(%]?)$')
    if not id or id == '' then return end
    local only_internal_punctuation = id:find('^[%a%d]+[%a%d%-_:%.]*[%a%d]+$') or id:find('^[%a%d]+$')
    if not only_internal_punctuation then return end
@@ -37,6 +39,7 @@ local _parse_crossref = function(str)
    if prefix_suppressor == '-' then crossref.attributes['reference-type'] = 'ref' end
    local elts = pandoc.List { crossref }
    if opening_bracket == '[' then elts:insert(1, pandoc.Str('[')) end
+   if opening_paren == '(' then elts:insert(1, pandoc.Str('(')) end
    if closing_bracket1 == ']' then elts:insert(pandoc.Str(']')) end
    if punctuation ~= '' then elts:insert(pandoc.Str(punctuation)) end
    if closing_bracket2 == ']' then elts:insert(pandoc.Str(']')) end
