@@ -211,7 +211,7 @@ static int u_utf32le(const unsigned int u, unsigned char *dest) {
 
 /* NOLINTEND(clang-analyzer-security.ArrayBound) */
 
-/* ECI 899 Binary, included for libzueci compatibility - assumes valid Unicode */
+/* ECI 899 Binary - assumes valid Unicode */
 static int u_binary(const unsigned int u, unsigned char *dest) {
     if (u <= 0xFF) {
         *dest = (unsigned char) u;
@@ -681,8 +681,8 @@ static int chr_range_cnt(const unsigned char string[], const int length, const u
 
 /* Is ECI convertible from UTF-8? */
 INTERNAL int zint_is_eci_convertible(const int eci) {
-    if (eci == 26 || (eci > 35 && eci != 170)) { /* Exclude ECI 170 - ASCII Invariant */
-        /* UTF-8 (26) or 8-bit binary data (899) or undefined (> 35 and < 899) or not character set (> 899) */
+    if (eci == 26 || (eci > 35 && eci != 170 && eci != 899)) { /* Exclude ECI 170 ASCII Invariant & ECI 899 Binary */
+        /* UTF-8 (26) or undefined (> 35 and < 899) or not character set (> 899) */
         return 0;
     }
     return 1;
@@ -779,7 +779,7 @@ INTERNAL int zint_utf8_to_eci(const int eci, const unsigned char source[], unsig
 
     if (eci == 170) { /* ASCII Invariant (archaic subset) */
         eci_func = u_ascii_inv;
-    } else if (eci == 899) { /* Binary, for libzueci compatibility */
+    } else if (eci == 899) { /* Binary */
         eci_func = u_binary;
     } else {
         eci_func = eci_funcs[eci];

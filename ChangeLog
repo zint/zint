@@ -1,8 +1,10 @@
-Version 2.15.0.9 (dev) not released yet (2025-09-16)
+Version 2.15.0.9 (dev) not released yet (2025-10-16)
 ====================================================
 
 **Incompatible changes**
 ------------------------
+- In `UNICODE_MODE`, ECI 899 Binary input now interpreted as UTF-8 (previously
+  treated as-is, i.e. as binary bytes - this now requires `DATA_MODE`)
 - Buffer length of member `errtxt` in `zint_symbol` extended 100 -> 160
   (client buffers may need checking/extending)
 - New `raw_segs` & `raw_seg_count` fields in `zint_symbol` for use with new
@@ -64,6 +66,8 @@ Bugs
 - CODABLOCKF: fix misencodation of extended ASCII 0xB0-0xB9 when followed by
   digit (ignore 2nd byte of FNC4 when categorizing Code C characters)
 - AZTEC: fix GS1 mode with Structured Append (wasn't outputting initial FNC1)
+- ECI: ECI 899 in UNICODE_MODE wasn't being converted from UTF-8, which was
+  inconsistent
 - set_height: fix non-compliance false positives by using epsilon in checks
 - UPU_S10: fix Service Indicator warning re "H" (ticket #331, props Milton Neal)
 - CLI: fix `separator` check to use new `ZINT_CAP_BINDABLE` instead of

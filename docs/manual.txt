@@ -1444,7 +1444,7 @@ formatted. Zint automatically translates the data into the target encoding.
   34         UTF-32BE (High order bytes first)
   35         UTF-32LE (Low order bytes first)
   170        ISO/IEC 646 Invariant[8]
-  899        8-bit binary data
+  899        8-bit binary data[9]
 
   Table 8: ECI Codes
 
@@ -1950,7 +1950,7 @@ the buffer is given in memfile_size. For instance:
     }
 
 will print the SVG output to stdout (the file "mem.svg" is not created). This is
-particularly useful for the textual formats EPS and SVG,[9] allowing the output
+particularly useful for the textual formats EPS and SVG,[10] allowing the output
 to be manipulated and processed by the client.
 
 5.7 Setting Options
@@ -1971,7 +1971,7 @@ the following members:
   height               float        Symbol height in           Symbol dependent
                                     X-dimensions, excluding
                                     fixed width-to-height
-                                    symbols.[10]
+                                    symbols.[11]
 
   scale                float        Scale factor for adjusting 1.0
                                     size of image (sets
@@ -2018,7 +2018,7 @@ the following members:
                                     end in .png, .gif, .bmp,
                                     .emf, .eps, .pcx, .svg,
                                     .tif or .txt followed by a
-                                    terminating NUL.[11]
+                                    terminating NUL.[12]
 
   primary              character    Primary message data for   "" (empty)
                        string       more complex symbols, with
@@ -2293,10 +2293,10 @@ together when adjusting this value:
   -------------------------- ---------------------------------------------------
   0                          No options selected.
 
-  BARCODE_BIND_TOP           Boundary bar above the symbol only.[12]
+  BARCODE_BIND_TOP           Boundary bar above the symbol only.[13]
 
   BARCODE_BIND               Boundary bars above and below the symbol and
-                             between rows if stacking multiple symbols.[13]
+                             between rows if stacking multiple symbols.[14]
 
   BARCODE_BOX                Add a box surrounding the symbol and whitespace.
 
@@ -2323,7 +2323,7 @@ together when adjusting this value:
                              Symbols in Memory (raster).
 
   BARCODE_QUIET_ZONES        Add compliant quiet zones (additional to any
-                             specified whitespace).[14]
+                             specified whitespace).[15]
 
   BARCODE_NO_QUIET_ZONES     Disable quiet zones, notably those with defaults.
 
@@ -2581,7 +2581,7 @@ see which are set.
   ZINT_CAP_STACKABLE          Is the symbology stackable? Note that stacked
                               symbologies are not stackable.
 
-  ZINT_CAP_EANUPC[15]         Is the symbology EAN/UPC?
+  ZINT_CAP_EANUPC[16]         Is the symbology EAN/UPC?
 
   ZINT_CAP_COMPOSITE          Does the symbology support composite data? (see
                               6.3 GS1 Composite Symbols (ISO 24723) below)
@@ -2639,7 +2639,7 @@ option_2 and option_3 members will be set to the values used by Zint to create
 the barcode. This is useful for feedback if the values were left as defaults or
 were overridden by Zint.
 
-In particular for symbologies that have masks,[16] option_3 will contain the
+In particular for symbologies that have masks,[17] option_3 will contain the
 mask used as (N + 1) << 8, N being the mask. Also Aztec Code will return the
 actual ECC percentage used in option_1 as P << 8, where P is the integer
 percentage, the low byte containing the values given in Table 39: Aztec Code
@@ -2655,7 +2655,7 @@ in raw_seg_count - which will always be at least one.
 
 The source, length and eci members of zint_seg will be set accordingly - the
 unconverted data in source, the data length in length, and the character set the
-data was converted to in eci. Any check characters encoded will be included,[17]
+data was converted to in eci. Any check characters encoded will be included,[18]
 and for GS1 data any FNC1 separators will be represented as GS (ASCII 29)
 characters. UPC-A and UPC-E data will be expanded to EAN-13, as will EAN-8 but
 only if it has an add-on (otherwise it will remain at 8 digits), and any add-ons
@@ -2671,7 +2671,7 @@ two helper functions discussed next.
 5.17 UTF-8 to ECI convenience functions
 
 As a convenience the conversion done by Zint from UTF-8 to ECIs is exposed in
-two helper functions (compatible with the libzueci[18] functions
+two helper functions (compatible with the libzueci[19] functions
 zueci_utf8_to_eci() and zueci_dest_len_eci()):
 
     int ZBarcode_UTF8_To_ECI(int eci, const unsigned char *source, int length,
@@ -3230,7 +3230,7 @@ alphanumerics) are not recommended.
 6.1.10.2 Code 128 Suppress Code Set C (Code Sets A and B only)
 
 It is sometimes advantageous to stop Code 128 from using Code Set C which
-compresses numerical data. The BARCODE_CODE128AB[19] variant (symbology 60)
+compresses numerical data. The BARCODE_CODE128AB[20] variant (symbology 60)
 suppresses Code Set C in favour of Code Sets A and B.
 
 [zint -b CODE128AB -d "130170X178"]
@@ -3803,7 +3803,7 @@ first and last digit are ignored, leaving a 4-digit DX Extract number in any
 case, which must be in the range 16 to 2047. The second format "NNN-NN"
 represents the DX Extract as two numbers separated by a dash (-), the first
 number being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
-0 to 15).[20]
+0 to 15).[21]
 
 The optional frame number is a number in the range 0 to 63, and may have a half
 frame indicator "A" appended. Special character sequences (with or without a
@@ -5851,40 +5851,44 @@ the yen sign (¥), and tilde (~) to overline (U+203E).
 [8] ISO/IEC 646 Invariant is a subset of ASCII with 12 characters undefined: #,
 $, @, [, \, ], ^, `, {, |, }, ~ (tilde).
 
-[9] BARCODE_MEMORY_FILE textual formats EPS and SVG will have Unix newlines (LF)
-on both Windows and Unix, i.e. not CR+LF on Windows.
+[9] Note that unless the --binary switch is used, 8-bit binary data for ECI 899
+must be given as UTF-8, e.g. a byte "\x80" must be represented as the 2 bytes
+"\xC2\x80"; similarly "\xC0" as "\xC3\x80", etc.
 
-[10] The height value is ignored for Aztec (including HIBC and Aztec Rune), Code
+[10] BARCODE_MEMORY_FILE textual formats EPS and SVG will have Unix newlines
+(LF) on both Windows and Unix, i.e. not CR+LF on Windows.
+
+[11] The height value is ignored for Aztec (including HIBC and Aztec Rune), Code
 One, Data Matrix (including HIBC), DotCode, Grid Matrix, Han Xin, MaxiCode, QR
 Code (including HIBC, Micro QR, rMQR and UPNQR), and Ultracode - all of which
 have a fixed width-to-height ratio (or, in the case of Code One, a fixed
 height).
 
-[11] For Windows, outfile is assumed to be UTF-8 encoded.
+[12] For Windows, outfile is assumed to be UTF-8 encoded.
 
-[12] The BARCODE_BIND_TOP flag is set by default for DPD - see 6.1.10.7 DPD
+[13] The BARCODE_BIND_TOP flag is set by default for DPD - see 6.1.10.7 DPD
 Code.
 
-[13] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
+[14] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
 Special considerations apply to ITF-14 - see 6.1.2.6 ITF-14.
 
-[14] Codablock-F, Code 16K, Code 49, EAN-13, EAN-8, EAN/UPC add-ons, ISBN,
+[15] Codablock-F, Code 16K, Code 49, EAN-13, EAN-8, EAN/UPC add-ons, ISBN,
 ITF-14, UPC-A and UPC-E have compliant quiet zones added by default.
 
-[15] ZINT_CAP_EANUPC was previously named ZINT_CAP_EXTENDABLE, which is still
+[16] ZINT_CAP_EANUPC was previously named ZINT_CAP_EXTENDABLE, which is still
 recognised.
 
-[16] DotCode, Han Xin, Micro QR Code, QR Code and UPNQR have variable masks.
+[17] DotCode, Han Xin, Micro QR Code, QR Code and UPNQR have variable masks.
 Rectangular Micro QR Code has a fixed mask (4).
 
-[17] Except for Japanese Postal Code, whose check character is not truly
+[18] Except for Japanese Postal Code, whose check character is not truly
 representable in the encoded data.
 
-[18] The library libzueci, which can convert both to and from UTF-8 and ECI, is
+[19] The library libzueci, which can convert both to and from UTF-8 and ECI, is
 available at https://sourceforge.net/projects/libzueci/.
 
-[19] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
+[20] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
 recognised.
 
-[20] The DX number may be looked up in The (Modified) Big Film Database at
+[21] The DX number may be looked up in The (Modified) Big Film Database at
 https://thebigfilmdatabase.merinorus.com.

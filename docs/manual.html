@@ -2789,7 +2789,8 @@ role="doc-noteref"><sup>8</sup></a></td>
 </tr>
 <tr>
 <td>899</td>
-<td>8-bit binary data</td>
+<td>8-bit binary data<a href="#fn9" class="footnote-ref" id="fnref9"
+role="doc-noteref"><sup>9</sup></a></td>
 </tr>
 </tbody>
 </table>
@@ -3365,8 +3366,8 @@ member <code>memfile</code> instead of to the output file
 <span id="cb63-16"><a href="#cb63-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>will print the SVG output to <code>stdout</code> (the file
 <code>"mem.svg"</code> is not created). This is particularly useful for
-the textual formats EPS and SVG,<a href="#fn9" class="footnote-ref"
-id="fnref9" role="doc-noteref"><sup>9</sup></a> allowing the output to
+the textual formats EPS and SVG,<a href="#fn10" class="footnote-ref"
+id="fnref10" role="doc-noteref"><sup>10</sup></a> allowing the output to
 be manipulated and processed by the client.</p>
 <h2 id="setting-options">5.7 Setting Options</h2>
 <p>So far our application is not very useful unless we plan to only make
@@ -3405,8 +3406,8 @@ href="#specifying-a-symbology">5.9 Specifying a Symbology</a>.</td>
 <td style="text-align: left;"><code>height</code></td>
 <td style="text-align: left;">float</td>
 <td style="text-align: left;">Symbol height in X-dimensions, excluding
-fixed width-to-height symbols.<a href="#fn10" class="footnote-ref"
-id="fnref10" role="doc-noteref"><sup>10</sup></a></td>
+fixed width-to-height symbols.<a href="#fn11" class="footnote-ref"
+id="fnref11" role="doc-noteref"><sup>11</sup></a></td>
 <td style="text-align: left;">Symbol dependent</td>
 </tr>
 <tr>
@@ -3481,8 +3482,8 @@ resulting barcode symbol to. Must end in <code>.png</code>,
 <code>.gif</code>, <code>.bmp</code>, <code>.emf</code>,
 <code>.eps</code>, <code>.pcx</code>, <code>.svg</code>,
 <code>.tif</code> or <code>.txt</code> followed by a terminating
-<code>NUL</code>.<a href="#fn11" class="footnote-ref" id="fnref11"
-role="doc-noteref"><sup>11</sup></a></td>
+<code>NUL</code>.<a href="#fn12" class="footnote-ref" id="fnref12"
+role="doc-noteref"><sup>12</sup></a></td>
 <td style="text-align: left;"><code>"out.png"</code></td>
 </tr>
 <tr>
@@ -3892,15 +3893,15 @@ value:</p>
 <tr>
 <td style="text-align: left;"><code>BARCODE_BIND_TOP</code></td>
 <td style="text-align: left;">Boundary bar above the symbol only.<a
-href="#fn12" class="footnote-ref" id="fnref12"
-role="doc-noteref"><sup>12</sup></a></td>
+href="#fn13" class="footnote-ref" id="fnref13"
+role="doc-noteref"><sup>13</sup></a></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_BIND</code></td>
 <td style="text-align: left;">Boundary bars above and below the symbol
-and between rows if stacking multiple symbols.<a href="#fn13"
-class="footnote-ref" id="fnref13"
-role="doc-noteref"><sup>13</sup></a></td>
+and between rows if stacking multiple symbols.<a href="#fn14"
+class="footnote-ref" id="fnref14"
+role="doc-noteref"><sup>14</sup></a></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_BOX</code></td>
@@ -3950,8 +3951,8 @@ Memory (raster)</a>.</td>
 <tr>
 <td style="text-align: left;"><code>BARCODE_QUIET_ZONES</code></td>
 <td style="text-align: left;">Add compliant quiet zones (additional to
-any specified whitespace).<a href="#fn14" class="footnote-ref"
-id="fnref14" role="doc-noteref"><sup>14</sup></a></td>
+any specified whitespace).<a href="#fn15" class="footnote-ref"
+id="fnref15" role="doc-noteref"><sup>15</sup></a></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_NO_QUIET_ZONES</code></td>
@@ -4257,8 +4258,8 @@ stacked symbologies are not stackable.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>ZINT_CAP_EANUPC</code><a
-href="#fn15" class="footnote-ref" id="fnref15"
-role="doc-noteref"><sup>15</sup></a></td>
+href="#fn16" class="footnote-ref" id="fnref16"
+role="doc-noteref"><sup>16</sup></a></td>
 <td style="text-align: left;">Is the symbology EAN/UPC?</td>
 </tr>
 <tr>
@@ -4343,8 +4344,8 @@ etc.) the <code>option_1</code>, <code>option_2</code> and
 <code>option_3</code> members will be set to the values used by Zint to
 create the barcode. This is useful for feedback if the values were left
 as defaults or were overridden by Zint.</p>
-<p>In particular for symbologies that have masks,<a href="#fn16"
-class="footnote-ref" id="fnref16" role="doc-noteref"><sup>16</sup></a>
+<p>In particular for symbologies that have masks,<a href="#fn17"
+class="footnote-ref" id="fnref17" role="doc-noteref"><sup>17</sup></a>
 <code>option_3</code> will contain the mask used as
 <code>(N + 1) &lt;&lt; 8</code>, N being the mask. Also Aztec Code will
 return the actual ECC percentage used in <code>option_1</code> as
@@ -4368,8 +4369,8 @@ members of <code>zint_seg</code> will be set accordingly - the
 unconverted data in <code>source</code>, the data length in
 <code>length</code>, and the character set the data was converted to in
 <code>eci</code>. Any check characters encoded will be included,<a
-href="#fn17" class="footnote-ref" id="fnref17"
-role="doc-noteref"><sup>17</sup></a> and for GS1 data any
+href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a> and for GS1 data any
 <code>FNC1</code> separators will be represented as <code>GS</code>
 (ASCII 29) characters. UPC-A and UPC-E data will be expanded to EAN-13,
 as will EAN-8 but only if it has an add-on (otherwise it will remain at
@@ -4386,8 +4387,8 @@ member using the two helper functions discussed next.</p>
 convenience functions</h2>
 <p>As a convenience the conversion done by Zint from UTF-8 to ECIs is
 exposed in two helper functions (compatible with the
-<code>libzueci</code><a href="#fn18" class="footnote-ref" id="fnref18"
-role="doc-noteref"><sup>18</sup></a> functions
+<code>libzueci</code><a href="#fn19" class="footnote-ref" id="fnref19"
+role="doc-noteref"><sup>19</sup></a> functions
 <code>zueci_utf8_to_eci()</code> and
 <code>zueci_dest_len_eci()</code>):</p>
 <div class="sourceCode" id="cb84"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> ZBarcode_UTF8_To_ECI<span class="op">(</span><span class="dt">int</span> eci<span class="op">,</span> <span class="dt">const</span> <span class="dt">unsigned</span> <span class="dt">char</span> <span class="op">*</span>source<span class="op">,</span> <span class="dt">int</span> length<span class="op">,</span></span>
@@ -5061,8 +5062,8 @@ digits (60 alphanumerics) are not recommended.</p>
 Code 128 Suppress Code Set C (Code Sets A and B only)</h4>
 <p>It is sometimes advantageous to stop Code 128 from using Code Set C
 which compresses numerical data. The <code>BARCODE_CODE128AB</code><a
-href="#fn19" class="footnote-ref" id="fnref19"
-role="doc-noteref"><sup>19</sup></a> variant (symbology 60) suppresses
+href="#fn20" class="footnote-ref" id="fnref20"
+role="doc-noteref"><sup>20</sup></a> variant (symbology 60) suppresses
 Code Set C in favour of Code Sets A and B.</p>
 <figure>
 <img src="images/code128ab.svg" class="lin"
@@ -5820,8 +5821,8 @@ the 6-digit version the first and last digit are ignored, leaving a
 2047. The second format <code>"NNN-NN"</code> represents the DX Extract
 as two numbers separated by a dash (<code>-</code>), the first number
 being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
-0 to 15).<a href="#fn20" class="footnote-ref" id="fnref20"
-role="doc-noteref"><sup>20</sup></a></p>
+0 to 15).<a href="#fn21" class="footnote-ref" id="fnref21"
+role="doc-noteref"><sup>21</sup></a></p>
 <p>The optional frame number is a number in the range 0 to 63, and may
 have a half frame indicator <code>"A"</code> appended. Special character
 sequences (with or without a half frame indicator appended) may also be
@@ -9731,50 +9732,56 @@ characters undefined: <code>#</code>, <code>$</code>, <code>@</code>,
 <code>`</code>, <code>{</code>, <code>|</code>, <code>}</code>,
 <code>~</code> (tilde).<a href="#fnref8" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>BARCODE_MEMORY_FILE textual formats EPS and SVG will
-have Unix newlines (LF) on both Windows and Unix, i.e. not CR+LF on
-Windows.<a href="#fnref9" class="footnote-back"
+<li id="fn9"><p>Note that unless the <code>--binary</code> switch is
+used, 8-bit binary data for ECI 899 must be given as UTF-8, e.g. a byte
+<code>"\x80"</code> must be represented as the 2 bytes
+<code>"\xC2\x80"</code>; similarly <code>"\xC0"</code> as
+<code>"\xC3\x80"</code>, etc.<a href="#fnref9" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>The <code>height</code> value is ignored for Aztec
+<li id="fn10"><p>BARCODE_MEMORY_FILE textual formats EPS and SVG will
+have Unix newlines (LF) on both Windows and Unix, i.e. not CR+LF on
+Windows.<a href="#fnref10" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>The <code>height</code> value is ignored for Aztec
 (including HIBC and Aztec Rune), Code One, Data Matrix (including HIBC),
 DotCode, Grid Matrix, Han Xin, MaxiCode, QR Code (including HIBC, Micro
 QR, rMQR and UPNQR), and Ultracode - all of which have a fixed
 width-to-height ratio (or, in the case of Code One, a fixed height).<a
-href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>For Windows, <code>outfile</code> is assumed to be
-UTF-8 encoded.<a href="#fnref11" class="footnote-back"
+href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p>For Windows, <code>outfile</code> is assumed to be
+UTF-8 encoded.<a href="#fnref12" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn12"><p>The <code>BARCODE_BIND_TOP</code> flag is set by
+<li id="fn13"><p>The <code>BARCODE_BIND_TOP</code> flag is set by
 default for DPD - see <a href="#dpd-code">6.1.10.7 DPD Code</a>.<a
-href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>The <code>BARCODE_BIND</code> flag is always set for
+href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p>The <code>BARCODE_BIND</code> flag is always set for
 Codablock-F, Code 16K and Code 49. Special considerations apply to
-ITF-14 - see <a href="#itf-14">6.1.2.6 ITF-14</a>.<a href="#fnref13"
+ITF-14 - see <a href="#itf-14">6.1.2.6 ITF-14</a>.<a href="#fnref14"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>Codablock-F, Code 16K, Code 49, EAN-13, EAN-8, EAN/UPC
+<li id="fn15"><p>Codablock-F, Code 16K, Code 49, EAN-13, EAN-8, EAN/UPC
 add-ons, ISBN, ITF-14, UPC-A and UPC-E have compliant quiet zones added
-by default.<a href="#fnref14" class="footnote-back"
+by default.<a href="#fnref15" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p><code>ZINT_CAP_EANUPC</code> was previously named
+<li id="fn16"><p><code>ZINT_CAP_EANUPC</code> was previously named
 <code>ZINT_CAP_EXTENDABLE</code>, which is still recognised.<a
-href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>DotCode, Han Xin, Micro QR Code, QR Code and UPNQR have
-variable masks. Rectangular Micro QR Code has a fixed mask (4).<a
 href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>Except for Japanese Postal Code, whose check character
-is not truly representable in the encoded data.<a href="#fnref17"
+<li id="fn17"><p>DotCode, Han Xin, Micro QR Code, QR Code and UPNQR have
+variable masks. Rectangular Micro QR Code has a fixed mask (4).<a
+href="#fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn18"><p>Except for Japanese Postal Code, whose check character
+is not truly representable in the encoded data.<a href="#fnref18"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p>The library <code>libzueci</code>, which can convert
+<li id="fn19"><p>The library <code>libzueci</code>, which can convert
 both to and from UTF-8 and ECI, is available at <a
 href="https://sourceforge.net/projects/libzueci/">https://sourceforge.net/projects/libzueci/</a>.<a
-href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p><code>BARCODE_CODE128AB</code> previously used the name
-<code>BARCODE_CODE128B</code>, which is still recognised.<a
 href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn20"><p>The DX number may be looked up in The (Modified) Big
+<li id="fn20"><p><code>BARCODE_CODE128AB</code> previously used the name
+<code>BARCODE_CODE128B</code>, which is still recognised.<a
+href="#fnref20" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn21"><p>The DX number may be looked up in The (Modified) Big
 Film Database at <a
 href="https://thebigfilmdatabase.merinorus.com">https://thebigfilmdatabase.merinorus.com</a>.<a
-href="#fnref20" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+href="#fnref21" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>
