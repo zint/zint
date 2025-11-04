@@ -1861,7 +1861,7 @@ static void test_stacking(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
     const char *data = "1";
     const char *expected_error = "Error 770: Too many stacked symbols";
-    const char *expected_error_raw = "Error 857: Cannot use BARCODE_RAW_TEXT output option if stacking symbols";
+    const char *expected_error_content = "Error 857: Cannot use BARCODE_CONTENT_SEGS output option if stacking symbols";
     int i;
 
     (void)p_ctx;
@@ -1886,12 +1886,12 @@ static void test_stacking(const testCtx *const p_ctx) {
     ret = ZBarcode_Encode(symbol, TCU(data), 0);
     assert_zero(ret, "i:%d ZBarcode_Encode(%s) ret %d != 0 (%s)\n", i, data, ret, symbol->errtxt);
 
-    symbol->output_options |= BARCODE_RAW_TEXT;
+    symbol->output_options |= BARCODE_CONTENT_SEGS;
     ret = ZBarcode_Encode(symbol, TCU(data), 0);
     assert_equal(ret, ZINT_ERROR_INVALID_OPTION, "i:%d ZBarcode_Encode ret %d != ZINT_ERROR_INVALID_OPTION (%s)\n",
                 i, ret, symbol->errtxt);
-    assert_zero(strcmp(symbol->errtxt, expected_error_raw), "i:%d strcmp(%s, %s) != 0\n",
-                i, symbol->errtxt, expected_error_raw);
+    assert_zero(strcmp(symbol->errtxt, expected_error_content), "i:%d strcmp(%s, %s) != 0\n",
+                i, symbol->errtxt, expected_error_content);
 
     ZBarcode_Delete(symbol);
 
@@ -2848,7 +2848,7 @@ static void test_utf8_to_eci(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_raw_text(const testCtx *const p_ctx) {
+static void test_content_segs(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
@@ -3000,7 +3000,7 @@ static void test_raw_text(const testCtx *const p_ctx) {
             text = data[i].data;
         }
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
-                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, BARCODE_RAW_TEXT,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, BARCODE_CONTENT_SEGS,
                                     text, -1, debug);
         expected = data[i].expected[0] ? data[i].expected : data[i].data;
         expected_length = (int) strlen(expected);
@@ -3008,15 +3008,15 @@ static void test_raw_text(const testCtx *const p_ctx) {
         ret = ZBarcode_Encode(symbol, TCU(text), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-        assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-        assert_equal(symbol->raw_segs[0].length, expected_length,
-                    "i:%d raw_segs[0].length %d (%.*s) != expected_length %d (%s)\n",
-                    i, symbol->raw_segs[0].length, symbol->raw_segs[0].length, symbol->raw_segs[0].source,
+        assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+        assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+        assert_equal(symbol->content_segs[0].length, expected_length,
+                    "i:%d content_segs[0].length %d (%.*s) != expected_length %d (%s)\n",
+                    i, symbol->content_segs[0].length, symbol->content_segs[0].length, symbol->content_segs[0].source,
                     expected_length, expected);
-        assert_zero(memcmp(symbol->raw_segs[0].source, expected, expected_length),
+        assert_zero(memcmp(symbol->content_segs[0].source, expected, expected_length),
                     "i:%d memcmp(%.*s, %.*s, %d) != 0\n",
-                    i, expected_length, symbol->raw_segs[0].source, expected_length, expected, expected_length);
+                    i, expected_length, symbol->content_segs[0].source, expected_length, expected, expected_length);
 
         ZBarcode_Delete(symbol);
     }
@@ -3056,7 +3056,7 @@ int main(int argc, char *argv[]) {
         { "test_scale_from_xdimdp", test_scale_from_xdimdp },
         { "test_xdimdp_from_scale", test_xdimdp_from_scale },
         { "test_utf8_to_eci", test_utf8_to_eci },
-        { "test_raw_text", test_raw_text },
+        { "test_content_segs", test_content_segs },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

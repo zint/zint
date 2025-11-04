@@ -102,13 +102,13 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_CODE11, -1, -1, "123-45", -1, "123-4552" }, /* 2 checksums */
-        /*  1*/ { BARCODE_CODE11, -1, BARCODE_RAW_TEXT, "123-45", -1, "123-4552" }, /* No difference */
+        /*  1*/ { BARCODE_CODE11, -1, BARCODE_CONTENT_SEGS, "123-45", -1, "123-4552" }, /* No difference */
         /*  2*/ { BARCODE_CODE11, 1, -1, "123-45", -1, "123-455" }, /* 1 check digit */
-        /*  3*/ { BARCODE_CODE11, 1, BARCODE_RAW_TEXT, "123-45", -1, "123-455" }, /* No difference */
+        /*  3*/ { BARCODE_CODE11, 1, BARCODE_CONTENT_SEGS, "123-45", -1, "123-455" }, /* No difference */
         /*  4*/ { BARCODE_CODE11, 2, -1, "123-45", -1, "123-45" }, /* No checksums */
-        /*  5*/ { BARCODE_CODE11, 2, BARCODE_RAW_TEXT, "123-45", -1, "123-45" }, /* No difference */
+        /*  5*/ { BARCODE_CODE11, 2, BARCODE_CONTENT_SEGS, "123-45", -1, "123-45" }, /* No difference */
         /*  6*/ { BARCODE_CODE11, -1, -1, "123456789012", -1, "123456789012-8" }, /* First check digit 10 (A) goes to hyphen */
-        /*  7*/ { BARCODE_CODE11, -1, BARCODE_RAW_TEXT, "123456789012", -1, "123456789012-8" }, /* No difference */
+        /*  7*/ { BARCODE_CODE11, -1, BARCODE_CONTENT_SEGS, "123456789012", -1, "123456789012-8" }, /* No difference */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -136,17 +136,17 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length);
         assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->text, data[i].expected);
-        if (symbol->output_options & BARCODE_RAW_TEXT) {
-            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-            assert_equal(symbol->raw_segs[0].length, expected_length,
-                        "i:%d raw_segs[0].length %d != expected_length %d\n",
-                        i, symbol->raw_segs[0].length, expected_length);
-            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
+        if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+            assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+            assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+            assert_equal(symbol->content_segs[0].length, expected_length,
+                        "i:%d content_segs[0].length %d != expected_length %d\n",
+                        i, symbol->content_segs[0].length, expected_length);
+            assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
                         "i:%d memcmp(%.*s, %s, %d) != 0\n",
-                        i, expected_length, symbol->raw_segs[0].source, data[i].expected, expected_length);
+                        i, expected_length, symbol->content_segs[0].source, data[i].expected, expected_length);
         } else {
-            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);

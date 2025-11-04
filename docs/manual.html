@@ -334,7 +334,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.15.0.9</p>
-<p class="date">October 2025</p>
+<p class="date">November 2025</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -3080,7 +3080,8 @@ Data Matrix, DotCode, Grid Matrix, MaxiCode, MicroPDF417, PDF417, QR
 Code and Ultracode.</p>
 <p>The <code>--structapp</code> option marks a symbol as part of a
 Structured Append sequence, and has the format</p>
-<pre><code>--structapp=I,C[,ID]</code></pre>
+<div class="sourceCode" id="cb52"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="ex">--structapp=I,C[,ID]</span></span></code></pre></div>
 <figure>
 <img src="images/datamatrix_structapp.svg" class="i2d"
 alt="zint -b DATAMATRIX -d &quot;2nd of 3&quot; --structapp=&quot;2,3,5006&quot;" />
@@ -3140,11 +3141,11 @@ creates and then deletes a symbol:</p>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
 <span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>my_symbol<span class="op">;</span></span>
-<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>    my_symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
-<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>my_symbol <span class="op">!=</span> NULL<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>symbol<span class="op">;</span></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>    symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>symbol <span class="op">!=</span> NULL<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;Symbol successfully created!</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
-<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>        ZBarcode_Delete<span class="op">(</span>my_symbol<span class="op">);</span></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>        ZBarcode_Delete<span class="op">(</span>symbol<span class="op">);</span></span>
 <span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
@@ -3164,11 +3165,11 @@ current working directory:</p>
 <div class="sourceCode" id="cb55"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;zint.h&gt;</span></span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">int</span> argc<span class="op">,</span> <span class="dt">char</span> <span class="op">**</span>argv<span class="op">)</span></span>
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>my_symbol<span class="op">;</span></span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    my_symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode<span class="op">(</span>my_symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>my_symbol<span class="op">);</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>symbol<span class="op">;</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode<span class="op">(</span>symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Print<span class="op">(</span>symbol<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>symbol<span class="op">);</span></span>
 <span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>This can also be done in one stage using the
@@ -3177,10 +3178,10 @@ example:</p>
 <div class="sourceCode" id="cb56"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;zint.h&gt;</span></span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">int</span> argc<span class="op">,</span> <span class="dt">char</span> <span class="op">**</span>argv<span class="op">)</span></span>
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>my_symbol<span class="op">;</span></span>
-<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>    my_symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
-<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>my_symbol<span class="op">);</span></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>symbol<span class="op">;</span></span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>    symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>symbol<span class="op">);</span></span>
 <span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Note that when using the API, the input data is assumed to be 8-bit
@@ -3260,13 +3261,13 @@ RGB and RGBA pixel on the screen implemented by the client
 application:</p>
 <div class="sourceCode" id="cb59"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> row<span class="op">,</span> col<span class="op">,</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> j <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>row <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> row <span class="op">&lt;</span> my_symbol<span class="op">-&gt;</span>bitmap_height<span class="op">;</span> row<span class="op">++)</span> <span class="op">{</span></span>
-<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>     <span class="cf">for</span> <span class="op">(</span>col <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> col <span class="op">&lt;</span> my_symbol<span class="op">-&gt;</span>bitmap_width<span class="op">;</span> col<span class="op">++)</span> <span class="op">{</span></span>
-<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>          <span class="dt">int</span> red <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span> my_symbol<span class="op">-&gt;</span>bitmap<span class="op">[</span>i<span class="op">];</span></span>
-<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>          <span class="dt">int</span> green <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span> my_symbol<span class="op">-&gt;</span>bitmap<span class="op">[</span>i <span class="op">+</span> <span class="dv">1</span><span class="op">];</span></span>
-<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>          <span class="dt">int</span> blue <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span> my_symbol<span class="op">-&gt;</span>bitmap<span class="op">[</span>i <span class="op">+</span> <span class="dv">2</span><span class="op">];</span></span>
-<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> <span class="op">(</span>my_symbol<span class="op">-&gt;</span>alphamap<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>              <span class="dt">int</span> alpha <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span> my_symbol<span class="op">-&gt;</span>alphamap<span class="op">[</span>j<span class="op">];</span></span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>row <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> row <span class="op">&lt;</span> symbol<span class="op">-&gt;</span>bitmap_height<span class="op">;</span> row<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>     <span class="cf">for</span> <span class="op">(</span>col <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> col <span class="op">&lt;</span> symbol<span class="op">-&gt;</span>bitmap_width<span class="op">;</span> col<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>          <span class="dt">int</span> red <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span> symbol<span class="op">-&gt;</span>bitmap<span class="op">[</span>i<span class="op">];</span></span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>          <span class="dt">int</span> green <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span> symbol<span class="op">-&gt;</span>bitmap<span class="op">[</span>i <span class="op">+</span> <span class="dv">1</span><span class="op">];</span></span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>          <span class="dt">int</span> blue <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span> symbol<span class="op">-&gt;</span>bitmap<span class="op">[</span>i <span class="op">+</span> <span class="dv">2</span><span class="op">];</span></span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> <span class="op">(</span>symbol<span class="op">-&gt;</span>alphamap<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>              <span class="dt">int</span> alpha <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span> symbol<span class="op">-&gt;</span>alphamap<span class="op">[</span>j<span class="op">];</span></span>
 <span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>              render_rgba<span class="op">(</span>row<span class="op">,</span> col<span class="op">,</span> red<span class="op">,</span> green<span class="op">,</span> blue<span class="op">,</span> alpha<span class="op">);</span></span>
 <span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>              j<span class="op">++;</span></span>
 <span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>          <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
@@ -3288,9 +3289,9 @@ for blue, <code>'M'</code> for magenta, <code>'R'</code> for red,
 accessing the data is then:</p>
 <div class="sourceCode" id="cb60"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> row<span class="op">,</span> col<span class="op">,</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>row <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> row <span class="op">&lt;</span> my_symbol<span class="op">-&gt;</span>bitmap_height<span class="op">;</span> row<span class="op">++)</span> <span class="op">{</span></span>
-<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>     <span class="cf">for</span> <span class="op">(</span>col <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> col <span class="op">&lt;</span> my_symbol<span class="op">-&gt;</span>bitmap_width<span class="op">;</span> col<span class="op">++)</span> <span class="op">{</span></span>
-<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>          render_pixel<span class="op">(</span>row<span class="op">,</span> col<span class="op">,</span> my_symbol<span class="op">-&gt;</span>bitmap<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>row <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> row <span class="op">&lt;</span> symbol<span class="op">-&gt;</span>bitmap_height<span class="op">;</span> row<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>     <span class="cf">for</span> <span class="op">(</span>col <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> col <span class="op">&lt;</span> symbol<span class="op">-&gt;</span>bitmap_width<span class="op">;</span> col<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>          render_pixel<span class="op">(</span>row<span class="op">,</span> col<span class="op">,</span> symbol<span class="op">-&gt;</span>bitmap<span class="op">[</span>i<span class="op">]);</span></span>
 <span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>          i<span class="op">++;</span></span>
 <span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>     <span class="op">}</span></span>
 <span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
@@ -3321,23 +3322,23 @@ available:</p>
 <span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> zint_vector_string <span class="op">*</span>string<span class="op">;</span></span>
 <span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> zint_vector_circle <span class="op">*</span>circle<span class="op">;</span></span>
 <span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>prepare_canvas<span class="op">(</span>my_symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>width<span class="op">,</span> my_symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>height<span class="op">,</span></span>
-<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>               my_symbol<span class="op">-&gt;</span>scale<span class="op">,</span> my_symbol<span class="op">-&gt;</span>fgcolour<span class="op">,</span> my_symbol<span class="op">-&gt;</span>bgcolour<span class="op">,</span></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>prepare_canvas<span class="op">(</span>symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>width<span class="op">,</span> symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>height<span class="op">,</span></span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>               symbol<span class="op">-&gt;</span>scale<span class="op">,</span> symbol<span class="op">-&gt;</span>fgcolour<span class="op">,</span> symbol<span class="op">-&gt;</span>bgcolour<span class="op">,</span></span>
 <span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>               rotate_angle<span class="op">);</span></span>
 <span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>rect <span class="op">=</span> my_symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>rectangles<span class="op">;</span> rect<span class="op">;</span> rect <span class="op">=</span> rect<span class="op">-&gt;</span>next<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>rect <span class="op">=</span> symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>rectangles<span class="op">;</span> rect<span class="op">;</span> rect <span class="op">=</span> rect<span class="op">-&gt;</span>next<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>    draw_rect<span class="op">(</span>rect<span class="op">-&gt;</span>x<span class="op">,</span> rect<span class="op">-&gt;</span>y<span class="op">,</span> rect<span class="op">-&gt;</span>width<span class="op">,</span> rect<span class="op">-&gt;</span>height<span class="op">,</span></span>
 <span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>              rect<span class="op">-&gt;</span>colour<span class="op">);</span></span>
 <span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>hex <span class="op">=</span> my_symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>hexagons<span class="op">;</span> hex<span class="op">;</span> hex <span class="op">=</span> hex<span class="op">-&gt;</span>next<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>hex <span class="op">=</span> symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>hexagons<span class="op">;</span> hex<span class="op">;</span> hex <span class="op">=</span> hex<span class="op">-&gt;</span>next<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a>    draw_hexagon<span class="op">(</span>hex<span class="op">-&gt;</span>x<span class="op">,</span> hex<span class="op">-&gt;</span>y<span class="op">,</span> hex<span class="op">-&gt;</span>diameter<span class="op">,</span> hex<span class="op">-&gt;</span>rotation<span class="op">);</span></span>
 <span id="cb62-16"><a href="#cb62-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>string <span class="op">=</span> my_symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>strings<span class="op">;</span> string<span class="op">;</span> string <span class="op">=</span> string<span class="op">-&gt;</span>next<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>string <span class="op">=</span> symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>strings<span class="op">;</span> string<span class="op">;</span> string <span class="op">=</span> string<span class="op">-&gt;</span>next<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb62-18"><a href="#cb62-18" aria-hidden="true" tabindex="-1"></a>    draw_string<span class="op">(</span>string<span class="op">-&gt;</span>x<span class="op">,</span> string<span class="op">-&gt;</span>y<span class="op">,</span> string<span class="op">-&gt;</span>fsize<span class="op">,</span></span>
 <span id="cb62-19"><a href="#cb62-19" aria-hidden="true" tabindex="-1"></a>                string<span class="op">-&gt;</span>rotation<span class="op">,</span> string<span class="op">-&gt;</span>halign<span class="op">,</span></span>
 <span id="cb62-20"><a href="#cb62-20" aria-hidden="true" tabindex="-1"></a>                string<span class="op">-&gt;</span>text<span class="op">,</span> string<span class="op">-&gt;</span>length<span class="op">);</span></span>
 <span id="cb62-21"><a href="#cb62-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb62-22"><a href="#cb62-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>circle <span class="op">=</span> my_symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>circles<span class="op">;</span> circle<span class="op">;</span> circle <span class="op">=</span> circle<span class="op">-&gt;</span>next<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb62-22"><a href="#cb62-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>circle <span class="op">=</span> symbol<span class="op">-&gt;</span>vector<span class="op">-&gt;</span>circles<span class="op">;</span> circle<span class="op">;</span> circle <span class="op">=</span> circle<span class="op">-&gt;</span>next<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb62-23"><a href="#cb62-23" aria-hidden="true" tabindex="-1"></a>    draw_circle<span class="op">(</span>circle<span class="op">-&gt;</span>x<span class="op">,</span> circle<span class="op">-&gt;</span>y<span class="op">,</span> circle<span class="op">-&gt;</span>diameter<span class="op">,</span> circle<span class="op">-&gt;</span>width<span class="op">);</span></span>
 <span id="cb62-24"><a href="#cb62-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="buffering-symbols-in-memory-memfile">5.6 Buffering Symbols in
@@ -3353,15 +3354,15 @@ member <code>memfile</code> instead of to the output file
 <span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string.h&gt;</span></span>
 <span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">int</span> argc<span class="op">,</span> <span class="dt">char</span> <span class="op">**</span>argv<span class="op">)</span></span>
 <span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>my_symbol<span class="op">;</span></span>
-<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>    my_symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
-<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>    my_symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> BARCODE_MEMORY_FILE<span class="op">;</span></span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>symbol<span class="op">;</span></span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>    symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
+<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>    symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> BARCODE_MEMORY_FILE<span class="op">;</span></span>
 <span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* Only the extension is used, to determine output format */</span></span>
-<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>my_symbol<span class="op">-&gt;</span>outfile<span class="op">,</span> <span class="st">&quot;mem.svg&quot;</span><span class="op">);</span></span>
-<span id="cb63-11"><a href="#cb63-11" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb63-12"><a href="#cb63-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* `my_symbol-&gt;memfile` now contains the SVG output */</span></span>
-<span id="cb63-13"><a href="#cb63-13" aria-hidden="true" tabindex="-1"></a>    fwrite<span class="op">(</span>my_symbol<span class="op">-&gt;</span>memfile<span class="op">,</span> <span class="dv">1</span><span class="op">,</span> my_symbol<span class="op">-&gt;</span>memfile_size<span class="op">,</span> stdout<span class="op">);</span></span>
-<span id="cb63-14"><a href="#cb63-14" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>my_symbol<span class="op">);</span></span>
+<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>symbol<span class="op">-&gt;</span>outfile<span class="op">,</span> <span class="st">&quot;mem.svg&quot;</span><span class="op">);</span></span>
+<span id="cb63-11"><a href="#cb63-11" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb63-12"><a href="#cb63-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* `symbol-&gt;memfile` now contains the SVG output */</span></span>
+<span id="cb63-13"><a href="#cb63-13" aria-hidden="true" tabindex="-1"></a>    fwrite<span class="op">(</span>symbol<span class="op">-&gt;</span>memfile<span class="op">,</span> <span class="dv">1</span><span class="op">,</span> symbol<span class="op">-&gt;</span>memfile_size<span class="op">,</span> stdout<span class="op">);</span></span>
+<span id="cb63-14"><a href="#cb63-14" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>symbol<span class="op">);</span></span>
 <span id="cb63-15"><a href="#cb63-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb63-16"><a href="#cb63-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>will print the SVG output to <code>stdout</code> (the file
@@ -3606,18 +3607,6 @@ with a terminating <code>NUL</code>.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>encoded_data</code></td>
-<td style="text-align: left;">array of unsigned character arrays</td>
-<td style="text-align: left;">Representation of the encoded data.</td>
-<td style="text-align: left;">(output only)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>row_height</code></td>
-<td style="text-align: left;">array of floats</td>
-<td style="text-align: left;">Heights of each row.</td>
-<td style="text-align: left;">(output only)</td>
-</tr>
-<tr>
 <td style="text-align: left;"><code>errtxt</code></td>
 <td style="text-align: left;">character string</td>
 <td style="text-align: left;">Error message in the event that an error
@@ -3680,17 +3669,29 @@ in Memory (memfile)</a>.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>raw_segs</code></td>
+<td style="text-align: left;"><code>content_segs</code></td>
 <td style="text-align: left;">pointer to array of segments</td>
-<td style="text-align: left;">Pointer to array of raw segments if
-<code>BARCODE_RAW_TEXT</code> set in <code>output_options</code> - see
-<a href="#feedback">5.16 Feedback</a>.</td>
+<td style="text-align: left;">Pointer to array of content segments if
+<code>BARCODE_CONTENT_SEGS</code> set in <code>output_options</code> -
+see <a href="#feedback">5.16 Feedback</a>.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>raw_seg_count</code></td>
+<td style="text-align: left;"><code>content_seg_count</code></td>
 <td style="text-align: left;">integer</td>
-<td style="text-align: left;">Number of raw segments.</td>
+<td style="text-align: left;">Number of content segments.</td>
+<td style="text-align: left;">(output only)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>encoded_data</code></td>
+<td style="text-align: left;">array of unsigned character arrays</td>
+<td style="text-align: left;">Representation of the encoded data.</td>
+<td style="text-align: left;">(output only)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>row_height</code></td>
+<td style="text-align: left;">array of floats</td>
+<td style="text-align: left;">Heights of each row.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
 </tbody>
@@ -3702,18 +3703,18 @@ now taller and plotted in green.</p>
 <span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string.h&gt;</span></span>
 <span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">int</span> argc<span class="op">,</span> <span class="dt">char</span> <span class="op">**</span>argv<span class="op">)</span></span>
 <span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>my_symbol<span class="op">;</span></span>
-<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>    my_symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
-<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>my_symbol<span class="op">-&gt;</span>fgcolour<span class="op">,</span> <span class="st">&quot;00ff00&quot;</span><span class="op">);</span></span>
-<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>    my_symbol<span class="op">-&gt;</span>height <span class="op">=</span> <span class="fl">400.0</span><span class="bu">f</span><span class="op">;</span></span>
-<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb64-10"><a href="#cb64-10" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>my_symbol<span class="op">);</span></span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>symbol<span class="op">;</span></span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>    symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>symbol<span class="op">-&gt;</span>fgcolour<span class="op">,</span> <span class="st">&quot;00ff00&quot;</span><span class="op">);</span></span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>    symbol<span class="op">-&gt;</span>height <span class="op">=</span> <span class="fl">400.0</span><span class="bu">f</span><span class="op">;</span></span>
+<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb64-10"><a href="#cb64-10" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>symbol<span class="op">);</span></span>
 <span id="cb64-11"><a href="#cb64-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb64-12"><a href="#cb64-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Note that background removal for all outputs except BMP can be
 achieved by setting the background alpha to <code>"00"</code> where the
 values for R, G and B will be ignored:</p>
-<div class="sourceCode" id="cb65"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>my_symbol<span class="op">-&gt;</span>bgcolour<span class="op">,</span> <span class="st">&quot;55555500&quot;</span><span class="op">);</span></span></code></pre></div>
+<div class="sourceCode" id="cb65"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>symbol<span class="op">-&gt;</span>bgcolour<span class="op">,</span> <span class="st">&quot;55555500&quot;</span><span class="op">);</span></span></code></pre></div>
 <p>This is what the CLI option <code>--nobackground</code> does - see <a
 href="#using-colour">4.7 Using Colour</a>.</p>
 <h2 id="handling-errors">5.8 Handling Errors</h2>
@@ -3837,23 +3838,23 @@ below:</p>
 <span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string.h&gt;</span></span>
 <span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">int</span> argc<span class="op">,</span> <span class="dt">char</span> <span class="op">**</span>argv<span class="op">)</span></span>
 <span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>my_symbol<span class="op">;</span></span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>symbol<span class="op">;</span></span>
 <span id="cb66-7"><a href="#cb66-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> error<span class="op">;</span></span>
-<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>    my_symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
+<span id="cb66-8"><a href="#cb66-8" aria-hidden="true" tabindex="-1"></a>    symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
 <span id="cb66-9"><a href="#cb66-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* Set invalid foreground colour */</span></span>
-<span id="cb66-10"><a href="#cb66-10" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>my_symbol<span class="op">-&gt;</span>fgcolour<span class="op">,</span> <span class="st">&quot;nonsense&quot;</span><span class="op">);</span></span>
-<span id="cb66-11"><a href="#cb66-11" aria-hidden="true" tabindex="-1"></a>    error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb66-10"><a href="#cb66-10" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>symbol<span class="op">-&gt;</span>fgcolour<span class="op">,</span> <span class="st">&quot;nonsense&quot;</span><span class="op">);</span></span>
+<span id="cb66-11"><a href="#cb66-11" aria-hidden="true" tabindex="-1"></a>    error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> argv<span class="op">[</span><span class="dv">1</span><span class="op">],</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
 <span id="cb66-12"><a href="#cb66-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>error <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span id="cb66-13"><a href="#cb66-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">/* Some warning or error occurred */</span></span>
-<span id="cb66-14"><a href="#cb66-14" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%s\n</span><span class="st">&quot;</span><span class="op">,</span> my_symbol<span class="op">-&gt;</span>errtxt<span class="op">);</span></span>
+<span id="cb66-14"><a href="#cb66-14" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%s\n</span><span class="st">&quot;</span><span class="op">,</span> symbol<span class="op">-&gt;</span>errtxt<span class="op">);</span></span>
 <span id="cb66-15"><a href="#cb66-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>error <span class="op">&gt;=</span> ZINT_ERROR<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb66-16"><a href="#cb66-16" aria-hidden="true" tabindex="-1"></a>            <span class="co">/* Stop now */</span></span>
-<span id="cb66-17"><a href="#cb66-17" aria-hidden="true" tabindex="-1"></a>            ZBarcode_Delete<span class="op">(</span>my_symbol<span class="op">);</span></span>
+<span id="cb66-17"><a href="#cb66-17" aria-hidden="true" tabindex="-1"></a>            ZBarcode_Delete<span class="op">(</span>symbol<span class="op">);</span></span>
 <span id="cb66-18"><a href="#cb66-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
 <span id="cb66-19"><a href="#cb66-19" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
 <span id="cb66-20"><a href="#cb66-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb66-21"><a href="#cb66-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* Otherwise carry on with the rest of the application */</span></span>
-<span id="cb66-22"><a href="#cb66-22" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>my_symbol<span class="op">);</span></span>
+<span id="cb66-22"><a href="#cb66-22" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>symbol<span class="op">);</span></span>
 <span id="cb66-23"><a href="#cb66-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb66-24"><a href="#cb66-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>This code will exit with the appropriate message:</p>
@@ -3871,7 +3872,7 @@ example</p>
 aspects of the output file. To select more than one option from the
 table below simply <code>OR</code> them together when adjusting this
 value:</p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> BARCODE_BIND <span class="op">|</span> READER_INIT<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb69"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> BARCODE_BIND <span class="op">|</span> READER_INIT<span class="op">;</span></span></code></pre></div>
 <table id="tbl:api_output_options">
 <caption><span class="table-label">Table 14:</span> API
 <code>output_options</code> Values</caption>
@@ -3982,10 +3983,10 @@ available for SVG output only.</td>
 file.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>BARCODE_RAW_TEXT</code></td>
-<td style="text-align: left;">Write data encoded to raw segment buffers
-<code>symbol-&gt;raw_segs</code> (see <a href="#feedback">5.16
-Feedback</a>).</td>
+<td style="text-align: left;"><code>BARCODE_CONTENT_SEGS</code></td>
+<td style="text-align: left;">Write data encoded to content segment
+buffers <code>symbol-&gt;contentsegs</code> (see <a
+href="#feedback">5.16 Feedback</a>).</td>
 </tr>
 </tbody>
 </table>
@@ -4077,11 +4078,11 @@ CLI and GUI, which is <code>UNICODE_MODE</code>.)</p>
 <code>FAST_MODE</code>, <code>EXTRA_ESCAPE_MODE</code> and
 <code>GS1SYNTAXENGINE_MODE</code> are optional. So, for example, you can
 set</p>
-<div class="sourceCode" id="cb70"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> UNICODE_MODE <span class="op">|</span> ESCAPE_MODE<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb70"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> UNICODE_MODE <span class="op">|</span> ESCAPE_MODE<span class="op">;</span></span></code></pre></div>
 <p>or</p>
-<div class="sourceCode" id="cb71"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> GS1_MODE <span class="op">|</span> GS1PARENS_MODE <span class="op">|</span> GS1NOCHECK_MODE<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb71"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> GS1_MODE <span class="op">|</span> GS1PARENS_MODE <span class="op">|</span> GS1NOCHECK_MODE<span class="op">;</span></span></code></pre></div>
 <p>whereas</p>
-<div class="sourceCode" id="cb72"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> DATA_MODE <span class="op">|</span> GS1_MODE<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb72"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> DATA_MODE <span class="op">|</span> GS1_MODE<span class="op">;</span></span></code></pre></div>
 <p>is not valid.</p>
 <p>Permissible escape sequences (<code>ESCAPE_MODE</code>) are listed in
 <span class="cross-ref-group"><a href="#tbl:escape_sequences"
@@ -4153,13 +4154,13 @@ Symbologies</a></span>). For example:</p>
 <span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span> <span class="st">&quot;Текст&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">7</span> <span class="op">},</span></span>
 <span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span> <span class="st">&quot;文章&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">20</span> <span class="op">}</span></span>
 <span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
-<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>my_symbol<span class="op">;</span></span>
-<span id="cb75-10"><a href="#cb75-10" aria-hidden="true" tabindex="-1"></a>    my_symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
-<span id="cb75-11"><a href="#cb75-11" aria-hidden="true" tabindex="-1"></a>    my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_AZTEC<span class="op">;</span></span>
-<span id="cb75-12"><a href="#cb75-12" aria-hidden="true" tabindex="-1"></a>    my_symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> UNICODE_MODE<span class="op">;</span></span>
-<span id="cb75-13"><a href="#cb75-13" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode_Segs<span class="op">(</span>my_symbol<span class="op">,</span> segs<span class="op">,</span> <span class="dv">3</span><span class="op">);</span></span>
-<span id="cb75-14"><a href="#cb75-14" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb75-15"><a href="#cb75-15" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>my_symbol<span class="op">);</span></span>
+<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> zint_symbol <span class="op">*</span>symbol<span class="op">;</span></span>
+<span id="cb75-10"><a href="#cb75-10" aria-hidden="true" tabindex="-1"></a>    symbol <span class="op">=</span> ZBarcode_Create<span class="op">();</span></span>
+<span id="cb75-11"><a href="#cb75-11" aria-hidden="true" tabindex="-1"></a>    symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_AZTEC<span class="op">;</span></span>
+<span id="cb75-12"><a href="#cb75-12" aria-hidden="true" tabindex="-1"></a>    symbol<span class="op">-&gt;</span>input_mode <span class="op">=</span> UNICODE_MODE<span class="op">;</span></span>
+<span id="cb75-13"><a href="#cb75-13" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Encode_Segs<span class="op">(</span>symbol<span class="op">,</span> segs<span class="op">,</span> <span class="dv">3</span><span class="op">);</span></span>
+<span id="cb75-14"><a href="#cb75-14" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Print<span class="op">(</span>symbol<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb75-15"><a href="#cb75-15" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>symbol<span class="op">);</span></span>
 <span id="cb75-16"><a href="#cb75-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb75-17"><a href="#cb75-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>A maximum of 256 segments may be specified. Use of multiple segments
@@ -4186,12 +4187,12 @@ is assumed. For raster output (BMP/GIF/PCX/PNG/TIF) the scale is rounded
 to half-integer increments.</p>
 <p>For example:</p>
 <div class="sourceCode" id="cb77"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Royal Mail 4-State Customer Code */</span></span>
-<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_RM4SCC<span class="op">;</span></span>
-<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>dpmm <span class="op">=</span> <span class="fl">600.0</span><span class="bu">f</span> <span class="op">/</span> <span class="fl">25.4</span><span class="bu">f</span><span class="op">;</span> <span class="co">/* 600 dpi */</span></span>
-<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>scale <span class="op">=</span> ZBarcode_Scale_From_XdimDp<span class="op">(</span></span>
-<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>                        my_symbol<span class="op">-&gt;</span>symbology<span class="op">,</span></span>
-<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>                        ZBarcode_Default_Xdim<span class="op">(</span>my_symbol<span class="op">-&gt;</span>symbology<span class="op">),</span></span>
-<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>                        my_symbol<span class="op">-&gt;</span>dpmm<span class="op">,</span> <span class="st">&quot;PNG&quot;</span><span class="op">);</span> <span class="co">/* Returns 7.5 */</span></span></code></pre></div>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_RM4SCC<span class="op">;</span></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>dpmm <span class="op">=</span> <span class="fl">600.0</span><span class="bu">f</span> <span class="op">/</span> <span class="fl">25.4</span><span class="bu">f</span><span class="op">;</span> <span class="co">/* 600 dpi */</span></span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>scale <span class="op">=</span> ZBarcode_Scale_From_XdimDp<span class="op">(</span></span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>                        symbol<span class="op">-&gt;</span>symbology<span class="op">,</span></span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>                        ZBarcode_Default_Xdim<span class="op">(</span>symbol<span class="op">-&gt;</span>symbology<span class="op">),</span></span>
+<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>                        symbol<span class="op">-&gt;</span>dpmm<span class="op">,</span> <span class="st">&quot;PNG&quot;</span><span class="op">);</span> <span class="co">/* Returns 7.5 */</span></span></code></pre></div>
 <p>The third function <code>ZBarcode_XdimDP_From_Scale()</code> is the
 “reverse” of <code>ZBarcode_Scale_From_XdimDp()</code>, returning the
 X-dimension (in mm) or the dot density (in dpmm) given a scale
@@ -4357,13 +4358,13 @@ less than 5% + 3 codewords and <code>-1</code> meaning minimum 3
 codewords). Micro PDF417 also will return the ECC percentage in
 <code>option_1</code> as <code>P &lt;&lt; 8</code>.</p>
 <p>Detailed feedback on the data encoded may be requested by specifying
-the <code>BARCODE_RAW_TEXT</code> option in the
+the <code>BARCODE_CONTENT_SEGS</code> option in the
 <code>output_options</code> member, which will populate the
-<code>raw_segs</code> member with an array of <code>zint_seg</code>
+<code>content_segs</code> member with an array of <code>zint_seg</code>
 structures (see <a href="#multiple-segments-1">5.12 Multiple
 Segments</a> for the format), one for each segment specified, the size
-of the array being set in <code>raw_seg_count</code> - which will always
-be at least one.</p>
+of the array being set in <code>content_seg_count</code> - which will
+always be at least one.</p>
 <p>The <code>source</code>, <code>length</code> and <code>eci</code>
 members of <code>zint_seg</code> will be set accordingly - the
 unconverted data in <code>source</code>, the data length in
@@ -4573,17 +4574,17 @@ symbology <code>BARCODE_UPCA_CHK</code> (35), which verifies that the
 last digit is a check digit. Input less than 11 digits will be
 zero-filled.</p>
 <p>In addition 2-digit and 5-digit add-on symbols can be added, their
-data separated from the main data by a <code>+</code> character or a
+data separated from the main data by a <code>'+'</code> character or a
 space. For example, to draw a UPC-A symbol with the data “72527270270”
 and 5-digit add-on data “12345” use the command:</p>
 <div class="sourceCode" id="cb88"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> UPCA <span class="at">-d</span> <span class="st">&quot;72527270270+12345&quot;</span></span></code></pre></div>
 <p>or using the API:</p>
-<div class="sourceCode" id="cb89"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_UPCA<span class="op">;</span></span>
+<div class="sourceCode" id="cb89"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_UPCA<span class="op">;</span></span>
 <span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a><span class="co">/* Using &#39;+&#39; */</span></span>
-<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;72527270270+12345&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> <span class="st">&quot;72527270270+12345&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
 <span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a><span class="co">/* Or a space */</span></span>
-<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;72527270270 12345&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
+<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> <span class="st">&quot;72527270270 12345&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
 <figure>
 <img src="images/upca_5.svg" class="upcean"
 alt="zint -b UPCA --compliantheight -d &quot;72527270270+12345&quot;" />
@@ -4597,9 +4598,9 @@ is only relevant when there is an add-on:</p>
 <div class="sourceCode" id="cb90"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> UPCA <span class="at">-d</span> <span class="st">&quot;72527270270+12345&quot;</span> <span class="at">--guardwhitespace</span></span></code></pre></div>
 <p>or using the API:</p>
-<div class="sourceCode" id="cb91"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_UPCA<span class="op">;</span></span>
-<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> EANUPC_GUARD_WHITESPACE<span class="op">;</span></span>
-<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;72527270270+12345&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
+<div class="sourceCode" id="cb91"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_UPCA<span class="op">;</span></span>
+<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> EANUPC_GUARD_WHITESPACE<span class="op">;</span></span>
+<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> <span class="st">&quot;72527270270+12345&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
 <figure>
 <img src="images/upca_5_gws.svg" class="upcean"
 alt="zint -b UPCA --compliantheight -d &quot;72527270270+12345&quot; --guardwhitespace" />
@@ -4630,7 +4631,7 @@ which case Zint will verify the check digit, or the symbology
 <code>BARCODE_UPCE_CHK</code> (38) may be used, which will verify that
 the last digit is a check digit before encoding.</p>
 <p>As with UPC-A, 2-digit and 5-digit add-on symbols can be added using
-a <code>+</code> character or a space as a separator, and a quiet zone
+a <code>'+'</code> character or a space as a separator, and a quiet zone
 indicator can be added when there is an add-on by setting
 <code>--guardwhitespace</code> (API
 <code>output_options |= EANUPC_GUARD_WHITESPACE</code>):</p>
@@ -4674,8 +4675,8 @@ character as with UPC symbols. For example:</p>
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> EAN13 <span class="at">-d</span> <span class="st">&quot;451234567890+21&quot;</span></span></code></pre></div>
 <p>will encode an EAN-13 symbol with a 2-digit add-on. As before these
 results can be achieved using the API:</p>
-<div class="sourceCode" id="cb94"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EAN13<span class="op">;</span></span>
-<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;451234567890+21&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
+<div class="sourceCode" id="cb94"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EAN13<span class="op">;</span></span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> <span class="st">&quot;451234567890+21&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
 <figure>
 <img src="images/ean13_2.svg" class="upcean"
 alt="zint -b EAN13 --compliantheight -d &quot;451234567890+21&quot;" />
@@ -4713,9 +4714,9 @@ Version E</a>. For instance:</p>
 <div class="sourceCode" id="cb96"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> EAN8 <span class="at">-d</span> <span class="st">&quot;7432365&quot;</span> <span class="at">--guardwhitespace</span></span></code></pre></div>
 <p>or using the API:</p>
-<div class="sourceCode" id="cb97"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EAN8<span class="op">;</span></span>
-<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> EANUPC_GUARD_WHITESPACE<span class="op">;</span></span>
-<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;7432365&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
+<div class="sourceCode" id="cb97"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EAN8<span class="op">;</span></span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> EANUPC_GUARD_WHITESPACE<span class="op">;</span></span>
+<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> <span class="st">&quot;7432365&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
 <figure>
 <img src="images/ean8_gws.svg" class="upcean"
 alt="zint -b EAN8 --compliantheight -d &quot;7432365&quot; –guardwhitespace" />
@@ -4767,9 +4768,9 @@ using <code>---guardwhitespace</code>. For instance</p>
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> EAN_5ADDON <span class="at">-d</span> <span class="st">&quot;54321&quot;</span> <span class="at">--guardwhitespace</span></span></code></pre></div>
 <p>will generate a standalone 5-digit add-on with quiet zone guards, or
 using the API:</p>
-<div class="sourceCode" id="cb99"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EAN_5ADDON<span class="op">;</span></span>
-<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> EANUPC_GUARD_WHITESPACE<span class="op">;</span></span>
-<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;54321&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
+<div class="sourceCode" id="cb99"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EAN_5ADDON<span class="op">;</span></span>
+<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>output_options <span class="op">|=</span> EANUPC_GUARD_WHITESPACE<span class="op">;</span></span>
+<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> <span class="st">&quot;54321&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
 <figure>
 <img src="images/ean_5addon_gws.svg" class="upcean"
 alt="zint -b EAN_5ADDON --compliantheight -d &quot;54321&quot; –guardwhitespace" />
@@ -5375,10 +5376,10 @@ result can be achieved using the API by executing the
 <code>ZBarcode_Encode()</code> function more than once on a symbol. For
 example:</p>
 <div class="sourceCode" id="cb107"><pre
-class="sourceCode c"><code class="sourceCode c"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_CODE128<span class="op">;</span></span>
-<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;This&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;That&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb107-4"><a href="#cb107-4" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Print<span class="op">(</span>my_symbol<span class="op">);</span></span></code></pre></div>
+class="sourceCode c"><code class="sourceCode c"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_CODE128<span class="op">;</span></span>
+<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode<span class="op">(</span>symbol<span class="op">,</span> <span class="st">&quot;This&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode<span class="op">(</span>symbol<span class="op">,</span> <span class="st">&quot;That&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb107-4"><a href="#cb107-4" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Print<span class="op">(</span>symbol<span class="op">);</span></span></code></pre></div>
 <figure>
 <img src="images/code128_stacked.svg" class="lin"
 alt="zint -d &quot;This&quot; -d &quot;That&quot;" />
@@ -5492,13 +5493,13 @@ alt="zint -b PDF417COMP -d &quot;PDF417&quot;" />
 </figure>
 <h3 id="micropdf417-iso-24728">6.2.6 MicroPDF417 (ISO 24728)</h3>
 <p>A variation of the PDF417 standard, MicroPDF417 is intended for
-applications where symbol size needs to be kept to a minimum. 34
-predefined symbol sizes are available with 1 - 4 columns and 4 - 44
-rows. The maximum amount a MicroPDF417 symbol can hold is 250
-alphanumeric characters or 366 digits. The amount of error correction
-used is dependent on symbol size. The number of columns used can be
-determined using the <code>--cols</code> switch (API
-<code>option_2</code>) as with PDF417.</p>
+applications where symbol size needs to be kept to a minimum. Its size
+ranges over 1 - 4 data columns and 4 - 44 rows. The maximum amount a
+MicroPDF417 symbol can hold is 250 alphanumeric characters or 366
+digits. The amount of error correction used is dependent on symbol size.
+The number of data columns used can be determined using the
+<code>--cols</code> switch (API <code>option_2</code>) as with PDF417.
+The amount of data determines the number of rows.</p>
 <figure>
 <img src="images/micropdf417.svg" class="lin"
 alt="zint -b MICROPDF417 -d &quot;12345678&quot;" />
@@ -5692,12 +5693,12 @@ href="#cc-a">below</a>) component with the data
 <code>"(99)1234-abcd"</code>. The same results can be achieved using the
 API as shown below:</p>
 <div class="sourceCode" id="cb110"><pre
-class="sourceCode c"><code class="sourceCode c"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EAN13_CC<span class="op">;</span></span>
-<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>option_1 <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a>strcpy<span class="op">(</span>my_symbol<span class="op">-&gt;</span>primary<span class="op">,</span> <span class="st">&quot;331234567890&quot;</span><span class="op">);</span></span>
-<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;[99]1234-abcd&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
+class="sourceCode c"><code class="sourceCode c"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EAN13_CC<span class="op">;</span></span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>option_1 <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a>strcpy<span class="op">(</span>symbol<span class="op">-&gt;</span>primary<span class="op">,</span> <span class="st">&quot;331234567890&quot;</span><span class="op">);</span></span>
+<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>ZBarcode_Encode_and_Print<span class="op">(</span>symbol<span class="op">,</span> <span class="st">&quot;[99]1234-abcd&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
 <p>2-digit and 5-digit add-on data can be used with EAN and UPC symbols
-using the <code>+</code> character as described in sections <a
+using the <code>'+'</code> character as described in sections <a
 href="#upc-universal-product-code-iso-15420">6.1.3 UPC (Universal
 Product Code) (ISO 15420)</a> and <a
 href="#ean-european-article-number-iso-15420">6.1.4 EAN (European
@@ -9723,9 +9724,9 @@ Edge Barcode and Flattermarken. Note that HRT is never shown for stacked
 and matrix barcodes.<a href="#fnref6" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>Shift JIS (JIS X 0201 Roman) re-maps two ASCII
-characters: backslash (<code>\</code>) to the yen sign (¥), and tilde
-(<code>~</code>) to overline (U+203E).<a href="#fnref7"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+characters: backslash (<code>\</code>) to the yen sign (<code>¥</code>),
+and tilde (<code>~</code>) to overline (<code>‾</code>, U+203E).<a
+href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn8"><p>ISO/IEC 646 Invariant is a subset of ASCII with 12
 characters undefined: <code>#</code>, <code>$</code>, <code>@</code>,
 <code>[</code>, <code>\</code>, <code>]</code>, <code>^</code>,

@@ -1135,7 +1135,7 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
     int curtable;
     int tex_padded;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     *p_mclength = 0;
 
@@ -1203,8 +1203,8 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
             assert(error_number >= ZINT_ERROR);
             return error_number;
         }
-        if (raw_text && segs[i].eci) {
-            z_rt_set_seg_eci(symbol, i, segs[i].eci);
+        if (content_segs && segs[i].eci) {
+            z_ct_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 

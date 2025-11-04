@@ -126,63 +126,63 @@ static void test_hrt(const testCtx *const p_ctx) {
         int output_options;
         const char *data;
         const char *expected;
-        const char *expected_raw;
+        const char *expected_content;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_C25STANDARD, -1, -1, "123456789", "123456789", "" },
-        /*  1*/ { BARCODE_C25STANDARD, -1, BARCODE_RAW_TEXT, "123456789", "123456789", "123456789" },
+        /*  1*/ { BARCODE_C25STANDARD, -1, BARCODE_CONTENT_SEGS, "123456789", "123456789", "123456789" },
         /*  2*/ { BARCODE_C25STANDARD, 1, -1, "123456789", "1234567895", "" },
-        /*  3*/ { BARCODE_C25STANDARD, 1, BARCODE_RAW_TEXT, "123456789", "1234567895", "1234567895" },
+        /*  3*/ { BARCODE_C25STANDARD, 1, BARCODE_CONTENT_SEGS, "123456789", "1234567895", "1234567895" },
         /*  4*/ { BARCODE_C25STANDARD, 2, -1, "123456789", "123456789", "" }, /* Suppresses printing of check digit */
-        /*  5*/ { BARCODE_C25STANDARD, 2, BARCODE_RAW_TEXT, "123456789", "123456789", "1234567895" }, /* Not in raw text */
+        /*  5*/ { BARCODE_C25STANDARD, 2, BARCODE_CONTENT_SEGS, "123456789", "123456789", "1234567895" }, /* Not in content text */
         /*  6*/ { BARCODE_C25INTER, -1, -1, "123456789", "0123456789", "" }, /* Adds leading zero if odd */
-        /*  7*/ { BARCODE_C25INTER, -1, BARCODE_RAW_TEXT, "123456789", "0123456789", "0123456789" },
+        /*  7*/ { BARCODE_C25INTER, -1, BARCODE_CONTENT_SEGS, "123456789", "0123456789", "0123456789" },
         /*  8*/ { BARCODE_C25INTER, 1, -1, "123456789", "1234567895", "" }, /* Unless check digit added when it becomes even */
-        /*  9*/ { BARCODE_C25INTER, 1, BARCODE_RAW_TEXT, "123456789", "1234567895", "1234567895" },
+        /*  9*/ { BARCODE_C25INTER, 1, BARCODE_CONTENT_SEGS, "123456789", "1234567895", "1234567895" },
         /* 10*/ { BARCODE_C25INTER, 2, -1, "123456789", "123456789", "" },
-        /* 11*/ { BARCODE_C25INTER, 2, BARCODE_RAW_TEXT, "123456789", "123456789", "1234567895" },
+        /* 11*/ { BARCODE_C25INTER, 2, BARCODE_CONTENT_SEGS, "123456789", "123456789", "1234567895" },
         /* 12*/ { BARCODE_C25INTER, -1, -1, "1234567890", "1234567890", "" }, /* No leading zero if even */
-        /* 13*/ { BARCODE_C25INTER, -1, BARCODE_RAW_TEXT, "1234567890", "1234567890", "1234567890" },
+        /* 13*/ { BARCODE_C25INTER, -1, BARCODE_CONTENT_SEGS, "1234567890", "1234567890", "1234567890" },
         /* 14*/ { BARCODE_C25INTER, 1, -1, "1234567890", "012345678905", "" }, /* Unless check digit added when it becomes odd */
-        /* 15*/ { BARCODE_C25INTER, 1, BARCODE_RAW_TEXT, "1234567890", "012345678905", "012345678905" },
+        /* 15*/ { BARCODE_C25INTER, 1, BARCODE_CONTENT_SEGS, "1234567890", "012345678905", "012345678905" },
         /* 16*/ { BARCODE_C25INTER, 2, -1, "1234567890", "01234567890", "" },
-        /* 17*/ { BARCODE_C25INTER, 2, BARCODE_RAW_TEXT, "1234567890", "01234567890", "012345678905" },
+        /* 17*/ { BARCODE_C25INTER, 2, BARCODE_CONTENT_SEGS, "1234567890", "01234567890", "012345678905" },
         /* 18*/ { BARCODE_C25IATA, -1, -1, "123456789", "123456789", "" },
-        /* 19*/ { BARCODE_C25IATA, -1, BARCODE_RAW_TEXT, "123456789", "123456789", "123456789" },
+        /* 19*/ { BARCODE_C25IATA, -1, BARCODE_CONTENT_SEGS, "123456789", "123456789", "123456789" },
         /* 20*/ { BARCODE_C25IATA, 1, -1, "123456789", "1234567895", "" },
-        /* 21*/ { BARCODE_C25IATA, 1, BARCODE_RAW_TEXT, "123456789", "1234567895", "1234567895" },
+        /* 21*/ { BARCODE_C25IATA, 1, BARCODE_CONTENT_SEGS, "123456789", "1234567895", "1234567895" },
         /* 22*/ { BARCODE_C25IATA, 2, -1, "123456789", "123456789", "" },
-        /* 23*/ { BARCODE_C25IATA, 2, BARCODE_RAW_TEXT, "123456789", "123456789", "1234567895" },
+        /* 23*/ { BARCODE_C25IATA, 2, BARCODE_CONTENT_SEGS, "123456789", "123456789", "1234567895" },
         /* 24*/ { BARCODE_C25LOGIC, -1, -1, "123456789", "123456789", "" },
-        /* 25*/ { BARCODE_C25LOGIC, -1, BARCODE_RAW_TEXT, "123456789", "123456789", "123456789" },
+        /* 25*/ { BARCODE_C25LOGIC, -1, BARCODE_CONTENT_SEGS, "123456789", "123456789", "123456789" },
         /* 26*/ { BARCODE_C25LOGIC, 1, -1, "123456789", "1234567895", "" },
-        /* 27*/ { BARCODE_C25LOGIC, 1, BARCODE_RAW_TEXT, "123456789", "1234567895", "1234567895" },
+        /* 27*/ { BARCODE_C25LOGIC, 1, BARCODE_CONTENT_SEGS, "123456789", "1234567895", "1234567895" },
         /* 28*/ { BARCODE_C25LOGIC, 2, -1, "123456789", "123456789", "" },
-        /* 29*/ { BARCODE_C25LOGIC, 2, BARCODE_RAW_TEXT, "123456789", "123456789", "1234567895" },
+        /* 29*/ { BARCODE_C25LOGIC, 2, BARCODE_CONTENT_SEGS, "123456789", "123456789", "1234567895" },
         /* 30*/ { BARCODE_C25IND, -1, -1, "123456789", "123456789", "" },
-        /* 31*/ { BARCODE_C25IND, -1, BARCODE_RAW_TEXT, "123456789", "123456789", "123456789" },
+        /* 31*/ { BARCODE_C25IND, -1, BARCODE_CONTENT_SEGS, "123456789", "123456789", "123456789" },
         /* 32*/ { BARCODE_C25IND, 1, -1, "123456789", "1234567895", "" },
-        /* 33*/ { BARCODE_C25IND, 1, BARCODE_RAW_TEXT, "123456789", "1234567895", "1234567895" },
+        /* 33*/ { BARCODE_C25IND, 1, BARCODE_CONTENT_SEGS, "123456789", "1234567895", "1234567895" },
         /* 34*/ { BARCODE_C25IND, 2, -1, "123456789", "123456789", "" },
-        /* 35*/ { BARCODE_C25IND, 2, BARCODE_RAW_TEXT, "123456789", "123456789", "1234567895" },
+        /* 35*/ { BARCODE_C25IND, 2, BARCODE_CONTENT_SEGS, "123456789", "123456789", "1234567895" },
         /* 36*/ { BARCODE_DPLEIT, -1, -1, "123456789", "00001.234.567.890", "" }, /* Leading zeroes added to make 13 + appended checksum */
-        /* 37*/ { BARCODE_DPLEIT, -1, BARCODE_RAW_TEXT, "123456789", "00001.234.567.890", "00001234567890" },
+        /* 37*/ { BARCODE_DPLEIT, -1, BARCODE_CONTENT_SEGS, "123456789", "00001.234.567.890", "00001234567890" },
         /* 38*/ { BARCODE_DPLEIT, -1, -1, "1234567890123", "12345.678.901.236", "" },
-        /* 39*/ { BARCODE_DPLEIT, -1, BARCODE_RAW_TEXT, "1234567890123", "12345.678.901.236", "12345678901236" },
+        /* 39*/ { BARCODE_DPLEIT, -1, BARCODE_CONTENT_SEGS, "1234567890123", "12345.678.901.236", "12345678901236" },
         /* 40*/ { BARCODE_DPIDENT, -1, -1, "123456789", "00.12 3.456.789 0", "" }, /* Leading zeroes added to make 11 + appended checksum */
-        /* 41*/ { BARCODE_DPIDENT, -1, BARCODE_RAW_TEXT, "123456789", "00.12 3.456.789 0", "001234567890" },
+        /* 41*/ { BARCODE_DPIDENT, -1, BARCODE_CONTENT_SEGS, "123456789", "00.12 3.456.789 0", "001234567890" },
         /* 42*/ { BARCODE_DPIDENT, -1, -1, "12345678901", "12.34 5.678.901 6", "" },
-        /* 43*/ { BARCODE_DPIDENT, -1, BARCODE_RAW_TEXT, "12345678901", "12.34 5.678.901 6", "123456789016" },
+        /* 43*/ { BARCODE_DPIDENT, -1, BARCODE_CONTENT_SEGS, "12345678901", "12.34 5.678.901 6", "123456789016" },
         /* 44*/ { BARCODE_ITF14, -1, -1, "123456789", "00001234567895", "" }, /* Leading zeroes added to make 13 + appended checksum */
-        /* 45*/ { BARCODE_ITF14, -1, BARCODE_RAW_TEXT, "123456789", "00001234567895", "00001234567895" },
+        /* 45*/ { BARCODE_ITF14, -1, BARCODE_CONTENT_SEGS, "123456789", "00001234567895", "00001234567895" },
         /* 46*/ { BARCODE_ITF14, -1, -1, "1234567890123", "12345678901231", "" },
-        /* 47*/ { BARCODE_ITF14, -1, BARCODE_RAW_TEXT, "1234567890123", "12345678901231", "12345678901231" },
+        /* 47*/ { BARCODE_ITF14, -1, BARCODE_CONTENT_SEGS, "1234567890123", "12345678901231", "12345678901231" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length, expected_raw_length;
+    int expected_length, expected_content_length;
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -197,7 +197,7 @@ static void test_hrt(const testCtx *const p_ctx) {
                     -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
                     data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
-        expected_raw_length = (int) strlen(data[i].expected_raw);
+        expected_content_length = (int) strlen(data[i].expected_content);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
@@ -206,18 +206,18 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length);
         assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->text, data[i].expected);
-        if (symbol->output_options & BARCODE_RAW_TEXT) {
-            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-            assert_equal(symbol->raw_segs[0].length, expected_raw_length,
-                        "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
-                        i, symbol->raw_segs[0].length, expected_raw_length);
-            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+        if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+            assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+            assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+            assert_equal(symbol->content_segs[0].length, expected_content_length,
+                        "i:%d content_segs[0].length %d != expected_content_length %d\n",
+                        i, symbol->content_segs[0].length, expected_content_length);
+            assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected_content, expected_content_length),
                         "i:%d memcmp(%.*s, %s, %d) != 0\n",
-                        i, symbol->raw_segs[0].length, symbol->raw_segs[0].source, data[i].expected_raw,
-                        expected_raw_length);
+                        i, symbol->content_segs[0].length, symbol->content_segs[0].source, data[i].expected_content,
+                        expected_content_length);
         } else {
-            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);

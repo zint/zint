@@ -295,32 +295,32 @@ static void test_hrt(const testCtx *const p_ctx) {
         int length;
 
         const char *expected;
-        const char *expected_raw;
-        int expected_raw_length;
+        const char *expected_content;
+        int expected_content_length;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, -1, "12345623456", -1, "", "", -1 }, /* None */
-        /*  1*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "12345623456", -1, "", "12345623456", -1 },
+        /*  1*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "12345623456", -1, "", "12345623456", -1 },
         /*  2*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 1, -1, -1, "12345623456", -1, "", "", -1 }, /* None (CODE128) */
-        /*  3*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 1, -1, BARCODE_RAW_TEXT, "12345623456", -1, "", "12345623456", -1 },
+        /*  3*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 1, -1, BARCODE_CONTENT_SEGS, "12345623456", -1, "", "12345623456", -1 },
         /*  4*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 1, -1, -1, "12345623456\012é", -1, "", "", -1 }, /* None (CODE128) */
-        /*  5*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 1, -1, BARCODE_RAW_TEXT, "12345623456\012é", -1, "", "12345623456\012é", -1 }, /* Now UTF-8, not converted */
+        /*  5*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 1, -1, BARCODE_CONTENT_SEGS, "12345623456\012é", -1, "", "12345623456\012é", -1 }, /* Now UTF-8, not converted */
         /*  6*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, -1, "12345623456\012é", -1, "", "", -1 }, /* None */
-        /*  7*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "12345623456\012é", -1, "", "12345623456\012é", -1 },
+        /*  7*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "12345623456\012é", -1, "", "12345623456\012é", -1 },
         /*  8*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, -1, "12345623456\000\012é", -1, "", "", -1 }, /* None */
-        /*  9*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "12345623456\000\012é", 15, "", "12345623456\000\012é", 15 },
+        /*  9*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "12345623456\000\012é", 15, "", "12345623456\000\012é", 15 },
         /* 10*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, -1, "12345623456\000\012é", 15, "", "", -1 }, /* None */
-        /* 11*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "12345623456\000\012é", 15, "", "12345623456\000\012é", 15 },
+        /* 11*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, BARCODE_CONTENT_SEGS, "12345623456\000\012é", 15, "", "12345623456\000\012é", 15 },
         /* 12*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, -1, "12345623456\000\012\351", 14, "", "", -1 }, /* None */
-        /* 13*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "12345623456\000\012\351", 14, "", "12345623456\000\012\351", 14 },
+        /* 13*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, BARCODE_CONTENT_SEGS, "12345623456\000\012\351", 14, "", "12345623456\000\012\351", 14 },
         /* 14*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, -1, "H123ABC01234567890", -1, "", "", -1 }, /* None */
-        /* 15*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "H123ABC01234567890", -1, "", "+H123ABC01234567890D", -1 },
+        /* 15*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "H123ABC01234567890", -1, "", "+H123ABC01234567890D", -1 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length, expected_raw_length;
+    int expected_length, expected_content_length;
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -335,8 +335,8 @@ static void test_hrt(const testCtx *const p_ctx) {
                                     data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
                                     data[i].data, data[i].length, debug);
         expected_length = (int) strlen(data[i].expected);
-        expected_raw_length = data[i].expected_raw_length == -1 ? (int) strlen(data[i].expected_raw)
-                                                                : data[i].expected_raw_length;
+        expected_content_length = data[i].expected_content_length == -1 ? (int) strlen(data[i].expected_content)
+                                                                : data[i].expected_content_length;
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
@@ -345,18 +345,18 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length);
         assert_zero(memcmp(symbol->text, data[i].expected, expected_length), "i:%d memcmp(%s, %s, %d) != 0\n",
                     i, symbol->text, data[i].expected, expected_length);
-        if (symbol->output_options & BARCODE_RAW_TEXT) {
-            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-            assert_equal(symbol->raw_segs[0].length, expected_raw_length,
-                        "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
-                        i, symbol->raw_segs[0].length, expected_raw_length);
-            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+        if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+            assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+            assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+            assert_equal(symbol->content_segs[0].length, expected_content_length,
+                        "i:%d content_segs[0].length %d != expected_content_length %d\n",
+                        i, symbol->content_segs[0].length, expected_content_length);
+            assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected_content, expected_content_length),
                         "i:%d memcmp(%.*s, %.*s, %d) != 0\n",
-                        i, symbol->raw_segs[0].length, symbol->raw_segs[0].source, expected_raw_length,
-                        data[i].expected_raw, expected_raw_length);
+                        i, symbol->content_segs[0].length, symbol->content_segs[0].source, expected_content_length,
+                        data[i].expected_content, expected_content_length);
         } else {
-            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);

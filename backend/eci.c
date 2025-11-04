@@ -1027,13 +1027,13 @@ INTERNAL void zint_gb2312_cpy_segs(struct zint_symbol *symbol, struct zint_seg s
                 unsigned int *ddata, const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     for (i = 0; i < seg_count; i++) {
         gb2312_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
-        if (raw_text) {
-            /* Need to set as `z_rt_cpy_segs()` defaults to 3 */
-            z_rt_set_seg_eci(symbol, i, segs[i].eci ? segs[i].eci : 29);
+        if (content_segs) {
+            /* Need to set as `z_ct_cpy_segs()` defaults to 3 */
+            z_ct_set_seg_eci(symbol, i, segs[i].eci ? segs[i].eci : 29);
         }
         dd += segs[i].length;
     }

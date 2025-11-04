@@ -875,7 +875,7 @@ INTERNAL int zint_eanx_cc(struct zint_symbol *symbol, unsigned char source[], in
     int error_number = 0, i, sep_count;
     int addon_gap = 0;
     int first_part_len, second_part_len;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 19) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 283, "Input length %d too long (maximum 19)", length);
@@ -1083,12 +1083,12 @@ INTERNAL int zint_eanx_cc(struct zint_symbol *symbol, unsigned char source[], in
         }
     }
 
-    if (raw_text) {
+    if (content_segs) {
         const int is_ean = z_is_ean(symbol->symbology);
         /* EAN-8 with no add-on, EAN-2, EAN-5 */
         if (is_ean && symbol->text_length <= 8 && !second_part_len) {
-            if (z_rt_cpy(symbol, symbol->text, symbol->text_length)) { /* Just use the HRT */
-                return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+            if (z_ct_cpy(symbol, symbol->text, symbol->text_length)) { /* Just use the HRT */
+                return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
             }
         } else { /* Expand to GTIN-13 (UPC-A, UPC-E, EAN-8 with add-on) */
             unsigned char gtin13[13];
@@ -1106,8 +1106,8 @@ INTERNAL int zint_eanx_cc(struct zint_symbol *symbol, unsigned char source[], in
                 memset(gtin13, '0', zeroes);
                 memcpy(gtin13 + zeroes, symbol->text, 13 - zeroes);
             }
-            if (z_rt_cpy_cat(symbol, gtin13, 13, '\xFF' /*none*/, second_part, second_part_len)) {
-                return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+            if (z_ct_cpy_cat(symbol, gtin13, 13, '\xFF' /*none*/, second_part, second_part_len)) {
+                return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
             }
         }
     }

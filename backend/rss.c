@@ -340,7 +340,7 @@ INTERNAL int zint_dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[]
     int data_character[4];
     int data_widths[4][8], checksum, c_left, c_right, total_widths[46], writer;
     int separator_row = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     /* Allow and ignore any AI prefix */
     if ((length == 17 || length == 18) && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
@@ -578,10 +578,10 @@ INTERNAL int zint_dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[]
         }
     }
 
-    if (raw_text) {
+    if (content_segs) {
         unsigned char buf[14];
-        if (z_rt_cpy_cat(symbol, ZCUCP("01"), 2, '\xFF' /*none*/, dbar_gtin14(source, length, buf), 14)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+        if (z_ct_cpy_cat(symbol, ZCUCP("01"), 2, '\xFF' /*none*/, dbar_gtin14(source, length, buf), 14)) {
+            return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
         }
     }
 
@@ -619,7 +619,7 @@ INTERNAL int zint_dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[]
     int checksum, total_widths[47], writer;
     const char *checksum_finder_pattern;
     int separator_row = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     /* Allow and ignore any AI prefix */
     if ((length == 17 || length == 18) && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
@@ -721,10 +721,10 @@ INTERNAL int zint_dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[]
     /* Set human readable text */
     dbar_set_gtin14_hrt(symbol, source, length);
 
-    if (raw_text) {
+    if (content_segs) {
         unsigned char buf[14];
-        if (z_rt_cpy_cat(symbol, ZCUCP("01"), 2, '\xFF' /*none*/, dbar_gtin14(source, length, buf), 14)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+        if (z_ct_cpy_cat(symbol, ZCUCP("01"), 2, '\xFF' /*none*/, dbar_gtin14(source, length, buf), 14)) {
+            return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
         }
     }
 
@@ -1225,7 +1225,7 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
     int reduced_length;
     /* Allow for 8 bits + 5-bit latch per char + 200 bits overhead/padding */
     char *binary_string = (char *) z_alloca(13 * length + 200 + 1);
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     error_number = zint_gs1_verify(symbol, source, length, reduced, &reduced_length);
@@ -1382,8 +1382,8 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
 
         dbar_exp_hrt(symbol, source, length);
 
-        if (raw_text && z_rt_cpy(symbol, reduced, reduced_length)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+        if (content_segs && z_ct_cpy(symbol, reduced, reduced_length)) {
+            return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
         }
 
     } else {
@@ -1491,8 +1491,8 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
         }
         symbol->rows -= 3;
 
-        if (raw_text && z_rt_cpy(symbol, reduced, reduced_length)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+        if (content_segs && z_ct_cpy(symbol, reduced, reduced_length)) {
+            return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
         }
     }
 

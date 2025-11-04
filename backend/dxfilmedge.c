@@ -62,7 +62,7 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
     char dx_info[DX_MAX_DX_INFO_LENGTH + 1] = {0};
     char frame_info[DX_MAX_FRAME_INFO_LENGTH + 1] = {0};
     int dx_length;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     *has_frame_info = 0;
@@ -247,9 +247,9 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
 
     *output_length = bp;
 
-    if (raw_text && z_rt_printf_256(symbol, (*has_frame_info ? "%d-%d%s%s" : "%d-%d"), dx_code_1, dx_code_2, "/",
+    if (content_segs && z_ct_printf_256(symbol, (*has_frame_info ? "%d-%d%s%s" : "%d-%d"), dx_code_1, dx_code_2, "/",
                                     frame_info)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_printf_256()` only fails with OOM */
+        return ZINT_ERROR_MEMORY; /* `z_ct_printf_256()` only fails with OOM */
     }
 
     return 0;

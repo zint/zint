@@ -913,107 +913,107 @@ INTERNAL void z_hrt_conv_gs1_brackets_nochk(struct zint_symbol *symbol, const un
     symbol->text[length] = '\0';
 }
 
-/* Initialize `raw_segs` for `seg_count` segments. On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_init_segs(struct zint_symbol *symbol, const int seg_count) {
+/* Initialize `content_segs` for `seg_count` segments. On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_ct_init_segs(struct zint_symbol *symbol, const int seg_count) {
     int i;
 
-    if (symbol->raw_segs) {
-        z_rt_free_segs(symbol);
+    if (symbol->content_segs) {
+        z_ct_free_segs(symbol);
     }
-    if (!(symbol->raw_segs = (struct zint_seg *) calloc((size_t) seg_count, sizeof(struct zint_seg)))) {
-        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 243, "Insufficient memory for raw segs buffer");
+    if (!(symbol->content_segs = (struct zint_seg *) calloc((size_t) seg_count, sizeof(struct zint_seg)))) {
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 243, "Insufficient memory for content segs buffer");
     }
     for (i = 0; i < seg_count; i++) {
-        symbol->raw_segs[i].source = NULL;
+        symbol->content_segs[i].source = NULL;
     }
-    symbol->raw_seg_count = seg_count;
+    symbol->content_seg_count = seg_count;
 
     return 0;
 }
 
-/* Free `raw_segs` along with any `source` buffers */
-INTERNAL void z_rt_free_segs(struct zint_symbol *symbol) {
-    if (symbol->raw_segs) {
+/* Free `content_segs` along with any `source` buffers */
+INTERNAL void z_ct_free_segs(struct zint_symbol *symbol) {
+    if (symbol->content_segs) {
         int i;
-        assert(symbol->raw_seg_count);
-        for (i = 0; i < symbol->raw_seg_count; i++) {
-            if (symbol->raw_segs[i].source) {
-                free(symbol->raw_segs[i].source);
+        assert(symbol->content_seg_count);
+        for (i = 0; i < symbol->content_seg_count; i++) {
+            if (symbol->content_segs[i].source) {
+                free(symbol->content_segs[i].source);
             }
         }
-        free(symbol->raw_segs);
-        symbol->raw_segs = NULL;
+        free(symbol->content_segs);
+        symbol->content_segs = NULL;
     }
-    symbol->raw_seg_count = 0;
+    symbol->content_seg_count = 0;
 }
 
-/* Helper to initialize `raw_segs[seg_idx]` to receive text of `length` */
-static int rt_init_seg_source(struct zint_symbol *symbol, const int seg_idx, const int length) {
-    assert(symbol->raw_segs);
-    assert(seg_idx >= 0 && seg_idx < symbol->raw_seg_count);
-    assert(!symbol->raw_segs[seg_idx].source);
+/* Helper to initialize `content_segs[seg_idx]` to receive text of `length` */
+static int ct_init_seg_source(struct zint_symbol *symbol, const int seg_idx, const int length) {
+    assert(symbol->content_segs);
+    assert(seg_idx >= 0 && seg_idx < symbol->content_seg_count);
+    assert(!symbol->content_segs[seg_idx].source);
     assert(length > 0);
 
-    if (!(symbol->raw_segs[seg_idx].source = (unsigned char *) malloc((size_t) length))) {
-        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 245, "Insufficient memory for raw text source buffer");
+    if (!(symbol->content_segs[seg_idx].source = (unsigned char *) malloc((size_t) length))) {
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 245, "Insufficient memory for content text source buffer");
     }
     return 0;
 }
 
-/* Copy `segs` to raw segs. Seg source copied as-is. If seg length <= 0, raw reg length set to `strlen()`.
-   If seg eci not set, raw seg eci set to 3. On error sets `errxtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy_segs(struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count) {
+/* Copy `segs` to content segs. Seg source copied as-is. If seg length <= 0, content reg length set to `strlen()`.
+   If seg eci not set, content seg eci set to 3. On error sets `errxtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_ct_cpy_segs(struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count) {
     int seg_idx;
 
-    assert(!symbol->raw_segs); /* Trap unintended double setting */
-    if (z_rt_init_segs(symbol, seg_count)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` only fails with OOM */
+    assert(!symbol->content_segs); /* Trap unintended double setting */
+    if (z_ct_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_init_segs()` only fails with OOM */
     }
     for (seg_idx = 0; seg_idx < seg_count; seg_idx++) {
         const struct zint_seg *const seg = segs + seg_idx;
         const int length = seg->length > 0 ? seg->length : (int) z_ustrlen(seg->source);
-        if (rt_init_seg_source(symbol, seg_idx, length)) {
-            return ZINT_ERROR_MEMORY; /* `rt_init_seg_source()` only fails with OOM */
+        if (ct_init_seg_source(symbol, seg_idx, length)) {
+            return ZINT_ERROR_MEMORY; /* `ct_init_seg_source()` only fails with OOM */
         }
-        memcpy(symbol->raw_segs[seg_idx].source, seg->source, (size_t) length);
-        symbol->raw_segs[seg_idx].length = length;
-        symbol->raw_segs[seg_idx].eci = seg->eci ? seg->eci : 3;
+        memcpy(symbol->content_segs[seg_idx].source, seg->source, (size_t) length);
+        symbol->content_segs[seg_idx].length = length;
+        symbol->content_segs[seg_idx].eci = seg->eci ? seg->eci : 3;
     }
     return 0;
 }
 
-/* Update the ECI of raw seg `seg_idx` to `eci`, to reflect (feedback) the actual ECI used */
-INTERNAL void z_rt_set_seg_eci(struct zint_symbol *symbol, const int seg_idx, const int eci) {
-    assert(symbol->raw_segs);
-    assert(seg_idx >= 0 && seg_idx < symbol->raw_seg_count);
-    symbol->raw_segs[seg_idx].eci = eci;
+/* Update the ECI of content seg `seg_idx` to `eci`, to reflect (feedback) the actual ECI used */
+INTERNAL void z_ct_set_seg_eci(struct zint_symbol *symbol, const int seg_idx, const int eci) {
+    assert(symbol->content_segs);
+    assert(seg_idx >= 0 && seg_idx < symbol->content_seg_count);
+    symbol->content_segs[seg_idx].eci = eci;
 }
 
-/* Copy `source` to raw seg 0 buffer, setting raw seg ECI to 3. On error sets `errtxt`, returning
+/* Copy `source` to content seg 0 buffer, setting content seg ECI to 3. On error sets `errtxt`, returning
    BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy(struct zint_symbol *symbol, const unsigned char source[], const int length) {
-    assert(!symbol->raw_segs); /* Trap unintended double setting */
-    if (z_rt_init_segs(symbol, 1 /*seg_count*/) || rt_init_seg_source(symbol, 0 /*seg_idx*/, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` & `rt_init_seg_source()` only fail with OOM */
+INTERNAL int z_ct_cpy(struct zint_symbol *symbol, const unsigned char source[], const int length) {
+    assert(!symbol->content_segs); /* Trap unintended double setting */
+    if (z_ct_init_segs(symbol, 1 /*seg_count*/) || ct_init_seg_source(symbol, 0 /*seg_idx*/, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_init_segs()` & `ct_init_seg_source()` only fail with OOM */
     }
-    memcpy(symbol->raw_segs[0].source, source, (size_t) length);
-    symbol->raw_segs[0].length = length;
-    symbol->raw_segs[0].eci = 3;
+    memcpy(symbol->content_segs[0].source, source, (size_t) length);
+    symbol->content_segs[0].length = length;
+    symbol->content_segs[0].eci = 3;
     return 0;
 }
 
-/* Copy `source` to raw seg 0 buffer, appending `separator` (if ASCII - use `\xFF` for none) and then `cat`, and
-   setting raw seg ECI to 3.  On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy_cat(struct zint_symbol *symbol, const unsigned char source[], const int length,
+/* Copy `source` to content seg 0 buffer, appending `separator` (if ASCII - use `\xFF` for none) and then `cat`, and
+   setting content seg ECI to 3.  On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_ct_cpy_cat(struct zint_symbol *symbol, const unsigned char source[], const int length,
                 const char separator, const unsigned char cat[], const int cat_length) {
     unsigned char *s;
     const int total_length = (length > 0 ? length : 0) + z_isascii(separator) + (cat_length > 0 ? cat_length : 0);
 
-    assert(!symbol->raw_segs); /* Trap unintended double setting */
-    if (z_rt_init_segs(symbol, 1 /*seg_count*/) || rt_init_seg_source(symbol, 0 /*seg_idx*/, total_length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` & `rt_init_seg_source()` only fail with OOM */
+    assert(!symbol->content_segs); /* Trap unintended double setting */
+    if (z_ct_init_segs(symbol, 1 /*seg_count*/) || ct_init_seg_source(symbol, 0 /*seg_idx*/, total_length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_init_segs()` & `ct_init_seg_source()` only fail with OOM */
     }
-    s = symbol->raw_segs[0].source;
+    s = symbol->content_segs[0].source;
     if (length > 0) {
         memcpy(s, source, (size_t) length);
         s += length;
@@ -1024,27 +1024,27 @@ INTERNAL int z_rt_cpy_cat(struct zint_symbol *symbol, const unsigned char source
     if (cat_length > 0) {
         memcpy(s, cat, (size_t) cat_length);
     }
-    symbol->raw_segs[0].length = total_length;
-    symbol->raw_segs[0].eci = 3;
+    symbol->content_segs[0].length = total_length;
+    symbol->content_segs[0].eci = 3;
     return 0;
 }
 
-/* Convert ISO/IEC 8859-1 (binary) `source` to UTF-8, and copy to raw seg 0 buffer, setting raw seg ECI to 3.
+/* Convert ISO/IEC 8859-1 (binary) `source` to UTF-8, and copy to content seg 0 buffer, setting content seg ECI to 3.
    On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length) {
+INTERNAL int z_ct_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length) {
     int i;
     int iso_cnt = 0;
     unsigned char *s;
 
-    assert(!symbol->raw_segs); /* Trap unintended double setting */
+    assert(!symbol->content_segs); /* Trap unintended double setting */
     for (i = 0; i < length; i++) {
         iso_cnt += !z_isascii(source[i]);
     }
 
-    if (z_rt_init_segs(symbol, 1 /*seg_count*/) || rt_init_seg_source(symbol, 0 /*seg_idx*/, length + iso_cnt)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` & `rt_init_seg_source()` only fail with OOM */
+    if (z_ct_init_segs(symbol, 1 /*seg_count*/) || ct_init_seg_source(symbol, 0 /*seg_idx*/, length + iso_cnt)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_init_segs()` & `ct_init_seg_source()` only fail with OOM */
     }
-    s = symbol->raw_segs[0].source;
+    s = symbol->content_segs[0].source;
 
     for (i = 0; i < length; i++) {
         if (z_isascii(source[i])) {
@@ -1057,34 +1057,34 @@ INTERNAL int z_rt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char 
             *s++ = source[i] - 0x40;
         }
     }
-    assert((int) (s - symbol->raw_segs[0].source) == length + iso_cnt);
+    assert((int) (s - symbol->content_segs[0].source) == length + iso_cnt);
 
-    symbol->raw_segs[0].length = length + iso_cnt;
-    symbol->raw_segs[0].eci = 3;
+    symbol->content_segs[0].length = length + iso_cnt;
+    symbol->content_segs[0].eci = 3;
 
     return 0;
 }
 
-/* `sprintf()` into raw seg 0 buffer, assuming formatted data less than 256 bytes. Sets raw seg ECI to 3. On error
-   sets `errtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_printf_256(struct zint_symbol *symbol, const char *fmt, ...) {
+/* `sprintf()` into content seg 0 buffer, assuming formatted data less than 256 bytes. Sets content seg ECI to 3.
+   On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_ct_printf_256(struct zint_symbol *symbol, const char *fmt, ...) {
     va_list ap;
     int size;
 
-    assert(!symbol->raw_segs); /* Trap unintended double setting */
-    if (z_rt_init_segs(symbol, 1 /*seg_count*/) || rt_init_seg_source(symbol, 0 /*seg_idx*/, 256)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_init_segs()` & `rt_init_seg_source()` only fail with OOM */
+    assert(!symbol->content_segs); /* Trap unintended double setting */
+    if (z_ct_init_segs(symbol, 1 /*seg_count*/) || ct_init_seg_source(symbol, 0 /*seg_idx*/, 256)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_init_segs()` & `ct_init_seg_source()` only fail with OOM */
     }
 
     va_start(ap, fmt);
 
-    size = vsprintf((char *) symbol->raw_segs[0].source, fmt, ap);
+    size = vsprintf((char *) symbol->content_segs[0].source, fmt, ap);
 
     assert(size >= 0);
     assert(size < 256);
 
-    symbol->raw_segs[0].length = size;
-    symbol->raw_segs[0].eci = 3;
+    symbol->content_segs[0].length = size;
+    symbol->content_segs[0].eci = 3;
 
     va_end(ap);
 

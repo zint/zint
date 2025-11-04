@@ -1316,33 +1316,33 @@ static void test_hrt(const testCtx *const p_ctx) {
 
         int ret;
         const char *expected;
-        const char *expected_raw;
+        const char *expected_content;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, -1, "1234567890123", 0, "(01)12345678901231", "" },
-        /*  1*/ { BARCODE_DBAR_OMN, BARCODE_RAW_TEXT, "1234567890123", 0, "(01)12345678901231", "0112345678901231" },
+        /*  1*/ { BARCODE_DBAR_OMN, BARCODE_CONTENT_SEGS, "1234567890123", 0, "(01)12345678901231", "0112345678901231" },
         /*  2*/ { BARCODE_DBAR_OMN, -1, "12345678901231", 0, "(01)12345678901231", "" },
-        /*  3*/ { BARCODE_DBAR_OMN, BARCODE_RAW_TEXT, "12345678901231", 0, "(01)12345678901231", "0112345678901231" },
+        /*  3*/ { BARCODE_DBAR_OMN, BARCODE_CONTENT_SEGS, "12345678901231", 0, "(01)12345678901231", "0112345678901231" },
         /*  4*/ { BARCODE_DBAR_OMN, -1, "1000000000009", 0, "(01)10000000000090", "" },
-        /*  5*/ { BARCODE_DBAR_OMN, BARCODE_RAW_TEXT, "1000000000009", 0, "(01)10000000000090", "0110000000000090" },
+        /*  5*/ { BARCODE_DBAR_OMN, BARCODE_CONTENT_SEGS, "1000000000009", 0, "(01)10000000000090", "0110000000000090" },
         /*  6*/ { BARCODE_DBAR_LTD, -1, "1341056790138", 0, "(01)13410567901384", "" },
-        /*  7*/ { BARCODE_DBAR_LTD, BARCODE_RAW_TEXT, "1341056790138", 0, "(01)13410567901384", "0113410567901384" },
+        /*  7*/ { BARCODE_DBAR_LTD, BARCODE_CONTENT_SEGS, "1341056790138", 0, "(01)13410567901384", "0113410567901384" },
         /*  8*/ { BARCODE_DBAR_LTD, -1, "13410567901384", 0, "(01)13410567901384", "" },
-        /*  9*/ { BARCODE_DBAR_LTD, BARCODE_RAW_TEXT, "13410567901384", 0, "(01)13410567901384", "0113410567901384" },
+        /*  9*/ { BARCODE_DBAR_LTD, BARCODE_CONTENT_SEGS, "13410567901384", 0, "(01)13410567901384", "0113410567901384" },
         /* 10*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", 0, "(01)12345678901231", "" }, /* See test_hrt() in "test_gs1.c" for full HRT tests */
-        /* 11*/ { BARCODE_DBAR_EXP, BARCODE_RAW_TEXT, "[01]12345678901231", 0, "(01)12345678901231", "0112345678901231" },
+        /* 11*/ { BARCODE_DBAR_EXP, BARCODE_CONTENT_SEGS, "[01]12345678901231", 0, "(01)12345678901231", "0112345678901231" },
         /* 12*/ { BARCODE_DBAR_STK, -1, "12345678901231", 0, "", "" }, /* No HRT for stacked */
-        /* 13*/ { BARCODE_DBAR_STK, BARCODE_RAW_TEXT, "12345678901231", 0, "", "0112345678901231" }, /* But have RAW_TEXT */
+        /* 13*/ { BARCODE_DBAR_STK, BARCODE_CONTENT_SEGS, "12345678901231", 0, "", "0112345678901231" }, /* But have content segs */
         /* 14*/ { BARCODE_DBAR_OMNSTK, -1, "10000000000090", 0, "", "" },
-        /* 15*/ { BARCODE_DBAR_OMNSTK, BARCODE_RAW_TEXT, "10000000000090", 0, "", "0110000000000090" },
+        /* 15*/ { BARCODE_DBAR_OMNSTK, BARCODE_CONTENT_SEGS, "10000000000090", 0, "", "0110000000000090" },
         /* 16*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", 0, "", "" },
-        /* 17*/ { BARCODE_DBAR_EXPSTK, BARCODE_RAW_TEXT, "[01]12345678901231", 0, "", "0112345678901231" },
+        /* 17*/ { BARCODE_DBAR_EXPSTK, BARCODE_CONTENT_SEGS, "[01]12345678901231", 0, "", "0112345678901231" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length, expected_raw_length;
+    int expected_length, expected_content_length;
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -1357,7 +1357,7 @@ static void test_hrt(const testCtx *const p_ctx) {
                     -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
                     data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
-        expected_raw_length = (int) strlen(data[i].expected_raw);
+        expected_content_length = (int) strlen(data[i].expected_content);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, data[i].ret, ret, symbol->errtxt);
@@ -1366,18 +1366,18 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length);
         assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->text, data[i].expected);
-        if (symbol->output_options & BARCODE_RAW_TEXT) {
-            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-            assert_equal(symbol->raw_segs[0].length, expected_raw_length,
-                        "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
-                        i, symbol->raw_segs[0].length, expected_raw_length);
-            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+        if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+            assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+            assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+            assert_equal(symbol->content_segs[0].length, expected_content_length,
+                        "i:%d content_segs[0].length %d != expected_content_length %d\n",
+                        i, symbol->content_segs[0].length, expected_content_length);
+            assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected_content, expected_content_length),
                         "i:%d memcmp(%.*s, %s, %d) != 0\n",
-                        i, symbol->raw_segs[0].length, symbol->raw_segs[0].source, data[i].expected_raw,
-                        expected_raw_length);
+                        i, symbol->content_segs[0].length, symbol->content_segs[0].source, data[i].expected_content,
+                        expected_content_length);
         } else {
-            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);

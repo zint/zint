@@ -58,7 +58,7 @@ INTERNAL int zint_pharma(struct zint_symbol *symbol, unsigned char source[], int
     char *in = inter;
     char dest[64]; /* 17 * 2 + 1 */
     char *d = dest;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 6) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 350, "Input length %d too long (maximum 6)", length);
@@ -99,8 +99,8 @@ INTERNAL int zint_pharma(struct zint_symbol *symbol, unsigned char source[], int
         (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -151,7 +151,7 @@ INTERNAL int zint_pharma_two(struct zint_symbol *symbol, unsigned char source[],
     unsigned int loopey, h;
     int writer;
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 8) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 354, "Input length %d too long (maximum 8)", length);
@@ -190,8 +190,8 @@ INTERNAL int zint_pharma_two(struct zint_symbol *symbol, unsigned char source[],
         (void) z_set_height(symbol, 0.0f, 10.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -286,7 +286,7 @@ INTERNAL int zint_code32(struct zint_symbol *symbol, unsigned char source[], int
     z_hrt_cpy_chr(symbol, 'A');
     z_hrt_cat_nochk(symbol, local_source, 9);
 
-    /* Use `raw_text` set by `zint_code39()` */
+    /* Use `content_segs` set by `zint_code39()` */
 
     return error_number;
 }
@@ -373,7 +373,7 @@ INTERNAL int zint_pzn(struct zint_symbol *symbol, unsigned char source[], int le
     z_hrt_cpy_nochk(symbol, (const unsigned char *) "PZN - ", 6); /* Note changed to put space after hyphen */
     z_hrt_cat_nochk(symbol, local_source + 1, 9 - pzn7 - 1);
 
-    /* Use `raw_text` set by `zint_code39()` */
+    /* Use `content_segs` set by `zint_code39()` */
 
     return error_number;
 }

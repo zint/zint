@@ -697,7 +697,7 @@ const char *testUtilOutputOptionsName(int output_options) {
         { "EANUPC_GUARD_WHITESPACE", EANUPC_GUARD_WHITESPACE, 0x4000 },
         { "EMBED_VECTOR_FONT", EMBED_VECTOR_FONT, 0x8000 },
         { "BARCODE_MEMORY_FILE", BARCODE_MEMORY_FILE, 0x10000 },
-        { "BARCODE_RAW_TEXT", BARCODE_RAW_TEXT, 0x20000 },
+        { "BARCODE_CONTENT_SEGS", BARCODE_CONTENT_SEGS, 0x20000 },
     };
     static int const data_size = ARRAY_SIZE(data);
     int set = 0;

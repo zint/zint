@@ -381,7 +381,7 @@ INTERNAL int zint_code128(struct zint_symbol *symbol, unsigned char source[], in
     unsigned char *src = source;
     const int ab_only = symbol->symbology == BARCODE_CODE128AB;
     const int start_idx = (symbol->output_options & READER_INIT) ? 2 : 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     assert(length); /* Suppress clang-tidy-20.1 warning clang-analyzer-optin.portability.UnixAPI */
 
@@ -497,13 +497,13 @@ INTERNAL int zint_code128(struct zint_symbol *symbol, unsigned char source[], in
     }
     error_number = z_hrt_cpy_iso8859_1(symbol, src, length); /* Returns warning only */
 
-    if (raw_text) {
+    if (content_segs) {
         if ((symbol->input_mode & 0x07) == DATA_MODE) {
-            if (z_rt_cpy(symbol, src, length)) {
-                return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+            if (z_ct_cpy(symbol, src, length)) {
+                return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
             }
-        } else if (z_rt_cpy_iso8859_1(symbol, src, length)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_iso8859_1()` only fails with OOM */
+        } else if (z_ct_cpy_iso8859_1(symbol, src, length)) {
+            return ZINT_ERROR_MEMORY; /* `z_ct_cpy_iso8859_1()` only fails with OOM */
         }
     }
 
@@ -524,7 +524,7 @@ INTERNAL int zint_gs1_128_cc(struct zint_symbol *symbol, unsigned char source[],
     int separator_row = 0;
     int reduced_length;
     unsigned char *reduced = (unsigned char *) z_alloca(length + 1);
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
@@ -654,8 +654,8 @@ INTERNAL int zint_gs1_128_cc(struct zint_symbol *symbol, unsigned char source[],
         z_hrt_conv_gs1_brackets_nochk(symbol, source, length);
     }
 
-    if (raw_text && z_rt_cpy(symbol, reduced, reduced_length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, reduced, reduced_length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;

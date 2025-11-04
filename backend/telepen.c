@@ -91,7 +91,7 @@ INTERNAL int zint_telepen(struct zint_symbol *symbol, unsigned char source[], in
     int error_number;
     char dest[1145]; /* 12 (Start) + 69 * 16 (max for DELs) + 16 (Check) + 12 (stop) + 1 = 1145 */
     char *d = dest;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     error_number = 0;
 
@@ -140,8 +140,8 @@ INTERNAL int zint_telepen(struct zint_symbol *symbol, unsigned char source[], in
 
     z_hrt_cpy_iso8859_1(symbol, source, length);
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, (char) check_digit, NULL /*cat*/, 0)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, source, length, (char) check_digit, NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
@@ -154,7 +154,7 @@ INTERNAL int zint_telepen_num(struct zint_symbol *symbol, unsigned char source[]
     char dest[1129]; /* 12 (Start) + 68 * 16 (max for DELs) + 16 (Check) + 12 (Stop) + 1 = 1129 */
     char *d = dest;
     unsigned char local_source[137];
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     count = 0;
 
@@ -220,8 +220,8 @@ INTERNAL int zint_telepen_num(struct zint_symbol *symbol, unsigned char source[]
 
     z_hrt_cpy_nochk(symbol, local_source, length);
 
-    if (raw_text && z_rt_cpy_cat(symbol, local_source, length, (char) check_digit, NULL /*cat*/, 0)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, local_source, length, (char) check_digit, NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;

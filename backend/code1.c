@@ -984,12 +984,12 @@ static int c1_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
     int tp = 0;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback.
        Note not updating `eci` for GS1 mode as not converted (and ignored & not written anyway) */
-    const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
+    const int content_segs = !gs1 && (symbol->output_options & BARCODE_CONTENT_SEGS);
 
     for (i = 0; i < seg_count; i++) {
         tp = c1_encode(symbol, segs[i].source, segs[i].length, segs[i].eci, seg_count, gs1, target, &tp, p_last_mode);
-        if (raw_text && segs[i].eci) {
-            z_rt_set_seg_eci(symbol, i, segs[i].eci);
+        if (content_segs && segs[i].eci) {
+            z_ct_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 

@@ -58,7 +58,7 @@ INTERNAL int zint_codabar(struct zint_symbol *symbol, unsigned char source[], in
     char *d = dest;
     int add_checksum, count = 0, checksum = 0;
     int d_chars = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 103) { /* No stack smashing please (103 + 1) * 11 = 1144 */
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 356, "Input length %d too long (maximum 103)", length);
@@ -138,9 +138,9 @@ INTERNAL int zint_codabar(struct zint_symbol *symbol, unsigned char source[], in
     z_hrt_cpy_cat_nochk(symbol, source, length - 1, (char) (symbol->option_2 == 2 ? CALCIUM[checksum] : '\xFF'),
                         source + length - 1, 1);
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length - 1,
+    if (content_segs && z_ct_cpy_cat(symbol, source, length - 1,
                                 (char) (add_checksum ? CALCIUM[checksum] : '\xFF'), source + length - 1, 1)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;

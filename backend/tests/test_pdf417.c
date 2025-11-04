@@ -4905,36 +4905,36 @@ static void test_rt(const testCtx *const p_ctx) {
         int expected_eci;
         const char *expected;
         int expected_length;
-        int expected_raw_eci;
+        int expected_content_eci;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_PDF417, UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { BARCODE_PDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
+        /*  1*/ { BARCODE_PDF417, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { BARCODE_PDF417, UNICODE_MODE, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
-        /*  3*/ { BARCODE_PDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
+        /*  3*/ { BARCODE_PDF417, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
         /*  4*/ { BARCODE_PDF417, DATA_MODE, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
-        /*  5*/ { BARCODE_PDF417, DATA_MODE, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /*  5*/ { BARCODE_PDF417, DATA_MODE, -1, BARCODE_CONTENT_SEGS, "\351", -1, 0, 0, "\351", -1, 3 },
         /*  6*/ { BARCODE_PDF417, UNICODE_MODE, 26, -1, "é", -1, 0, 26, "", -1, 0 },
-        /*  7*/ { BARCODE_PDF417, UNICODE_MODE, 26, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
+        /*  7*/ { BARCODE_PDF417, UNICODE_MODE, 26, BARCODE_CONTENT_SEGS, "é", -1, 0, 26, "é", -1, 26 },
         /*  8*/ { BARCODE_PDF417, UNICODE_MODE, 899, -1, "é", -1, 0, 899, "", -1, 0 },
-        /*  9*/ { BARCODE_PDF417, UNICODE_MODE, 899, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+        /*  9*/ { BARCODE_PDF417, UNICODE_MODE, 899, BARCODE_CONTENT_SEGS, "é", -1, 0, 899, "é", -1, 899 },
         /* 10*/ { BARCODE_HIBC_PDF, UNICODE_MODE, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
-        /* 11*/ { BARCODE_HIBC_PDF, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
+        /* 11*/ { BARCODE_HIBC_PDF, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
         /* 12*/ { BARCODE_PDF417COMP, UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /* 13*/ { BARCODE_PDF417COMP, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 },
+        /* 13*/ { BARCODE_PDF417COMP, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 0, "é", -1, 3 },
         /* 14*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /* 15*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 },
+        /* 15*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 0, "é", -1, 3 },
         /* 16*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
-        /* 17*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
+        /* 17*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
         /* 18*/ { BARCODE_MICROPDF417, DATA_MODE, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
-        /* 19*/ { BARCODE_MICROPDF417, DATA_MODE, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /* 19*/ { BARCODE_MICROPDF417, DATA_MODE, -1, BARCODE_CONTENT_SEGS, "\351", -1, 0, 0, "\351", -1, 3 },
         /* 20*/ { BARCODE_MICROPDF417, UNICODE_MODE, 26, -1, "é", -1, 0, 26, "", -1, 0 },
-        /* 21*/ { BARCODE_MICROPDF417, UNICODE_MODE, 26, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
+        /* 21*/ { BARCODE_MICROPDF417, UNICODE_MODE, 26, BARCODE_CONTENT_SEGS, "é", -1, 0, 26, "é", -1, 26 },
         /* 22*/ { BARCODE_MICROPDF417, UNICODE_MODE, 899, -1, "é", -1, 0, 899, "", -1, 0 },
-        /* 23*/ { BARCODE_MICROPDF417, UNICODE_MODE, 899, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+        /* 23*/ { BARCODE_MICROPDF417, UNICODE_MODE, 899, BARCODE_CONTENT_SEGS, "é", -1, 0, 899, "é", -1, 899 },
         /* 24*/ { BARCODE_HIBC_MICPDF, UNICODE_MODE, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
-        /* 25*/ { BARCODE_HIBC_MICPDF, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
+        /* 25*/ { BARCODE_HIBC_MICPDF, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -4966,23 +4966,23 @@ static void test_rt(const testCtx *const p_ctx) {
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
                         i, symbol->eci, data[i].expected_eci);
-            if (symbol->output_options & BARCODE_RAW_TEXT) {
-                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-                assert_equal(symbol->raw_segs[0].length, expected_length,
-                            "i:%d raw_segs[0].length %d != expected_length %d\n",
-                            i, symbol->raw_segs[0].length, expected_length);
-                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
-                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+            if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+                assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+                assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+                assert_equal(symbol->content_segs[0].length, expected_length,
+                            "i:%d content_segs[0].length %d != expected_length %d\n",
+                            i, symbol->content_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
+                            "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
                                             escaped, sizeof(escaped)),
                             testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                             expected_length);
-                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
-                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
-                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+                assert_equal(symbol->content_segs[0].eci, data[i].expected_content_eci,
+                            "i:%d content_segs[0].eci %d != expected_content_eci %d\n",
+                            i, symbol->content_segs[0].eci, data[i].expected_content_eci);
             } else {
-                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+                assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
             }
         }
 
@@ -5004,25 +5004,25 @@ static void test_rt_segs(const testCtx *const p_ctx) {
 
         int expected_rows;
         int expected_width;
-        struct zint_seg expected_raw_segs[3];
-        int expected_raw_seg_count;
+        struct zint_seg expected_content_segs[3];
+        int expected_content_seg_count;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_PDF417, UNICODE_MODE, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 8, 103, {{0}}, 0 },
-        /*  1*/ { BARCODE_PDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 8, 103, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
+        /*  1*/ { BARCODE_PDF417, UNICODE_MODE, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 8, 103, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
         /*  2*/ { BARCODE_PDF417, UNICODE_MODE, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 8, 120, {{0}}, 0 },
-        /*  3*/ { BARCODE_PDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 8, 120, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
+        /*  3*/ { BARCODE_PDF417, UNICODE_MODE, BARCODE_CONTENT_SEGS, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 8, 120, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /*  4*/ { BARCODE_PDF417, DATA_MODE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 8, 120, {{0}}, 0 },
-        /*  5*/ { BARCODE_PDF417, DATA_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 8, 120, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /*  5*/ { BARCODE_PDF417, DATA_MODE, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 8, 120, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
         /*  6*/ { BARCODE_PDF417COMP, UNICODE_MODE, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 8, 69, {{0}}, 0 },
-        /*  7*/ { BARCODE_PDF417COMP, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 8, 69, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 },
+        /*  7*/ { BARCODE_PDF417COMP, UNICODE_MODE, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 8, 69, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 },
         /*  8*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 6, 82, {{0}}, 0 },
-        /*  9*/ { BARCODE_MICROPDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 6, 82, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 },
+        /*  9*/ { BARCODE_MICROPDF417, UNICODE_MODE, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 6, 82, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 },
         /* 10*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 24, 38, {{0}}, 0 },
-        /* 11*/ { BARCODE_MICROPDF417, UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 24, 38, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
+        /* 11*/ { BARCODE_MICROPDF417, UNICODE_MODE, BARCODE_CONTENT_SEGS, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 24, 38, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /* 12*/ { BARCODE_MICROPDF417, DATA_MODE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 24, 38, {{0}}, 0 },
-        /* 13*/ { BARCODE_MICROPDF417, DATA_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 24, 38, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /* 13*/ { BARCODE_MICROPDF417, DATA_MODE, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 24, 38, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
@@ -5056,31 +5056,31 @@ static void test_rt_segs(const testCtx *const p_ctx) {
         assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
                     i, symbol->width, data[i].expected_width);
 
-        assert_equal(symbol->raw_seg_count, data[i].expected_raw_seg_count, "i:%d symbol->raw_seg_count %d != %d\n",
-                    i, symbol->raw_seg_count, data[i].expected_raw_seg_count);
-        if (symbol->output_options & BARCODE_RAW_TEXT) {
-            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-            for (j = 0; j < symbol->raw_seg_count; j++) {
-                assert_nonnull(symbol->raw_segs[j].source, "i:%d raw_segs[%d].source NULL\n", i, j);
+        assert_equal(symbol->content_seg_count, data[i].expected_content_seg_count, "i:%d symbol->content_seg_count %d != %d\n",
+                    i, symbol->content_seg_count, data[i].expected_content_seg_count);
+        if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+            assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+            for (j = 0; j < symbol->content_seg_count; j++) {
+                assert_nonnull(symbol->content_segs[j].source, "i:%d content_segs[%d].source NULL\n", i, j);
 
-                expected_length = data[i].expected_raw_segs[j].length;
+                expected_length = data[i].expected_content_segs[j].length;
 
-                assert_equal(symbol->raw_segs[j].length, expected_length,
-                            "i:%d raw_segs[%d].length %d != expected_length %d\n",
-                            i, j, symbol->raw_segs[j].length, expected_length);
-                assert_zero(memcmp(symbol->raw_segs[j].source, data[i].expected_raw_segs[j].source, expected_length),
-                            "i:%d raw_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
-                            testUtilEscape((const char *) symbol->raw_segs[j].source, expected_length, escaped,
+                assert_equal(symbol->content_segs[j].length, expected_length,
+                            "i:%d content_segs[%d].length %d != expected_length %d\n",
+                            i, j, symbol->content_segs[j].length, expected_length);
+                assert_zero(memcmp(symbol->content_segs[j].source, data[i].expected_content_segs[j].source, expected_length),
+                            "i:%d content_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
+                            testUtilEscape((const char *) symbol->content_segs[j].source, expected_length, escaped,
                                             sizeof(escaped)),
-                            testUtilEscape((const char *) data[i].expected_raw_segs[j].source, expected_length,
+                            testUtilEscape((const char *) data[i].expected_content_segs[j].source, expected_length,
                                             escaped2, sizeof(escaped2)),
                             expected_length);
-                assert_equal(symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci,
-                            "i:%d raw_segs[%d].eci %d != expected_raw_segs.eci %d\n",
-                            i, j, symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci);
+                assert_equal(symbol->content_segs[j].eci, data[i].expected_content_segs[j].eci,
+                            "i:%d content_segs[%d].eci %d != expected_content_segs.eci %d\n",
+                            i, j, symbol->content_segs[j].eci, data[i].expected_content_segs[j].eci);
             }
         } else {
-            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);

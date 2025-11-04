@@ -1053,15 +1053,15 @@ static void test_hrt_conv_gs1_brackets_nochk(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_rt_cpy_segs(const testCtx *const p_ctx) {
+static void test_ct_cpy_segs(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
         int seg_count;
         struct zint_seg segs[3];
 
-        struct zint_seg expected_raw_segs[3];
-        int expected_raw_seg_count;
+        struct zint_seg expected_content_segs[3];
+        int expected_content_seg_count;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -1093,31 +1093,31 @@ static void test_rt_cpy_segs(const testCtx *const p_ctx) {
 
         assert_nonzero(data[i].seg_count, "i:%d seg_count zero\n", i);
 
-        ret = z_rt_cpy_segs(symbol, data[i].segs, data[i].seg_count);
-        assert_zero(ret, "i:%d rt_cpy_segs %d != 0\n", i, ret);
+        ret = z_ct_cpy_segs(symbol, data[i].segs, data[i].seg_count);
+        assert_zero(ret, "i:%d z_ct_cpy_segs %d != 0\n", i, ret);
 
-        assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-        assert_equal(symbol->raw_seg_count, data[i].seg_count, "i:%d raw_seg_count %d != %d\n",
-                    i, symbol->raw_seg_count, data[i].seg_count);
+        assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+        assert_equal(symbol->content_seg_count, data[i].seg_count, "i:%d content_seg_count %d != %d\n",
+                    i, symbol->content_seg_count, data[i].seg_count);
         for (seg_idx = 0; seg_idx < data[i].seg_count; seg_idx++) {
-            assert_nonnull(&symbol->raw_segs[seg_idx], "i:%d raw_segs[%d] NULL\n", i, seg_idx);
-            assert_nonnull(symbol->raw_segs[seg_idx].source, "i:%d raw_segs[%d].source NULL\n", i, seg_idx);
+            assert_nonnull(&symbol->content_segs[seg_idx], "i:%d content_segs[%d] NULL\n", i, seg_idx);
+            assert_nonnull(symbol->content_segs[seg_idx].source, "i:%d content_segs[%d].source NULL\n", i, seg_idx);
 
-            expected_length = data[i].expected_raw_segs[seg_idx].length;
-            expected_source = data[i].expected_raw_segs[seg_idx].source;
-            expected_eci = data[i].expected_raw_segs[seg_idx].eci;
+            expected_length = data[i].expected_content_segs[seg_idx].length;
+            expected_source = data[i].expected_content_segs[seg_idx].source;
+            expected_eci = data[i].expected_content_segs[seg_idx].eci;
 
-            assert_equal(symbol->raw_segs[seg_idx].length, expected_length,
-                        "i:%d raw_segs[%d].length %d != expected_length %d\n",
-                        i, seg_idx, symbol->raw_segs[seg_idx].length, expected_length);
-            assert_zero(memcmp(symbol->raw_segs[seg_idx].source, expected_source, expected_length),
-                        "i:%d raw_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, seg_idx,
-                        testUtilEscape(ZCCP(symbol->raw_segs[seg_idx].source), symbol->raw_segs[seg_idx].length,
+            assert_equal(symbol->content_segs[seg_idx].length, expected_length,
+                        "i:%d content_segs[%d].length %d != expected_length %d\n",
+                        i, seg_idx, symbol->content_segs[seg_idx].length, expected_length);
+            assert_zero(memcmp(symbol->content_segs[seg_idx].source, expected_source, expected_length),
+                        "i:%d content_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, seg_idx,
+                        testUtilEscape(ZCCP(symbol->content_segs[seg_idx].source), symbol->content_segs[seg_idx].length,
                                         escaped, sizeof(escaped)),
                         testUtilEscape(ZCCP(expected_source), expected_length, escaped2, sizeof(escaped2)),
                                         expected_length);
-            assert_equal(symbol->raw_segs[seg_idx].eci, expected_eci, "i:%d raw_segs[%d].eci %d != expected_eci %d\n",
-                        i, seg_idx, symbol->raw_segs[seg_idx].eci, expected_eci);
+            assert_equal(symbol->content_segs[seg_idx].eci, expected_eci, "i:%d content_segs[%d].eci %d != expected_eci %d\n",
+                        i, seg_idx, symbol->content_segs[seg_idx].eci, expected_eci);
         }
 
         ZBarcode_Clear(symbol);
@@ -1126,7 +1126,7 @@ static void test_rt_cpy_segs(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_rt_cpy(const testCtx *const p_ctx) {
+static void test_ct_cpy(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
@@ -1171,27 +1171,27 @@ static void test_rt_cpy(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].source) : data[i].length;
 
         if ((cat_length = data[i].cat_length == -1 ? (int) strlen(data[i].cat) : data[i].cat_length)) {
-            ret = z_rt_cpy_cat(symbol, TCU(data[i].source), length, data[i].separator, TCU(data[i].cat), cat_length);
-            assert_zero(ret, "i:%d rt_cpy_cat %d != 0\n", i, ret);
+            ret = z_ct_cpy_cat(symbol, TCU(data[i].source), length, data[i].separator, TCU(data[i].cat), cat_length);
+            assert_zero(ret, "i:%d z_ct_cpy_cat %d != 0\n", i, ret);
         } else {
-            ret = z_rt_cpy(symbol, TCU(data[i].source), length);
-            assert_zero(ret, "i:%d rt_cpy %d != 0\n", i, ret);
+            ret = z_ct_cpy(symbol, TCU(data[i].source), length);
+            assert_zero(ret, "i:%d z_ct_cpy %d != 0\n", i, ret);
         }
 
-        assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-        assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-        assert_equal(symbol->raw_segs[0].length, expected_length,
-                    "i:%d raw_segs[0].length %d != expected_length %d\n",
-                    i, symbol->raw_segs[0].length, expected_length);
-        assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
-                    "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                    testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+        assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+        assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+        assert_equal(symbol->content_segs[0].length, expected_length,
+                    "i:%d content_segs[0].length %d != expected_length %d\n",
+                    i, symbol->content_segs[0].length, expected_length);
+        assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
+                    "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                    testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
                                     escaped, sizeof(escaped)),
                     testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                     expected_length);
-        assert_equal(symbol->raw_segs[0].eci, data[i].expected_eci,
-                    "i:%d raw_segs[0].eci %d != expected_eci %d\n",
-                    i, symbol->raw_segs[0].eci, data[i].expected_eci);
+        assert_equal(symbol->content_segs[0].eci, data[i].expected_eci,
+                    "i:%d content_segs[0].eci %d != expected_eci %d\n",
+                    i, symbol->content_segs[0].eci, data[i].expected_eci);
 
         ZBarcode_Clear(symbol);
     }
@@ -1199,7 +1199,7 @@ static void test_rt_cpy(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_rt_cpy_iso8859_1(const testCtx *const p_ctx) {
+static void test_ct_cpy_iso8859_1(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
@@ -1239,23 +1239,23 @@ static void test_rt_cpy_iso8859_1(const testCtx *const p_ctx) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].source) : data[i].length;
 
-        ret = z_rt_cpy_iso8859_1(symbol, TCU(data[i].source), length);
-        assert_zero(ret, "i:%d z_rt_cpy_iso8859_1 %d != 0\n", i, ret);
+        ret = z_ct_cpy_iso8859_1(symbol, TCU(data[i].source), length);
+        assert_zero(ret, "i:%d z_ct_cpy_iso8859_1 %d != 0\n", i, ret);
 
-        assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-        assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-        assert_equal(symbol->raw_segs[0].length, expected_length,
-                    "i:%d raw_segs[0].length %d != expected_length %d\n",
-                    i, symbol->raw_segs[0].length, expected_length);
-        assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
-                    "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                    testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+        assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+        assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+        assert_equal(symbol->content_segs[0].length, expected_length,
+                    "i:%d content_segs[0].length %d != expected_length %d\n",
+                    i, symbol->content_segs[0].length, expected_length);
+        assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
+                    "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                    testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
                                     escaped, sizeof(escaped)),
                     testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                     expected_length);
-        assert_equal(symbol->raw_segs[0].eci, data[i].expected_eci,
-                    "i:%d raw_segs[0].eci %d != expected_eci %d\n",
-                    i, symbol->raw_segs[0].eci, data[i].expected_eci);
+        assert_equal(symbol->content_segs[0].eci, data[i].expected_eci,
+                    "i:%d content_segs[0].eci %d != expected_eci %d\n",
+                    i, symbol->content_segs[0].eci, data[i].expected_eci);
 
         ZBarcode_Clear(symbol);
     }
@@ -1263,7 +1263,7 @@ static void test_rt_cpy_iso8859_1(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_rt_printf_256(const testCtx *const p_ctx) {
+static void test_ct_printf_256(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
@@ -1301,27 +1301,27 @@ static void test_rt_printf_256(const testCtx *const p_ctx) {
         expected_length = (int) strlen(data[i].expected);
 
         if (data[i].num_args == 1) {
-            ret = z_rt_printf_256(symbol, data[i].fmt, data[i].data1);
-            assert_zero(ret, "i:%d rt_printf_256 1 arg ret %d != 0\n", i, ret);
+            ret = z_ct_printf_256(symbol, data[i].fmt, data[i].data1);
+            assert_zero(ret, "i:%d z_ct_printf_256 1 arg ret %d != 0\n", i, ret);
         } else if (data[i].num_args == 2) {
-            ret = z_rt_printf_256(symbol, data[i].fmt, data[i].data1, data[i].data2);
-            assert_zero(ret, "i:%d rt_printf_256 2 args ret %d != 0\n", i, ret);
+            ret = z_ct_printf_256(symbol, data[i].fmt, data[i].data1, data[i].data2);
+            assert_zero(ret, "i:%d z_ct_printf_256 2 args ret %d != 0\n", i, ret);
         } else {
             assert_zero(1, "i:%d, bad num_args\n", i);
         }
 
-        assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-        assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-        assert_equal(symbol->raw_segs[0].length, expected_length,
-                    "i:%d raw_segs[0].length %d != expected_length %d\n",
-                    i, symbol->raw_segs[0].length, expected_length);
-        assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
-                    "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                    testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+        assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+        assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+        assert_equal(symbol->content_segs[0].length, expected_length,
+                    "i:%d content_segs[0].length %d != expected_length %d\n",
+                    i, symbol->content_segs[0].length, expected_length);
+        assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
+                    "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                    testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
                                     escaped, sizeof(escaped)),
                     testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                     expected_length);
-        assert_equal(symbol->raw_segs[0].eci, 3, "i:%d raw_segs[0].eci %d != 3\n", i, symbol->raw_segs[0].eci);
+        assert_equal(symbol->content_segs[0].eci, 3, "i:%d content_segs[0].eci %d != 3\n", i, symbol->content_segs[0].eci);
 
         ZBarcode_Clear(symbol);
     }
@@ -1455,10 +1455,10 @@ int main(int argc, char *argv[]) {
         { "test_hrt_cpy_cat_nochk", test_hrt_cpy_cat_nochk },
         { "test_hrt_printf_nochk", test_hrt_printf_nochk },
         { "test_hrt_conv_gs1_brackets_nochk", test_hrt_conv_gs1_brackets_nochk },
-        { "test_rt_cpy_segs", test_rt_cpy_segs },
-        { "test_rt_cpy", test_rt_cpy },
-        { "test_rt_cpy_iso8859_1", test_rt_cpy_iso8859_1 },
-        { "test_rt_printf_256", test_rt_printf_256 },
+        { "test_ct_cpy_segs", test_ct_cpy_segs },
+        { "test_ct_cpy", test_ct_cpy },
+        { "test_ct_cpy_iso8859_1", test_ct_cpy_iso8859_1 },
+        { "test_ct_printf_256", test_ct_printf_256 },
         { "test_set_height", test_set_height },
         { "test_debug_test_codeword_dump_int", test_debug_test_codeword_dump_int },
     };

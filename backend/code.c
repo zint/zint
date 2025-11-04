@@ -127,7 +127,7 @@ INTERNAL int zint_code39(struct zint_symbol *symbol, unsigned char source[], int
     char *d = dest;
     char check_digit = '\0';
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (symbol->option_2 < 0 || symbol->option_2 > 2) {
         symbol->option_2 = 0;
@@ -227,10 +227,10 @@ INTERNAL int zint_code39(struct zint_symbol *symbol, unsigned char source[], int
                             NULL /*cat*/, 0);
     }
 
-    if (raw_text) {
-        if (z_rt_cpy_cat(symbol, source, length,
+    if (content_segs) {
+        if (z_ct_cpy_cat(symbol, source, length,
                         (char) (check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF'), NULL /*cat*/, 0)) {
-            return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+            return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
         }
     }
 
@@ -245,7 +245,7 @@ INTERNAL int zint_excode39(struct zint_symbol *symbol, unsigned char source[], i
     unsigned char check_digit = '\0';
     int error_number;
     const int saved_option_2 = symbol->option_2;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 86) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 328, "Input length %d too long (maximum 86)", length);
@@ -270,8 +270,8 @@ INTERNAL int zint_excode39(struct zint_symbol *symbol, unsigned char source[], i
     if (saved_option_2 == 2) {
         symbol->option_2 = 1; /* Make hidden check digit visible so returned in HRT */
     }
-    if (raw_text) {
-        symbol->output_options &= ~BARCODE_RAW_TEXT; /* Don't use `zint_code39()`'s `raw_text` */
+    if (content_segs) {
+        symbol->output_options &= ~BARCODE_CONTENT_SEGS; /* Don't use `zint_code39()`'s `content_segs` */
     }
 
     /* Then send the buffer to the C39 function */
@@ -282,12 +282,12 @@ INTERNAL int zint_excode39(struct zint_symbol *symbol, unsigned char source[], i
     if (saved_option_2 == 2) {
         symbol->option_2 = 2; /* Restore */
     }
-    if (raw_text) {
-        symbol->output_options |= BARCODE_RAW_TEXT; /* Restore */
+    if (content_segs) {
+        symbol->output_options |= BARCODE_CONTENT_SEGS; /* Restore */
     }
 
-    /* Save visible (or BARCODE_RAW_TEXT) check digit */
-    if (symbol->option_2 == 1 || (raw_text && symbol->option_2 == 2)) {
+    /* Save visible (or BARCODE_CONTENT_SEGS) check digit */
+    if (symbol->option_2 == 1 || (content_segs && symbol->option_2 == 2)) {
         check_digit = symbol->text[symbol->text_length - 1];
     }
 
@@ -297,10 +297,10 @@ INTERNAL int zint_excode39(struct zint_symbol *symbol, unsigned char source[], i
         z_hrt_cat_chr_nochk(symbol, check_digit);
     }
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length,
+    if (content_segs && z_ct_cpy_cat(symbol, source, length,
                                 (char) (check_digit ? check_digit == '_' ? ' ' : check_digit : '\xFF'),
                                 NULL /*cat*/, 0)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
@@ -320,7 +320,7 @@ INTERNAL int zint_code93(struct zint_symbol *symbol, unsigned char source[], int
     char *b = buffer;
     char dest[764]; /* 6 (Start) + 123*6 + 2*6 (Checks) + 7 (Stop) + 1 (NUL) = 764 */
     char *d = dest;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     /* Suppresses clang-tidy clang-analyzer-core.CallAndMessage warning */
     assert(length > 0);
@@ -413,8 +413,8 @@ INTERNAL int zint_code93(struct zint_symbol *symbol, unsigned char source[], int
         z_hrt_cat_chr_nochk(symbol, SILVER[k]);
     }
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, SILVER[c], (const unsigned char *) SILVER + k, 1)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, source, length, SILVER[c], (const unsigned char *) SILVER + k, 1)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
@@ -431,7 +431,7 @@ INTERNAL int zint_vin(struct zint_symbol *symbol, unsigned char source[], int le
     char output_check;
     int sum;
     int i;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     static const char weight[17] = { 8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2 };
 
     /* Check length */
@@ -508,9 +508,9 @@ INTERNAL int zint_vin(struct zint_symbol *symbol, unsigned char source[], int le
 
     z_hrt_cpy_nochk(symbol, source, length);
 
-    if (raw_text && z_rt_cpy_cat(symbol, NULL /*source*/, 0, (char) (symbol->option_2 == 1 ? 'I' : '\xFF'),
+    if (content_segs && z_ct_cpy_cat(symbol, NULL /*source*/, 0, (char) (symbol->option_2 == 1 ? 'I' : '\xFF'),
                                 source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     /* Specification of dimensions/height for BARCODE_VIN unlikely */

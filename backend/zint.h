@@ -97,9 +97,9 @@ extern "C" {
         char id[32];        /* Optional ID to distinguish sequence, ASCII, NUL-terminated unless max 32 long */
     };
 
-    /* Segment for use with `raw_segs` and API `ZBarcode_Encode_Segs()` */
+    /* Segment for use with API `ZBarcode_Encode_Segs()` and `content_segs` */
     struct zint_seg {
-        unsigned char *source; /* Data to encode, or (`raw_segs`) data encoded */
+        unsigned char *source; /* Data to encode */
         int length;         /* Length of `source`. If 0 or negative, `source` must be NUL-terminated */
         int eci;            /* Extended Channel Interpretation */
     };
@@ -136,8 +136,6 @@ extern "C" {
         int text_length;    /* Length of text in bytes (output only) */
         int rows;           /* Number of rows used by the symbol (output only) */
         int width;          /* Width of the generated symbol (output only) */
-        unsigned char encoded_data[200][144]; /* Encoded data (output only). Allows for rows of 1152 modules */
-        float row_height[200]; /* Heights of rows (output only). Allows for 200 row DotCode */
         char errtxt[160];   /* Error message if an error or warning occurs, NUL-terminated (output only) */
         unsigned char *bitmap; /* Stored bitmap image (raster output only) */
         int bitmap_width;   /* Width of bitmap image (raster output only) */
@@ -146,8 +144,10 @@ extern "C" {
         struct zint_vector *vector; /* Pointer to vector header (vector output only) */
         unsigned char *memfile; /* Pointer to in-memory file buffer if BARCODE_MEMORY_FILE (output only) */
         int memfile_size;   /* Length of in-memory file buffer (output only) */
-        struct zint_seg *raw_segs; /* Pointer to array of raw segs if BARCODE_RAW_TEXT (output only) */
-        int raw_seg_count;  /* Number of `raw_segs` (output only) */
+        struct zint_seg *content_segs; /* Pointer to array of content segs if BARCODE_CONTENT_SEGS (output only) */
+        int content_seg_count; /* Number of `content_segs` (output only) */
+        unsigned char encoded_data[200][144]; /* Encoded data (output only). Allows for rows of 1152 modules */
+        float row_height[200]; /* Heights of rows (output only). Allows for 200 row DotCode */
     };
 
 /* Symbologies (`symbol->symbology`) */
@@ -310,7 +310,7 @@ extern "C" {
 #define EANUPC_GUARD_WHITESPACE 0x04000 /* Add quiet zone indicators ("<"/">") to HRT whitespace (EAN/UPC) */
 #define EMBED_VECTOR_FONT       0x08000 /* Embed font in vector output - currently only for SVG output */
 #define BARCODE_MEMORY_FILE     0x10000 /* Write output to in-memory buffer `memfile` instead of to `outfile` */
-#define BARCODE_RAW_TEXT        0x20000 /* Write data encoded to raw segment buffers `raw_segs` */
+#define BARCODE_CONTENT_SEGS    0x20000 /* Write data encoded to content segment buffers `content_segs` */
 
 /* Input data types (`symbol->input_mode`) */
 #define DATA_MODE               0       /* Binary */
@@ -401,10 +401,10 @@ extern "C" {
 #  define ZINT_EXTERN extern
 #endif
 
-    /* Create and initialize a symbol structure */
+    /* Create a symbol structure and set fields to default values */
     ZINT_EXTERN struct zint_symbol *ZBarcode_Create(void);
 
-    /* Free any output buffers that may have been created and initialize output fields */
+    /* Free any output buffers that may have been created and zeroize output fields */
     ZINT_EXTERN void ZBarcode_Clear(struct zint_symbol *symbol);
 
     /* Free any output buffers that may have been created and reset all fields to defaults */

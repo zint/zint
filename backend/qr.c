@@ -1581,7 +1581,7 @@ static int qr_prep_data(struct zint_symbol *symbol, struct zint_seg segs[], cons
     /* If ZINT_FULL_MULTIBYTE use Kanji mode in DATA_MODE or for non-Shift JIS in UNICODE_MODE */
     const int full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
         zint_sjis_cpy_segs(segs, seg_count, ddata, full_multibyte);
@@ -1612,8 +1612,8 @@ static int qr_prep_data(struct zint_symbol *symbol, struct zint_seg segs[], cons
                 }
                 eci = 20;
             }
-            if (raw_text && eci) {
-                z_rt_set_seg_eci(symbol, i, eci);
+            if (content_segs && eci) {
+                z_ct_set_seg_eci(symbol, i, eci);
             }
             dd += segs[i].length;
         }
@@ -2159,7 +2159,7 @@ INTERNAL int zint_microqr(struct zint_symbol *symbol, unsigned char source[], in
     struct zint_seg segs[1];
     const int seg_count = 1;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > 35) {
@@ -2243,8 +2243,8 @@ INTERNAL int zint_microqr(struct zint_symbol *symbol, unsigned char source[], in
     segs[0].length = length;
     segs[0].eci = 0; /* MicroQR doesn't support ECI */
 
-    if (raw_text && eci) { /* For feedback set character set used (20 if non-zero) */
-        z_rt_set_seg_eci(symbol, 0 /*seg_idx*/, eci);
+    if (content_segs && eci) { /* For feedback set character set used (20 if non-zero) */
+        z_ct_set_seg_eci(symbol, 0 /*seg_idx*/, eci);
     }
 
     /* Determine length of binary data */
@@ -2379,7 +2379,7 @@ INTERNAL int zint_upnqr(struct zint_symbol *symbol, unsigned char source[], int 
     const int seg_count = 1;
     const int fast_encode = symbol->input_mode & FAST_MODE;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     unsigned char *datastream;
     unsigned char *fullstream;
@@ -2421,8 +2421,8 @@ INTERNAL int zint_upnqr(struct zint_symbol *symbol, unsigned char source[], int 
     segs[0].length = length;
     segs[0].eci = 4;
 
-    if (raw_text) {
-        z_rt_set_seg_eci(symbol, 0 /*seg_idx*/, segs[0].eci);
+    if (content_segs) {
+        z_ct_set_seg_eci(symbol, 0 /*seg_idx*/, segs[0].eci);
     }
 
     est_binlen = qr_calc_binlen_segs(15, modes, ddata, segs, seg_count, NULL /*p_structapp*/, 1 /*mode_preset*/,

@@ -72,7 +72,7 @@ INTERNAL int zint_bc412(struct zint_symbol *symbol, unsigned char source[], int 
     char dest[293]; /* 2 + (36 * 8) + 3 */
     char *d = dest;
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 18) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 790, "Input length %d too long (maximum 18)", length);
@@ -147,8 +147,8 @@ INTERNAL int zint_bc412(struct zint_symbol *symbol, unsigned char source[], int 
 
     z_hrt_cpy_nochk(symbol, padded_source, length + 1);
 
-    if (raw_text && z_rt_cpy(symbol, padded_source, length + 1)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, padded_source, length + 1)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;

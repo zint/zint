@@ -50,7 +50,7 @@ INTERNAL int zint_c25_inter_common(struct zint_symbol *symbol, unsigned char sou
     char *d = dest;
     unsigned char local_source[125 + 1];
     const int have_checkdigit = checkdigit_option == 1 || checkdigit_option == 2;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 125) { /* 4 + (125 + 1) * 9 + 5 = 1143 */
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 309, "Input length %d too long (maximum 125)", length);
@@ -120,8 +120,8 @@ INTERNAL int zint_c25_inter_common(struct zint_symbol *symbol, unsigned char sou
     /* Exclude check digit from HRT if hidden */
     z_hrt_cpy_nochk(symbol, local_source, length - (symbol->option_2 == 2));
 
-    if (raw_text && z_rt_cpy(symbol, local_source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;

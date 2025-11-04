@@ -77,10 +77,10 @@ static void set_symbol_defaults(struct zint_symbol *symbol) {
     symbol->alphamap = NULL;
     symbol->vector = NULL;
     symbol->memfile = NULL;
-    symbol->raw_segs = NULL;
+    symbol->content_segs = NULL;
 }
 
-/* Create and initialize a symbol structure */
+/* Create a symbol structure and set fields to default values */
 struct zint_symbol *ZBarcode_Create(void) {
     struct zint_symbol *symbol;
 
@@ -94,7 +94,7 @@ struct zint_symbol *ZBarcode_Create(void) {
 
 INTERNAL void zint_vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
-/* Free any output buffers that may have been created and initialize output fields */
+/* Free any output buffers that may have been created and zeroize output fields */
 void ZBarcode_Clear(struct zint_symbol *symbol) {
     int i;
 
@@ -128,7 +128,7 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     }
     symbol->memfile_size = 0;
 
-    z_rt_free_segs(symbol);
+    z_ct_free_segs(symbol);
     zint_vector_free(symbol);
 }
 
@@ -143,7 +143,7 @@ void ZBarcode_Reset(struct zint_symbol *symbol) {
     if (symbol->memfile != NULL)
         free(symbol->memfile);
 
-    z_rt_free_segs(symbol);
+    z_ct_free_segs(symbol);
     zint_vector_free(symbol);
 
     memset(symbol, 0, sizeof(*symbol));
@@ -161,7 +161,7 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
     if (symbol->memfile != NULL)
         free(symbol->memfile);
 
-    z_rt_free_segs(symbol);
+    z_ct_free_segs(symbol);
     zint_vector_free(symbol);
 
     free(symbol);
@@ -427,7 +427,7 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
     char to_process[110 + 2 + 1];
     int posns[110];
 
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     /* Without "+" and check: max 110 characters in HIBC 2.6 */
     if (length > 110) {
@@ -457,12 +457,12 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
 
     if (symbol->debug & ZINT_DEBUG_PRINT) printf("HIBC processed source: %s\n", to_process);
 
-    /* Code 128, Code 39 & Codablock-F set `raw_text` themselves, but the others don't, so do it now */
-    assert(!symbol->raw_segs); /* HIBC symbologies don't satisfy `supports_non_iso8859_1()` */
-    if (raw_text && symbol->symbology != BARCODE_HIBC_128 && symbol->symbology != BARCODE_HIBC_39
+    /* Code 128, Code 39 & Codablock-F set `content_segs` themselves, but the others don't, so do it now */
+    assert(!symbol->content_segs); /* HIBC symbologies don't satisfy `supports_non_iso8859_1()` */
+    if (content_segs && symbol->symbology != BARCODE_HIBC_128 && symbol->symbology != BARCODE_HIBC_39
                     && symbol->symbology != BARCODE_HIBC_BLOCKF) {
-        if (z_rt_cpy_segs(symbol, segs, seg_count)) {
-            return error_tag(ZINT_ERROR_MEMORY, symbol, -1, NULL); /* `z_rt_cpy_segs()` only fails with OOM */
+        if (z_ct_cpy_segs(symbol, segs, seg_count)) {
+            return error_tag(ZINT_ERROR_MEMORY, symbol, -1, NULL); /* `z_ct_cpy_segs()` only fails with OOM */
         }
     }
 
@@ -958,7 +958,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     int error_number, warn_number = 0;
     int total_len = 0;
     int have_zero_eci = 0;
-    int escape_mode, raw_text;
+    int escape_mode, content_segs;
     int i;
     unsigned char *local_source;
     struct zint_seg *local_segs;
@@ -992,7 +992,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
 
     escape_mode = (symbol->input_mode & ESCAPE_MODE)
                     || ((symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128);
-    raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * (seg_count > 0 ? seg_count : 1));
 
@@ -1135,9 +1135,9 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if (symbol->rows < 0) { /* Silently defend against out-of-bounds access */
         symbol->rows = 0;
     }
-    if (raw_text && symbol->rows) { /* Would only give info on last stacked */
+    if (content_segs && symbol->rows) { /* Would only give info on last stacked */
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 857,
-                        "Cannot use BARCODE_RAW_TEXT output option if stacking symbols");
+                        "Cannot use BARCODE_CONTENT_SEGS output option if stacking symbols");
     }
 
     if ((symbol->input_mode & 0x07) == GS1_MODE && !gs1_compliant(symbol->symbology)) {
@@ -1226,18 +1226,18 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                     warn_number = error_number; /* Override any previous warning (errtxt has been overwritten) */
                 }
                 memcpy(local_segs[0].source, reduced, local_segs[0].length + 1); /* Include terminating NUL */
-                /* Set raw text for non-composites (composites set their own raw text) */
-                if (!is_composite && raw_text && z_rt_cpy(symbol, reduced, local_segs[0].length)) {
-                    return error_tag(ZINT_ERROR_MEMORY, symbol, -1, NULL); /* `z_rt_cpy()` only fails with OOM */
+                /* Set content segs for non-composites (composites set their own content segs) */
+                if (!is_composite && content_segs && z_ct_cpy(symbol, reduced, local_segs[0].length)) {
+                    return error_tag(ZINT_ERROR_MEMORY, symbol, -1, NULL); /* `z_ct_cpy()` only fails with OOM */
                 }
             }
         } else {
             return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 210, "Selected symbology does not support GS1 mode");
         }
-    } else if (raw_text && supports_non_iso8859_1(symbol->symbology)) {
-        /* Copy these as-is. The raw seg `eci` will need to be updated individually */
-        if (z_rt_cpy_segs(symbol, local_segs, seg_count)) {
-            return error_tag(ZINT_ERROR_MEMORY, symbol, -1, NULL); /* `z_rt_cpy_segs()` only fails with OOM */
+    } else if (content_segs && supports_non_iso8859_1(symbol->symbology)) {
+        /* Copy these as-is. The content seg `eci` will need to be updated individually */
+        if (z_ct_cpy_segs(symbol, local_segs, seg_count)) {
+            return error_tag(ZINT_ERROR_MEMORY, symbol, -1, NULL); /* `z_ct_cpy_segs()` only fails with OOM */
         }
     }
 
@@ -1268,10 +1268,10 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         if (symbol->height < 0.5f) { /* Absolute minimum */
             (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
         }
-        assert(!(symbol->output_options & BARCODE_RAW_TEXT)
-                || (symbol->raw_segs && symbol->raw_seg_count && symbol->raw_segs[0].source
+        assert(!(symbol->output_options & BARCODE_CONTENT_SEGS)
+                || (symbol->content_segs && symbol->content_seg_count && symbol->content_segs[0].source
                     && ((symbol->input_mode & 0x07) == DATA_MODE
-                        || z_is_valid_utf8(symbol->raw_segs[0].source, symbol->raw_segs[0].length))));
+                        || z_is_valid_utf8(symbol->content_segs[0].source, symbol->content_segs[0].length))));
     }
 
     return error_number;

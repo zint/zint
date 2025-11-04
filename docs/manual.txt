@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.15.0.9
-October 2025
+November 2025
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -1722,11 +1722,11 @@ following code creates and then deletes a symbol:
     #include <stdio.h>
     int main()
     {
-        struct zint_symbol *my_symbol;
-        my_symbol = ZBarcode_Create();
-        if (my_symbol != NULL) {
+        struct zint_symbol *symbol;
+        symbol = ZBarcode_Create();
+        if (symbol != NULL) {
             printf("Symbol successfully created!\n");
-            ZBarcode_Delete(my_symbol);
+            ZBarcode_Delete(symbol);
         }
         return 0;
     }
@@ -1747,11 +1747,11 @@ current working directory:
     #include <zint.h>
     int main(int argc, char **argv)
     {
-        struct zint_symbol *my_symbol;
-        my_symbol = ZBarcode_Create();
-        ZBarcode_Encode(my_symbol, argv[1], 0);
-        ZBarcode_Print(my_symbol, 0);
-        ZBarcode_Delete(my_symbol);
+        struct zint_symbol *symbol;
+        symbol = ZBarcode_Create();
+        ZBarcode_Encode(symbol, argv[1], 0);
+        ZBarcode_Print(symbol, 0);
+        ZBarcode_Delete(symbol);
         return 0;
     }
 
@@ -1761,10 +1761,10 @@ function as shown in the next example:
     #include <zint.h>
     int main(int argc, char **argv)
     {
-        struct zint_symbol *my_symbol;
-        my_symbol = ZBarcode_Create();
-        ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
-        ZBarcode_Delete(my_symbol);
+        struct zint_symbol *symbol;
+        symbol = ZBarcode_Create();
+        ZBarcode_Encode_and_Print(symbol, argv[1], 0, 0);
+        ZBarcode_Delete(symbol);
         return 0;
     }
 
@@ -1845,13 +1845,13 @@ client application:
 
     int row, col, i = 0, j = 0;
 
-    for (row = 0; row < my_symbol->bitmap_height; row++) {
-         for (col = 0; col < my_symbol->bitmap_width; col++) {
-              int red = (int) my_symbol->bitmap[i];
-              int green = (int) my_symbol->bitmap[i + 1];
-              int blue = (int) my_symbol->bitmap[i + 2];
-              if (my_symbol->alphamap) {
-                  int alpha = (int) my_symbol->alphamap[j];
+    for (row = 0; row < symbol->bitmap_height; row++) {
+         for (col = 0; col < symbol->bitmap_width; col++) {
+              int red = (int) symbol->bitmap[i];
+              int green = (int) symbol->bitmap[i + 1];
+              int blue = (int) symbol->bitmap[i + 2];
+              if (symbol->alphamap) {
+                  int alpha = (int) symbol->alphamap[j];
                   render_rgba(row, col, red, green, blue, alpha);
                   j++;
               } else {
@@ -1871,9 +1871,9 @@ loop for accessing the data is then:
 
     int row, col, i = 0;
 
-    for (row = 0; row < my_symbol->bitmap_height; row++) {
-         for (col = 0; col < my_symbol->bitmap_width; col++) {
-              render_pixel(row, col, my_symbol->bitmap[i]);
+    for (row = 0; row < symbol->bitmap_height; row++) {
+         for (col = 0; col < symbol->bitmap_width; col++) {
+              render_pixel(row, col, symbol->bitmap[i]);
               i++;
          }
     }
@@ -1905,23 +1905,23 @@ draw_string(), and draw_circle() routines available:
     struct zint_vector_string *string;
     struct zint_vector_circle *circle;
 
-    prepare_canvas(my_symbol->vector->width, my_symbol->vector->height,
-                   my_symbol->scale, my_symbol->fgcolour, my_symbol->bgcolour,
+    prepare_canvas(symbol->vector->width, symbol->vector->height,
+                   symbol->scale, symbol->fgcolour, symbol->bgcolour,
                    rotate_angle);
 
-    for (rect = my_symbol->vector->rectangles; rect; rect = rect->next) {
+    for (rect = symbol->vector->rectangles; rect; rect = rect->next) {
         draw_rect(rect->x, rect->y, rect->width, rect->height,
                   rect->colour);
     }
-    for (hex = my_symbol->vector->hexagons; hex; hex = hex->next) {
+    for (hex = symbol->vector->hexagons; hex; hex = hex->next) {
         draw_hexagon(hex->x, hex->y, hex->diameter, hex->rotation);
     }
-    for (string = my_symbol->vector->strings; string; string = string->next) {
+    for (string = symbol->vector->strings; string; string = string->next) {
         draw_string(string->x, string->y, string->fsize,
                     string->rotation, string->halign,
                     string->text, string->length);
     }
-    for (circle = my_symbol->vector->circles; circle; circle = circle->next) {
+    for (circle = symbol->vector->circles; circle; circle = circle->next) {
         draw_circle(circle->x, circle->y, circle->diameter, circle->width);
     }
 
@@ -1937,15 +1937,15 @@ the buffer is given in memfile_size. For instance:
     #include <string.h>
     int main(int argc, char **argv)
     {
-        struct zint_symbol *my_symbol;
-        my_symbol = ZBarcode_Create();
-        my_symbol->output_options |= BARCODE_MEMORY_FILE;
+        struct zint_symbol *symbol;
+        symbol = ZBarcode_Create();
+        symbol->output_options |= BARCODE_MEMORY_FILE;
         /* Only the extension is used, to determine output format */
-        strcpy(my_symbol->outfile, "mem.svg");
-        ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
-        /* `my_symbol->memfile` now contains the SVG output */
-        fwrite(my_symbol->memfile, 1, my_symbol->memfile_size, stdout);
-        ZBarcode_Delete(my_symbol);
+        strcpy(symbol->outfile, "mem.svg");
+        ZBarcode_Encode_and_Print(symbol, argv[1], 0, 0);
+        /* `symbol->memfile` now contains the SVG output */
+        fwrite(symbol->memfile, 1, symbol->memfile_size, stdout);
+        ZBarcode_Delete(symbol);
         return 0;
     }
 
@@ -2082,14 +2082,6 @@ the following members:
   width                integer      Width of the generated     (output only)
                                     symbol.
 
-  encoded_data         array of     Representation of the      (output only)
-                       unsigned     encoded data.
-                       character
-                       arrays
-
-  row_height           array of     Heights of each row.       (output only)
-                       floats
-
   errtxt               character    Error message in the event (output only)
                        string       that an error occurred,
                                     with a terminating NUL -
@@ -2130,13 +2122,22 @@ the following members:
   memfile_size         integer      Length of in-memory file   (output only)
                                     buffer.
 
-  raw_segs             pointer to   Pointer to array of raw    (output only)
-                       array of     segments if
-                       segments     BARCODE_RAW_TEXT set in
-                                    output_options - see 5.16
-                                    Feedback.
+  content_segs         pointer to   Pointer to array of        (output only)
+                       array of     content segments if
+                       segments     BARCODE_CONTENT_SEGS set
+                                    in output_options - see
+                                    5.16 Feedback.
 
-  raw_seg_count        integer      Number of raw segments.    (output only)
+  content_seg_count    integer      Number of content          (output only)
+                                    segments.
+
+  encoded_data         array of     Representation of the      (output only)
+                       unsigned     encoded data.
+                       character
+                       arrays
+
+  row_height           array of     Heights of each row.       (output only)
+                       floats
   ------------------------------------------------------------------------------
 
   Table 12: API Structure zint_symbol
@@ -2149,12 +2150,12 @@ plotted in green.
     #include <string.h>
     int main(int argc, char **argv)
     {
-        struct zint_symbol *my_symbol;
-        my_symbol = ZBarcode_Create();
-        strcpy(my_symbol->fgcolour, "00ff00");
-        my_symbol->height = 400.0f;
-        ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
-        ZBarcode_Delete(my_symbol);
+        struct zint_symbol *symbol;
+        symbol = ZBarcode_Create();
+        strcpy(symbol->fgcolour, "00ff00");
+        symbol->height = 400.0f;
+        ZBarcode_Encode_and_Print(symbol, argv[1], 0, 0);
+        ZBarcode_Delete(symbol);
         return 0;
     }
 
@@ -2162,7 +2163,7 @@ Note that background removal for all outputs except BMP can be achieved by
 setting the background alpha to "00" where the values for R, G and B will be
 ignored:
 
-        strcpy(my_symbol->bgcolour, "55555500");
+        strcpy(symbol->bgcolour, "55555500");
 
 This is what the CLI option --nobackground does - see 4.7 Using Colour.
 
@@ -2247,23 +2248,23 @@ To catch errors use an integer variable as shown in the code below:
     #include <string.h>
     int main(int argc, char **argv)
     {
-        struct zint_symbol *my_symbol;
+        struct zint_symbol *symbol;
         int error;
-        my_symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         /* Set invalid foreground colour */
-        strcpy(my_symbol->fgcolour, "nonsense");
-        error = ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
+        strcpy(symbol->fgcolour, "nonsense");
+        error = ZBarcode_Encode_and_Print(symbol, argv[1], 0, 0);
         if (error != 0) {
             /* Some warning or error occurred */
-            printf("%s\n", my_symbol->errtxt);
+            printf("%s\n", symbol->errtxt);
             if (error >= ZINT_ERROR) {
                 /* Stop now */
-                ZBarcode_Delete(my_symbol);
+                ZBarcode_Delete(symbol);
                 return 1;
             }
         }
         /* Otherwise carry on with the rest of the application */
-        ZBarcode_Delete(my_symbol);
+        ZBarcode_Delete(symbol);
         return 0;
     }
 
@@ -2286,7 +2287,7 @@ The output_options member can be used to adjust various aspects of the output
 file. To select more than one option from the table below simply OR them
 together when adjusting this value:
 
-    my_symbol->output_options |= BARCODE_BIND | READER_INIT;
+    symbol->output_options |= BARCODE_BIND | READER_INIT;
 
   ------------------------------------------------------------------------------
   Value                      Effect
@@ -2339,8 +2340,8 @@ together when adjusting this value:
   BARCODE_MEMORY_FILE        Write output to in-memory buffer symbol->memfile
                              instead of to outfile file.
 
-  BARCODE_RAW_TEXT           Write data encoded to raw segment buffers
-                             symbol->raw_segs (see 5.16 Feedback).
+  BARCODE_CONTENT_SEGS       Write data encoded to content segment buffers
+                             symbol->contentsegs (see 5.16 Feedback).
   ------------------------------------------------------------------------------
 
   Table 14: API output_options Values
@@ -2397,15 +2398,15 @@ ESCAPE_MODE, GS1PARENS_MODE, GS1NOCHECK_MODE, HEIGHTPERROW_MODE, FAST_MODE,
 EXTRA_ESCAPE_MODE and GS1SYNTAXENGINE_MODE are optional. So, for example, you
 can set
 
-    my_symbol->input_mode = UNICODE_MODE | ESCAPE_MODE;
+    symbol->input_mode = UNICODE_MODE | ESCAPE_MODE;
 
 or
 
-    my_symbol->input_mode = GS1_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE;
+    symbol->input_mode = GS1_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE;
 
 whereas
 
-    my_symbol->input_mode = DATA_MODE | GS1_MODE;
+    symbol->input_mode = DATA_MODE | GS1_MODE;
 
 is not valid.
 
@@ -2477,13 +2478,13 @@ example:
             { "Текст", 0, 7 },
             { "文章", 0, 20 }
         };
-        struct zint_symbol *my_symbol;
-        my_symbol = ZBarcode_Create();
-        my_symbol->symbology = BARCODE_AZTEC;
-        my_symbol->input_mode = UNICODE_MODE;
-        ZBarcode_Encode_Segs(my_symbol, segs, 3);
-        ZBarcode_Print(my_symbol, 0);
-        ZBarcode_Delete(my_symbol);
+        struct zint_symbol *symbol;
+        symbol = ZBarcode_Create();
+        symbol->symbology = BARCODE_AZTEC;
+        symbol->input_mode = UNICODE_MODE;
+        ZBarcode_Encode_Segs(symbol, segs, 3);
+        ZBarcode_Print(symbol, 0);
+        ZBarcode_Delete(symbol);
         return 0;
     }
 
@@ -2515,12 +2516,12 @@ rounded to half-integer increments.
 For example:
 
     /* Royal Mail 4-State Customer Code */
-    my_symbol->symbology = BARCODE_RM4SCC;
-    my_symbol->dpmm = 600.0f / 25.4f; /* 600 dpi */
-    my_symbol->scale = ZBarcode_Scale_From_XdimDp(
-                            my_symbol->symbology,
-                            ZBarcode_Default_Xdim(my_symbol->symbology),
-                            my_symbol->dpmm, "PNG"); /* Returns 7.5 */
+    symbol->symbology = BARCODE_RM4SCC;
+    symbol->dpmm = 600.0f / 25.4f; /* 600 dpi */
+    symbol->scale = ZBarcode_Scale_From_XdimDp(
+                            symbol->symbology,
+                            ZBarcode_Default_Xdim(symbol->symbology),
+                            symbol->dpmm, "PNG"); /* Returns 7.5 */
 
 The third function ZBarcode_XdimDP_From_Scale() is the “reverse” of
 ZBarcode_Scale_From_XdimDp(), returning the X-dimension (in mm) or the dot
@@ -2648,10 +2649,10 @@ codewords and -1 meaning minimum 3 codewords). Micro PDF417 also will return the
 ECC percentage in option_1 as P << 8.
 
 Detailed feedback on the data encoded may be requested by specifying the
-BARCODE_RAW_TEXT option in the output_options member, which will populate the
-raw_segs member with an array of zint_seg structures (see 5.12 Multiple Segments
-for the format), one for each segment specified, the size of the array being set
-in raw_seg_count - which will always be at least one.
+BARCODE_CONTENT_SEGS option in the output_options member, which will populate
+the content_segs member with an array of zint_seg structures (see 5.12 Multiple
+Segments for the format), one for each segment specified, the size of the array
+being set in content_seg_count - which will always be at least one.
 
 The source, length and eci members of zint_seg will be set accordingly - the
 unconverted data in source, the data length in length, and the character set the
@@ -2843,19 +2844,19 @@ case Zint will verify the check digit, or you may use symbology BARCODE_UPCA_CHK
 digits will be zero-filled.
 
 In addition 2-digit and 5-digit add-on symbols can be added, their data
-separated from the main data by a + character or a space. For example, to draw a
-UPC-A symbol with the data “72527270270” and 5-digit add-on data “12345” use the
-command:
+separated from the main data by a '+' character or a space. For example, to draw
+a UPC-A symbol with the data “72527270270” and 5-digit add-on data “12345” use
+the command:
 
     zint -b UPCA -d "72527270270+12345"
 
 or using the API:
 
-    my_symbol->symbology = BARCODE_UPCA;
+    symbol->symbology = BARCODE_UPCA;
     /* Using '+' */
-    error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345", 0, 0);
+    error = ZBarcode_Encode_and_Print(symbol, "72527270270+12345", 0, 0);
     /* Or a space */
-    error = ZBarcode_Encode_and_Print(my_symbol, "72527270270 12345", 0, 0);
+    error = ZBarcode_Encode_and_Print(symbol, "72527270270 12345", 0, 0);
 
 [zint -b UPCA --compliantheight -d "72527270270+12345"]
 
@@ -2867,9 +2868,9 @@ there is an add-on:
 
 or using the API:
 
-    my_symbol->symbology = BARCODE_UPCA;
-    my_symbol->output_options |= EANUPC_GUARD_WHITESPACE;
-    error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345", 0, 0);
+    symbol->symbology = BARCODE_UPCA;
+    symbol->output_options |= EANUPC_GUARD_WHITESPACE;
+    error = ZBarcode_Encode_and_Print(symbol, "72527270270+12345", 0, 0);
 
 [zint -b UPCA --compliantheight -d "72527270270+12345" --guardwhitespace]
 
@@ -2893,7 +2894,7 @@ An 8-digit input including the check digit may also be supplied, in which case
 Zint will verify the check digit, or the symbology BARCODE_UPCE_CHK (38) may be
 used, which will verify that the last digit is a check digit before encoding.
 
-As with UPC-A, 2-digit and 5-digit add-on symbols can be added using a +
+As with UPC-A, 2-digit and 5-digit add-on symbols can be added using a '+'
 character or a space as a separator, and a quiet zone indicator can be added
 when there is an add-on by setting --guardwhitespace (API
 output_options |= EANUPC_GUARD_WHITESPACE):
@@ -2934,8 +2935,8 @@ with UPC symbols. For example:
 will encode an EAN-13 symbol with a 2-digit add-on. As before these results can
 be achieved using the API:
 
-    my_symbol->symbology = BARCODE_EAN13;
-    error = ZBarcode_Encode_and_Print(my_symbol, "451234567890+21", 0, 0);
+    symbol->symbology = BARCODE_EAN13;
+    error = ZBarcode_Encode_and_Print(symbol, "451234567890+21", 0, 0);
 
 [zint -b EAN13 --compliantheight -d "451234567890+21"]
 
@@ -2966,9 +2967,9 @@ are the same as for 6.1.3.2 UPC Version E. For instance:
 
 or using the API:
 
-    my_symbol->symbology = BARCODE_EAN8;
-    my_symbol->output_options |= EANUPC_GUARD_WHITESPACE;
-    error = ZBarcode_Encode_and_Print(my_symbol, "7432365", 0, 0);
+    symbol->symbology = BARCODE_EAN8;
+    symbol->output_options |= EANUPC_GUARD_WHITESPACE;
+    error = ZBarcode_Encode_and_Print(symbol, "7432365", 0, 0);
 
 [zint -b EAN8 --compliantheight -d "7432365" –guardwhitespace]
 
@@ -3008,9 +3009,9 @@ As with the main EAN/UPC symbols a quiet zone indicator can be added using
 will generate a standalone 5-digit add-on with quiet zone guards, or using the
 API:
 
-    my_symbol->symbology = BARCODE_EAN_5ADDON;
-    my_symbol->output_options |= EANUPC_GUARD_WHITESPACE;
-    error = ZBarcode_Encode_and_Print(my_symbol, "54321", 0, 0);
+    symbol->symbology = BARCODE_EAN_5ADDON;
+    symbol->output_options |= EANUPC_GUARD_WHITESPACE;
+    error = ZBarcode_Encode_and_Print(symbol, "54321", 0, 0);
 
 [zint -b EAN_5ADDON --compliantheight -d "54321" –guardwhitespace]
 
@@ -3464,10 +3465,10 @@ will draw two Code 128 symbols, one on top of the other. The same result can be
 achieved using the API by executing the ZBarcode_Encode() function more than
 once on a symbol. For example:
 
-    my_symbol->symbology = BARCODE_CODE128;
-    error = ZBarcode_Encode(my_symbol, "This", 0);
-    error = ZBarcode_Encode(my_symbol, "That", 0);
-    error = ZBarcode_Print(my_symbol);
+    symbol->symbology = BARCODE_CODE128;
+    error = ZBarcode_Encode(symbol, "This", 0);
+    error = ZBarcode_Encode(symbol, "That", 0);
+    error = ZBarcode_Print(symbol);
 
 [zint -d "This" -d "That"]
 
@@ -3561,11 +3562,12 @@ above.
 6.2.6 MicroPDF417 (ISO 24728)
 
 A variation of the PDF417 standard, MicroPDF417 is intended for applications
-where symbol size needs to be kept to a minimum. 34 predefined symbol sizes are
-available with 1 - 4 columns and 4 - 44 rows. The maximum amount a MicroPDF417
-symbol can hold is 250 alphanumeric characters or 366 digits. The amount of
-error correction used is dependent on symbol size. The number of columns used
-can be determined using the --cols switch (API option_2) as with PDF417.
+where symbol size needs to be kept to a minimum. Its size ranges over 1 - 4 data
+columns and 4 - 44 rows. The maximum amount a MicroPDF417 symbol can hold is 250
+alphanumeric characters or 366 digits. The amount of error correction used is
+dependent on symbol size. The number of data columns used can be determined
+using the --cols switch (API option_2) as with PDF417. The amount of data
+determines the number of rows.
 
 [zint -b MICROPDF417 -d "12345678"]
 
@@ -3694,13 +3696,13 @@ This creates an EAN-13 linear component with the data "331234567890" and a 2D
 CC-A (see below) component with the data "(99)1234-abcd". The same results can
 be achieved using the API as shown below:
 
-    my_symbol->symbology = BARCODE_EAN13_CC;
-    my_symbol->option_1 = 1;
-    strcpy(my_symbol->primary, "331234567890");
-    ZBarcode_Encode_and_Print(my_symbol, "[99]1234-abcd", 0, 0);
+    symbol->symbology = BARCODE_EAN13_CC;
+    symbol->option_1 = 1;
+    strcpy(symbol->primary, "331234567890");
+    ZBarcode_Encode_and_Print(symbol, "[99]1234-abcd", 0, 0);
 
-2-digit and 5-digit add-on data can be used with EAN and UPC symbols using the +
-character as described in sections 6.1.3 UPC (Universal Product Code) (ISO
+2-digit and 5-digit add-on data can be used with EAN and UPC symbols using the
+'+' character as described in sections 6.1.3 UPC (Universal Product Code) (ISO
 15420) and 6.1.4 EAN (European Article Number) (ISO 15420).
 
 The 2D component of a composite symbol can use one of three systems: CC-A, CC-B
@@ -5097,7 +5099,7 @@ configured barcode is updated when the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.15.0.9 % % October 2025
+% ZINT(1) Version 2.15.0.9 % % November 2025
 
 NAME
 
@@ -5846,7 +5848,7 @@ Edge Barcode and Flattermarken. Note that HRT is never shown for stacked and
 matrix barcodes.
 
 [7] Shift JIS (JIS X 0201 Roman) re-maps two ASCII characters: backslash (\) to
-the yen sign (¥), and tilde (~) to overline (U+203E).
+the yen sign (¥), and tilde (~) to overline (‾, U+203E).
 
 [8] ISO/IEC 646 Invariant is a subset of ASCII with 12 characters undefined: #,
 $, @, [, \, ], ^, `, {, |, }, ~ (tilde).

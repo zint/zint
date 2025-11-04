@@ -680,15 +680,15 @@ static int aztec_text_process_segs(struct zint_symbol *symbol, struct zint_seg s
     char current_mode = 'U';
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback.
        Note not updating `eci` for GS1 mode as not converted */
-    const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
+    const int content_segs = !gs1 && (symbol->output_options & BARCODE_CONTENT_SEGS);
 
     for (i = 0; i < seg_count; i++) {
         if (!aztec_text_process(segs[i].source, segs[i].length, bp, binary_string, gs1, gs1_bp, segs[i].eci,
                 &current_mode, &bp, debug_print)) {
             return ZINT_ERROR_TOO_LONG; /* `aztec_text_process()` only fails with too long */
         }
-        if (raw_text && segs[i].eci) {
-            z_rt_set_seg_eci(symbol, i, segs[i].eci);
+        if (content_segs && segs[i].eci) {
+            z_ct_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 
@@ -1301,7 +1301,7 @@ INTERNAL int zint_azrune(struct zint_symbol *symbol, unsigned char source[], int
     unsigned char data_codewords[3], ecc_codewords[6];
     int bp = 0;
     rs_t rs;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > 3) {
@@ -1353,8 +1353,8 @@ INTERNAL int zint_azrune(struct zint_symbol *symbol, unsigned char source[], int
     symbol->rows = 11;
     symbol->width = 11;
 
-    if (raw_text && z_rt_printf_256(symbol, "%03d", input_value)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_printf_256()` only fails with OOM */
+    if (content_segs && z_ct_printf_256(symbol, "%03d", input_value)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_printf_256()` only fails with OOM */
     }
 
     return 0;

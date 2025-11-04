@@ -996,7 +996,8 @@ static void dc_encode_message_segs(struct zint_symbol *symbol, const struct zint
     int bin_buf_size = 0;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback.
        Note not updating `eci` for GS1 mode as not converted */
-    const int raw_text = (symbol->input_mode & 0x07) != GS1_MODE && (symbol->output_options & BARCODE_RAW_TEXT);
+    const int content_segs = (symbol->input_mode & 0x07) != GS1_MODE
+                                && (symbol->output_options & BARCODE_CONTENT_SEGS);
 
     const struct zint_seg *last_seg = &segs[seg_count - 1];
 
@@ -1009,8 +1010,8 @@ static void dc_encode_message_segs(struct zint_symbol *symbol, const struct zint
         ap = dc_encode_message(symbol, segs[i].source, segs[i].length, segs[i].eci, i == seg_count - 1 /*last_seg*/,
                 last_EOT, last_RSEOT, ap, codeword_array, &encoding_mode, &inside_macro, &bin_buf, &bin_buf_size,
                 structapp_array, p_structapp_size);
-        if (raw_text && segs[i].eci) {
-            z_rt_set_seg_eci(symbol, i, segs[i].eci);
+        if (content_segs && segs[i].eci) {
+            z_ct_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 

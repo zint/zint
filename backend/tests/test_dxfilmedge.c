@@ -39,29 +39,29 @@ static void test_hrt(const testCtx *const p_ctx) {
         const char *data;
 
         const char *expected;
-        const char *expected_raw;
+        const char *expected_content;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { -1, "79-7", "", "" }, /* None */
-        /*  1*/ { BARCODE_RAW_TEXT, "79-7", "", "79-7" },
+        /*  1*/ { BARCODE_CONTENT_SEGS, "79-7", "", "79-7" },
         /*  2*/ { -1, "1271", "", "" }, /* None */
-        /*  3*/ { BARCODE_RAW_TEXT, "1271", "", "79-7" },
+        /*  3*/ { BARCODE_CONTENT_SEGS, "1271", "", "79-7" },
         /*  4*/ { -1, "012710", "", "" }, /* None */
-        /*  5*/ { BARCODE_RAW_TEXT, "012710", "", "79-7" },
+        /*  5*/ { BARCODE_CONTENT_SEGS, "012710", "", "79-7" },
         /*  6*/ { -1, "1-0", "", "" }, /* None */
-        /*  7*/ { BARCODE_RAW_TEXT, "1-0", "", "1-0" },
+        /*  7*/ { BARCODE_CONTENT_SEGS, "1-0", "", "1-0" },
         /*  8*/ { -1, "2047/63A", "", "" }, /* None */
-        /*  9*/ { BARCODE_RAW_TEXT, "2047/63A", "", "127-15/63A" },
+        /*  9*/ { BARCODE_CONTENT_SEGS, "2047/63A", "", "127-15/63A" },
         /* 10*/ { -1, "79-7/1", "", "" }, /* None */
-        /* 11*/ { BARCODE_RAW_TEXT, "79-7/1", "", "79-7/1" },
+        /* 11*/ { BARCODE_CONTENT_SEGS, "79-7/1", "", "79-7/1" },
         /* 12*/ { -1, "79-7/sa", "", "" }, /* None */
-        /* 13*/ { BARCODE_RAW_TEXT, "79-7/sa", "", "79-7/62A" },
+        /* 13*/ { BARCODE_CONTENT_SEGS, "79-7/sa", "", "79-7/62A" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length, expected_raw_length;
+    int expected_length, expected_content_length;
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -76,7 +76,7 @@ static void test_hrt(const testCtx *const p_ctx) {
                     -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
                     data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
-        expected_raw_length = (int) strlen(data[i].expected_raw);
+        expected_content_length = (int) strlen(data[i].expected_content);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
@@ -85,18 +85,18 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length, symbol->text);
         assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->text, data[i].expected);
-        if (symbol->output_options & BARCODE_RAW_TEXT) {
-            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-            assert_equal(symbol->raw_segs[0].length, expected_raw_length,
-                        "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
-                        i, symbol->raw_segs[0].length, expected_raw_length);
-            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+        if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+            assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+            assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+            assert_equal(symbol->content_segs[0].length, expected_content_length,
+                        "i:%d content_segs[0].length %d != expected_content_length %d\n",
+                        i, symbol->content_segs[0].length, expected_content_length);
+            assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected_content, expected_content_length),
                         "i:%d memcmp(%.*s, %s, %d) != 0\n",
-                        i, symbol->raw_segs[0].length, symbol->raw_segs[0].source, data[i].expected_raw,
-                        expected_raw_length);
+                        i, symbol->content_segs[0].length, symbol->content_segs[0].source, data[i].expected_content,
+                        expected_content_length);
         } else {
-            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);

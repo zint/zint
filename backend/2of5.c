@@ -62,7 +62,7 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
     char *d = dest;
     unsigned char local_source[113 + 1]; /* Largest maximum 113 + optional check digit */
     const int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > max) {
         /* errtxt 301: 303: 305: 307: */
@@ -108,8 +108,8 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
     /* Exclude check digit from HRT if hidden */
     z_hrt_cpy_nochk(symbol, local_source, length - (symbol->option_2 == 2));
 
-    if (raw_text && z_rt_cpy(symbol, local_source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return 0;

@@ -336,35 +336,35 @@ INTERNAL void z_hrt_conv_gs1_brackets_nochk(struct zint_symbol *symbol, const un
                 const int length);
 
 
-/* Initialize `raw_segs` for `seg_count` segments. On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_init_segs(struct zint_symbol *symbol, const int seg_count);
+/* Initialize `content_segs` for `seg_count` segments. On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_ct_init_segs(struct zint_symbol *symbol, const int seg_count);
 
-/* Free `raw_segs` along with any `source` buffers */
-INTERNAL void z_rt_free_segs(struct zint_symbol *symbol);
+/* Free `content_segs` along with any `source` buffers */
+INTERNAL void z_ct_free_segs(struct zint_symbol *symbol);
 
-/* Copy `segs` to raw segs. Seg source copied as-is. If seg length <= 0, raw reg length set to `strlen()`.
-   If seg eci not set, raw seg eci set to 3. On error sets `errxtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy_segs(struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count);
+/* Copy `segs` to content segs. Seg source copied as-is. If seg length <= 0, content reg length set to `strlen()`.
+   If seg eci not set, content seg eci set to 3. On error sets `errxtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_ct_cpy_segs(struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count);
 
-/* Update the ECI of raw seg `seg_idx` to `eci`, to reflect (feedback) the actual ECI used */
-INTERNAL void z_rt_set_seg_eci(struct zint_symbol *symbol, const int seg_idx, const int eci);
+/* Update the ECI of content seg `seg_idx` to `eci`, to reflect (feedback) the actual ECI used */
+INTERNAL void z_ct_set_seg_eci(struct zint_symbol *symbol, const int seg_idx, const int eci);
 
-/* Copy `source` to raw seg 0 buffer, setting raw seg ECI to 3. On error sets `errtxt`, returning
+/* Copy `source` to content seg 0 buffer, setting content seg ECI to 3. On error sets `errtxt`, returning
    BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy(struct zint_symbol *symbol, const unsigned char source[], const int length);
+INTERNAL int z_ct_cpy(struct zint_symbol *symbol, const unsigned char source[], const int length);
 
-/* Copy `source` to raw seg 0 buffer, appending `separator` (if ASCII - use `\xFF` for none) and then `cat`, and
-   setting raw seg ECI to 3.  On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy_cat(struct zint_symbol *symbol, const unsigned char source[], const int length,
+/* Copy `source` to content seg 0 buffer, appending `separator` (if ASCII - use `\xFF` for none) and then `cat`, and
+   setting content seg ECI to 3.  On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_ct_cpy_cat(struct zint_symbol *symbol, const unsigned char source[], const int length,
                 const char separator, const unsigned char cat[], const int cat_length);
 
-/* Convert ISO/IEC 8859-1 (binary) `source` to UTF-8, and copy to raw seg 0 buffer, setting raw seg ECI to 3.
+/* Convert ISO/IEC 8859-1 (binary) `source` to UTF-8, and copy to content seg 0 buffer, setting content seg ECI to 3.
    On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
+INTERNAL int z_ct_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
 
-/* `sprintf()` into raw seg 0 buffer, assuming formatted data less than 256 bytes. Sets raw seg ECI to 3. On error
-   sets `errtxt`, returning BARCODE_ERROR_MEMORY */
-INTERNAL int z_rt_printf_256(struct zint_symbol *symbol, const char *fmt, ...) ZINT_FORMAT_PRINTF(2, 3);
+/* `sprintf()` into content seg 0 buffer, assuming formatted data less than 256 bytes. Sets content seg ECI to 3.
+   On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int z_ct_printf_256(struct zint_symbol *symbol, const char *fmt, ...) ZINT_FORMAT_PRINTF(2, 3);
 
 
 /* Sets symbol height, returning a warning if not within minimum and/or maximum if given.

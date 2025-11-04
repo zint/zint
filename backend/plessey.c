@@ -63,7 +63,7 @@ INTERNAL int zint_plessey(struct zint_symbol *symbol, unsigned char source[], in
     unsigned int check_digits = 0;
     char c1, c2;
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 67) { /* 16 + 67 * 16 + 4 * 8 + 19 = 1139 */
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 370, "Input length %d too long (maximum 67)", length);
@@ -129,8 +129,8 @@ INTERNAL int zint_plessey(struct zint_symbol *symbol, unsigned char source[], in
         z_hrt_cat_chr_nochk(symbol, c2);
     }
 
-    if (raw_text && z_rt_printf_256(symbol, "%.*s%c%c", length, source, c1, c2)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_printf_256()` only fails with OOM */
+    if (content_segs && z_ct_printf_256(symbol, "%.*s%c%c", length, source, c1, c2)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_printf_256()` only fails with OOM */
     }
 
     return error_number;
@@ -173,7 +173,7 @@ static char msi_check_digit_mod11(const unsigned char source[], const int length
 
 /* Plain MSI Plessey - does not calculate any check character */
 static char *msi_plessey_nomod(struct zint_symbol *symbol, const unsigned char source[], const int length,
-            const int raw_text, char *d) {
+            const int content_segs, char *d) {
 
     int i;
 
@@ -183,8 +183,8 @@ static char *msi_plessey_nomod(struct zint_symbol *symbol, const unsigned char s
 
     z_hrt_cpy_nochk(symbol, source, length);
 
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return NULL; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, source, length)) {
+        return NULL; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return d;
@@ -192,7 +192,7 @@ static char *msi_plessey_nomod(struct zint_symbol *symbol, const unsigned char s
 
 /* MSI Plessey with Modulo 10 check digit */
 static char *msi_plessey_mod10(struct zint_symbol *symbol, const unsigned char source[], const int length,
-            const int no_checktext, const int raw_text, char *d) {
+            const int no_checktext, const int content_segs, char *d) {
     int i;
     char check_digit;
 
@@ -213,8 +213,8 @@ static char *msi_plessey_mod10(struct zint_symbol *symbol, const unsigned char s
         z_hrt_cat_chr_nochk(symbol, check_digit);
     }
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
-        return NULL; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
+        return NULL; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return d;
@@ -222,7 +222,7 @@ static char *msi_plessey_mod10(struct zint_symbol *symbol, const unsigned char s
 
 /* MSI Plessey with two Modulo 10 check digits */
 static char *msi_plessey_mod1010(struct zint_symbol *symbol, const unsigned char source[], const int length,
-            const int no_checktext, const int raw_text, char *d) {
+            const int no_checktext, const int content_segs, char *d) {
     int i;
     unsigned char local_source[92 + 2];
 
@@ -242,15 +242,15 @@ static char *msi_plessey_mod1010(struct zint_symbol *symbol, const unsigned char
         z_hrt_cpy_nochk(symbol, local_source, length + 2);
     }
 
-    if (raw_text && z_rt_cpy(symbol, local_source, length + 2)) {
-        return NULL; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, local_source, length + 2)) {
+        return NULL; /* `z_ct_cpy()` only fails with OOM */
     }
     return d;
 }
 
 /* MSI Plessey with Modulo 11 check digit */
 static char *msi_plessey_mod11(struct zint_symbol *symbol, const unsigned char source[], const int length,
-            const int no_checktext, const int wrap, const int raw_text, char *d) {
+            const int no_checktext, const int wrap, const int content_segs, char *d) {
     /* Uses the IBM weight system if wrap = 7, and the NCR system if wrap = 9 */
     int i;
     unsigned char check_digits[2];
@@ -277,7 +277,7 @@ static char *msi_plessey_mod11(struct zint_symbol *symbol, const unsigned char s
         z_hrt_cat_nochk(symbol, check_digits, check_digits_len);
     }
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, '\xFF' /*separator (none)*/, check_digits,
+    if (content_segs && z_ct_cpy_cat(symbol, source, length, '\xFF' /*separator (none)*/, check_digits,
                                 check_digits_len)) {
         return NULL; /* `check_digits_len()` only fails with OOM */
     }
@@ -286,7 +286,7 @@ static char *msi_plessey_mod11(struct zint_symbol *symbol, const unsigned char s
 
 /* MSI Plessey with Modulo 11 check digit and Modulo 10 check digit */
 static char *msi_plessey_mod1110(struct zint_symbol *symbol, const unsigned char source[], const int length,
-            const int no_checktext, const int wrap, const int raw_text, char *d) {
+            const int no_checktext, const int wrap, const int content_segs, char *d) {
     /* Uses the IBM weight system if wrap = 7, and the NCR system if wrap = 9 */
     int i;
     char check_digit;
@@ -319,8 +319,8 @@ static char *msi_plessey_mod1110(struct zint_symbol *symbol, const unsigned char
         z_hrt_cpy_nochk(symbol, local_source, local_length);
     }
 
-    if (raw_text && z_rt_cpy(symbol, local_source, local_length)) {
-        return NULL; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, local_source, local_length)) {
+        return NULL; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return d;
@@ -333,7 +333,7 @@ INTERNAL int zint_msi_plessey(struct zint_symbol *symbol, unsigned char source[]
     char *d = dest;
     int check_option = symbol->option_2;
     int no_checktext = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     assert(length > 0); /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
 
@@ -358,17 +358,17 @@ INTERNAL int zint_msi_plessey(struct zint_symbol *symbol, unsigned char source[]
     d += 2;
 
     switch (check_option) {
-        case 0: d = msi_plessey_nomod(symbol, source, length, raw_text, d); break;
-        case 1: d = msi_plessey_mod10(symbol, source, length, no_checktext, raw_text, d); break;
-        case 2: d = msi_plessey_mod1010(symbol, source, length, no_checktext, raw_text, d); break;
-        case 3: d = msi_plessey_mod11(symbol, source, length, no_checktext, 7 /*IBM wrap*/, raw_text, d); break;
-        case 4: d = msi_plessey_mod1110(symbol, source, length, no_checktext, 7 /*IBM wrap*/, raw_text, d); break;
-        case 5: d = msi_plessey_mod11(symbol, source, length, no_checktext, 9 /*NCR wrap*/, raw_text, d); break;
-        case 6: d = msi_plessey_mod1110(symbol, source, length, no_checktext, 9 /*NCR wrap*/, raw_text, d); break;
+        case 0: d = msi_plessey_nomod(symbol, source, length, content_segs, d); break;
+        case 1: d = msi_plessey_mod10(symbol, source, length, no_checktext, content_segs, d); break;
+        case 2: d = msi_plessey_mod1010(symbol, source, length, no_checktext, content_segs, d); break;
+        case 3: d = msi_plessey_mod11(symbol, source, length, no_checktext, 7 /*IBM wrap*/, content_segs, d); break;
+        case 4: d = msi_plessey_mod1110(symbol, source, length, no_checktext, 7 /*IBM wrap*/, content_segs, d); break;
+        case 5: d = msi_plessey_mod11(symbol, source, length, no_checktext, 9 /*NCR wrap*/, content_segs, d); break;
+        case 6: d = msi_plessey_mod1110(symbol, source, length, no_checktext, 9 /*NCR wrap*/, content_segs, d); break;
     }
 
     if (!d) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` etc. only fail with OOM */
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` etc. only fail with OOM */
     }
 
     /* Stop character */

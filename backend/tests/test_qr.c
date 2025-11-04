@@ -4868,31 +4868,31 @@ static void test_qr_rt(const testCtx *const p_ctx) {
         int expected_eci;
         const char *expected;
         int expected_length;
-        int expected_raw_eci;
+        int expected_content_eci;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
+        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
-        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
+        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
         /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
-        /*  5*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "点", -1, 20 }, /* When single segment will try ECI 20 as secondary default */
+        /*  5*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "点", -1, 20 }, /* When single segment will try ECI 20 as secondary default */
         /*  6*/ { BARCODE_QRCODE, DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
-        /*  7*/ { BARCODE_QRCODE, DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /*  7*/ { BARCODE_QRCODE, DATA_MODE, -1, -1, BARCODE_CONTENT_SEGS, "\351", -1, 0, 0, "\351", -1, 3 },
         /*  8*/ { BARCODE_QRCODE, DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
-        /*  9*/ { BARCODE_QRCODE, DATA_MODE, -1, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" raw ECI, needs to be specified */
+        /*  9*/ { BARCODE_QRCODE, DATA_MODE, -1, ZINT_FULL_MULTIBYTE, BARCODE_CONTENT_SEGS, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" content seg ECI, needs to be specified */
         /* 10*/ { BARCODE_QRCODE, DATA_MODE, 20, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 20, "", -1, 0 },
-        /* 11*/ { BARCODE_QRCODE, DATA_MODE, 20, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 20, "\223\137", -1, 20 },
+        /* 11*/ { BARCODE_QRCODE, DATA_MODE, 20, ZINT_FULL_MULTIBYTE, BARCODE_CONTENT_SEGS, "\223\137", -1, 0, 20, "\223\137", -1, 20 },
         /* 12*/ { BARCODE_QRCODE, UNICODE_MODE, 26, -1, -1, "é", -1, 0, 26, "", -1, 0 },
-        /* 13*/ { BARCODE_QRCODE, UNICODE_MODE, 26, -1, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
+        /* 13*/ { BARCODE_QRCODE, UNICODE_MODE, 26, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 26, "é", -1, 26 },
         /* 14*/ { BARCODE_QRCODE, UNICODE_MODE, 899, -1, -1, "é", -1, 0, 899, "", -1, 0 },
-        /* 15*/ { BARCODE_QRCODE, UNICODE_MODE, 899, -1, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+        /* 15*/ { BARCODE_QRCODE, UNICODE_MODE, 899, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 899, "é", -1, 899 },
         /* 16*/ { BARCODE_QRCODE, GS1_MODE, -1, -1, -1, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "", -1, 0 },
-        /* 17*/ { BARCODE_QRCODE, GS1_MODE, -1, -1, BARCODE_RAW_TEXT, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "01049123451234591597033130128\03510ABC123", -1, 3 }, /* Note raw text ECI set as is converted */
-        /* 18*/ { BARCODE_QRCODE, GS1_MODE, 170, -1, BARCODE_RAW_TEXT, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, ZINT_WARN_NONCOMPLIANT, 170, "01049123451234591597033130128\03510ABC123", -1, 170 },
+        /* 17*/ { BARCODE_QRCODE, GS1_MODE, -1, -1, BARCODE_CONTENT_SEGS, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "01049123451234591597033130128\03510ABC123", -1, 3 }, /* Note content seg ECI set as is converted */
+        /* 18*/ { BARCODE_QRCODE, GS1_MODE, 170, -1, BARCODE_CONTENT_SEGS, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, ZINT_WARN_NONCOMPLIANT, 170, "01049123451234591597033130128\03510ABC123", -1, 170 },
         /* 19*/ { BARCODE_HIBC_QR, UNICODE_MODE, -1, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
-        /* 20*/ { BARCODE_HIBC_QR, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
+        /* 20*/ { BARCODE_HIBC_QR, UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -4924,23 +4924,23 @@ static void test_qr_rt(const testCtx *const p_ctx) {
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
                         i, symbol->eci, data[i].expected_eci);
-            if (symbol->output_options & BARCODE_RAW_TEXT) {
-                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-                assert_equal(symbol->raw_segs[0].length, expected_length,
-                            "i:%d raw_segs[0].length %d != expected_length %d\n",
-                            i, symbol->raw_segs[0].length, expected_length);
-                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
-                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+            if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+                assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+                assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+                assert_equal(symbol->content_segs[0].length, expected_length,
+                            "i:%d content_segs[0].length %d != expected_length %d\n",
+                            i, symbol->content_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
+                            "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
                                             escaped, sizeof(escaped)),
                             testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                             expected_length);
-                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
-                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
-                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+                assert_equal(symbol->content_segs[0].eci, data[i].expected_content_eci,
+                            "i:%d content_segs[0].eci %d != expected_content_eci %d\n",
+                            i, symbol->content_segs[0].eci, data[i].expected_content_eci);
             } else {
-                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+                assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
             }
         }
 
@@ -4962,21 +4962,21 @@ static void test_qr_rt_segs(const testCtx *const p_ctx) {
 
         int expected_rows;
         int expected_width;
-        struct zint_seg expected_raw_segs[3];
-        int expected_raw_seg_count;
+        struct zint_seg expected_content_segs[3];
+        int expected_content_seg_count;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 21, 21, {{0}}, 0 },
-        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 21, 21, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 21, 21, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, { { TU("点"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, ZINT_WARN_USES_ECI, 21, 21, {{0}}, 0 },
-        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("点"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("点"), 3, 26 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* When multiple segments, ECI 20 is not used as secondary default, so fails and retries with `get_best_eci()` */
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, { { TU("点"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("点"), 3, 26 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* When multiple segments, ECI 20 is not used as secondary default, so fails and retries with `get_best_eci()` */
         /*  4*/ { UNICODE_MODE, -1, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 21, 21, {{0}}, 0 },
-        /*  5*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
+        /*  5*/ { UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /*  6*/ { DATA_MODE, -1, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, {{0}}, 0 },
-        /*  7*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /*  7*/ { DATA_MODE, -1, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
         /*  8*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, {{0}}, 0 },
-        /*  9*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /*  9*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
@@ -5010,31 +5010,31 @@ static void test_qr_rt_segs(const testCtx *const p_ctx) {
         assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
                     i, symbol->width, data[i].expected_width);
 
-        assert_equal(symbol->raw_seg_count, data[i].expected_raw_seg_count, "i:%d symbol->raw_seg_count %d != %d\n",
-                    i, symbol->raw_seg_count, data[i].expected_raw_seg_count);
-        if (symbol->output_options & BARCODE_RAW_TEXT) {
-            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-            for (j = 0; j < symbol->raw_seg_count; j++) {
-                assert_nonnull(symbol->raw_segs[j].source, "i:%d raw_segs[%d].source NULL\n", i, j);
+        assert_equal(symbol->content_seg_count, data[i].expected_content_seg_count, "i:%d symbol->content_seg_count %d != %d\n",
+                    i, symbol->content_seg_count, data[i].expected_content_seg_count);
+        if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+            assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+            for (j = 0; j < symbol->content_seg_count; j++) {
+                assert_nonnull(symbol->content_segs[j].source, "i:%d content_segs[%d].source NULL\n", i, j);
 
-                expected_length = data[i].expected_raw_segs[j].length;
+                expected_length = data[i].expected_content_segs[j].length;
 
-                assert_equal(symbol->raw_segs[j].length, expected_length,
-                            "i:%d raw_segs[%d].length %d != expected_length %d\n",
-                            i, j, symbol->raw_segs[j].length, expected_length);
-                assert_zero(memcmp(symbol->raw_segs[j].source, data[i].expected_raw_segs[j].source, expected_length),
-                            "i:%d raw_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
-                            testUtilEscape((const char *) symbol->raw_segs[j].source, expected_length, escaped,
+                assert_equal(symbol->content_segs[j].length, expected_length,
+                            "i:%d content_segs[%d].length %d != expected_length %d\n",
+                            i, j, symbol->content_segs[j].length, expected_length);
+                assert_zero(memcmp(symbol->content_segs[j].source, data[i].expected_content_segs[j].source, expected_length),
+                            "i:%d content_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
+                            testUtilEscape((const char *) symbol->content_segs[j].source, expected_length, escaped,
                                             sizeof(escaped)),
-                            testUtilEscape((const char *) data[i].expected_raw_segs[j].source, expected_length,
+                            testUtilEscape((const char *) data[i].expected_content_segs[j].source, expected_length,
                                             escaped2, sizeof(escaped2)),
                             expected_length);
-                assert_equal(symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci,
-                            "i:%d raw_segs[%d].eci %d != expected_raw_segs.eci %d\n",
-                            i, j, symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci);
+                assert_equal(symbol->content_segs[j].eci, data[i].expected_content_segs[j].eci,
+                            "i:%d content_segs[%d].eci %d != expected_content_segs.eci %d\n",
+                            i, j, symbol->content_segs[j].eci, data[i].expected_content_segs[j].eci);
             }
         } else {
-            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);
@@ -6683,18 +6683,18 @@ static void test_microqr_rt(const testCtx *const p_ctx) {
         int expected_eci;
         const char *expected;
         int expected_length;
-        int expected_raw_eci;
+        int expected_content_eci;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, "点", -1, 0, 0, "", -1, 0 },
-        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, "点", -1, 0, 0, "点", -1, 20 },
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "点", -1, 0, 0, "点", -1, 20 },
         /*  4*/ { DATA_MODE, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
-        /*  5*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /*  5*/ { DATA_MODE, -1, BARCODE_CONTENT_SEGS, "\351", -1, 0, 0, "\351", -1, 3 },
         /*  6*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
-        /*  7*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" raw ECI, but no way to specify */
+        /*  7*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_CONTENT_SEGS, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" content seg ECI, but no way to specify */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -6726,23 +6726,23 @@ static void test_microqr_rt(const testCtx *const p_ctx) {
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
                         i, symbol->eci, data[i].expected_eci);
-            if (symbol->output_options & BARCODE_RAW_TEXT) {
-                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-                assert_equal(symbol->raw_segs[0].length, expected_length,
-                            "i:%d raw_segs[0].length %d != expected_length %d\n",
-                            i, symbol->raw_segs[0].length, expected_length);
-                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
-                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+            if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+                assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+                assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+                assert_equal(symbol->content_segs[0].length, expected_length,
+                            "i:%d content_segs[0].length %d != expected_length %d\n",
+                            i, symbol->content_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
+                            "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
                                             escaped, sizeof(escaped)),
                             testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                             expected_length);
-                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
-                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
-                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+                assert_equal(symbol->content_segs[0].eci, data[i].expected_content_eci,
+                            "i:%d content_segs[0].eci %d != expected_content_eci %d\n",
+                            i, symbol->content_segs[0].eci, data[i].expected_content_eci);
             } else {
-                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+                assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
             }
         }
 
@@ -7473,16 +7473,16 @@ static void test_upnqr_rt(const testCtx *const p_ctx) {
         int expected_eci;
         const char *expected;
         int expected_length;
-        int expected_raw_eci;
+        int expected_content_eci;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 4 }, /* Now UTF-8, not converted */
+        /*  1*/ { UNICODE_MODE, BARCODE_CONTENT_SEGS, "é", -1, 0, 0, "é", -1, 4 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, "Ŕ", -1, 0, 0, "", -1, 0 },
-        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "Ŕ", -1, 0, 0, "Ŕ", -1, 4 },
+        /*  3*/ { UNICODE_MODE, BARCODE_CONTENT_SEGS, "Ŕ", -1, 0, 0, "Ŕ", -1, 4 },
         /*  4*/ { DATA_MODE, -1, "\300", -1, 0, 0, "", -1, 0 },
-        /*  5*/ { DATA_MODE, BARCODE_RAW_TEXT, "\300", -1, 0, 0, "\300", -1, 4 },
+        /*  5*/ { DATA_MODE, BARCODE_CONTENT_SEGS, "\300", -1, 0, 0, "\300", -1, 4 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -7514,23 +7514,23 @@ static void test_upnqr_rt(const testCtx *const p_ctx) {
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
                         i, symbol->eci, data[i].expected_eci);
-            if (symbol->output_options & BARCODE_RAW_TEXT) {
-                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-                assert_equal(symbol->raw_segs[0].length, expected_length,
-                            "i:%d raw_segs[0].length %d != expected_length %d\n",
-                            i, symbol->raw_segs[0].length, expected_length);
-                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
-                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+            if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+                assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+                assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+                assert_equal(symbol->content_segs[0].length, expected_length,
+                            "i:%d content_segs[0].length %d != expected_length %d\n",
+                            i, symbol->content_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
+                            "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
                                             escaped, sizeof(escaped)),
                             testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                             expected_length);
-                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
-                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
-                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+                assert_equal(symbol->content_segs[0].eci, data[i].expected_content_eci,
+                            "i:%d content_segs[0].eci %d != expected_content_eci %d\n",
+                            i, symbol->content_segs[0].eci, data[i].expected_content_eci);
             } else {
-                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+                assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
             }
         }
 
@@ -9520,30 +9520,30 @@ static void test_rmqr_rt(const testCtx *const p_ctx) {
         int expected_eci;
         const char *expected;
         int expected_length;
-        int expected_raw_eci;
+        int expected_content_eci;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
+        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 0, "é", -1, 3 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
-        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
+        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "ก", -1, ZINT_WARN_USES_ECI, 13, "ก", -1, 13 },
         /*  4*/ { UNICODE_MODE, -1, -1, -1, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
-        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "点", -1, 20 },
+        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_CONTENT_SEGS, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "点", -1, 20 },
         /*  6*/ { DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
-        /*  7*/ { DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /*  7*/ { DATA_MODE, -1, -1, BARCODE_CONTENT_SEGS, "\351", -1, 0, 0, "\351", -1, 3 },
         /*  8*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
-        /*  9*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" raw ECI, needs to be specified */
+        /*  9*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, BARCODE_CONTENT_SEGS, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" content seg ECI, needs to be specified */
         /* 10*/ { DATA_MODE, 20, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 20, "", -1, 0 },
-        /* 11*/ { DATA_MODE, 20, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 20, "\223\137", -1, 20 },
+        /* 11*/ { DATA_MODE, 20, ZINT_FULL_MULTIBYTE, BARCODE_CONTENT_SEGS, "\223\137", -1, 0, 20, "\223\137", -1, 20 },
         /* 12*/ { UNICODE_MODE, 26, -1, -1, "é", -1, 0, 26, "", -1, 0 },
-        /* 13*/ { UNICODE_MODE, 26, -1, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
+        /* 13*/ { UNICODE_MODE, 26, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 26, "é", -1, 26 },
         /* 14*/ { UNICODE_MODE, 899, -1, -1, "é", -1, 0, 899, "", -1, 0 },
-        /* 15*/ { UNICODE_MODE, 899, -1, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+        /* 15*/ { UNICODE_MODE, 899, -1, BARCODE_CONTENT_SEGS, "é", -1, 0, 899, "é", -1, 899 },
         /* 16*/ { GS1_MODE, -1, -1, -1, "[20]12", -1, 0, 0, "", -1, 0 },
-        /* 17*/ { GS1_MODE, -1, -1, BARCODE_RAW_TEXT, "[20]12", -1, 0, 0, "2012", -1, 3 },
+        /* 17*/ { GS1_MODE, -1, -1, BARCODE_CONTENT_SEGS, "[20]12", -1, 0, 0, "2012", -1, 3 },
         /* 18*/ { GS1_MODE, 32, -1, -1, "[20]12", -1, ZINT_WARN_NONCOMPLIANT, 32, "", -1, 0 },
-        /* 19*/ { GS1_MODE, 32, -1, BARCODE_RAW_TEXT, "[20]12", -1, ZINT_WARN_NONCOMPLIANT, 32, "2012", -1, 32 }, /* Note raw text ECI set as is converted */
+        /* 19*/ { GS1_MODE, 32, -1, BARCODE_CONTENT_SEGS, "[20]12", -1, ZINT_WARN_NONCOMPLIANT, 32, "2012", -1, 32 }, /* Note content seg ECI set as is converted */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -9575,23 +9575,23 @@ static void test_rmqr_rt(const testCtx *const p_ctx) {
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
                         i, symbol->eci, data[i].expected_eci);
-            if (symbol->output_options & BARCODE_RAW_TEXT) {
-                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-                assert_equal(symbol->raw_segs[0].length, expected_length,
-                            "i:%d raw_segs[0].length %d != expected_length %d\n",
-                            i, symbol->raw_segs[0].length, expected_length);
-                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
-                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+            if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+                assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+                assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+                assert_equal(symbol->content_segs[0].length, expected_length,
+                            "i:%d content_segs[0].length %d != expected_length %d\n",
+                            i, symbol->content_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
+                            "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
                                             escaped, sizeof(escaped)),
                             testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                             expected_length);
-                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
-                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
-                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+                assert_equal(symbol->content_segs[0].eci, data[i].expected_content_eci,
+                            "i:%d content_segs[0].eci %d != expected_content_eci %d\n",
+                            i, symbol->content_segs[0].eci, data[i].expected_content_eci);
             } else {
-                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+                assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
             }
         }
 
@@ -9613,19 +9613,19 @@ static void test_rmqr_rt_segs(const testCtx *const p_ctx) {
 
         int expected_rows;
         int expected_width;
-        struct zint_seg expected_raw_segs[3];
-        int expected_raw_seg_count;
+        struct zint_seg expected_content_segs[3];
+        int expected_content_seg_count;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 11, 27, {{0}}, 0 },
-        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 11, 27, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 11, 27, { { TU("¶"), 2, 3 }, { TU("Ж"), 2, 7 }, {0} }, 2 }, /* Now UTF-8, not converted */
         /*  2*/ { UNICODE_MODE, -1, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 11, 43, {{0}}, 0 },
-        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 11, 43, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 11, 43, { { TU("éé"), 4, 3 }, { TU("กขฯ"), 9, 13 }, { TU("βββ"), 6, 9 } }, 3 },
         /*  4*/ { DATA_MODE, -1, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, {{0}}, 0 },
-        /*  5*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /*  5*/ { DATA_MODE, -1, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
         /*  6*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, {{0}}, 0 },
-        /*  7*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /*  7*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_CONTENT_SEGS, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
@@ -9659,31 +9659,31 @@ static void test_rmqr_rt_segs(const testCtx *const p_ctx) {
         assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
                     i, symbol->width, data[i].expected_width);
 
-        assert_equal(symbol->raw_seg_count, data[i].expected_raw_seg_count, "i:%d symbol->raw_seg_count %d != %d\n",
-                    i, symbol->raw_seg_count, data[i].expected_raw_seg_count);
-        if (symbol->output_options & BARCODE_RAW_TEXT) {
-            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-            for (j = 0; j < symbol->raw_seg_count; j++) {
-                assert_nonnull(symbol->raw_segs[j].source, "i:%d raw_segs[%d].source NULL\n", i, j);
+        assert_equal(symbol->content_seg_count, data[i].expected_content_seg_count, "i:%d symbol->content_seg_count %d != %d\n",
+                    i, symbol->content_seg_count, data[i].expected_content_seg_count);
+        if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+            assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+            for (j = 0; j < symbol->content_seg_count; j++) {
+                assert_nonnull(symbol->content_segs[j].source, "i:%d content_segs[%d].source NULL\n", i, j);
 
-                expected_length = data[i].expected_raw_segs[j].length;
+                expected_length = data[i].expected_content_segs[j].length;
 
-                assert_equal(symbol->raw_segs[j].length, expected_length,
-                            "i:%d raw_segs[%d].length %d != expected_length %d\n",
-                            i, j, symbol->raw_segs[j].length, expected_length);
-                assert_zero(memcmp(symbol->raw_segs[j].source, data[i].expected_raw_segs[j].source, expected_length),
-                            "i:%d raw_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
-                            testUtilEscape((const char *) symbol->raw_segs[j].source, expected_length, escaped,
+                assert_equal(symbol->content_segs[j].length, expected_length,
+                            "i:%d content_segs[%d].length %d != expected_length %d\n",
+                            i, j, symbol->content_segs[j].length, expected_length);
+                assert_zero(memcmp(symbol->content_segs[j].source, data[i].expected_content_segs[j].source, expected_length),
+                            "i:%d content_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
+                            testUtilEscape((const char *) symbol->content_segs[j].source, expected_length, escaped,
                                             sizeof(escaped)),
-                            testUtilEscape((const char *) data[i].expected_raw_segs[j].source, expected_length,
+                            testUtilEscape((const char *) data[i].expected_content_segs[j].source, expected_length,
                                             escaped2, sizeof(escaped2)),
                             expected_length);
-                assert_equal(symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci,
-                            "i:%d raw_segs[%d].eci %d != expected_raw_segs.eci %d\n",
-                            i, j, symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci);
+                assert_equal(symbol->content_segs[j].eci, data[i].expected_content_segs[j].eci,
+                            "i:%d content_segs[%d].eci %d != expected_content_segs.eci %d\n",
+                            i, j, symbol->content_segs[j].eci, data[i].expected_content_segs[j].eci);
             }
         } else {
-            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);

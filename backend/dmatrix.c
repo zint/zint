@@ -1695,7 +1695,7 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE ? 1 + !!(symbol->output_options & GS1_GS_SEPARATOR) : 0;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback.
        Note not updating `eci` for GS1 mode as not converted */
-    const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
+    const int content_segs = !gs1 && (symbol->output_options & BARCODE_CONTENT_SEGS);
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if ((i = z_segs_length(segs, seg_count)) > 3116) { /* Max is 3166 digits */
@@ -1813,8 +1813,8 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
             assert(error_number >= ZINT_ERROR);
             return error_number;
         }
-        if (raw_text && segs[i].eci) {
-            z_rt_set_seg_eci(symbol, i, segs[i].eci);
+        if (content_segs && segs[i].eci) {
+            z_ct_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 

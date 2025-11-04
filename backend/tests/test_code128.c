@@ -202,8 +202,8 @@ static void test_hrt(const testCtx *const p_ctx) {
 
         const char *expected;
         int expected_length;
-        const char *expected_raw;
-        int expected_raw_length;
+        const char *expected_content;
+        int expected_content_length;
         int zxingcpp_cmp;
     };
     /*
@@ -212,45 +212,45 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, "1234567890", -1, "1234567890", -1, "", -1, 1 },
-        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "1234567890", -1, "1234567890", -1, "1234567890", -1, 1 },
+        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "1234567890", -1, "1234567890", -1, "1234567890", -1, 1 },
         /*  2*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, "\000ABC\000DEF\000", 9, " ABC DEF ", -1, "", -1, 1 },
-        /*  3*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "\000ABC\000DEF\000", 9, " ABC DEF ", -1, "\000ABC\000DEF\000", 9, 1 }, /* No replacements */
+        /*  3*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "\000ABC\000DEF\000", 9, " ABC DEF ", -1, "\000ABC\000DEF\000", 9, 1 }, /* No replacements */
         /*  4*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, -1, "12345\00067890", 11, "12345 67890", -1, "", -1, 1 },
-        /*  5*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "12345\00067890", 11, "12345 67890", -1, "12345\00067890", 11, 1 },
+        /*  5*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "12345\00067890", 11, "12345 67890", -1, "12345\00067890", 11, 1 },
         /*  6*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, "12345\01167890\037\177", -1, "12345 67890  ", -1, "", -1, 1 },
-        /*  7*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "12345\01167890\037\177", -1, "12345 67890  ", -1, "12345\01167890\037\177", -1, 1 },
+        /*  7*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "12345\01167890\037\177", -1, "12345 67890  ", -1, "12345\01167890\037\177", -1, 1 },
         /*  8*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, "abcdé", -1, "abcdé", -1, "", -1, 1 },
-        /*  9*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "abcdé", -1, "abcdé", -1, "abcdé", -1, 1 }, /* Now UTF-8, not converted */
+        /*  9*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "abcdé", -1, "abcdé", -1, "abcdé", -1, 1 }, /* Now UTF-8, not converted */
         /* 10*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, "abcdé\302\240", -1, "abcdé\302\240", -1, "", -1, 1 }, /* \302\240 (U+A0) NBSP */
-        /* 11*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "abcdé\302\240", -1, "abcdé\302\240", -1, "abcdé\302\240", -1, 1 },
+        /* 11*/ { BARCODE_CODE128, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "abcdé\302\240", -1, "abcdé\302\240", -1, "abcdé\302\240", -1, 1 },
         /* 12*/ { BARCODE_CODE128, DATA_MODE, -1, -1, "abcd\351", -1, "abcdé", -1, "", -1, 899 },
-        /* 13*/ { BARCODE_CODE128, DATA_MODE, -1, BARCODE_RAW_TEXT, "abcd\351", -1, "abcdé", -1, "abcd\351", -1, 899 },
+        /* 13*/ { BARCODE_CODE128, DATA_MODE, -1, BARCODE_CONTENT_SEGS, "abcd\351", -1, "abcdé", -1, "abcd\351", -1, 899 },
         /* 14*/ { BARCODE_CODE128, DATA_MODE, -1, -1, "ab\240cd\351", -1, "ab\302\240cdé", -1, "", -1, 899 }, /* \240 (U+A0) NBSP */
-        /* 15*/ { BARCODE_CODE128, DATA_MODE, -1, BARCODE_RAW_TEXT, "ab\240cd\351", -1, "ab\302\240cdé", -1, "ab\240cd\351", -1, 899 },
+        /* 15*/ { BARCODE_CODE128, DATA_MODE, -1, BARCODE_CONTENT_SEGS, "ab\240cd\351", -1, "ab\302\240cdé", -1, "ab\240cd\351", -1, 899 },
         /* 16*/ { BARCODE_CODE128, DATA_MODE, -1, -1, "ab\200cd\351", -1, "ab cdé", -1, "", -1, 899 }, /* \200 (U+80) non-ISO/IEC 8859-1 */
-        /* 17*/ { BARCODE_CODE128, DATA_MODE, -1, BARCODE_RAW_TEXT, "ab\200cd\351", -1, "ab cdé", -1, "ab\200cd\351", -1, 899 },
+        /* 17*/ { BARCODE_CODE128, DATA_MODE, -1, BARCODE_CONTENT_SEGS, "ab\200cd\351", -1, "ab cdé", -1, "ab\200cd\351", -1, 899 },
         /* 18*/ { BARCODE_CODE128, EXTRA_ESCAPE_MODE, -1, -1, "\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C123456789012345678", -1, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, "", -1, 1 }, /* Max length 198 + 19 special escapes = 99 + 19*3 = 255 */
-        /* 19*/ { BARCODE_CODE128, EXTRA_ESCAPE_MODE, -1, BARCODE_RAW_TEXT, "\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C123456789012345678", -1, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, 1 },
+        /* 19*/ { BARCODE_CODE128, EXTRA_ESCAPE_MODE, -1, BARCODE_CONTENT_SEGS, "\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C1234567890\\^C123456789012345678", -1, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, 1 },
         /* 20*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, -1, "abcdé", -1, "abcdé", -1, "", -1, 1 },
-        /* 21*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "abcdé", -1, "abcdé", -1, "abcdé", -1, 1 },
+        /* 21*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "abcdé", -1, "abcdé", -1, "abcdé", -1, 1 },
         /* 22*/ { BARCODE_CODE128AB, DATA_MODE, -1, -1, "abcd\351", -1, "abcdé", -1, "", -1, 899 },
-        /* 23*/ { BARCODE_CODE128AB, DATA_MODE, -1, BARCODE_RAW_TEXT, "abcd\351", -1, "abcdé", -1, "abcd\351", -1, 899 },
+        /* 23*/ { BARCODE_CODE128AB, DATA_MODE, -1, BARCODE_CONTENT_SEGS, "abcd\351", -1, "abcdé", -1, "abcd\351", -1, 899 },
         /* 24*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, -1, "1234567890", -1, "*+12345678900*", -1, "", -1, 1 },
-        /* 25*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "1234567890", -1, "*+12345678900*", -1, "+12345678900", -1, 1 },
+        /* 25*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "1234567890", -1, "*+12345678900*", -1, "+12345678900", -1, 1 },
         /* 26*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, -1, "a99912345", -1, "*+A999123457*", -1, "", -1, 1 }, /* Converts to upper */
-        /* 27*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "a99912345", -1, "*+A999123457*", -1, "+A999123457", -1, 1 },
+        /* 27*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "a99912345", -1, "*+A999123457*", -1, "+A999123457", -1, 1 },
         /* 28*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "000393206219912345678101040", -1, "0003 932 0621 9912 3456 78 101 040 9", -1, "", -1, 1 }, /* DPDAPPD 4.0.2 - Illustration 7 */
-        /* 29*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "000393206219912345678101040", -1, "0003 932 0621 9912 3456 78 101 040 9", -1, "%000393206219912345678101040", -1, 1 }, /* Includes '%', no spaces, no check digit */
+        /* 29*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "000393206219912345678101040", -1, "0003 932 0621 9912 3456 78 101 040 9", -1, "%000393206219912345678101040", -1, 1 }, /* Includes '%', no spaces, no check digit */
         /* 30*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "007110601782532948375101276", -1, "0071 106 0178 2532 9483 75 101 276 X", -1, "", -1, 1 }, /* DPDAPPD 4.0.2 - Illustration 6, figure's HRT seems incorrect */
-        /* 31*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "007110601782532948375101276", -1, "0071 106 0178 2532 9483 75 101 276 X", -1, "%007110601782532948375101276", -1, 1 },
+        /* 31*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "007110601782532948375101276", -1, "0071 106 0178 2532 9483 75 101 276 X", -1, "%007110601782532948375101276", -1, 1 },
         /* 32*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020028101276", -1, "0081 827 0998 0000 0200 28 101 276 B", -1, "", -1, 1 }, /* DPDPLS Section 4 */
-        /* 33*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "008182709980000020028101276", -1, "0081 827 0998 0000 0200 28 101 276 B", -1, "%008182709980000020028101276", -1, 1 },
+        /* 33*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "008182709980000020028101276", -1, "0081 827 0998 0000 0200 28 101 276 B", -1, "%008182709980000020028101276", -1, 1 },
         /* 34*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "007110601632532948375179276", -1, "0071 106 0163 2532 9483 75 179 276 A", -1, "", -1, 1 }, /* DPDPLS Section 4.6 */
-        /* 35*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "007110601632532948375179276", -1, "0071 106 0163 2532 9483 75 179 276 A", -1, "%007110601632532948375179276", -1, 1 },
+        /* 35*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "007110601632532948375179276", -1, "0071 106 0163 2532 9483 75 179 276 A", -1, "%007110601632532948375179276", -1, 1 },
         /* 36*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "001990009980000020084109203", -1, "0019 900 0998 0000 0200 84 109 203 1", -1, "", -1, 1 }, /* DPDPLS Section 5.1 */
-        /* 37*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "001990009980000020084109203", -1, "0019 900 0998 0000 0200 84 109 203 1", -1, "%001990009980000020084109203", -1, 1 },
+        /* 37*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "001990009980000020084109203", -1, "0019 900 0998 0000 0200 84 109 203 1", -1, "%001990009980000020084109203", -1, 1 },
         /* 38*/ { BARCODE_DPD, UNICODE_MODE, 1, -1, "007110601632532948375101276", -1, "0071 106 0163 2532 9483 75 101 276 O", -1, "", -1, 1 }, /* DPDPLS Section 6.1.2 relabel, figure is actually 8.7.2 with mislabelled HRT */
-        /* 39*/ { BARCODE_DPD, UNICODE_MODE, 1, BARCODE_RAW_TEXT, "007110601632532948375101276", -1, "0071 106 0163 2532 9483 75 101 276 O", -1, "007110601632532948375101276", -1, 1 }, /* No '%' */
+        /* 39*/ { BARCODE_DPD, UNICODE_MODE, 1, BARCODE_CONTENT_SEGS, "007110601632532948375101276", -1, "0071 106 0163 2532 9483 75 101 276 O", -1, "007110601632532948375101276", -1, 1 }, /* No '%' */
         /* 40*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020029136276", -1, "0081 827 0998 0000 0200 29 136 276 3", -1, "", -1, 1 }, /* DPDPLS Section 8.1 */
         /* 41*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "001234509980000020031105276", -1, "0012 345 0998 0000 0200 31 105 276 L", -1, "", -1, 1 }, /* DPDPLS Section 8.2 */
         /* 42*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020032154276", -1, "0081 827 0998 0000 0200 32 154 276 J", -1, "", -1, 1 }, /* DPDPLS Section 8.3 */
@@ -263,30 +263,30 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 49*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "007855009980000020041302840", -1, "0078 550 0998 0000 0200 41 302 840 U", -1, "", -1, 1 }, /* DPDPLS Section 8.5.6 */
         /* 50*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020042102276", -1, "0081 827 0998 0000 0200 42 102 276 R", -1, "", -1, 1 }, /* DPDPLS Section 8.6.1 */
         /* 51*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020043113276", -1, "0081 827 0998 0000 0200 43 113 276 Y", -1, "", -1, 1 }, /* DPDPLS Section 8.7.1 */
-        /* 52*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "008182709980000020043113276", -1, "0081 827 0998 0000 0200 43 113 276 Y", -1, "%008182709980000020043113276", -1, 1 },
+        /* 52*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "008182709980000020043113276", -1, "0081 827 0998 0000 0200 43 113 276 Y", -1, "%008182709980000020043113276", -1, 1 },
         /* 53*/ { BARCODE_DPD, UNICODE_MODE, 1, -1, "006376209980000020044118276", -1, "0063 762 0998 0000 0200 44 118 276 I", -1, "", -1, 1 }, /* DPDPLS Section 8.7.2 relabel */
-        /* 54*/ { BARCODE_DPD, UNICODE_MODE, 1, BARCODE_RAW_TEXT, "006376209980000020044118276", -1, "0063 762 0998 0000 0200 44 118 276 I", -1, "006376209980000020044118276", -1, 1 },
+        /* 54*/ { BARCODE_DPD, UNICODE_MODE, 1, BARCODE_CONTENT_SEGS, "006376209980000020044118276", -1, "0063 762 0998 0000 0200 44 118 276 I", -1, "006376209980000020044118276", -1, 1 },
         /* 55*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "007160009980000020050294276", -1, "0071 600 0998 0000 0200 50 294 276 C", -1, "", -1, 1 }, /* DPDPLS Section 8.8 */
         /* 56*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020045327276", -1, "0081 827 0998 0000 0200 45 327 276 N", -1, "", -1, 1 }, /* DPDPLS Section 8.9.1 */
         /* 57*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "006374309980000020047337276", -1, "0063 743 0998 0000 0200 47 337 276 O", -1, "", -1, 1 }, /* DPDPLS Section 8.9.2 */
-        /* 58*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "006374309980000020047337276", -1, "0063 743 0998 0000 0200 47 337 276 O", -1, "%006374309980000020047337276", -1, 1 },
+        /* 58*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "006374309980000020047337276", -1, "0063 743 0998 0000 0200 47 337 276 O", -1, "%006374309980000020047337276", -1, 1 },
         /* 59*/ { BARCODE_DPD, UNICODE_MODE, 1, -1, "006374109980978004757332276", -1, "0063 741 0998 0978 0047 57 332 276 M", -1, "", -1, 1 }, /* DPDPLS Section 8.9.3 relabel, figure's HRT seems incorrect */
-        /* 60*/ { BARCODE_DPD, UNICODE_MODE, 1, BARCODE_RAW_TEXT, "006374109980978004757332276", -1, "0063 741 0998 0978 0047 57 332 276 M", -1, "006374109980978004757332276", -1, 1 },
+        /* 60*/ { BARCODE_DPD, UNICODE_MODE, 1, BARCODE_CONTENT_SEGS, "006374109980978004757332276", -1, "0063 741 0998 0978 0047 57 332 276 M", -1, "006374109980978004757332276", -1, 1 },
         /* 61*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020051106276", -1, "0081 827 0998 0000 0200 51 106 276 M", -1, "", -1, 1 }, /* DPDPLS Section 9.1 */
         /* 62*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020052110276", -1, "0081 827 0998 0000 0200 52 110 276 W", -1, "", -1, 1 }, /* DPDPLS Section 9.2 */
         /* 63*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020053161276", -1, "0081 827 0998 0000 0200 53 161 276 O", -1, "", -1, 1 }, /* DPDPLS Section 9.3 */
         /* 64*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020054352276", -1, "0081 827 0998 0000 0200 54 352 276 B", -1, "", -1, 1 }, /* DPDPLS Section 9.4 */
         /* 65*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020055191276", -1, "0081 827 0998 0000 0200 55 191 276 A", -1, "", -1, 1 }, /* DPDPLS Section 9.5 */
         /* 66*/ { BARCODE_DPD, UNICODE_MODE, -1, -1, "008182709980000020056237276", -1, "0081 827 0998 0000 0200 56 237 276 K", -1, "", -1, 1 }, /* DPDPLS Section 9.6 */
-        /* 67*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "008182709980000020056237276", -1, "0081 827 0998 0000 0200 56 237 276 K", -1, "%008182709980000020056237276", -1, 1 },
+        /* 67*/ { BARCODE_DPD, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "008182709980000020056237276", -1, "0081 827 0998 0000 0200 56 237 276 K", -1, "%008182709980000020056237276", -1, 1 },
         /* 68*/ { BARCODE_UPU_S10, UNICODE_MODE, -1, -1, "EE876543216CA", -1, "EE 876 543 216 CA", -1, "", -1, 1 }, /* UPU S10 Annex A */
-        /* 69*/ { BARCODE_UPU_S10, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "EE876543216CA", -1, "EE 876 543 216 CA", -1, "EE876543216CA", -1, 1 }, /* No spaces */
+        /* 69*/ { BARCODE_UPU_S10, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "EE876543216CA", -1, "EE 876 543 216 CA", -1, "EE876543216CA", -1, 1 }, /* No spaces */
         /* BARCODE_GS1_128, BARCODE_EAN14, BARCODE_NVE18 hrt tested in test_gs1.c */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length, expected_raw_length;
+    int expected_length, expected_content_length;
 
     char escaped[1024];
     char escaped2[1024];
@@ -313,8 +313,8 @@ static void test_hrt(const testCtx *const p_ctx) {
                                     -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
                                     data[i].data, data[i].length, debug);
         expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
-        expected_raw_length = data[i].expected_raw_length == -1 ? (int) strlen(data[i].expected_raw)
-                                                                : data[i].expected_raw_length;
+        expected_content_length = data[i].expected_content_length == -1 ? (int) strlen(data[i].expected_content)
+                                                                : data[i].expected_content_length;
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
@@ -325,18 +325,18 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text, data[i].expected, expected_length);
 
         if (ret < ZINT_ERROR) {
-            if (symbol->output_options & BARCODE_RAW_TEXT) {
-                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-                assert_equal(symbol->raw_segs[0].length, expected_raw_length,
-                            "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
-                            i, symbol->raw_segs[0].length, expected_raw_length);
-                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+            if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+                assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+                assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+                assert_equal(symbol->content_segs[0].length, expected_content_length,
+                            "i:%d content_segs[0].length %d != expected_content_length %d\n",
+                            i, symbol->content_segs[0].length, expected_content_length);
+                assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected_content, expected_content_length),
                             "i:%d memcmp(%.*s, %s, %d) != 0\n",
-                            i, symbol->raw_segs[0].length, symbol->raw_segs[0].source, data[i].expected_raw,
-                            expected_raw_length);
+                            i, symbol->content_segs[0].length, symbol->content_segs[0].source,
+                            data[i].expected_content, expected_content_length);
             } else {
-                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+                assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
             }
 
             if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {

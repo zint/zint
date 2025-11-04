@@ -141,7 +141,7 @@ static int usps_set_height(struct zint_symbol *symbol, const int no_errtxt) {
 static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[], char *d, const int length) {
     int i, sum, check_digit;
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 38) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 480, "Input length %d too long (maximum 38)", length);
@@ -182,8 +182,8 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
     /* Stop character */
     memcpy(d, "L", 2); /* Include terminating NUL */
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, (char) z_itoc(check_digit), NULL /*cat*/, 0)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, source, length, (char) z_itoc(check_digit), NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
@@ -222,7 +222,7 @@ INTERNAL int zint_postnet(struct zint_symbol *symbol, unsigned char source[], in
 static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], char *d, const int length) {
     int i, sum, check_digit;
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 38) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 482, "Input length %d too long (maximum 38)", length);
@@ -255,8 +255,8 @@ static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], 
     /* Stop character */
     memcpy(d, "L", 2); /* Include terminating NUL */
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, (char) z_itoc(check_digit), NULL /*cat*/, 0)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, source, length, (char) z_itoc(check_digit), NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
@@ -298,7 +298,7 @@ INTERNAL int zint_koreapost(struct zint_symbol *symbol, unsigned char source[], 
     char dest[80];
     char *d = dest;
     int posns[6];
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 6) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 484, "Input length %d too long (maximum 6)", length);
@@ -336,8 +336,8 @@ INTERNAL int zint_koreapost(struct zint_symbol *symbol, unsigned char source[], 
 
     z_hrt_cpy_nochk(symbol, local_source, 7);
 
-    if (raw_text && z_rt_cpy(symbol, local_source, 7)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, local_source, 7)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -347,7 +347,7 @@ INTERNAL int zint_koreapost(struct zint_symbol *symbol, unsigned char source[], 
     glyphs from http://en.wikipedia.org/wiki/Facing_Identification_Mark */
 INTERNAL int zint_fim(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 1) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 486, "Input length %d too long (maximum 1)", length);
@@ -388,8 +388,8 @@ INTERNAL int zint_fim(struct zint_symbol *symbol, unsigned char source[], int le
         (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -476,7 +476,7 @@ INTERNAL int zint_rm4scc(struct zint_symbol *symbol, unsigned char source[], int
     int writer;
     char check_digit;
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 50) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 488, "Input length %d too long (maximum 50)", length);
@@ -523,8 +523,8 @@ INTERNAL int zint_rm4scc(struct zint_symbol *symbol, unsigned char source[], int
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
@@ -540,7 +540,7 @@ INTERNAL int zint_kix(struct zint_symbol *symbol, unsigned char source[], int le
     int loopey;
     int writer, i, h;
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 18) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 490, "Input length %d too long (maximum 18)", length);
@@ -585,8 +585,8 @@ INTERNAL int zint_kix(struct zint_symbol *symbol, unsigned char source[], int le
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -598,7 +598,7 @@ INTERNAL int zint_daft(struct zint_symbol *symbol, unsigned char source[], int l
     int posns[576];
     int loopey;
     int writer;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 576) { /* 576 * 2 = 1152 */
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 492, "Input length %d too long (maximum 576)", length);
@@ -640,8 +640,8 @@ INTERNAL int zint_daft(struct zint_symbol *symbol, unsigned char source[], int l
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return 0;
@@ -652,7 +652,7 @@ INTERNAL int zint_flat(struct zint_symbol *symbol, unsigned char source[], int l
     int i, error_number = 0;
     char dest[512]; /* 128 * 4 = 512 */
     char *d = dest;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 128) { /* 128 * 9 = 1152 */
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 494, "Input length %d too long (maximum 128)", length);
@@ -672,8 +672,8 @@ INTERNAL int zint_flat(struct zint_symbol *symbol, unsigned char source[], int l
 
     /* TODO: Find documentation on BARCODE_FLAT dimensions/height */
 
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -687,7 +687,7 @@ INTERNAL int zint_japanpost(struct zint_symbol *symbol, unsigned char source[], 
     int writer, loopey, inter_posn, i, sum, check;
     char check_char;
     unsigned char inter[20 + 1];
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 20) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 496, "Input length %d too long (maximum 20)", length);
@@ -792,8 +792,8 @@ INTERNAL int zint_japanpost(struct zint_symbol *symbol, unsigned char source[], 
     }
 
     /* Note: check char is in KASUTSET and not truly representable in raw text's SHKASUTSET_F */
-    if (raw_text && z_rt_cpy(symbol, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy()` only fails with OOM */
+    if (content_segs && z_ct_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
 
     return error_number;

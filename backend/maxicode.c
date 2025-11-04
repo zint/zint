@@ -556,7 +556,7 @@ INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], c
     int scm_vv = -1;
     int structapp_cw = 0;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     mode = symbol->option_1;
@@ -695,10 +695,10 @@ INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], c
         return z_errtxt(error_number, symbol, 553, "Input too long, requires too many codewords (maximum 144)");
     }
 
-    if (raw_text) {
+    if (content_segs) {
         for (i = 0; i < seg_count; i++) {
             if (segs[i].eci) {
-                z_rt_set_seg_eci(symbol, i, segs[i].eci);
+                z_ct_set_seg_eci(symbol, i, segs[i].eci);
             }
         }
     }

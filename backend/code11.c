@@ -56,7 +56,7 @@ INTERNAL int zint_code11(struct zint_symbol *symbol, unsigned char source[], int
     int num_check_digits;
     unsigned char checkstr[2];
     int error_number = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
     assert(length > 0);
@@ -151,8 +151,9 @@ INTERNAL int zint_code11(struct zint_symbol *symbol, unsigned char source[], int
         z_hrt_cat_nochk(symbol, checkstr, num_check_digits);
     }
 
-    if (raw_text && z_rt_cpy_cat(symbol, source, length, '\xFF' /*separator (none)*/, checkstr, num_check_digits)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, source, length, '\xFF' /*separator (none)*/, checkstr,
+                                    num_check_digits)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;

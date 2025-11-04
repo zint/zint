@@ -124,7 +124,7 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
     unsigned char fcc[2] = {0}; /* Suppress clang-tidy warning clang-analyzer-core.UndefinedBinaryOperatorResult */
     unsigned char local_source[30];
     int zeroes = 0;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     /* Suppress clang-tidy-21 clang-analyzer-security.ArrayBound */
     assert(symbol->symbology == BARCODE_AUSPOST || symbol->symbology == BARCODE_AUSREPLY
@@ -281,8 +281,8 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
     symbol->rows = 3; /* Not stackable */
     symbol->width = writer - 1;
 
-    if (raw_text && z_rt_cpy_cat(symbol, fcc, 2, '\xFF' /*separator (none)*/, local_source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, fcc, 2, '\xFF' /*separator (none)*/, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
 
     return error_number;

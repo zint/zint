@@ -989,7 +989,7 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     int size_squared;
     int bin_len;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = zint_get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
@@ -1026,8 +1026,8 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
                 }
                 eci = 29;
             }
-            if (raw_text && eci) {
-                z_rt_set_seg_eci(symbol, i, eci);
+            if (content_segs && eci) {
+                z_ct_set_seg_eci(symbol, i, eci);
             }
             dd += local_segs[i].length;
         }

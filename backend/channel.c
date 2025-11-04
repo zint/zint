@@ -181,7 +181,7 @@ INTERNAL int zint_channel(struct zint_symbol *symbol, unsigned char source[], in
     char *d = dest;
     int channels, i;
     int error_number = 0, zeroes;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
     if (length > 7) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 333, "Input length %d too long (maximum 7)", length);
@@ -254,8 +254,8 @@ INTERNAL int zint_channel(struct zint_symbol *symbol, unsigned char source[], in
     zeroes = channels - 1 - length;
     z_hrt_cpy_cat_nochk(symbol, zeroes_str, zeroes, '\xFF' /*separator (none)*/, source, length);
 
-    if (raw_text && z_rt_cpy_cat(symbol, zeroes_str, zeroes, '\xFF' /*separator (none)*/, source, length)) {
-        return ZINT_ERROR_MEMORY; /* `z_rt_cpy_cat()` only fails with OOM */
+    if (content_segs && z_ct_cpy_cat(symbol, zeroes_str, zeroes, '\xFF' /*separator (none)*/, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
     return error_number;
 }

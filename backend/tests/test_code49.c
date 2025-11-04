@@ -318,16 +318,16 @@ static void test_rt(const testCtx *const p_ctx) {
         int expected_eci;
         const char *expected;
         int expected_length;
-        int expected_raw_eci;
+        int expected_content_eci;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, "AB\000123", 6, 0, 0, "", -1, 0 },
-        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "AB\000123", 6, 0, 0, "AB\000123", 6, 3 },
+        /*  1*/ { UNICODE_MODE, BARCODE_CONTENT_SEGS, "AB\000123", 6, 0, 0, "AB\000123", 6, 3 },
         /*  2*/ { DATA_MODE, -1, "AB\000123", 6, 0, 0, "", -1, 0 },
-        /*  3*/ { DATA_MODE, BARCODE_RAW_TEXT, "AB\000123", 6, 0, 0, "AB\000123", 6, 3 },
+        /*  3*/ { DATA_MODE, BARCODE_CONTENT_SEGS, "AB\000123", 6, 0, 0, "AB\000123", 6, 3 },
         /*  4*/ { GS1_MODE, -1, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "", -1, 0 },
-        /*  5*/ { GS1_MODE, BARCODE_RAW_TEXT, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "01049123451234591597033130128\03510ABC123", -1, 3 },
+        /*  5*/ { GS1_MODE, BARCODE_CONTENT_SEGS, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "01049123451234591597033130128\03510ABC123", -1, 3 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -358,23 +358,23 @@ static void test_rt(const testCtx *const p_ctx) {
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
                         i, symbol->eci, data[i].expected_eci);
-            if (symbol->output_options & BARCODE_RAW_TEXT) {
-                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
-                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
-                assert_equal(symbol->raw_segs[0].length, expected_length,
-                            "i:%d raw_segs[0].length %d != expected_length %d\n",
-                            i, symbol->raw_segs[0].length, expected_length);
-                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
-                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+            if (symbol->output_options & BARCODE_CONTENT_SEGS) {
+                assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
+                assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
+                assert_equal(symbol->content_segs[0].length, expected_length,
+                            "i:%d content_segs[0].length %d != expected_length %d\n",
+                            i, symbol->content_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
+                            "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
                                             escaped, sizeof(escaped)),
                             testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                             expected_length);
-                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
-                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
-                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+                assert_equal(symbol->content_segs[0].eci, data[i].expected_content_eci,
+                            "i:%d content_segs[0].eci %d != expected_content_eci %d\n",
+                            i, symbol->content_segs[0].eci, data[i].expected_content_eci);
             } else {
-                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+                assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
             }
         }
 
