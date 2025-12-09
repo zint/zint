@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.15.0.9
-% November 2025
+% December 2025
 
 # 1. Introduction
 
@@ -3344,7 +3344,7 @@ zint -b CODE128 -d "\^AABC\^^BDEF" --extraesc
 will encode the data `"ABC\^BDEF"` in Code Set A.
 
 There is also the extra escape `\^1`, which will encode a special Function Code
-1 character (`FNC1`) anywhere you chose in the data, for instance
+1 character (`FNC1`) anywhere you choose in the data, for instance
 
 ```bash
 zint -b CODE128 -d "A\^1BC\^1DEF" --extraesc

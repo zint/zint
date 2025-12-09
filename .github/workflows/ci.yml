@@ -1,6 +1,6 @@
 name: CI
 
-# .github/workflows/ci.yml 2025-05-24
+# .github/workflows/ci.yml 2025-12-09
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch (or test branch github_ci push)
 on:
@@ -286,7 +286,7 @@ jobs:
 
     - name: Build FreeBSD
       id: build-freebsd
-      uses: vmactions/freebsd-vm@v1.2.1
+      uses: vmactions/freebsd-vm@v1
       with:
         usesh: true
         mem: 4096

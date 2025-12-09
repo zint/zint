@@ -653,6 +653,28 @@ static int gs1_z__90(const unsigned char *data,
             && gs1_cset64(data, data_len, 0, 1, 90, p_err_no, p_err_posn, err_msg);
 }
 
+/* N15 (Used by IMEI, IMEI2) */
+static int gs1_n15(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len == 15
+            && gs1_numeric(data, data_len, 0, 15, 15, p_err_no, p_err_posn, err_msg);
+}
+
+/* N32 (Used by ESIM) */
+static int gs1_n32(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len == 32
+            && gs1_numeric(data, data_len, 0, 32, 32, p_err_no, p_err_posn, err_msg);
+}
+
+/* N18 [N..2] (Used by PSIM) */
+static int gs1_n18__n__2_(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len >= 18 && data_len <= 20
+            && gs1_numeric(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg)
+            && gs1_numeric(data, data_len, 18, 0, 2, p_err_no, p_err_posn, err_msg);
+}
+
 /* X..70,couponcode */
 static int gs1_x__70_couponcode(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
@@ -773,7 +795,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
 
     } else if (ai < 800) {
 
-        if (ai >= 710 && ai <= 716) {
+        if (ai >= 710 && ai <= 717) {
             return gs1_x__20(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
@@ -1015,6 +1037,15 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         }
         if (ai == 8030) {
             return gs1_z__90(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 8040 || ai == 8041) {
+            return gs1_n15(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 8042) {
+            return gs1_n32(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 8043) {
+            return gs1_n18__n__2_(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 8200) {

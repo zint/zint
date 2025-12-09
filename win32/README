@@ -1,4 +1,4 @@
-% win32/README 2025-09-26
+% win32/README 2025-12-09
 
 Visual Studio 2022
 ------------------
@@ -139,7 +139,7 @@ add to path (your path may differ):
 
   set "PATH=C:\Qt\5.15.2\msvc2019\bin;%PATH%"
 
-Now build zint, passing the locations zlib, lpng and gs1encoders:
+Now build zint, passing the locations of zlib, lpng and gs1encoders:
 
   cd zint
   cmake -G "Visual Studio 16 2019" -A Win32 -DCMAKE_BUILD_TYPE=Release -B build^

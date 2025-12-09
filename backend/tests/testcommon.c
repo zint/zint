@@ -567,6 +567,7 @@ const char *testUtilInputModeName(int input_mode) {
         { "HEIGHTPERROW_MODE", HEIGHTPERROW_MODE, 0x0040 },
         { "FAST_MODE", FAST_MODE, 0x0080 },
         { "EXTRA_ESCAPE_MODE", EXTRA_ESCAPE_MODE, 0x0100 },
+        { "GS1SYNTAXENGINE_MODE", GS1SYNTAXENGINE_MODE, 0x0200 },
     };
     const int data_size = ARRAY_SIZE(data);
     int set, i;
@@ -2578,7 +2579,7 @@ int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, 
 
 /* Convert Zint GS1 and add-on format to BWIPP's */
 static char *testUtilBwippCvtGS1Data(char *bwipp_data, const int bwipp_data_size, const int upcean,
-                const int parens_mode, const int parens_esc_mode, int *addon_posn, int *parens_esc) {
+                const int parens_mode, int *addon_posn, int *parens_esc) {
     char *b = bwipp_data, *c;
     char *be = b + bwipp_data_size;
     int pipe = 0;
@@ -2590,7 +2591,7 @@ static char *testUtilBwippCvtGS1Data(char *bwipp_data, const int bwipp_data_size
     *parens_esc = 0;
     for (c = cpy; b < be && *c; b++, c++) {
         if ((!parens_mode && (*c == '(' || *c == ')'))
-                || (parens_esc_mode && *c == '\\' && (c[1] == '(' || c[1] == ')'))) {
+                || (parens_mode && *c == '\\' && (c[1] == '(' || c[1] == ')'))) {
             if (b + 4 >= be) {
                 fprintf(stderr, "testUtilBwippCvtGS1Data: parenthesis bwipp_data buffer full (%d)\n",
                         bwipp_data_size);
@@ -2902,7 +2903,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     const int parens_mode = symbol->input_mode & GS1PARENS_MODE;
     const char obracket = parens_mode ? '(' : '[';
     const char cbracket = parens_mode ? ')' : ']';
-    const int parens_esc_mode = parens_mode && (symbol->input_mode & ESCAPE_MODE);
     int addon_posn;
     int parens_esc;
     int eci;
@@ -2950,8 +2950,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         strcat(bwipp_data, primary);
         strcat(bwipp_data, "|");
         strcat(bwipp_data, data);
-        if (testUtilBwippCvtGS1Data(bwipp_data, bwipp_data_size, upcean, parens_mode, parens_esc_mode, &addon_posn,
-                                    &parens_esc) == NULL) {
+        if (testUtilBwippCvtGS1Data(bwipp_data, bwipp_data_size, upcean, parens_mode, &addon_posn, &parens_esc)
+                == NULL) {
             return -1;
         }
 
@@ -2996,8 +2996,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                                                                 : parens_mode ? "(01)" : "[01]");
             }
             strcat(bwipp_data, data);
-            if (testUtilBwippCvtGS1Data(bwipp_data, bwipp_data_size, upcean, parens_mode, parens_esc_mode,
-                                        &addon_posn, &parens_esc) == NULL) {
+            if (testUtilBwippCvtGS1Data(bwipp_data, bwipp_data_size, upcean, parens_mode, &addon_posn, &parens_esc)
+                    == NULL) {
                 return -1;
             }
 

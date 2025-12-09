@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-11-04)
+Version 2.15.0.9 (dev) not released yet (2025-12-09)
 ====================================================
 
 **Incompatible changes**
@@ -60,6 +60,7 @@ Changes
 - GS1_MODE: allow GS1 Digital Link URIs (no validation unless
   `GS1SYNTAXENGINE_MODE` set)
 - CLI: --gs1parens, --gs1nocheck and --gs1strict now imply --gs1
+- GS1: new AIs 717 (GSCN 25-199) and 8040-3 (GSCN 25-047)
 
 Bugs
 ----

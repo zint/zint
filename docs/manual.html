@@ -334,7 +334,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.15.0.9</p>
-<p class="date">November 2025</p>
+<p class="date">December 2025</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -5052,8 +5052,8 @@ escaped by doubling the caret (<code>^</code>). For instance</p>
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> CODE128 <span class="at">-d</span> <span class="st">&quot;\^AABC\^^BDEF&quot;</span> <span class="at">--extraesc</span></span></code></pre></div>
 <p>will encode the data <code>"ABC\^BDEF"</code> in Code Set A.</p>
 <p>There is also the extra escape <code>\^1</code>, which will encode a
-special Function Code 1 character (<code>FNC1</code>) anywhere you chose
-in the data, for instance</p>
+special Function Code 1 character (<code>FNC1</code>) anywhere you
+choose in the data, for instance</p>
 <div class="sourceCode" id="cb102"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> CODE128 <span class="at">-d</span> <span class="st">&quot;A\^1BC\^1DEF&quot;</span> <span class="at">--extraesc</span></span></code></pre></div>
 <p>Zint can encode a maximum of 102 symbol characters, which allows for
