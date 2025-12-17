@@ -184,6 +184,8 @@
 - strcpy() -> memcpy(); sizeof(primary); tabs -> spaces
 2025-04-16 GL
 - Added: EAN8, EAN_2ADDON, EAN_5ADDON, EAN13, EAN8_CC, EAN13_CC, DMFILMEDGE
+2025-12-17 HaO
+- Added -gs1strict switch, copied from CLI program.
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -574,6 +576,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --gs1 replaced by -format */
     "   -gs1nocheck bool: for gs1, do not check validity of data (allows non-standard symbols)\n"
     "   -gs1parens bool: for gs1, AIs enclosed in parentheses instead of square brackets\n"
+    "   -gs1strict bool: Use GS1 Syntax Engine to strictly validate GS1 data\n"
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
     "   -guarddescent double: Height of guard bar descent in modules (EAN/UPC only)\n"
     "   -guardwhitespace bool: add quiet zone indicators (EAN/UPC only)\n"
@@ -898,8 +901,8 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-addongap", "-barcode", "-bg", "-bind", "-bindtop", "-bold", "-border", "-box",
             "-cols", "-compliantheight", "-dmiso144", "-dmre", "-dotsize", "-dotty",
             "-eci", "-esc", "-extraesc", "-fast", "-fg", "-format", "-fullmultibyte",
-            "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent", "-guardwhitespace",
-            "-height", "-heightperrow", "-init", "-mask", "-mode",
+            "-gs1nocheck", "-gs1parens", "-gs1strict", "-gssep", "-guarddescent",
+            "-guardwhitespace", "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
             "-reverse", "-rotate", "-rows", "-scale", "-scalexdimdp", "-scmvv", "-secure",
             "-seg1", "-seg2", "-seg3", "-seg4", "-seg5", "-seg6", "-seg7", "-seg8", "-seg9",
@@ -910,8 +913,8 @@ static int Encode(Tcl_Interp *interp, int objc,
             iAddonGap, iBarcode, iBG, iBind, iBindTop, iBold, iBorder, iBox,
             iCols, iCompliantHeight, iDMISO144, iDMRE, iDotSize, iDotty,
             iECI, iEsc, iExtraEsc, iFast, iFG, iFormat, iFullMultiByte,
-            iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent, iGuardWhitespace,
-            iHeight, iHeightPerRow, iInit, iMask, iMode,
+            iGS1NoCheck, iGS1Parens, iGS1Strict, iGSSep, iGuardDescent,
+            iGuardWhitespace, iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
             iReverse, iRotate, iRows, iScale, iScaleXdimDp, iSCMvv, iSecure,
             iSeg1, iSeg2, iSeg3, iSeg4, iSeg5, iSeg6, iSeg7, iSeg8, iSeg9,
@@ -946,6 +949,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iFast:
         case iGS1NoCheck:
         case iGS1Parens:
+        case iGS1Strict:
         case iGSSep:
         case iGuardWhitespace:
         case iHeightPerRow:
@@ -1150,6 +1154,13 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->input_mode |= GS1PARENS_MODE;
             } else {
                 my_symbol->input_mode &= ~GS1PARENS_MODE;
+            }
+            break;
+        case iGS1Strict:
+            if (intValue) {
+                my_symbol->input_mode |= GS1SYNTAXENGINE_MODE;
+            } else {
+                my_symbol->input_mode &= ~GS1SYNTAXENGINE_MODE;
             }
             break;
         case iGSSep:
