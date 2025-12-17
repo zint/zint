@@ -5810,7 +5810,7 @@ printf "%s\n" "$ac_cv_c_bigendian" >&6; }
 
 
 
-    vars=""
+    vars="-lgs1encoders"
     for i in $vars; do
 	if test "${TEA_PLATFORM}" = "windows" -a "$GCC" = "yes" ; then
 	    # Convert foo.lib to -lfoo for GCC.  No-op if not *.lib
@@ -5821,7 +5821,7 @@ printf "%s\n" "$ac_cv_c_bigendian" >&6; }
 
 
 
-    PKG_CFLAGS="$PKG_CFLAGS -I../backend -DZINT_NO_PNG=1 -DZINT_VERSION=PACKAGE_VERSION"
+    PKG_CFLAGS="$PKG_CFLAGS -I../backend -DZINT_NO_PNG=1 -DZINT_HAVE_GS1SE=1 -DZINT_VERSION=PACKAGE_VERSION"
 
 
 

@@ -576,7 +576,9 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --gs1 replaced by -format */
     "   -gs1nocheck bool: for gs1, do not check validity of data (allows non-standard symbols)\n"
     "   -gs1parens bool: for gs1, AIs enclosed in parentheses instead of square brackets\n"
+#ifdef ZINT_HAVE_GS1SE
     "   -gs1strict bool: Use GS1 Syntax Engine to strictly validate GS1 data\n"
+#endif
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
     "   -guarddescent double: Height of guard bar descent in modules (EAN/UPC only)\n"
     "   -guardwhitespace bool: add quiet zone indicators (EAN/UPC only)\n"
@@ -901,7 +903,11 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-addongap", "-barcode", "-bg", "-bind", "-bindtop", "-bold", "-border", "-box",
             "-cols", "-compliantheight", "-dmiso144", "-dmre", "-dotsize", "-dotty",
             "-eci", "-esc", "-extraesc", "-fast", "-fg", "-format", "-fullmultibyte",
-            "-gs1nocheck", "-gs1parens", "-gs1strict", "-gssep", "-guarddescent",
+            "-gs1nocheck", "-gs1parens",
+#ifdef ZINT_HAVE_GS1SE
+            "-gs1strict",
+#endif
+            "-gssep", "-guarddescent",
             "-guardwhitespace", "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
             "-reverse", "-rotate", "-rows", "-scale", "-scalexdimdp", "-scmvv", "-secure",
@@ -913,7 +919,11 @@ static int Encode(Tcl_Interp *interp, int objc,
             iAddonGap, iBarcode, iBG, iBind, iBindTop, iBold, iBorder, iBox,
             iCols, iCompliantHeight, iDMISO144, iDMRE, iDotSize, iDotty,
             iECI, iEsc, iExtraEsc, iFast, iFG, iFormat, iFullMultiByte,
-            iGS1NoCheck, iGS1Parens, iGS1Strict, iGSSep, iGuardDescent,
+            iGS1NoCheck, iGS1Parens,
+#ifdef ZINT_HAVE_GS1SE
+            iGS1Strict,
+#endif
+            iGSSep, iGuardDescent,
             iGuardWhitespace, iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
             iReverse, iRotate, iRows, iScale, iScaleXdimDp, iSCMvv, iSecure,
@@ -949,7 +959,9 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iFast:
         case iGS1NoCheck:
         case iGS1Parens:
+#ifdef ZINT_HAVE_GS1SE
         case iGS1Strict:
+#endif
         case iGSSep:
         case iGuardWhitespace:
         case iHeightPerRow:
@@ -1145,6 +1157,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iGS1NoCheck:
             if (intValue) {
                 my_symbol->input_mode |= GS1NOCHECK_MODE;
+                my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; /* Now sets GS1_MODE also */
             } else {
                 my_symbol->input_mode &= ~GS1NOCHECK_MODE;
             }
@@ -1152,17 +1165,21 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iGS1Parens:
             if (intValue) {
                 my_symbol->input_mode |= GS1PARENS_MODE;
+                my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; /* Now sets GS1_MODE also */
             } else {
                 my_symbol->input_mode &= ~GS1PARENS_MODE;
             }
             break;
+#ifdef ZINT_HAVE_GS1SE
         case iGS1Strict:
             if (intValue) {
                 my_symbol->input_mode |= GS1SYNTAXENGINE_MODE;
+                my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; /* Now sets GS1_MODE also */
             } else {
                 my_symbol->input_mode &= ~GS1SYNTAXENGINE_MODE;
             }
             break;
+#endif
         case iGSSep:
             if (intValue) {
                 my_symbol->output_options |= GS1_GS_SEPARATOR;
