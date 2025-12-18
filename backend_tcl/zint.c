@@ -577,7 +577,9 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -gs1nocheck bool: for gs1, do not check validity of data (allows non-standard symbols)\n"
     "   -gs1parens bool: for gs1, AIs enclosed in parentheses instead of square brackets\n"
 #ifdef ZINT_HAVE_GS1SE
-    "   -gs1strict bool: Use GS1 Syntax Engine to strictly validate GS1 data\n"
+    "   -gs1strict bool: use GS1 Syntax Engine to strictly validate GS1 data\n"
+#else
+    "   -gs1strict 0: GS1 syntax engine not compiled in, may not be activated.\n"
 #endif
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
     "   -guarddescent double: Height of guard bar descent in modules (EAN/UPC only)\n"
@@ -904,9 +906,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-cols", "-compliantheight", "-dmiso144", "-dmre", "-dotsize", "-dotty",
             "-eci", "-esc", "-extraesc", "-fast", "-fg", "-format", "-fullmultibyte",
             "-gs1nocheck", "-gs1parens",
-#ifdef ZINT_HAVE_GS1SE
             "-gs1strict",
-#endif
             "-gssep", "-guarddescent",
             "-guardwhitespace", "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
@@ -920,9 +920,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             iCols, iCompliantHeight, iDMISO144, iDMRE, iDotSize, iDotty,
             iECI, iEsc, iExtraEsc, iFast, iFG, iFormat, iFullMultiByte,
             iGS1NoCheck, iGS1Parens,
-#ifdef ZINT_HAVE_GS1SE
             iGS1Strict,
-#endif
             iGSSep, iGuardDescent,
             iGuardWhitespace, iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
@@ -959,9 +957,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iFast:
         case iGS1NoCheck:
         case iGS1Parens:
-#ifdef ZINT_HAVE_GS1SE
         case iGS1Strict:
-#endif
         case iGSSep:
         case iGuardWhitespace:
         case iHeightPerRow:
@@ -1170,16 +1166,20 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->input_mode &= ~GS1PARENS_MODE;
             }
             break;
-#ifdef ZINT_HAVE_GS1SE
         case iGS1Strict:
             if (intValue) {
+#ifdef ZINT_HAVE_GS1SE
                 my_symbol->input_mode |= GS1SYNTAXENGINE_MODE;
                 my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; /* Now sets GS1_MODE also */
+#else
+                Tcl_SetObjResult(interp,
+                    Tcl_NewStringObj("GS1 syntax engine not compiled in", -1));
+                fError = 1;
+#endif
             } else {
                 my_symbol->input_mode &= ~GS1SYNTAXENGINE_MODE;
             }
             break;
-#endif
         case iGSSep:
             if (intValue) {
                 my_symbol->output_options |= GS1_GS_SEPARATOR;

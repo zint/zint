@@ -18,6 +18,17 @@
 #
 #------------------------------------------------------------------------------
 
+# Activate GS1 syntax engine support (option "-gs1strict")
+# https://github.com/gs1/gs1-syntax-engine
+# Build the library gs1encoders.dll
+ZINT_HAVE_GS1SE = 0
+
+# folder of the include file gs1encoders.h (in src/c-lib folder of the syntax engine)
+SYNTAX_ENGINE_INCLUDE = $(ROOT)\..\..\gs1-syntax-engine-main\src\c-lib
+
+# folder of the library gs1encoders.lib of the syntax engine
+SYNTAX_ENGINE_LIB = $(ROOT)\..\..\gs1-syntax-engine-main\src\c-lib\build\library\x64\Release
+
 # The name of the package
 PROJECT = zint
 PROJECT_REQUIRES_TK = 1
@@ -94,11 +105,14 @@ PRJ_OBJS = \
 PRJ_DEFINES = -D_CRT_SECURE_NO_DEPRECATE
 PRJ_DEFINES = $(PRJ_DEFINES) -DZINT_NO_PNG=1
 # PRJ_DEFINES = $(PRJ_DEFINES) -DZINT_VERSION=PACKAGE_VERSION
-PRJ_DEFINES = $(PRJ_DEFINES) -I$(TMP_DIR)
-PRJ_DEFINES = $(PRJ_DEFINES) -I$(BACKEND_DIR)
+PRJ_INCLUDES = -I$(TMP_DIR)
+PRJ_INCLUDES = $(PRJ_INCLUDES) -I$(BACKEND_DIR)
 
-
-
+!if $(ZINT_HAVE_GS1SE)
+PRJ_DEFINES = $(PRJ_DEFINES) -DZINT_HAVE_GS1SE=1
+PRJ_INCLUDES = $(PRJ_INCLUDES) -I$(SYNTAX_ENGINE_INCLUDE)
+PRJ_LIBS = $(SYNTAX_ENGINE_LIB)\gs1encoders.lib
+!endif
 
 # Define the standard targets
 !include "$(_RULESDIR)\targets.vc"
