@@ -2114,23 +2114,26 @@ int main(int argc, char **argv) {
                 cpy_str(my_symbol->bgcolour, ARRAY_SIZE(my_symbol->bgcolour), "000000");
                 break;
 
-            case '?':
-                if (optopt) {
-                    for (i = 0; i < ARRAY_SIZE(long_options) && long_options[i].val != optopt; i++);
-                    if (i == ARRAY_SIZE(long_options)) { /* Shouldn't happen */
-                        fprintf(stderr, "Error 125: ?? unknown optopt '%d'\n", optopt); /* Not reached */
-                        return do_exit(ZINT_ERROR_ENCODING_PROBLEM);
-                    }
-                    if (long_options[i].has_arg) {
-                        fprintf(stderr, "Error 109: option '%s' requires an argument\n", argv[optind - 1]);
+            case '?': {
+                    /* Workaround musl `optind` bug - see https://www.openwall.com/lists/musl/2025/12/19/1 */
+                    const int idx = optind <= argc ? optind - 1 : argc - 1;
+                    const char *const arg = argv[idx] ? argv[idx] : "?";
+                    if (optopt) {
+                        for (i = 0; i < ARRAY_SIZE(long_options) && long_options[i].val != optopt; i++);
+                        if (i == ARRAY_SIZE(long_options)) { /* Shouldn't happen */
+                            fprintf(stderr, "Error 125: ?? unknown optopt '%d'\n", optopt); /* Not reached */
+                            return do_exit(ZINT_ERROR_ENCODING_PROBLEM);
+                        }
+                        if (long_options[i].has_arg) {
+                            fprintf(stderr, "Error 109: option '%s' requires an argument\n", arg);
+                        } else {
+                            const char *const eqs = strchr(arg, '=');
+                            const int optlen = eqs ? (int) (eqs - arg) : (int) strlen(arg);
+                            fprintf(stderr, "Error 126: option '%.*s' does not take an argument\n", optlen, arg);
+                        }
                     } else {
-                        const char *eqs = strchr(argv[optind - 1], '=');
-                        const int optlen = eqs ? (int) (eqs - argv[optind - 1]) : (int) strlen(argv[optind - 1]);
-                        fprintf(stderr, "Error 126: option '%.*s' does not take an argument\n", optlen,
-                                argv[optind - 1]);
+                        fprintf(stderr, "Error 101: unknown option '%s'\n", arg);
                     }
-                } else {
-                    fprintf(stderr, "Error 101: unknown option '%s'\n", argv[optind - 1]);
                 }
                 return do_exit(ZINT_ERROR_INVALID_OPTION);
                 break;

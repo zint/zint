@@ -1390,6 +1390,64 @@ static void test_exit_status(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_bad_args(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int b;
+        const char *data;
+        int input_mode;
+        const char *opt;
+        const char *opt_data;
+
+        const char *expected;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, NULL, -1, NULL, NULL, "Error 109: option '-d' requires an argument" },
+        /*  1*/ { BARCODE_CODE128, "1", -1, " -o", NULL, "Error 109: option '-o' requires an argument" },
+        /*  2*/ { BARCODE_CODE128, "1", -1, " --fast=", "1", "Error 126: option '--fast' does not take an argument" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i;
+    int exit_status;
+
+    char cmd[4096];
+    char buf[8192];
+
+    testStart("test_bad_args");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        strcpy(cmd, "zint");
+        *buf = '\0';
+
+        arg_int(cmd, "-b ", data[i].b);
+        arg_input_mode(cmd, data[i].input_mode);
+        if (data[i].data) {
+            arg_data(cmd, "-d ", data[i].data);
+        } else {
+            strcat(cmd, " -d");
+        }
+        if (data[i].opt) {
+            if (data[i].opt_data != NULL) {
+                arg_data(cmd, data[i].opt, data[i].opt_data);
+            } else {
+                strcat(cmd, data[i].opt);
+            }
+        }
+
+        strcat(cmd, " 2>&1");
+
+        assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, &exit_status), "i:%d exec(%s) NULL\n", i, cmd);
+        assert_zero(strcmp(buf, data[i].expected), "i:%d buf (%s) != expected (%s) (%s)\n", i, buf, data[i].expected, cmd);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
@@ -1404,6 +1462,7 @@ int main(int argc, char *argv[]) {
         { "test_other_opts", test_other_opts },
         { "test_combos", test_combos },
         { "test_exit_status", test_exit_status },
+        { "test_bad_args", test_bad_args },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
