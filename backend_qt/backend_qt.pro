@@ -17,7 +17,7 @@ TARGET = QtZint
 INCLUDEPATH += ../backend
 
 #EDIT THIS !!!!
-DEFINES += ZINT_VERSION="\\\"2.15.0.9\\\""
+DEFINES += ZINT_VERSION="\\\"2.16.0\\\""
 
 INCLUDEPATH += ../../lpng
 INCLUDEPATH += ../../zlib
@@ -127,7 +127,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/dllversion.c \
            qzint.cpp
 
-VERSION = 2.15.0.9
+VERSION = 2.16.0
 
 #DESTDIR = .
 

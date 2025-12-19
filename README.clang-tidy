@@ -1,4 +1,4 @@
-% README.clang-tidy 2025-10-08
+% README.clang-tidy 2025-12-19
 % Current as of latest clang-tidy-22 via
 %   wget https://apt.llvm.org/llvm.sh; chmod +x llvm.sh; sudo ./llvm.sh 22 all
 
@@ -11,7 +11,7 @@ clang-tidy-22 backend/*.c frontend/*.c backend_qt/*.cpp frontend_qt/*.cpp -p bui
 
 For "backend_tcl", which has no "compile_commands.json", specify the tcl include directory and package define, e.g.
 
-clang-tidy-22 backend_tcl/*.c -- -I/usr/include/tcl8.6 -DPACKAGE_VERSION='"2.15.0"'
+clang-tidy-22 backend_tcl/*.c -- -I/usr/include/tcl8.6 -DPACKAGE_VERSION='"2.16.0"'
 
 Options are in ".clang-tidy" (in the project root directory). The excluded check is
 `clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling` (for `sprintf()`).

@@ -1,18 +1,18 @@
-2025-01-22
+2025-12-16
 (C) Harald Oehlmann
 harald.oehlmann@users.sourceforge.net
 
 To build using nmake on Windows:
 
-Download the tcl and tk 8.6.16 or 9.0.1 source from:
+Download the tcl and tk 8.6.17 or 9.0.3 source from:
 
   https://sourceforge.net/projects/tcl/files/Tcl/
 
 Unzip them into a folder (example: c:\temp)
 
   In the following:
-  <tcl> is c:\temp\tcl8.6.16 (or 9.0.1)
-  <tk> is c:\temp\tk8.6.16 (or 9.0.1)
+  <tcl> is c:\temp\tcl8.6.17 (or 9.0.3)
+  <tk> is c:\temp\tk8.6.17 (or 9.0.3)
   <inst> is the Tcl/Tk install directory (example: c:\Tcl)
   <zint> is the Zint project root directory
 

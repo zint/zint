@@ -1,5 +1,5 @@
-Version 2.15.0.9 (dev) not released yet (2025-12-09)
-====================================================
+Version 2.16.0 (2025-12-19)
+===========================
 
 **Incompatible changes**
 ------------------------
@@ -21,6 +21,9 @@ Version 2.15.0.9 (dev) not released yet (2025-12-09)
 - UPC-E now returns warning if first digit of 7 digits ignored (not '0' or '1')
 - For GS1 Composite, no primary (linear component) now returns
   `ZINT_ERROR_INVALID_DATA` (previously returned `ZINT_ERROR_INVALID_OPTION`)
+- The distributed Windows binary "zint.exe" is now built with Microsoft Visual
+  Studio 2015 and requires the Visual C runtime DLL "VCRUNTIME140.dll"
+  (previously it was built with Visual Studio 6.0)
 
 Changes
 -------

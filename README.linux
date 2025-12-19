@@ -1,6 +1,6 @@
-% README.linux 2025-10-02
+% README.linux 2025-12-15
 % Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
-% Fedora Linux 42 (Workstation Edition)
+% Fedora Linux 43 (Workstation Edition)
 
 1. Prerequisites for building zint
 ==================================
@@ -33,10 +33,10 @@ and navigate to "src/c-lib" and make:
 
 Now either download the zint source code tarball
 
-    wget -O zint-2.15.0-src.tar.gz \
-        https://sourceforge.net/projects/zint/files/zint/2.15.0/zint-2.15.0-src.tar.gz/download
-    tar xf zint-2.15.0-src.tar.gz
-    cd zint-2.15.0-src
+    wget -O zint-2.16.0-src.tar.gz \
+        https://sourceforge.net/projects/zint/files/zint/2.16.0/zint-2.16.0-src.tar.gz/download
+    tar xf zint-2.16.0-src.tar.gz
+    cd zint-2.16.0-src
 
 or clone the latest source
 
