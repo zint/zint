@@ -22,6 +22,10 @@ The GS1 Syntax Engine must be available. See the instructions in "README.linux"
 for Linux, "README.macos" for macOS, "README.bsd" for BSD, and "win32\README"
 for Windows to install.
 
+In the distributed binaries for Windows, the Tcl8 DLL "zint2160t.dll" is 32-bit,
+built with MSVC 2015, and the Tcl9 DLL "tcl9zint2160.dll" is 64-bit, built with
+MSVC 2022.
+
 Usage:
 
 package require zint
