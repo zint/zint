@@ -19,15 +19,18 @@
 #------------------------------------------------------------------------------
 
 # Activate GS1 syntax engine support (option "-gs1strict")
-# https://github.com/gs1/gs1-syntax-engine
-# Build the library gs1encoders.dll
-ZINT_HAVE_GS1SE = 0
+# https://github.com/gitlost/gs1-syntax-engine
+ZINT_HAVE_GS1SE = 1
 
 # folder of the include file gs1encoders.h (in src/c-lib folder of the syntax engine)
-SYNTAX_ENGINE_INCLUDE = $(ROOT)\..\..\gs1-syntax-engine-main\src\c-lib
+SYNTAX_ENGINE_INCLUDE = $(ROOT)\..\..\gs1-syntax-engine\src\c-lib
 
 # folder of the library gs1encoders.lib of the syntax engine
-SYNTAX_ENGINE_LIB = $(ROOT)\..\..\gs1-syntax-engine-main\src\c-lib\build\library\x64\Release
+# same as above if building using static library
+SYNTAX_ENGINE_LIB = $(SYNTAX_ENGINE_INCLUDE)
+# in arch-specific Release folder if building using DLL
+#SYNTAX_ENGINE_LIB = $(SYNTAX_ENGINE_INCLUDE)\build\library\x64\Release
+#SYNTAX_ENGINE_LIB = $(SYNTAX_ENGINE_INCLUDE)\build\library\Win32\Release
 
 # The name of the package
 PROJECT = zint

@@ -1,6 +1,6 @@
     zint tcl binding readme
     -----------------------
-    2025-01-22
+    2025-12-19
     (C) Harald Oehlmann
     (C) Git Lost
     harald.oehlmann@users.sourceforge.net
@@ -18,13 +18,9 @@ There are the standard TCL build environments available:
 - "win\makefile.vc" for Microsoft Visual Studio command prompt (nmake) - see
   "win\README.txt" for details
 
-The GS1 syntax engine may be added optionally.
-https://github.com/gs1/gs1-syntax-engine
-Please look to the top of makefile.vc to activate it.
-
-The GS1 syntax engine project currently only allows to build a dll and an import lib.
-This hopefully changes in future.
-Remark, that the syntax engine dll may not be included in a starkit or zipkit.
+The GS1 Syntax Engine must be available. See the instructions in "README.linux"
+for Linux, "README.macos" for macOS, "README.bsd" for BSD, and "win32\README"
+for Windows to install.
 
 Usage:
 
