@@ -5968,9 +5968,9 @@ Mailmark</h3>
 includes Reed- Solomon error correction.</p>
 <figure>
 <img src="images/mailmark_4s.svg" class="trk"
-alt="zint -b MAILMARK_4S --compliantheight -d &quot;1100000000000XY11&quot;" />
+alt="zint -b MAILMARK_4S --compliantheight -d &quot;21B2254800659JW5O9QA6Y&quot;" />
 <figcaption><span class="figure-label">Figure 107:</span>
-<code>zint -b MAILMARK_4S --compliantheight -d "1100000000000XY11"</code></figcaption>
+<code>zint -b MAILMARK_4S --compliantheight -d "21B2254800659JW5O9QA6Y"</code></figcaption>
 </figure>
 <p>Input is a pre-formatted alphanumeric string of 22 (for Barcode C) or
 26 (for Barcode L) characters, producing a symbol with 66 or 78 bars
@@ -6030,7 +6030,8 @@ Mailmark Destination+DPS Patterns</caption>
 <code>'S'</code> for space.</p>
 <p>Four of the permitted patterns include a number of trailing space
 characters - these will be appended by Zint if not included in the input
-data.</p>
+data. A special fixed string <code>"XY11     "</code> (5 trailing
+spaces, inclusion optional) designates an international destination.</p>
 <p>For the two-dimensional Data Matrix-based version, see <a
 href="#royal-mail-2d-mailmark-cmdm-data-matrix">6.6.2 Royal Mail 2D
 Mailmark (CMDM) (Data Matrix)</a>.</p>

@@ -4074,7 +4074,7 @@ Developed in 2014 as a replacement for RM4SCC this 4-state symbol includes Reed-
 Solomon error correction.
 
 ![`zint -b MAILMARK_4S --compliantheight -d
-"1100000000000XY11"`](images/mailmark_4s.svg){.trk}
+"21B2254800659JW5O9QA6Y"`](images/mailmark_4s.svg){.trk}
 
 Input is a pre-formatted alphanumeric string of 22 (for Barcode C) or 26 (for
 Barcode L) characters, producing a symbol with 66 or 78 bars respectively. The
@@ -4104,7 +4104,9 @@ where `'A'` stands for full alphabetic (A-Z), `'L'` for limited alphabetic (A-Z
 less `'CIKMOV'`), `'N'` for numeric (0-9), and `'S'` for space.
 
 Four of the permitted patterns include a number of trailing space characters -
-these will be appended by Zint if not included in the input data.
+these will be appended by Zint if not included in the input data. A special
+fixed string `"XY11     "` (5 trailing spaces, inclusion optional) designates an
+international destination.
 
 For the two-dimensional Data Matrix-based version, see [6.6.2 Royal Mail 2D
 Mailmark (CMDM) (Data Matrix)].

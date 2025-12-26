@@ -19,6 +19,9 @@
  */
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+#ifdef ZINT_TEST
+#include <assert.h>
+#endif
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -61,6 +64,10 @@ typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 
 #    include <alloca.h>
 #  endif
 #  define z_alloca(nmemb) alloca(nmemb)
+#endif
+
+#ifdef ZINT_TEST
+static void test(void); /* Forward-ref */
 #endif
 
 /* Print list of supported symbologies */
@@ -129,12 +136,11 @@ static void version(const int no_png, const int have_gs1syntaxengine) {
     const int version_major = zint_version / 10000;
     const int version_minor = (zint_version % 10000) / 100;
     int version_release = zint_version % 100;
-    int version_build;
 
     if (version_release >= 9) {
         /* This is a test release */
+        const int version_build = zint_version % 10;
         version_release = version_release / 10;
-        version_build = zint_version % 10;
         printf("Zint version %d.%d.%d.%d (dev)%s%s\n", version_major, version_minor, version_release, version_build,
                 no_png_lib, have_gs1syntaxengine_lib);
     } else {
@@ -146,8 +152,8 @@ static void version(const int no_png, const int have_gs1syntaxengine) {
 
 /* Output usage information */
 static void usage(const int no_png, const int have_gs1syntaxengine) {
-    const char *no_png_type = no_png ? "" : "/PNG";
-    const char *no_png_ext = no_png ? "gif" : "png";
+    const char *const no_png_type = no_png ? "" : "/PNG";
+    const char *const no_png_ext = no_png ? "gif" : "png";
 
     version(no_png, have_gs1syntaxengine);
 
@@ -265,7 +271,7 @@ static void show_eci(void) {
 }
 
 /* Do buffer-checking `strcpy()`-like copy */
-static void cpy_str(char *buf, const int buf_size, const char *str) {
+static void cpy_str(char *const buf, const int buf_size, const char *const str) {
     const int str_len = (int) strlen(str);
     const int max_len = str_len >= buf_size ? buf_size - 1 : str_len;
     memcpy(buf, str, max_len);
@@ -273,7 +279,7 @@ static void cpy_str(char *buf, const int buf_size, const char *str) {
 }
 
 /* Do buffer-checking `strncpy()`-like copy */
-static void ncpy_str(char *buf, const int buf_size, const char *str, const int str_max) {
+static void ncpy_str(char *const buf, const int buf_size, const char *const str, const int str_max) {
     const int str_len = (int) strlen(str);
     const int max_str_len = str_len > str_max ? str_max : str_len;
     const int max_len = max_str_len >= buf_size ? buf_size - 1 : max_str_len;
@@ -282,7 +288,7 @@ static void ncpy_str(char *buf, const int buf_size, const char *str, const int s
 }
 
 /* Verifies that a string (length <= 9) only uses digits. On success returns value in arg */
-static int validate_int(const char source[], int len, int *p_val) {
+static int validate_int(const char source[], int len, int *const p_val) {
     int val = 0;
     int i;
     const int length = len == -1 ? (int) strlen(source) : len;
@@ -304,7 +310,7 @@ static int validate_int(const char source[], int len, int *p_val) {
 
 /* Verifies that a string is a simplified form of floating point, max 7 significant decimal digits with
    optional decimal point. On success returns val in arg. On failure sets `errbuf` */
-static int validate_float(const char source[], const int allow_neg, float *p_val, char errbuf[64]) {
+static int validate_float(const char source[], const int allow_neg, float *const p_val, char errbuf[64]) {
     static const float fract_muls[7] = { 0.1f, 0.01f, 0.001f, 0.0001f, 0.00001f, 0.000001f, 0.0000001f };
     int val = 0;
     int neg = 0;
@@ -387,7 +393,11 @@ static void to_lower(char source[]) {
 }
 
 /* Return symbology id if `barcode_name` a barcode name */
-static int get_barcode_name(const char *barcode_name) {
+#ifdef ZINT_TEST
+static int get_barcode_name(const char *const barcode_name, const int test) {
+#else
+static int get_barcode_name(const char *const barcode_name) {
+#endif
     /* Must be sorted for binary search to work */
     static const struct { int symbology; const char *n; } names[] = {
         { BARCODE_C25LOGIC, "2of5datalogic" }, /* Synonym */
@@ -618,6 +628,19 @@ static int get_barcode_name(const char *barcode_name) {
     char n[30];
     int i, j, length;
 
+#ifdef ZINT_TEST
+    if (test) {
+        /* Ensure array sorted */
+        for (i = 0; i < e; i++) {
+            if (strcmp(names[i].n, names[i + 1].n) >= 0) {
+                fprintf(stderr, "get_barcode_name: %d: %s >= %s\n", i, names[i].n, names[i + 1].n);
+                assert(0);
+            }
+        }
+        return 0;
+    }
+#endif
+
     /* Ignore case and any "BARCODE" prefix */
     cpy_str(n, ARRAY_SIZE(n), barcode_name);
     to_lower(n);
@@ -654,7 +677,7 @@ static int get_barcode_name(const char *barcode_name) {
 }
 
 /* Whether `filetype` supported by Zint. Sets `png_refused` if `no_png` and PNG requested */
-static int supported_filetype(const char *filetype, const int no_png, int *png_refused) {
+static int supported_filetype(const char *const filetype, const int no_png, int *const png_refused) {
     static const char filetypes[][4] = {
         "bmp", "emf", "eps", "gif", "pcx", "png", "svg", "tif", "txt",
     };
@@ -663,6 +686,10 @@ static int supported_filetype(const char *filetype, const int no_png, int *png_r
 
     if (png_refused) {
         *png_refused = 0;
+    }
+    /* Disallow != 3, except for "tiff" */
+    if (strlen(filetype) != 3 && strcmp(filetype, "tiff") != 0 && strcmp(filetype, "TIFF") != 0) {
+        return 0;
     }
     ncpy_str(lc_filetype, ARRAY_SIZE(lc_filetype), filetype, 3);
     to_lower(lc_filetype);
@@ -683,7 +710,7 @@ static int supported_filetype(const char *filetype, const int no_png, int *png_r
 }
 
 /* Get file extension, excluding those of 4 or more letters */
-static char *get_extension(const char *file) {
+static char *get_extension(const char *const file) {
     char *dot;
 
     dot = strrchr(file, '.');
@@ -695,7 +722,7 @@ static char *get_extension(const char *file) {
 
 /* Set extension of `file` to `filetype`, replacing existing extension if any.
  * Does nothing if file already has `filetype` extension */
-static void set_extension(char file[256], const char *filetype) {
+static void set_extension(char file[256], const char *const filetype) {
     char lc_filetype[4];
     char *extension;
     char lc_extension[4];
@@ -722,7 +749,7 @@ static void set_extension(char file[256], const char *filetype) {
 }
 
 /* Whether `filetype` is raster type */
-static int is_raster(const char *filetype, const int no_png) {
+static int is_raster(const char *const filetype, const int no_png) {
     static const char raster_filetypes[][4] = {
         "bmp", "gif", "pcx", "png", "tif",
     };
@@ -748,7 +775,7 @@ static int is_raster(const char *filetype, const int no_png) {
 }
 
 /* Helper for `validate_scalexdimdp()` to search for units, returning -2 on error, -1 if not found, else index */
-static int validate_units(char *buf, const char units[][5], int units_size) {
+static int validate_units(char *const buf, const char units[][5], const int units_size) {
     int i;
     char *unit;
 
@@ -769,7 +796,7 @@ static int validate_units(char *buf, const char units[][5], int units_size) {
 }
 
 /* Parse and validate argument "xdim[,resolution]" to "--scalexdimdp" */
-static int validate_scalexdimdp(const char *arg, float *p_x_dim_mm, float *p_dpmm) {
+static int validate_scalexdimdp(const char *const arg, float *const p_x_dim_mm, float *const p_dpmm) {
     static const char x_units[][5] = { "mm", "in" };
     static const char r_units[][5] = { "dpmm", "dpi" };
     char x_buf[7 + 1 + 4 + 1]; /* Allow for 7 digits + dot + 4-char unit + NUL */
@@ -829,7 +856,7 @@ static int validate_scalexdimdp(const char *arg, float *p_x_dim_mm, float *p_dpm
 }
 
 /* Parse and validate Structured Append argument "index,count[,ID]" to "--structapp" */
-static int validate_structapp(const char *arg, struct zint_structapp *structapp) {
+static int validate_structapp(const char *const arg, struct zint_structapp *const structapp) {
     char index[10], count[10];
     const char *comma = strchr(arg, ',');
     const char *comma2;
@@ -890,9 +917,9 @@ static int validate_structapp(const char *arg, struct zint_structapp *structapp)
 }
 
 /* Parse and validate the segment argument "ECI,DATA" to "--segN" */
-static int validate_seg(const char *arg, const int N, struct zint_seg segs[10]) {
+static int validate_seg(const char *const arg, const int N, struct zint_seg segs[10]) {
     char eci[10];
-    const char *comma = strchr(arg, ',');
+    const char *const comma = strchr(arg, ',');
     if (!comma || comma == arg || comma - arg > 9 || *(comma + 1) == '\0') {
         fprintf(stderr, "Error 166: Invalid segment argument, expect \"ECI,DATA\"\n");
         return 0;
@@ -912,19 +939,19 @@ static int validate_seg(const char *arg, const int N, struct zint_seg segs[10]) 
 }
 
 #ifdef _WIN32
-static FILE *win_fopen(const char *filename, const char *mode); /* Forward ref */
+static FILE *win_fopen(const char *const filename, const char *const mode); /* Forward ref */
 #endif
 
 /* Batch mode - output symbol for each line of text in `filename` */
-static int batch_process(struct zint_symbol *symbol, const char *filename, const int mirror_mode,
-            const char *filetype, const int output_given, const int rotate_angle) {
+static int batch_process(struct zint_symbol *const symbol, const char *const filename, const int mirror_mode,
+            const char *const filetype, const int output_given, const int rotate_angle) {
     FILE *file;
     unsigned char buffer[ZINT_MAX_DATA_LEN] = {0}; /* Maximum HanXin input */
     unsigned char character = 0;
     int buf_posn = 0, error_number = 0, warn_number = 0, line_count = 1;
     char output_file[ARRAY_SIZE(symbol->outfile)];
     char format_string[ARRAY_SIZE(symbol->outfile)];
-    int format_len, i, o, mirror_start_o = 0;
+    int i, mirror_start_o = 0;
     const int from_stdin = strcmp(filename, "-") == 0; /* Suppress clang-19 warning clang-analyzer-unix.Stream */
 
     if (mirror_mode) {
@@ -995,6 +1022,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
                 char *rs = reversed_string;
                 int inpos = 0;
                 int local_line_count = line_count;
+                const int format_len = (int) strlen(format_string);
                 memset(output_file, 0, ARRAY_SIZE(output_file));
                 do {
                     number[inpos++] = (local_line_count % 10) + '0';
@@ -1005,7 +1033,6 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
                     reverse_number[i] = number[inpos - i - 1];
                 }
 
-                format_len = (int) strlen(format_string);
                 for (i = format_len; i > 0; i--) {
                     char adjusted;
 
@@ -1050,8 +1077,8 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
                 }
             } else {
                 /* Name the output file from the data being processed */
+                int o = mirror_start_o;
                 i = 0;
-                o = mirror_start_o;
                 do {
                     if (buffer[i] < 0x20) {
                         output_file[o] = '_';
@@ -1366,7 +1393,7 @@ static WCHAR **win_CommandLineToArgvW(const WCHAR *cmdline, int *numargs) {
 }
 
 /* For Windows replace args with UTF-8 versions */
-static void win_args(int *p_argc, char ***p_argv) {
+static void win_args(int *const p_argc, char ***const p_argv) {
     int i;
     LPWSTR *szArgList = win_CommandLineToArgvW(GetCommandLineW(), &win_argc);
     if (szArgList) {
@@ -1407,7 +1434,7 @@ static void win_args(int *p_argc, char ***p_argv) {
     }
 
 /* Do `fopen()` on Windows, assuming `filename` is UTF-8 encoded. Ticket #288, props Marcel */
-static FILE *win_fopen(const char *filename, const char *mode) {
+static FILE *win_fopen(const char *const filename, const char *const mode) {
     wchar_t *filenameW, *modeW;
 
     utf8_to_wide(filename, filenameW, NULL /*fail return*/);
@@ -1418,7 +1445,7 @@ static FILE *win_fopen(const char *filename, const char *mode) {
 #endif /* _WIN32 */
 
 /* Helper to free Windows args on exit */
-static int do_exit(int error_number) {
+static int do_exit(const int error_number) {
 #ifdef _WIN32
     win_free_args();
 #endif
@@ -1456,7 +1483,7 @@ int main(int argc, char **argv) {
     float x_dim_mm = 0.0f, dpmm = 0.0f;
     float float_opt;
     char errbuf[64]; /* For `validate_float()` */
-    arg_opt *arg_opts = (arg_opt *) z_alloca(sizeof(arg_opt) * argc);
+    arg_opt *const arg_opts = (arg_opt *) z_alloca(sizeof(arg_opt) * argc);
 
     const int no_png = ZBarcode_NoPng();
     const int have_gs1syntaxengine = ZBarcode_HaveGS1SyntaxEngine();
@@ -1490,8 +1517,11 @@ int main(int argc, char **argv) {
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
             OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
             OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
-            OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP, OPT_TEXTGAP,
-            OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
+            OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
+#ifdef ZINT_TEST
+            OPT_TEST,
+#endif
+            OPT_TEXTGAP, OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
         };
         static const struct option long_options[] = {
             {"addongap", 1, NULL, OPT_ADDONGAP},
@@ -1568,6 +1598,9 @@ int main(int argc, char **argv) {
             {"small", 0, NULL, OPT_SMALL},
             {"square", 0, NULL, OPT_SQUARE},
             {"structapp", 1, NULL, OPT_STRUCTAPP},
+#ifdef ZINT_TEST
+            {"test", 0, NULL, OPT_TEST},
+#endif
             {"textgap", 1, NULL, OPT_TEXTGAP},
             {"types", 0, NULL, 't'},
             {"verbose", 0, NULL, OPT_VERBOSE}, /* Currently undocumented, output some debug info */
@@ -1987,6 +2020,12 @@ int main(int argc, char **argv) {
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 break;
+#ifdef ZINT_TEST
+            case OPT_TEST:
+                test();
+                help = 1; /* Mark as help to avoid "No data" warning */
+                break;
+#endif
             case OPT_TEXTGAP:
                 if (!validate_float(optarg, 1 /*allow_neg*/, &float_opt, errbuf)) {
                     fprintf(stderr, "Error 194: Invalid text gap floating point (%s)\n", errbuf);
@@ -2054,7 +2093,11 @@ int main(int argc, char **argv) {
                 break;
 
             case 'b':
+#ifdef ZINT_TEST
+                if (!validate_int(optarg, -1 /*len*/, &val) && !(val = get_barcode_name(optarg, 0 /*test*/))) {
+#else
                 if (!validate_int(optarg, -1 /*len*/, &val) && !(val = get_barcode_name(optarg))) {
+#endif
                     fprintf(stderr, "Error 119: Invalid barcode type '%s'\n", optarg);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -2326,5 +2369,11 @@ int main(int argc, char **argv) {
 
     return do_exit(error_number ? error_number : warn_number);
 }
+
+#ifdef ZINT_TEST
+static void test(void) {
+    (void)get_barcode_name(NULL, 1 /*test*/);
+}
+#endif
 
 /* vim: set ts=4 sw=4 et : */
