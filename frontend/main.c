@@ -360,11 +360,7 @@ static int validate_float(const char source[], const int allow_neg, float *const
                 return 0;
             }
             if (val2 && int_len + fract_len > 7) {
-                if (val) {
-                    cpy_str(errbuf, 64, "7 significant digits maximum");
-                } else {
-                    cpy_str(errbuf, 64, "fractional part must be 7 digits maximum");
-                }
+                cpy_str(errbuf, 64, "7 significant digits maximum");
                 return 0;
             }
             *p_val = val + val2 * fract_muls[fract_len - 1];
@@ -681,14 +677,20 @@ static int supported_filetype(const char *const filetype, const int no_png, int 
     static const char filetypes[][4] = {
         "bmp", "emf", "eps", "gif", "pcx", "png", "svg", "tif", "txt",
     };
-    char lc_filetype[4];
+    char lc_filetype[5];
     int i;
+    const int len = (int) strlen(filetype);
 
     if (png_refused) {
         *png_refused = 0;
     }
     /* Disallow != 3, except for "tiff" */
-    if (strlen(filetype) != 3 && strcmp(filetype, "tiff") != 0 && strcmp(filetype, "TIFF") != 0) {
+    if (len != 3) {
+        if (len == 4) {
+            ncpy_str(lc_filetype, ARRAY_SIZE(lc_filetype), filetype, 4);
+            to_lower(lc_filetype);
+            return strcmp(lc_filetype, "tiff") == 0;
+        }
         return 0;
     }
     ncpy_str(lc_filetype, ARRAY_SIZE(lc_filetype), filetype, 3);
@@ -709,12 +711,10 @@ static int supported_filetype(const char *const filetype, const int no_png, int 
     return 0;
 }
 
-/* Get file extension, excluding those of 4 or more letters */
+/* Get file extension, excluding those of more than 4 letters */
 static char *get_extension(const char *const file) {
-    char *dot;
-
-    dot = strrchr(file, '.');
-    if (dot && strlen(file) - (dot - file) <= 4) { /* Only recognize up to 3 letter extensions */
+    char *const dot = strrchr(file, '.');
+    if (dot && strlen(file) - (dot - file) <= 5) { /* Only recognize up to 4 letter extensions */
         return dot + 1;
     }
     return NULL;
@@ -756,15 +756,11 @@ static int is_raster(const char *const filetype, const int no_png) {
     int i;
     char lc_filetype[4];
 
-    if (filetype == NULL) {
+    if (filetype == NULL || !supported_filetype(filetype, no_png, NULL)) {
         return 0;
     }
     cpy_str(lc_filetype, ARRAY_SIZE(lc_filetype), filetype);
     to_lower(lc_filetype);
-
-    if (no_png && strcmp(lc_filetype, "png") == 0) {
-        return 0;
-    }
 
     for (i = 0; i < ARRAY_SIZE(raster_filetypes); i++) {
         if (strcmp(lc_filetype, raster_filetypes[i]) == 0) {
@@ -2371,9 +2367,238 @@ int main(int argc, char **argv) {
 }
 
 #ifdef ZINT_TEST
+
+static void test_validate_int(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *source; int len; int val; int ret; } data[] = {
+        /*  0*/ { "", -1, 0, 1 }, /* Empty allowed */
+        /*  1*/ { "1", -1, 1, 1 },
+        /*  2*/ { "123456789", -1, 123456789, 1 },
+        /*  3*/ { "1234567890", -1, -1, 0 },
+        /*  4*/ { "0", -1, 0, 1 },
+        /*  5*/ { "+1", -1, -1, 0 },
+        /*  6*/ { "-1", -1, -1, 0 },
+        /*  7*/ { "1.2", -1, -1, 0 },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        int val = -1;
+        const int ret = validate_int(data[i].source, data[i].len, &val);
+        if (ret != data[i].ret) {
+            fprintf(stderr, "%d: ret %d != %d\n", i, ret, data[i].ret);
+            assert(0);
+        }
+        if (val != data[i].val) {
+            fprintf(stderr, "%d: val %d != %d\n", i, val, data[i].val);
+            assert(0);
+        }
+    }
+}
+
+static void test_validate_float(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *source; int allow_neg; float val; const char* errbuf; int ret; } data[] = {
+        /*  0*/ { "", 0, 0.0f, "", 1 }, /* Empty allowed */
+        /*  1*/ { "1234567", 0, 1234567.0f, "", 1 },
+        /*  2*/ { "1234567890", 0, -1.0f, "integer part must be 7 digits maximum", 0 },
+        /*  3*/ { "12345678", 0, -1.0f, "integer part must be 7 digits maximum", 0 },
+        /*  4*/ { "123+", 0, -1.0f, "integer part must be digits only", 0 },
+        /*  5*/ { "+1234567", 0, 1234567.0f, "", 1 },
+        /*  6*/ { "-1234567", 0, -1.0f, "negative value not permitted", 0 },
+        /*  7*/ { "-1234567", 1, -1234567.0f, "", 1 },
+        /*  8*/ { "1234.567", 0, 1234.567f, "", 1 },
+        /*  9*/ { "1234567.0", 0, 1234567.0f, "", 1 },
+        /* 10*/ { "1234567.00000", 0, 1234567.0f, "", 1 },
+        /* 11*/ { "1234567.", 0, 1234567.0f, "", 1 },
+        /* 12*/ { "1.234567", 0, 1.234567f, "", 1 },
+        /* 13*/ { ".1234567", 0, 0.1234567f, "", 1 },
+        /* 14*/ { "0.1234567", 0, 0.1234567f, "", 1 },
+        /* 15*/ { "-0.1234567", 1, -0.1234567f, "", 1 },
+        /* 16*/ { "0.12345678", 0, -1.0f, "fractional part must be 7 digits maximum", 0 },
+        /* 17*/ { "0.123.4", 0, -1.0f, "fractional part must be digits only", 0 },
+        /* 18*/ { "1234.5678", 0, -1.0f, "7 significant digits maximum", 0 },
+        /* 19*/ { "1234.5670", 0, 1234.567f, "", 1 },
+        /* 20*/ { "1234.56700", 0, 1234.567f, "", 1 },
+        /* 21*/ { "0.", 0, 0.0f, "", 1 },
+        /* 22*/ { "-0", 1, 0.0f, "", 1 },
+        /* 23*/ { ".0", 0, 0.0f, "", 1 },
+        /* 24*/ { ".", 0, 0.0f, "", 1 },
+        /* 25*/ { "+.", 0, 0.0f, "", 1 },
+        /* 26*/ { "-.", 1, 0.0f, "", 1 },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char errbuf[64] = {0};
+        float val = -1.0f;
+        const int ret = validate_float(data[i].source, data[i].allow_neg, &val, errbuf);
+        if (ret != data[i].ret) {
+            fprintf(stderr, "%d: ret %d != %d (%s)\n", i, ret, data[i].ret, errbuf);
+            assert(0);
+        }
+        if (val != data[i].val) {
+            fprintf(stderr, "%d: val %g != %g\n", i, val, data[i].val);
+            assert(0);
+        }
+        if (strcmp(errbuf, data[i].errbuf) != 0) {
+            fprintf(stderr, "%d: errbuf \"%s\" != \"%s\"\n", i, errbuf, data[i].errbuf);
+            assert(0);
+        }
+    }
+}
+
+static void test_to_lower(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *source; const char *expected; } data[] = {
+        /*  0*/ { "", "" },
+        /*  1*/ { "ABCEFGHIJKLMNOPQRSTUVWXYZ", "abcefghijklmnopqrstuvwxyz" },
+        /*  2*/ { ".A[B`Ca~b\177c;\200", ".a[b`ca~b\177c;\200" },
+        /*  3*/ { "é", "é" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char buf[128];
+        assert((int) strlen(data[i].source) < ARRAY_SIZE(buf));
+        strcpy(buf, data[i].source);
+        to_lower(buf);
+        if (strcmp(buf, data[i].expected) != 0) {
+            fprintf(stderr, "%d: \"%s\" != \"%s\"\n", i, buf, data[i].expected);
+            assert(0);
+        }
+    }
+}
+
+static void test_supported_filetype(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *filetype; int no_png; int png_refused; int ret; } data[] = {
+        /*  0*/ { "bMp", 0, 0, 1 },
+        /*  1*/ { "Txt", 1, 0, 1 },
+        /*  2*/ { "png", 0, 0, 1 },
+        /*  3*/ { "png", 1, 1, 0 },
+        /*  4*/ { "gif", 0, 0, 1 },
+        /*  5*/ { "giff", 0, 0, 0 },
+        /*  6*/ { "tif", 0, 0, 1 },
+        /*  7*/ { "Tif", 0, 0, 1 },
+        /*  8*/ { "tiff", 0, 0, 1 },
+        /*  9*/ { "TIF", 0, 0, 1 },
+        /* 10*/ { "TIFF", 0, 0, 1 },
+        /* 11*/ { "tIFF", 0, 0, 1 },
+        /* 12*/ { "tifff", 0, 0, 0 },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        int png_refused = -1;
+        const int ret = supported_filetype(data[i].filetype, data[i].no_png, &png_refused);
+        if (ret != data[i].ret) {
+            fprintf(stderr, "%d: %d != %d\n", i, ret, data[i].ret);
+            assert(0);
+        }
+        if (png_refused != data[i].png_refused) {
+            fprintf(stderr, "%d: %d != %d\n", i, png_refused, data[i].png_refused);
+            assert(0);
+        }
+    }
+}
+
+static void test_get_extension(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *file; const char *ret; } data[] = {
+        /*  0*/ { "Gosh.bMp", "bMp" },
+        /*  1*/ { "Gosh.BMPP", "BMPP" },
+        /*  2*/ { "Gosh.tif", "tif" },
+        /*  3*/ { "Gosh.TIFF", "TIFF" },
+        /*  4*/ { "Gosh.a", "a" },
+        /*  5*/ { "Gosh.as", "as" },
+        /*  6*/ { "Gosh.asd", "asd" },
+        /*  7*/ { "Gosh.asdf", "asdf" },
+        /*  8*/ { "Gosh.asdfg", NULL },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char *ret = get_extension(data[i].file);
+        if (ret == NULL && data[i].ret != NULL) {
+            fprintf(stderr, "%d: <NULL> != \"%s\"\n", i, data[i].ret);
+            assert(0);
+        }
+        if (ret != NULL && data[i].ret == NULL) {
+            fprintf(stderr, "%d: \"%s\" != <NULL>\n", i, ret);
+            assert(0);
+        }
+        if (ret && data[i].ret && strcmp(ret, data[i].ret) != 0) {
+            fprintf(stderr, "%d: \"%s\" != \"%s\"\n", i, ret, data[i].ret);
+            assert(0);
+        }
+    }
+}
+
+static void test_set_extension(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *file; const char *filetype; const char *expected; } data[] = {
+        /*  0*/ { "Gosh.bMp", "bMp", "Gosh.bMp" },
+        /*  1*/ { "Gosh", "bMp", "Gosh.bMp" },
+        /*  2*/ { "Gosh", "tif", "Gosh.tif" },
+        /*  3*/ { "Gosh", "tiff", "Gosh.tif" },
+        /*  4*/ { "Gosh", "tiFf", "Gosh.tiF" },
+        /*  5*/ { "Gosh.a", "gif", "Gosh.gif" },
+        /*  6*/ { "Gosh.as", "gif", "Gosh.gif" },
+        /*  7*/ { "Gosh.asd", "gif", "Gosh.gif" },
+        /*  8*/ { "Gosh.asdf", "gif", "Gosh.gif" },
+        /*  9*/ { "Gosh.asdfg", "gif", "Gosh.asdfg.gif" },
+        /* 10*/ { "123456789012345678901234567890123456789012345678901234567890123412345678901234567890123456789012345678901234567890123456789012341234567890123456789012345678901234567890123456789012345678901234123456789012345678901234567890123456789012345678901234567890123", "png", "12345678901234567890123456789012345678901234567890123456789012341234567890123456789012345678901234567890123456789012345678901234123456789012345678901234567890123456789012345678901234567890123412345678901234567890123456789012345678901234567890123456789.png" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char file[256];
+        assert((int) strlen(data[i].file) < ARRAY_SIZE(file));
+        strcpy(file, data[i].file);
+        set_extension(file, data[i].filetype);
+        if (strcmp(file, data[i].expected) != 0) {
+            fprintf(stderr, "%d: \"%s\" != \"%s\"\n", i, file, data[i].expected);
+            assert(0);
+        }
+    }
+}
+
+static void test_is_raster(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *filetype; int no_png; int ret; } data[] = {
+        /*  0*/ { NULL, 0, 0 },
+        /*  1*/ { "bMp", 0, 1 },
+        /*  2*/ { "BMPP", 0, 0 },
+        /*  3*/ { "PNG", 0, 1 },
+        /*  4*/ { "PNG", 1, 0 },
+        /*  5*/ { "emf", 0, 0 },
+        /*  6*/ { "eps", 0, 0 },
+        /*  7*/ { "svg", 0, 0 },
+        /*  8*/ { "txt", 0, 0 },
+        /*  9*/ { "gif", 0, 1 },
+        /* 10*/ { "PcX", 0, 1 },
+        /* 11*/ { "tif", 0, 1 },
+        /* 12*/ { "tiff", 0, 1 },
+        /* 13*/ { "TIFF", 0, 1 },
+        /* 14*/ { "tIFF", 0, 1 },
+        /* 15*/ { "tifff", 0, 0 },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        const int ret = is_raster(data[i].filetype, data[i].no_png);
+        if (ret != data[i].ret) {
+            fprintf(stderr, "%d: ret %d != %d\n", i, ret, data[i].ret);
+            assert(0);
+        }
+    }
+}
+
 static void test(void) {
     (void)get_barcode_name(NULL, 1 /*test*/);
+    test_validate_int();
+    test_validate_float();
+    test_to_lower();
+    test_supported_filetype();
+    test_get_extension();
+    test_set_extension();
+    test_is_raster();
 }
-#endif
+
+#endif /* ZINT_TEST */
 
 /* vim: set ts=4 sw=4 et : */

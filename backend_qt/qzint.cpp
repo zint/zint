@@ -967,6 +967,33 @@ namespace Zint {
         return true;
     }
 
+    bool QZint::save_to_memfile(const QString& filename, QByteArray& data) {
+        if (resetSymbol()) {
+            m_zintSymbol->output_options |= BARCODE_MEMORY_FILE;
+            cpy_bytearray_left(m_zintSymbol->outfile, filename.toUtf8(), ARRAY_SIZE(m_zintSymbol->outfile) - 1);
+            if (m_segs.empty()) {
+                QByteArray bstr = m_text.toUtf8();
+                m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(),
+                                                    m_rotate_angle);
+            } else {
+                struct zint_seg segs[maxSegs];
+                std::vector<QByteArray> bstrs;
+                int seg_count = convertSegs(segs, bstrs);
+                m_error = ZBarcode_Encode_Segs_and_Print(m_zintSymbol, segs, seg_count, m_rotate_angle);
+            }
+        }
+        if (m_error >= ZINT_ERROR) {
+            m_lastError = m_zintSymbol->errtxt;
+            m_encodedWidth = m_encodedRows = 0;
+            m_encodedHeight = m_vectorWidth = m_vectorHeight = 0.0f;
+            emit errored();
+            return false;
+        }
+        data = QByteArray((const char *) m_zintSymbol->memfile, m_zintSymbol->memfile_size);
+
+        return true;
+    }
+
     /* Convert `zint_vector_rect->colour` to Qt color */
     Qt::GlobalColor QZint::colourToQtColor(int colour) {
         switch (colour) {

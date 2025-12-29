@@ -1518,8 +1518,10 @@ void MainWindow::copy_to_clipboard_emf()
 
 void MainWindow::copy_to_clipboard_eps()
 {
+#ifdef MAINWINDOW_COPY_EPS
     // TODO: try other possibles application/eps, application/x-eps, image/eps, image/x-eps
     copy_to_clipboard(QSL(".zint.eps"), QSL("EPS"), "application/postscript");
+#endif
 }
 
 void MainWindow::copy_to_clipboard_gif()
@@ -1529,8 +1531,10 @@ void MainWindow::copy_to_clipboard_gif()
 
 void MainWindow::copy_to_clipboard_pcx()
 {
+#ifdef MAINWINDOW_COPY_PCX
     // TODO: try other mime types in various apps
     copy_to_clipboard(QSL(".zint.pcx"), QSL("PCX"), "image/x-pcx");
+#endif
 }
 
 void MainWindow::copy_to_clipboard_png()
@@ -3584,30 +3588,22 @@ void MainWindow::copy_to_clipboard(const QString &filename, const QString& name,
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
 
-    if (!m_bc.bc.save_to_file(filename)) {
+    QByteArray data;
+    if (!m_bc.bc.save_to_memfile(filename, data)) {
         return;
     }
 
     QMimeData *mdata = new QMimeData;
     if (mimeType) {
-        QFile file(filename);
-        if (!file.open(QIODevice::ReadOnly)) {
-            delete mdata;
-        } else {
-            mdata->setData(mimeType, file.readAll());
-            file.close();
-            clipboard->setMimeData(mdata, QClipboard::Clipboard);
-            /*: %1 is format (BMP/EMF etc) */
-            statusBar->showMessage(tr("Copied to clipboard as %1").arg(name), 0 /*No timeout*/);
-        }
+        mdata->setData(mimeType, data);
     } else {
-        mdata->setImageData(QImage(filename));
-        clipboard->setMimeData(mdata, QClipboard::Clipboard);
-        /*: %1 is format (BMP/EMF etc) */
-        statusBar->showMessage(tr("Copied to clipboard as %1").arg(name), 0 /*No timeout*/);
+        QImage img;
+        img.loadFromData(data);
+        mdata->setImageData(img);
     }
-
-    QFile::remove(filename);
+    clipboard->setMimeData(mdata, QClipboard::Clipboard);
+    /*: %1 is format (BMP/EMF etc) */
+    statusBar->showMessage(tr("Copied to clipboard as %1").arg(name), 0 /*No timeout*/);
 }
 
 void MainWindow::errtxtBar_clear()

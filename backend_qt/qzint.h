@@ -278,10 +278,10 @@ public:
     bool takesGS1AIData(int symbology = 0) const;
 
 
-    /* Error or warning returned by Zint on `render()` or `save_to_file()` */
+    /* Error or warning returned by Zint on `render()`, `save_to_file()` or `save_to_memfile()` */
     int getError() const;
 
-    /* Error message returned by Zint on `render()` or `save_to_file()` */
+    /* Error message returned by Zint on `render()`, `save_to_file()` or `save_to_memfile()` */
     const QString& lastError() const; // `symbol->errtxt`
 
     /* Whether `lastError()` set */
@@ -290,6 +290,10 @@ public:
 
     /* Encode and print barcode to file `filename`. Only sets `getError()` on error, not on warning */
     bool save_to_file(const QString& filename); // `ZBarcode_Print()`
+
+    /* Encode and print barcode to memory file `filename` (only the extension is used, to determine output format).
+       Only sets `getError()` on error, not on warning */
+    bool save_to_memfile(const QString& filename, QByteArray& data); // `ZBarcode_Print()` + BARCODE_MEMORY_FILE
 
     /* Encode and display barcode in `paintRect` using `painter`.
        Note: legacy argument `mode` is not used */
