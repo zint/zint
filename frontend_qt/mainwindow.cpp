@@ -3588,17 +3588,17 @@ void MainWindow::copy_to_clipboard(const QString &filename, const QString& name,
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
 
-    QByteArray data;
-    if (!m_bc.bc.save_to_memfile(filename, data)) {
+    QByteArray fdata;
+    if (!m_bc.bc.save_to_memfile(filename, fdata)) {
         return;
     }
 
     QMimeData *mdata = new QMimeData;
     if (mimeType) {
-        mdata->setData(mimeType, data);
+        mdata->setData(mimeType, fdata);
     } else {
         QImage img;
-        img.loadFromData(data);
+        img.loadFromData(fdata);
         mdata->setImageData(img);
     }
     clipboard->setMimeData(mdata, QClipboard::Clipboard);

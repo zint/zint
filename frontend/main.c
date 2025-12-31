@@ -19,9 +19,7 @@
  */
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#ifdef ZINT_TEST
 #include <assert.h>
-#endif
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -66,8 +64,19 @@ typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 
 #  define z_alloca(nmemb) alloca(nmemb)
 #endif
 
+#define z_isdigit(c) ((c) <= '9' && (c) >= '0')
+#define z_isupper(c) ((c) >= 'A' && (c) <= 'Z')
+#define z_islower(c) ((c) >= 'a' && (c) <= 'z')
+
+#define ZUCP(p)     ((unsigned char *) (p))
+#define ZCCP(p)     ((const char *) (p))
+
+/* End of copy from "backend/common.h" */
+
+#define ERRBUF_SIZE 160
+
 #ifdef ZINT_TEST
-static void test(void); /* Forward-ref */
+static int test(void); /* Forward-ref */
 #endif
 
 /* Print list of supported symbologies */
@@ -281,10 +290,18 @@ static void cpy_str(char *const buf, const int buf_size, const char *const str) 
 /* Do buffer-checking `strncpy()`-like copy */
 static void ncpy_str(char *const buf, const int buf_size, const char *const str, const int str_max) {
     const int str_len = (int) strlen(str);
-    const int max_str_len = str_len > str_max ? str_max : str_len;
+    const int max_str_len = str_len > str_max ? str_max >= 0 ? str_max : 0 : str_len;
     const int max_len = max_str_len >= buf_size ? buf_size - 1 : max_str_len;
     memcpy(buf, str, max_len);
     buf[max_len] = '\0';
+}
+
+/* Do buffer-checking `strcpy()`-like copy, concatenating `cat` */
+static void cpycat_str(char *const buf, const int buf_size, const char *const str, const char *const cat) {
+    const int str_len = (int) strlen(str);
+    const int max_len = str_len >= buf_size ? buf_size - 1 : str_len;
+    memcpy(buf, str, max_len);
+    cpy_str(buf + max_len, buf_size - max_len, cat);
 }
 
 /* Verifies that a string (length <= 9) only uses digits. On success returns value in arg */
@@ -297,7 +314,7 @@ static int validate_int(const char source[], int len, int *const p_val) {
         return 0;
     }
     for (i = 0; i < length; i++) {
-        if (source[i] < '0' || source[i] > '9') {
+        if (!z_isdigit(source[i])) {
             return 0;
         }
         val *= 10;
@@ -310,7 +327,7 @@ static int validate_int(const char source[], int len, int *const p_val) {
 
 /* Verifies that a string is a simplified form of floating point, max 7 significant decimal digits with
    optional decimal point. On success returns val in arg. On failure sets `errbuf` */
-static int validate_float(const char source[], const int allow_neg, float *const p_val, char errbuf[64]) {
+static int validate_float(const char source[], const int allow_neg, float *const p_val, char errbuf[ERRBUF_SIZE]) {
     static const float fract_muls[7] = { 0.1f, 0.01f, 0.001f, 0.0001f, 0.00001f, 0.000001f, 0.0000001f };
     int val = 0;
     int neg = 0;
@@ -320,7 +337,7 @@ static int validate_float(const char source[], const int allow_neg, float *const
     if (*source == '+' || *source == '-') {
         if (*source == '-') {
             if (!allow_neg) {
-                cpy_str(errbuf, 64, "negative value not permitted");
+                cpy_str(errbuf, ERRBUF_SIZE, "negative value not permitted");
                 return 0;
             }
             neg = 1;
@@ -330,18 +347,19 @@ static int validate_float(const char source[], const int allow_neg, float *const
 
     int_len = dot ? (int) (dot - source) : (int) strlen(source);
     if (int_len > 9) {
-        cpy_str(errbuf, 64, "integer part must be 7 digits maximum"); /* Say 7 not 9 to "manage expectations" */
+        /* Say 7 not 9 to "manage expectations" */
+        cpy_str(errbuf, ERRBUF_SIZE, "integer part must be 7 digits maximum");
         return 0;
     }
     if (int_len) {
         int tmp_val;
         if (!validate_int(source, int_len, &val)) {
-            cpy_str(errbuf, 64, "integer part must be digits only");
+            cpy_str(errbuf, ERRBUF_SIZE, "integer part must be digits only");
             return 0;
         }
         for (int_len = 0, tmp_val = val; tmp_val; tmp_val /= 10, int_len++); /* log10(val) */
         if (int_len > 7) {
-            cpy_str(errbuf, 64, "integer part must be 7 digits maximum");
+            cpy_str(errbuf, ERRBUF_SIZE, "integer part must be 7 digits maximum");
             return 0;
         }
     }
@@ -352,15 +370,15 @@ static int validate_float(const char source[], const int allow_neg, float *const
         fract_len = (int) (e + 1 - dot);
         if (fract_len) {
             if (fract_len > 7) {
-                cpy_str(errbuf, 64, "fractional part must be 7 digits maximum");
+                cpy_str(errbuf, ERRBUF_SIZE, "fractional part must be 7 digits maximum");
                 return 0;
             }
             if (!validate_int(dot, fract_len, &val2)) {
-                cpy_str(errbuf, 64, "fractional part must be digits only");
+                cpy_str(errbuf, ERRBUF_SIZE, "fractional part must be digits only");
                 return 0;
             }
             if (val2 && int_len + fract_len > 7) {
-                cpy_str(errbuf, 64, "7 significant digits maximum");
+                cpy_str(errbuf, ERRBUF_SIZE, "7 significant digits maximum");
                 return 0;
             }
             *p_val = val + val2 * fract_muls[fract_len - 1];
@@ -382,7 +400,7 @@ static void to_lower(char source[]) {
     const int src_len = (int) strlen(source);
 
     for (i = 0; i < src_len; i++) {
-        if ((source[i] >= 'A') && (source[i] <= 'Z')) {
+        if (z_isupper(source[i])) {
             source[i] |= 0x20;
         }
     }
@@ -631,9 +649,10 @@ static int get_barcode_name(const char *const barcode_name) {
             if (strcmp(names[i].n, names[i + 1].n) >= 0) {
                 fprintf(stderr, "get_barcode_name: %d: %s >= %s\n", i, names[i].n, names[i + 1].n);
                 assert(0);
+                return 0;
             }
         }
-        return 0;
+        return 1;
     }
 #endif
 
@@ -648,7 +667,7 @@ static int get_barcode_name(const char *const barcode_name) {
 
     /* Ignore any non-alphanumeric characters */
     for (i = 0, j = 0; i < length; i++) {
-        if ((n[i] >= 'a' && n[i] <= 'z') || (n[i] >= '0' && n[i] <= '9')) {
+        if (z_islower(n[i]) || z_isdigit(n[i])) {
             n[j++] = n[i];
         }
     }
@@ -770,74 +789,82 @@ static int is_raster(const char *const filetype, const int no_png) {
     return 0;
 }
 
-/* Helper for `validate_scalexdimdp()` to search for units, returning -2 on error, -1 if not found, else index */
-static int validate_units(char *const buf, const char units[][5], const int units_size) {
+/* Helper for `validate_scalexdimdp()` to search for units, returning -1 if invalid, 0 if not present, else index */
+static int validate_units(char *buf, const char units[][5], const int units_size, char **p_units_err) {
     int i;
-    char *unit;
+    const int buf_len = (int) strlen(buf);
+
+    /* Skip over float */
+    for (i = 0; i < buf_len && (z_isdigit(buf[i]) || buf[i] == '.'); i++);
+    if (i == buf_len) {
+        return 0; /* No units present (same as default) */
+    }
+    buf += i;
 
     to_lower(buf);
     for (i = 0; i < units_size; i++) {
-        if ((unit = strstr(buf, units[i])) != NULL) {
-            if (strlen(units[i]) != strlen(unit)) {
-                return -2;
-            }
-            *unit = '\0';
+        if (strcmp(buf, units[i]) == 0) {
+            *buf = '\0';
             break;
         }
     }
     if (i == units_size) {
         i = -1;
+        *p_units_err = buf;
     }
     return i;
 }
 
 /* Parse and validate argument "xdim[,resolution]" to "--scalexdimdp" */
-static int validate_scalexdimdp(const char *const arg, float *const p_x_dim_mm, float *const p_dpmm) {
+static int validate_scalexdimdp(const char *const arg, float *const p_x_dim_mm, float *const p_dpmm,
+            char errbuf[ERRBUF_SIZE]) {
     static const char x_units[][5] = { "mm", "in" };
     static const char r_units[][5] = { "dpmm", "dpi" };
     char x_buf[7 + 1 + 4 + 1]; /* Allow for 7 digits + dot + 4-char unit + NUL */
     char r_buf[7 + 1 + 4 + 1]; /* As above */
     int units_i; /* For `validate_units()` */
-    char errbuf[64]; /* For `validate_float()` */
+    char *units_err; /* For `validate_units()` */
+    char errbuf_float[ERRBUF_SIZE]; /* For `validate_float()` */
     const char *comma = strchr(arg, ',');
     if (comma) {
         if (comma == arg || comma - arg >= ARRAY_SIZE(x_buf)) {
-            fprintf(stderr, "Error 174: scalexdimdp X-dim too %s\n", comma == arg ? "short" : "long");
+            cpy_str(errbuf, ERRBUF_SIZE, comma == arg ? "scalexdimdp X-dim too short" : "scalexdimdp X-dim too long");
             return 0;
         }
         ncpy_str(x_buf, ARRAY_SIZE(x_buf), arg, (int) (comma - arg));
         comma++;
         if (!*comma || strlen(comma) >= ARRAY_SIZE(r_buf)) {
-            fprintf(stderr, "Error 175: scalexdimdp resolution too %s\n", !*comma ? "short" : "long");
+            cpy_str(errbuf, ERRBUF_SIZE,
+                    !*comma ? "scalexdimdp resolution too short" : "scalexdimdp resolution too long");
             return 0;
         }
         cpy_str(r_buf, ARRAY_SIZE(r_buf), comma);
     } else {
         if (!*arg || strlen(arg) >= ARRAY_SIZE(x_buf)) {
-            fprintf(stderr, "Error 176: scalexdimdp X-dim too %s\n", !*arg ? "short" : "long");
+            cpy_str(errbuf, ERRBUF_SIZE, !*arg ?  "scalexdimdp X-dim too short" : "scalexdimdp X-dim too long");
             return 0;
         }
         cpy_str(x_buf, ARRAY_SIZE(x_buf), arg);
     }
-    if ((units_i = validate_units(x_buf, x_units, ARRAY_SIZE(x_units))) == -2) {
-        fprintf(stderr, "Error 177: scalexdimdp X-dim units must occur at end\n");
+    if ((units_i = validate_units(x_buf, x_units, ARRAY_SIZE(x_units), &units_err)) < 0) {
+        cpycat_str(errbuf, ERRBUF_SIZE, "scalexdimdp X-dim unknown units: ", units_err);
         return 0;
     }
-    if (!validate_float(x_buf, 0 /*allow_neg*/, p_x_dim_mm, errbuf)) {
-        fprintf(stderr, "Error 178: scalexdimdp X-dim invalid floating point (%s)\n", errbuf);
+    if (!validate_float(x_buf, 0 /*allow_neg*/, p_x_dim_mm, errbuf_float)) {
+        cpycat_str(errbuf, ERRBUF_SIZE, "scalexdimdp X-dim invalid floating point: ", errbuf_float);
         return 0;
     }
     if (units_i > 0) { /* Ignore mm */
-        *p_x_dim_mm /= 25.4f /*in*/;
+        *p_x_dim_mm *= 25.4f /*in*/;
     }
     *p_dpmm = 0.0f;
     if (comma) {
-        if ((units_i = validate_units(r_buf, r_units, ARRAY_SIZE(r_units))) == -2) {
-            fprintf(stderr, "Error 179: scalexdimdp resolution units must occur at end\n");
+        if ((units_i = validate_units(r_buf, r_units, ARRAY_SIZE(r_units), &units_err)) < 0) {
+            cpycat_str(errbuf, ERRBUF_SIZE, "scalexdimdp resolution unknown units: ", units_err);
             return 0;
         }
-        if (!validate_float(r_buf, 0 /*allow_neg*/, p_dpmm, errbuf)) {
-            fprintf(stderr, "Error 180: scalexdimdp resolution invalid floating point (%s)\n", errbuf);
+        if (!validate_float(r_buf, 0 /*allow_neg*/, p_dpmm, errbuf_float)) {
+            cpycat_str(errbuf, ERRBUF_SIZE, "scalexdimdp resolution invalid floating point: ", errbuf_float);
             return 0;
         }
         if (units_i > 0) { /* Ignore dpmm */
@@ -852,16 +879,18 @@ static int validate_scalexdimdp(const char *const arg, float *const p_x_dim_mm, 
 }
 
 /* Parse and validate Structured Append argument "index,count[,ID]" to "--structapp" */
-static int validate_structapp(const char *const arg, struct zint_structapp *const structapp) {
+static int validate_structapp(const char *const arg, struct zint_structapp *const structapp,
+            char errbuf[ERRBUF_SIZE]) {
     char index[10], count[10];
     const char *comma = strchr(arg, ',');
     const char *comma2;
     if (!comma) {
-        fprintf(stderr, "Error 155: Invalid Structured Append argument, expect \"index,count[,ID]\"\n");
+        cpy_str(errbuf, ERRBUF_SIZE, "Invalid Structured Append argument, expect \"index,count[,ID]\"");
         return 0;
     }
     if (comma == arg || comma - arg > 9) {
-        fprintf(stderr, "Error 156: Structured Append index too %s\n", comma == arg ? "short" : "long");
+        cpy_str(errbuf, ERRBUF_SIZE,
+                comma == arg ? "Structured Append index too short" : "Structured Append index too long");
         return 0;
     }
     ncpy_str(index, ARRAY_SIZE(index), arg, (int) (comma - arg));
@@ -870,13 +899,15 @@ static int validate_structapp(const char *const arg, struct zint_structapp *cons
     if (comma2) {
         int i;
         if (comma2 == comma || comma2 - comma > 9) {
-            fprintf(stderr, "Error 157: Structured Append count too %s\n", comma2 == comma ? "short" : "long");
+            cpy_str(errbuf, ERRBUF_SIZE,
+                    comma2 == comma ? "Structured Append count too short" : "Structured Append count too long");
             return 0;
         }
         ncpy_str(count, ARRAY_SIZE(count), comma, (int) (comma2 - comma));
         comma2++;
         if (!*comma2 || strlen(comma2) > 32) {
-            fprintf(stderr, "Error 158: Structured Append ID too %s\n", !*comma2 ? "short" : "long");
+            cpy_str(errbuf, ERRBUF_SIZE,
+                    !*comma2 ? "Structured Append ID too short" : "Structured Append ID too long");
             return 0;
         }
         /* Do `strncat()`-like copy with no NUL terminator if ID length 32 */
@@ -885,27 +916,30 @@ static int validate_structapp(const char *const arg, struct zint_structapp *cons
         }
     } else {
         if (!*comma || strlen(comma) > 9) {
-            fprintf(stderr, "Error 159: Structured Append count too %s\n", !*comma ? "short" : "long");
+            cpy_str(errbuf, ERRBUF_SIZE,
+                    !*comma ? "Structured Append count too short" : "Structured Append count too long");
             return 0;
         }
         cpy_str(count, ARRAY_SIZE(count), comma);
     }
     if (!validate_int(index, -1 /*len*/, &structapp->index)) {
-        fprintf(stderr, "Error 160: Invalid Structured Append index (digits only)\n");
+        cpy_str(errbuf, ERRBUF_SIZE, "Invalid Structured Append index (digits only)");
         return 0;
     }
     if (!validate_int(count, -1 /*len*/, &structapp->count)) {
-        fprintf(stderr, "Error 161: Invalid Structured Append count (digits only)\n");
+        cpy_str(errbuf, ERRBUF_SIZE, "Invalid Structured Append count (digits only)");
         return 0;
     }
     if (structapp->count < 2) {
-        fprintf(stderr, "Error 162: Invalid Structured Append count '%d', must be greater than or equal to 2\n",
+        sprintf(errbuf, "Invalid Structured Append count '%d', must be greater than or equal to 2",
                 structapp->count);
+        assert(strlen(errbuf) < ERRBUF_SIZE);
         return 0;
     }
     if (structapp->index < 1 || structapp->index > structapp->count) {
-        fprintf(stderr, "Error 163: Structured Append index '%d' out of range (1 to count '%d')\n", structapp->index,
+        sprintf(errbuf, "Structured Append index '%d' out of range (1 to count '%d')", structapp->index,
                 structapp->count);
+        assert(strlen(errbuf) < ERRBUF_SIZE);
         return 0;
     }
 
@@ -913,24 +947,25 @@ static int validate_structapp(const char *const arg, struct zint_structapp *cons
 }
 
 /* Parse and validate the segment argument "ECI,DATA" to "--segN" */
-static int validate_seg(const char *const arg, const int N, struct zint_seg segs[10]) {
+static int validate_seg(const char *const arg, const int N, struct zint_seg segs[10], char errbuf[ERRBUF_SIZE]) {
     char eci[10];
     const char *const comma = strchr(arg, ',');
     if (!comma || comma == arg || comma - arg > 9 || *(comma + 1) == '\0') {
-        fprintf(stderr, "Error 166: Invalid segment argument, expect \"ECI,DATA\"\n");
+        cpy_str(errbuf, ERRBUF_SIZE, "Invalid segment argument, expect \"ECI,DATA\"");
         return 0;
     }
     ncpy_str(eci, ARRAY_SIZE(eci), arg, (int) (comma - arg));
     if (!validate_int(eci, -1 /*len*/, &segs[N].eci)) {
-        fprintf(stderr, "Error 167: Invalid segment ECI (digits only)\n");
+        cpy_str(errbuf, ERRBUF_SIZE, "Invalid segment ECI (digits only)");
         return 0;
     }
     if (segs[N].eci > 999999) {
-        fprintf(stderr, "Error 168: Segment ECI code '%d' out of range (0 to 999999)\n", segs[N].eci);
+        sprintf(errbuf, "Segment ECI code '%d' out of range (0 to 999999)", segs[N].eci);
+        assert(strlen(errbuf) < ERRBUF_SIZE);
         return 0;
     }
     segs[N].length = (int) strlen(comma + 1);
-    segs[N].source = (unsigned char *) (comma + 1);
+    segs[N].source = ZUCP(comma + 1);
     return 1;
 }
 
@@ -1421,6 +1456,7 @@ static void win_args(int *const p_argc, char ***const p_argv) {
 }
 
 /* Convert UTF-8 to Windows wide chars. Ticket #288, props Marcel */
+/* See "backend/output.c" */
 #define utf8_to_wide(u, w, r) \
     { \
         int lenW; /* Includes NUL terminator */ \
@@ -1478,7 +1514,7 @@ int main(int argc, char **argv) {
     int seg_count = 0;
     float x_dim_mm = 0.0f, dpmm = 0.0f;
     float float_opt;
-    char errbuf[64]; /* For `validate_float()` */
+    char errbuf[ERRBUF_SIZE]; /* For `validate_float/()`, `validate_scalexdimdp()` etc. */
     arg_opt *const arg_opts = (arg_opt *) z_alloca(sizeof(arg_opt) * argc);
 
     const int no_png = ZBarcode_NoPng();
@@ -1919,7 +1955,8 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_SCALEXDIM:
-                if (!validate_scalexdimdp(optarg, &x_dim_mm, &dpmm)) {
+                if (!validate_scalexdimdp(optarg, &x_dim_mm, &dpmm, errbuf)) {
+                    fprintf(stderr, "Error 184: %s\n", errbuf);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (x_dim_mm > 10.0f || dpmm > 1000.0f) {
@@ -1978,7 +2015,8 @@ int main(int argc, char **argv) {
                         fprintf(stderr, "Error 164: Duplicate segment %d\n", val);
                         return do_exit(ZINT_ERROR_INVALID_OPTION);
                     }
-                    if (!validate_seg(optarg, c - OPT_SEG1 + 1, segs)) {
+                    if (!validate_seg(optarg, c - OPT_SEG1 + 1, segs, errbuf)) {
+                        fprintf(stderr, "Error 166: %s\n", errbuf);
                         return do_exit(ZINT_ERROR_INVALID_OPTION);
                     }
                     if (val >= seg_count) {
@@ -2012,13 +2050,16 @@ int main(int argc, char **argv) {
                 break;
             case OPT_STRUCTAPP:
                 memset(&my_symbol->structapp, 0, sizeof(my_symbol->structapp));
-                if (!validate_structapp(optarg, &my_symbol->structapp)) {
+                if (!validate_structapp(optarg, &my_symbol->structapp, errbuf)) {
+                    fprintf(stderr, "Error 155: %s\n", errbuf);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 break;
 #ifdef ZINT_TEST
             case OPT_TEST:
-                test();
+                if (!test()) {
+                    return do_exit(ZINT_ERROR_ENCODING_PROBLEM);
+                }
                 help = 1; /* Mark as help to avoid "No data" warning */
                 break;
 #endif
@@ -2284,7 +2325,7 @@ int main(int argc, char **argv) {
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 segs[0].eci = my_symbol->eci;
-                segs[0].source = (unsigned char *) arg_opts[0].arg;
+                segs[0].source = ZUCP(arg_opts[0].arg);
                 segs[0].length = (int) strlen(arg_opts[0].arg);
                 for (i = 0; i < seg_count; i++) {
                     if (segs[i].source == NULL) {
@@ -2332,8 +2373,7 @@ int main(int argc, char **argv) {
                             error_number = ZINT_ERROR_INVALID_DATA;
                             break;
                         }
-                        ret = ZBarcode_Encode(my_symbol, (unsigned char *) arg_opts[i].arg,
-                                (int) strlen(arg_opts[i].arg));
+                        ret = ZBarcode_Encode(my_symbol, ZUCP(arg_opts[i].arg), (int) strlen(arg_opts[i].arg));
                     }
                 } else {
                     ret = ZBarcode_Encode_File(my_symbol, arg_opts[i].arg);
@@ -2368,7 +2408,74 @@ int main(int argc, char **argv) {
 
 #ifdef ZINT_TEST
 
-static void test_validate_int(void) {
+static int test_cpy_str(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { int buf_size; const char *str; const char *buf; } data[] = {
+        /*  0*/ { 10, "", "" },
+        /*  1*/ { 10, "123456789", "123456789" },
+        /*  2*/ { 10, "1234567890", "123456789" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char *buf = (char *) z_alloca(data[i].buf_size > 0 ? data[i].buf_size : 1);
+        cpy_str(buf, data[i].buf_size, data[i].str);
+        if (strcmp(buf, data[i].buf) != 0) {
+            fprintf(stderr, "%d: buf \"%s\" != \"%s\"\n", i, buf, data[i].buf);
+            assert(0);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int test_ncpy_str(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { int buf_size; const char *str; int str_max; const char *buf; } data[] = {
+        /*  0*/ { 10, "", 0, "" },
+        /*  1*/ { 10, "123", 0, "" },
+        /*  2*/ { 10, "123", 1, "1" },
+        /*  3*/ { 10, "123", -1, "" },
+        /*  4*/ { 2, "123", 3, "1" },
+        /*  5*/ { 10, "123", 3, "123" },
+        /*  6*/ { 10, "123", 4, "123" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char *buf = (char *) z_alloca(data[i].buf_size > 0 ? data[i].buf_size : 1);
+        ncpy_str(buf, data[i].buf_size, data[i].str, data[i].str_max);
+        if (strcmp(buf, data[i].buf) != 0) {
+            fprintf(stderr, "%d: buf \"%s\" != \"%s\"\n", i, buf, data[i].buf);
+            assert(0);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int test_cpycat_str(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { int buf_size; const char *str; const char *cat; const char *buf; } data[] = {
+        /*  0*/ { 10, "", "", "" },
+        /*  1*/ { 10, "123", "456789", "123456789" },
+        /*  2*/ { 10, "123", "4567890", "123456789" },
+        /*  3*/ { 10, "123456789", "0", "123456789" },
+        /*  4*/ { 10, "", "123456789", "123456789" },
+        /*  5*/ { 10, "", "1234567890", "123456789" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char *buf = (char *) z_alloca(data[i].buf_size > 0 ? data[i].buf_size : 1);
+        cpycat_str(buf, data[i].buf_size, data[i].str, data[i].cat);
+        if (strcmp(buf, data[i].buf) != 0) {
+            fprintf(stderr, "%d: buf \"%s\" != \"%s\"\n", i, buf, data[i].buf);
+            assert(0);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int test_validate_int(void) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct { const char *source; int len; int val; int ret; } data[] = {
         /*  0*/ { "", -1, 0, 1 }, /* Empty allowed */
@@ -2387,15 +2494,18 @@ static void test_validate_int(void) {
         if (ret != data[i].ret) {
             fprintf(stderr, "%d: ret %d != %d\n", i, ret, data[i].ret);
             assert(0);
+            return 0;
         }
         if (val != data[i].val) {
             fprintf(stderr, "%d: val %d != %d\n", i, val, data[i].val);
             assert(0);
+            return 0;
         }
     }
+    return 1;
 }
 
-static void test_validate_float(void) {
+static int test_validate_float(void) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct { const char *source; int allow_neg; float val; const char* errbuf; int ret; } data[] = {
         /*  0*/ { "", 0, 0.0f, "", 1 }, /* Empty allowed */
@@ -2428,25 +2538,29 @@ static void test_validate_float(void) {
     };
     int i;
     for (i = 0; i < ARRAY_SIZE(data); i++) {
-        char errbuf[64] = {0};
+        char errbuf[ERRBUF_SIZE] = {0};
         float val = -1.0f;
         const int ret = validate_float(data[i].source, data[i].allow_neg, &val, errbuf);
         if (ret != data[i].ret) {
             fprintf(stderr, "%d: ret %d != %d (%s)\n", i, ret, data[i].ret, errbuf);
             assert(0);
+            return 0;
         }
         if (val != data[i].val) {
-            fprintf(stderr, "%d: val %g != %g\n", i, val, data[i].val);
+            fprintf(stderr, "%d: val %.9g != %.9g\n", i, val, data[i].val);
             assert(0);
+            return 0;
         }
         if (strcmp(errbuf, data[i].errbuf) != 0) {
             fprintf(stderr, "%d: errbuf \"%s\" != \"%s\"\n", i, errbuf, data[i].errbuf);
             assert(0);
+            return 0;
         }
     }
+    return 1;
 }
 
-static void test_to_lower(void) {
+static int test_to_lower(void) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct { const char *source; const char *expected; } data[] = {
         /*  0*/ { "", "" },
@@ -2458,16 +2572,18 @@ static void test_to_lower(void) {
     for (i = 0; i < ARRAY_SIZE(data); i++) {
         char buf[128];
         assert((int) strlen(data[i].source) < ARRAY_SIZE(buf));
-        strcpy(buf, data[i].source);
+        cpy_str(buf, ARRAY_SIZE(buf), data[i].source);
         to_lower(buf);
         if (strcmp(buf, data[i].expected) != 0) {
             fprintf(stderr, "%d: \"%s\" != \"%s\"\n", i, buf, data[i].expected);
             assert(0);
+            return 0;
         }
     }
+    return 1;
 }
 
-static void test_supported_filetype(void) {
+static int test_supported_filetype(void) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct { const char *filetype; int no_png; int png_refused; int ret; } data[] = {
         /*  0*/ { "bMp", 0, 0, 1 },
@@ -2491,15 +2607,18 @@ static void test_supported_filetype(void) {
         if (ret != data[i].ret) {
             fprintf(stderr, "%d: %d != %d\n", i, ret, data[i].ret);
             assert(0);
+            return 0;
         }
         if (png_refused != data[i].png_refused) {
             fprintf(stderr, "%d: %d != %d\n", i, png_refused, data[i].png_refused);
             assert(0);
+            return 0;
         }
     }
+    return 1;
 }
 
-static void test_get_extension(void) {
+static int test_get_extension(void) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct { const char *file; const char *ret; } data[] = {
         /*  0*/ { "Gosh.bMp", "bMp" },
@@ -2514,23 +2633,27 @@ static void test_get_extension(void) {
     };
     int i;
     for (i = 0; i < ARRAY_SIZE(data); i++) {
-        char *ret = get_extension(data[i].file);
+        const char *const ret = get_extension(data[i].file);
         if (ret == NULL && data[i].ret != NULL) {
-            fprintf(stderr, "%d: <NULL> != \"%s\"\n", i, data[i].ret);
+            fprintf(stderr, "%d: ret <NULL> != \"%s\"\n", i, data[i].ret);
             assert(0);
+            return 0;
         }
         if (ret != NULL && data[i].ret == NULL) {
-            fprintf(stderr, "%d: \"%s\" != <NULL>\n", i, ret);
+            fprintf(stderr, "%d: ret \"%s\" != <NULL>\n", i, ret);
             assert(0);
+            return 0;
         }
         if (ret && data[i].ret && strcmp(ret, data[i].ret) != 0) {
-            fprintf(stderr, "%d: \"%s\" != \"%s\"\n", i, ret, data[i].ret);
+            fprintf(stderr, "%d: ret \"%s\" != \"%s\"\n", i, ret, data[i].ret);
             assert(0);
+            return 0;
         }
     }
+    return 1;
 }
 
-static void test_set_extension(void) {
+static int test_set_extension(void) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct { const char *file; const char *filetype; const char *expected; } data[] = {
         /*  0*/ { "Gosh.bMp", "bMp", "Gosh.bMp" },
@@ -2549,16 +2672,18 @@ static void test_set_extension(void) {
     for (i = 0; i < ARRAY_SIZE(data); i++) {
         char file[256];
         assert((int) strlen(data[i].file) < ARRAY_SIZE(file));
-        strcpy(file, data[i].file);
+        cpy_str(file, ARRAY_SIZE(file), data[i].file);
         set_extension(file, data[i].filetype);
         if (strcmp(file, data[i].expected) != 0) {
             fprintf(stderr, "%d: \"%s\" != \"%s\"\n", i, file, data[i].expected);
             assert(0);
+            return 0;
         }
     }
+    return 1;
 }
 
-static void test_is_raster(void) {
+static int test_is_raster(void) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct { const char *filetype; int no_png; int ret; } data[] = {
         /*  0*/ { NULL, 0, 0 },
@@ -2584,19 +2709,371 @@ static void test_is_raster(void) {
         if (ret != data[i].ret) {
             fprintf(stderr, "%d: ret %d != %d\n", i, ret, data[i].ret);
             assert(0);
+            return 0;
         }
     }
+    return 1;
 }
 
-static void test(void) {
-    (void)get_barcode_name(NULL, 1 /*test*/);
-    test_validate_int();
-    test_validate_float();
-    test_to_lower();
-    test_supported_filetype();
-    test_get_extension();
-    test_set_extension();
-    test_is_raster();
+static int test_validate_units(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *buf; const char units[3][5]; int units_size; int ret; const char *units_err; } data[] = {
+        /*  0*/ { "", { {""}, {""}, {""} }, 2, 0, NULL },
+        /*  1*/ { "1", { {""}, {""}, {""} }, 2, 0, NULL },
+        /*  2*/ { "1", { {"mm"}, {"in"}, {""} }, 2, 0, NULL },
+        /*  3*/ { "mm", { {"mm"}, {"in"}, {""} }, 2, 0, NULL },
+        /*  4*/ { "1mm", { {"mm"}, {"in"}, {""} }, 2, 0, NULL },
+        /*  5*/ { "1.0mm", { {"mm"}, {"in"}, {""} }, 2, 0, NULL },
+        /*  6*/ { "in", { {"mm"}, {"in"}, {""} }, 2, 1, NULL },
+        /*  7*/ { "1in", { {"mm"}, {"in"}, {""} }, 2, 1, NULL },
+        /*  8*/ { "1mmm", { {"mm"}, {"in"}, {""} }, 2, -1, "mmm" },
+        /*  9*/ { "1.0inch", { {"mm"}, {"in"}, {""} }, 2, -1, "inch" },
+        /* 10*/ { "1.0inch", { {"mm"}, {"in"}, {"inch"} }, 3, 2, NULL },
+        /* 11*/ { "1.2.345678.9012dpmm", { {"dpmm"}, {"dpi"}, {""} }, 2, 0, NULL },
+        /* 12*/ { "1.2.345678.9012dpi", { {"dpmm"}, {"dpi"}, {""} }, 2, 1, NULL },
+        /* 13*/ { "1.2.345678.9012dots", { {"dpmm"}, {"dpi"}, {""} }, 2, -1, "dots" },
+        /* 14*/ { "1.2.345678.9012dpi123", { {"dpmm"}, {"dpi"}, {""} }, 2, -1, "dpi123" },
+        /* 15*/ { "+1mm", { {"mm"}, {"in"}, {""} }, 2, -1, "+1mm" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char buf[128] = {0};
+        char *units_err = NULL;
+        int ret;
+        cpy_str(buf, ARRAY_SIZE(buf), data[i].buf);
+        ret = validate_units(buf, data[i].units, data[i].units_size, &units_err);
+        if (ret != data[i].ret) {
+            fprintf(stderr, "%d: ret %d != %d\n", i, ret, data[i].ret);
+            assert(0);
+            return 0;
+        }
+        if (units_err == NULL && data[i].units_err != NULL) {
+            fprintf(stderr, "%d: units_err <NULL> != \"%s\"\n", i, data[i].units_err);
+            assert(0);
+            return 0;
+        }
+        if (units_err != NULL && data[i].units_err == NULL) {
+            fprintf(stderr, "%d: units_err \"%s\" != <NULL>\n", i, units_err);
+            assert(0);
+            return 0;
+        }
+        if (units_err && strcmp(units_err, data[i].units_err) != 0) {
+            fprintf(stderr, "%d: units_err \"%s\" != \"%s\"\n", i, units_err, data[i].units_err);
+            assert(0);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int test_validate_scalexdimdp(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *arg; float x_dim_mm; float dpmm; int ret; const char *errbuf; } data[] = {
+        /*  0*/ { "", -1.0f, -1.0f, 0, "scalexdimdp X-dim too short" },
+        /*  1*/ { ",", -1.0f, -1.0f, 0, "scalexdimdp X-dim too short" },
+        /*  2*/ { "1234567inches", -1.0f, -1.0f, 0, "scalexdimdp X-dim too long" },
+        /*  3*/ { "1234567inches,0", -1.0f, -1.0f, 0, "scalexdimdp X-dim too long" },
+        /*  4*/ { "0,12dotsperinch", -1.0f, -1.0f, 0, "scalexdimdp resolution too long" },
+        /*  5*/ { "1234567inch", -1.0f, -1.0f, 0, "scalexdimdp X-dim unknown units: inch" },
+        /*  6*/ { "12.23.inch", -1.0f, -1.0f, 0, "scalexdimdp X-dim unknown units: inch" },
+        /*  7*/ { "12.23.in", -1.0f, -1.0f, 0, "scalexdimdp X-dim invalid floating point: fractional part must be digits only" },
+        /*  8*/ { "0,1.2.dpin", 0.0f, 0.0f, 0, "scalexdimdp resolution unknown units: dpin" },
+        /*  9*/ { "0,1.2.dpi", 0.0f, 0.0f, 0, "scalexdimdp resolution invalid floating point: fractional part must be digits only" },
+        /* 10*/ { "0", 0.0f, 12.0f, 1, "" },
+        /* 11*/ { "0,0", 0.0f, 12.0f, 1, "" },
+        /* 12*/ { "0,600dpi", 0.0f, 23.6220474f, 1, "" },
+        /* 13*/ { "0.2,100", 0.2f, 100.0f, 1, "" },
+        /* 14*/ { "0.013in,300dpi", 0.330200016f, 11.8110237f, 1, "" },
+        /* 15*/ { "0.33,300dpi", 0.329999983f, 11.8110237f, 1, "" },
+        /* 16*/ { "0.33,12", 0.329999983f, 12.0f, 1, "" },
+        /* 17*/ { "0.33", 0.329999983f, 12.0f, 1, "" },
+        /* 18*/ { "1IN", 25.3999996f, 12.0f, 1, "" },
+        /* 19*/ { "1x", -1.0f, -1.0f, 0, "scalexdimdp X-dim unknown units: x" },
+        /* 20*/ { "1,2x", 1.0f, 0.0f, 0, "scalexdimdp resolution unknown units: x" },
+        /* 21*/ { "1234567", 1234567.0f, 12.0f, 1, "" },
+        /* 22*/ { "12345678", -1.0f, -1.0f, 0, "scalexdimdp X-dim invalid floating point: integer part must be 7 digits maximum" },
+        /* 23*/ { "1234.567", 1234.567f, 12.0f, 1, "" },
+        /* 24*/ { "1234.5678", -1.0f, -1.0f, 0, "scalexdimdp X-dim invalid floating point: 7 significant digits maximum" },
+        /* 25*/ { "0,1234567", 0.0f, 1234567.0f, 1, "" },
+        /* 26*/ { "0,12345678", 0.0f, 0.0f, 0, "scalexdimdp resolution invalid floating point: integer part must be 7 digits maximum" },
+        /* 27*/ { "0,123.4567", 0.0f, 123.45670f, 1, "" },
+        /* 28*/ { "0,123.45678", 0.0f, 0.0f, 0, "scalexdimdp resolution invalid floating point: 7 significant digits maximum" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char errbuf[ERRBUF_SIZE] = {0};
+        float x_dim_mm = -1.0f, dpmm = -1.0f;
+        const int ret = validate_scalexdimdp(data[i].arg, &x_dim_mm, &dpmm, errbuf);
+        if (ret != data[i].ret) {
+            fprintf(stderr, "%d: ret %d != %d\n", i, ret, data[i].ret);
+            assert(0);
+            return 0;
+        }
+        if (strcmp(errbuf, data[i].errbuf) != 0) {
+            fprintf(stderr, "%d: errbuf \"%s\" != \"%s\"\n", i, errbuf, data[i].errbuf);
+            assert(0);
+            return 0;
+        }
+        if (x_dim_mm != data[i].x_dim_mm) {
+            fprintf(stderr, "%d: x_dim_mm %.9g != %.9g\n", i, x_dim_mm, data[i].x_dim_mm);
+            assert(0);
+            return 0;
+        }
+        if (dpmm != data[i].dpmm) {
+            fprintf(stderr, "%d: dpmm %.9g != %.9g\n", i, dpmm, data[i].dpmm);
+            assert(0);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int test_validate_structapp(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *arg; struct zint_structapp structapp; int ret; const char *errbuf; } data[] = {
+        /*  0*/ { "", { -1, -1, "" }, 0, "Invalid Structured Append argument, expect \"index,count[,ID]\"" },
+        /*  1*/ { ",", { -1, -1, "" }, 0, "Structured Append index too short" },
+        /*  2*/ { "1234567890,", { -1, -1, "" }, 0, "Structured Append index too long" },
+        /*  3*/ { "123456789,", { -1, -1, "" }, 0, "Structured Append count too short" },
+        /*  4*/ { "1,1234567890", { -1, -1, "" }, 0, "Structured Append count too long" },
+        /*  5*/ { "1,123456789,", { -1, -1, "" }, 0, "Structured Append ID too short" },
+        /*  6*/ { "123456789,123456789,123456789012345678901234567890123", { -1, -1, "" }, 0, "Structured Append ID too long" },
+        /*  7*/ { "123456789,123456789,12345678901234567890123456789012", { 123456789, 123456789, {'1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2'} }, 1, "" },
+        /*  8*/ { "2,3,5006", { 2, 3, "5006" }, 1, "" },
+        /*  9*/ { "2,3,,", { 2, 3, "," }, 1, "" },
+        /* 10*/ { "1.2,1", { -1, -1, "" }, 0, "Invalid Structured Append index (digits only)" },
+        /* 11*/ { "12,1.0", { 12, -1, "" }, 0, "Invalid Structured Append count (digits only)" },
+        /* 12*/ { "12,1", { 12, 1, "" }, 0, "Invalid Structured Append count '1', must be greater than or equal to 2" },
+        /* 13*/ { "12,11", { 12, 11, "" }, 0, "Structured Append index '12' out of range (1 to count '11')" },
+        /* 14*/ { "12,12", { 12, 12, "" }, 1, "" },
+        /* 15*/ { "0,2", { 0, 2, "" }, 0, "Structured Append index '0' out of range (1 to count '2')" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char errbuf[ERRBUF_SIZE] = {0};
+        struct zint_structapp structapp = { -1, -1, "" };
+        const int ret = validate_structapp(data[i].arg, &structapp, errbuf);
+        if (ret != data[i].ret) {
+            fprintf(stderr, "%d: ret %d != %d\n", i, ret, data[i].ret);
+            assert(0);
+            return 0;
+        }
+        if (strcmp(errbuf, data[i].errbuf) != 0) {
+            fprintf(stderr, "%d: errbuf \"%s\" != \"%s\"\n", i, errbuf, data[i].errbuf);
+            assert(0);
+            return 0;
+        }
+        if (structapp.index != data[i].structapp.index) {
+            fprintf(stderr, "%d: structapp.index %d != %d\n", i, structapp.index, data[i].structapp.index);
+            assert(0);
+            return 0;
+        }
+        if (structapp.count != data[i].structapp.count) {
+            fprintf(stderr, "%d: structapp.count %d != %d\n", i, structapp.count, data[i].structapp.count);
+            assert(0);
+            return 0;
+        }
+        if (strncmp(structapp.id, data[i].structapp.id, ARRAY_SIZE(structapp.id)) != 0) {
+            fprintf(stderr, "%d: errbuf \"%s\" != \"%s\"\n", i, structapp.id, data[i].structapp.id);
+            assert(0);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int test_validate_seg(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    /* NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding) disable "Excessive padding" warning */
+    static const struct { const char *arg; int N; struct zint_seg segs[10]; int ret; const char *errbuf; } data[] = {
+        /*  0*/ { "", 0, { {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} }, 0, "Invalid segment argument, expect \"ECI,DATA\"" },
+        /*  1*/ { ",", 0, { {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} }, 0, "Invalid segment argument, expect \"ECI,DATA\"" },
+        /*  2*/ { "1,", 0, { {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} }, 0, "Invalid segment argument, expect \"ECI,DATA\"" },
+        /*  3*/ { "1,1", 0, { { ZUCP("1"), 1, 1 }, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} }, 1, "" },
+        /*  4*/ { "1.0,1", 0, { {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} }, 0, "Invalid segment ECI (digits only)" },
+        /*  5*/ { "1234567890,1", 0, { {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} }, 0, "Invalid segment argument, expect \"ECI,DATA\"" },
+        /*  6*/ { "1000000,1", 0, { { NULL, 0, 1000000 }, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} }, 0, "Segment ECI code '1000000' out of range (0 to 999999)" },
+        /*  7*/ { "123456789,1", 0, { { NULL, 0, 123456789 }, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0} }, 0, "Segment ECI code '123456789' out of range (0 to 999999)" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        char errbuf[ERRBUF_SIZE] = {0};
+        struct zint_seg segs[10] = { {0} };
+        const int N = data[i].N;
+        const int ret = validate_seg(data[i].arg, N, segs, errbuf);
+        if (ret != data[i].ret) {
+            fprintf(stderr, "%d: ret %d != %d\n", i, ret, data[i].ret);
+            assert(0);
+            return 0;
+        }
+        if (strcmp(errbuf, data[i].errbuf) != 0) {
+            fprintf(stderr, "%d: errbuf \"%s\" != \"%s\"\n", i, errbuf, data[i].errbuf);
+            assert(0);
+            return 0;
+        }
+        if (segs[N].eci != data[i].segs[N].eci) {
+            fprintf(stderr, "%d: segs[%d].eci %d != %d\n", i, N, segs[N].eci, data[i].segs[N].eci);
+            assert(0);
+            return 0;
+        }
+        if (segs[N].length != data[i].segs[N].length) {
+            fprintf(stderr, "%d: segs[%d].length %d != %d\n", i, N, segs[N].length, data[i].segs[N].length);
+            assert(0);
+            return 0;
+        }
+        if (segs[N].source == NULL && data[i].segs[N].source != NULL) {
+            fprintf(stderr, "%d: segs[%d].source <NULL> != \"%s\"\n", i, N, data[i].segs[N].source);
+            assert(0);
+            return 0;
+        }
+        if (segs[N].source != NULL && data[i].segs[N].source == NULL) {
+            fprintf(stderr, "%d: segs[%d].source \"%s\" != <NULL>\n", i, N, segs[N].source);
+            assert(0);
+            return 0;
+        }
+        if (segs[N].source && strcmp(ZCCP(segs[N].source), ZCCP(data[i].segs[N].source)) != 0) {
+            fprintf(stderr, "%d: segs[%d].source \"%s\" != \"%s\"\n", i, N, segs[N].source, data[i].segs[N].source);
+            assert(0);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+#ifdef _WIN32
+
+static int test_win_CommandLineToArgvW(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const WCHAR *cmdline; int numargs; const LPWSTR ret[5]; } data[] = {
+        /*  0*/ { L"", -1, { NULL, NULL, NULL, NULL, NULL } },
+        /*  1*/ { L"gosh", 1, { L"gosh", NULL, NULL, NULL, NULL } },
+        /*  2*/ { L"gosh -d \"1234\"", 3, { L"gosh", L"-d", L"1234", NULL, NULL } },
+        /*  3*/ { L"gosh -d \"12\"\"34\"", 3, { L"gosh", L"-d", L"12\"34", NULL, NULL } },
+        /*  4*/ { L"gosh -d \"12\\\"34\"", 3, { L"gosh", L"-d", L"12\"34", NULL, NULL } },
+        /*  5*/ { L"gosh -d \"1234\" -d2", 4, { L"gosh", L"-d", L"1234", L"-d2", NULL } },
+        /*  6*/ { L"gosh -d \"12\"\"34\" -d2", 3, { L"gosh", L"-d", L"12\"34 -d2", NULL, NULL } },
+        /*  7*/ { L"gosh -d \"12\\\"34\" -d2", 4, { L"gosh", L"-d", L"12\"34", L"-d2", NULL } },
+        /*  8*/ { L"gosh -d \"12\"\"34\"\" -d2", 4, { L"gosh", L"-d", L"12\"34", L"-d2", NULL } },
+        /*  9*/ { L"gosh -d \"12\"\"34\"\"\" -d2", 4, { L"gosh", L"-d", L"12\"34\"", L"-d2", NULL } },
+        /* 10*/ { L"gosh -d \"12\\\"34\" -d2 A\\\"B", 5, { L"gosh", L"-d", L"12\"34", L"-d2", L"A\"B" } },
+        /* 11*/ { L"gosh -d \"12\\\\\"34\" -d2 A\\\"B", 3, { L"gosh", L"-d", L"12\\34 -d2 A\"B" } },
+        /* 12*/ { L"gosh -d \"12\\\\\\\"34\" -d2 A\\\"B", 5, { L"gosh", L"-d", L"12\\\"34", L"-d2", L"A\"B" } },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        int j;
+        int numargs = -1;
+        LPWSTR *ret = win_CommandLineToArgvW(data[i].cmdline, &numargs);
+        if (ret == NULL && data[i].ret[0] != NULL) {
+            fprintf(stderr, "%d: ret <NULL> != ret\n", i);
+            assert(0);
+            return 0;
+        }
+        if (ret != NULL && data[i].ret[0] == NULL) {
+            fprintf(stderr, "%d: ret != <NULL>\n", i);
+            assert(0);
+            return 0;
+        }
+        if (numargs != data[i].numargs) {
+            fprintf(stderr, "%d: numargs %d != %d\n", i, numargs, data[i].numargs);
+            assert(0);
+            return 0;
+        }
+        if (ret) {
+            for (j = 0; j < numargs; j++) {
+                if (ret[j] == NULL && data[i].ret[j] != NULL) {
+                    fprintf(stderr, "%d: ret[%d] <NULL> != ret\n", i, j);
+                    assert(0);
+                    return 0;
+                }
+                if (ret[j] != NULL && data[i].ret[j] == NULL) {
+                    fprintf(stderr, "%d: ret[%d] != <NULL>\n", i, j);
+                    assert(0);
+                    return 0;
+                }
+                if (ret[j] && wcscmp(ret[j], data[i].ret[j]) != 0) {
+                    fwprintf(stderr, L"%d: ret[%d] \"%ls\" != \"%ls\"\n", i, j, ret[j], data[i].ret[j]);
+                    assert(0);
+                    return 0;
+                }
+            }
+            if (ret) {
+                LocalFree(ret);
+            }
+        }
+    }
+    return 1;
+}
+
+static wchar_t *test_run_utf8_to_wide(const char *const utf8) {
+    wchar_t *ret = NULL, *wide = NULL;
+    utf8_to_wide(utf8, wide, NULL /*fail return*/);
+    if (wide) {
+        const size_t size = sizeof(wchar_t) * (wcslen(wide) + 1);
+        if ((ret = malloc(size))) {
+            memcpy(ret, wide, size);
+        }
+    }
+    return ret;
+}
+
+static int test_utf8_to_wide(void) {
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct { const char *utf8; const wchar_t *wide; } data[] = {
+        /*  0*/ { "", L"" },
+        /*  1*/ { "abcd", L"abcd" },
+        /*  2*/ { "ab\xC3\xA9" "cd", L"ab\u00E9cd" },
+        /*  3*/ { "ab\xC3\xA9" "c\xf0\x90\x80\x80" "d", L"ab\u00E9c\U00010000d" },
+    };
+    int i;
+    for (i = 0; i < ARRAY_SIZE(data); i++) {
+        wchar_t *wide = test_run_utf8_to_wide(data[i].utf8);
+        if (wide == NULL && data[i].wide != NULL) {
+            fwprintf(stderr, L"%d: wide <NULL> != \"%ls\"\n", i, data[i].wide);
+            assert(0);
+            return 0;
+        }
+        if (wide != NULL && data[i].wide == NULL) {
+            fwprintf(stderr, L"%d: wide \"%ls\" != <NULL>\n", i, wide);
+            assert(0);
+            return 0;
+        }
+        if (wide && wcscmp(wide, data[i].wide) != 0) {
+            fwprintf(stderr, L"%d: wide \"%ls\" != \"%ls\"\n", i, wide, data[i].wide);
+            assert(0);
+            return 0;
+        }
+        if (wide) {
+            free(wide);
+        }
+    }
+    return 1;
+}
+
+#endif
+
+static int test(void) {
+    int ret = 1;
+    ret &= get_barcode_name(NULL, 1 /*test*/);
+    ret &= test_cpy_str();
+    ret &= test_ncpy_str();
+    ret &= test_cpycat_str();
+    ret &= test_validate_int();
+    ret &= test_validate_float();
+    ret &= test_to_lower();
+    ret &= test_supported_filetype();
+    ret &= test_get_extension();
+    ret &= test_set_extension();
+    ret &= test_is_raster();
+    ret &= test_validate_units();
+    ret &= test_validate_scalexdimdp();
+    ret &= test_validate_structapp();
+    ret &= test_validate_seg();
+#ifdef _WIN32
+    ret &= test_win_CommandLineToArgvW();
+    ret &= test_utf8_to_wide();
+#endif
+    return ret;
 }
 
 #endif /* ZINT_TEST */

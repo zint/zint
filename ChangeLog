@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2025-12-29)
+Version 2.16.0.9 (dev) not released yet (2025-12-31)
 ====================================================
 
 **Incompatible changes**
@@ -12,6 +12,11 @@ Changes
   creating temporary file
 - CLI: allow "tiff" as filetype (saved as ".tif");
   add `ZINT_TEST`-only "--test" option to do various internal tests
+
+Bugs
+----
+- CLI: fix "--scalexdimdp" X-dim inch units being divided instead of multiplied
+  on conversion to mm
 
 
 Version 2.16.0 (2025-12-19)

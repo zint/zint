@@ -892,6 +892,7 @@ INTERNAL float zint_out_large_bar_height(struct zint_symbol *symbol, const int s
 
 #ifdef _WIN32
 /* Convert UTF-8 to Windows wide chars. Ticket #288, props Marcel */
+/* Note if change this, change versions in "frontend/main.c" and "backend/tests/testcommon.c" also */
 #define utf8_to_wide(u, w, r) \
     { \
         int lenW; /* Includes terminating NUL */ \

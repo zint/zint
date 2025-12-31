@@ -124,12 +124,14 @@ void assert_notequal(int e1, int e2, const char *fmt, ...) {
 #endif
 
 #ifdef _WIN32
-#define utf8_to_wide(u, w) \
+/* Convert UTF-8 to Windows wide chars. Ticket #288, props Marcel */
+/* See "backend/output.c" */
+#define utf8_to_wide(u, w, r) \
     { \
-        int lenW; /* Includes terminating NUL */ \
-        if ((lenW = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, NULL, 0)) == 0) return 0; \
+        int lenW; /* Includes NUL terminator */ \
+        if ((lenW = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, NULL, 0)) == 0) return r; \
         w = (wchar_t *) z_alloca(sizeof(wchar_t) * lenW); \
-        if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, w, lenW) == 0) return 0; \
+        if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, w, lenW) == 0) return r; \
     }
 #endif
 
@@ -1551,7 +1553,7 @@ FILE *testUtilOpen(const char *filename, const char *mode) {
     return fp;
 }
 
-/* Does file exist? */
+/* Does file exist? Returns 1 if does, 0 if doesn't */
 int testUtilExists(const char *filename) {
     FILE *fp = testUtilOpen(filename, "r");
     if (fp == NULL) {
@@ -1565,21 +1567,21 @@ int testUtilExists(const char *filename) {
 int testUtilRemove(const char *filename) {
 #ifdef _WIN32
     wchar_t *filenameW;
-    utf8_to_wide(filename, filenameW);
+    utf8_to_wide(filename, filenameW, -1 /*fail return*/);
     return DeleteFileW(filenameW) == 0; /* Non-zero on success */
 #else
     return remove(filename);
 #endif
 }
 
-/* Does directory exist? (Windows compatibility) */
+/* Does directory exist? (Windows compatibility). Returns 1 if does, 0 if doesn't */
 int testUtilDirExists(const char *dirname) {
 #ifdef _WIN32
     DWORD dwAttrib;
     wchar_t *dirnameW;
-    utf8_to_wide(dirname, dirnameW);
+    utf8_to_wide(dirname, dirnameW, 0 /*fail return*/);
     dwAttrib = GetFileAttributesW(dirnameW);
-    return dwAttrib != (DWORD) -1 && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
+    return dwAttrib != (DWORD) -1 && !!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
 #else
     return testUtilExists(dirname);
 #endif
@@ -1589,7 +1591,7 @@ int testUtilDirExists(const char *dirname) {
 int testUtilMkDir(const char *dirname) {
 #ifdef _WIN32
     wchar_t *dirnameW;
-    utf8_to_wide(dirname, dirnameW);
+    utf8_to_wide(dirname, dirnameW, -1 /*fail return*/);
     return CreateDirectoryW(dirnameW, NULL) == 0;
 #else
     return mkdir(dirname, S_IRWXU);
@@ -1600,28 +1602,28 @@ int testUtilMkDir(const char *dirname) {
 int testUtilRmDir(const char *dirname) {
 #ifdef _WIN32
     wchar_t *dirnameW;
-    utf8_to_wide(dirname, dirnameW);
+    utf8_to_wide(dirname, dirnameW, -1 /*fail return*/);
     return RemoveDirectoryW(dirnameW) == 0;
 #else
     return rmdir(dirname);
 #endif
 }
 
-/* Rename a file (Windows compatibility) */
+/* Rename a file (Windows compatibility). Returns 0 if successful, non-zero if not */
 int testUtilRename(const char *oldpath, const char *newpath) {
 #ifdef _WIN32
     wchar_t *oldpathW, *newpathW;
     int ret = testUtilRemove(newpath);
     if (ret != 0) return ret;
-    utf8_to_wide(oldpath, oldpathW);
-    utf8_to_wide(newpath, newpathW);
+    utf8_to_wide(oldpath, oldpathW, -1 /*fail return*/);
+    utf8_to_wide(newpath, newpathW, -1 /*fail return*/);
     return _wrename(oldpathW, newpathW);
 #else
     return rename(oldpath, newpath);
 #endif
 }
 
-/* Create read-only file */
+/* Create read-only file. Returns 1 if successful, 0 if not */
 int testUtilCreateROFile(const char *filename) {
 #ifdef _WIN32
     wchar_t *filenameW;
@@ -1634,7 +1636,7 @@ int testUtilCreateROFile(const char *filename) {
         return 0;
     }
 #ifdef _WIN32
-    utf8_to_wide(filename, filenameW);
+    utf8_to_wide(filename, filenameW, 0 /*fail return*/);
     if (SetFileAttributesW(filenameW, GetFileAttributesW(filenameW) | FILE_ATTRIBUTE_READONLY) == 0) {
         return 0;
     }
@@ -1646,11 +1648,11 @@ int testUtilCreateROFile(const char *filename) {
     return 1;
 }
 
-/* Remove read-only file (Windows compatibility) */
+/* Remove read-only file (Windows compatibility). Returns 0 if successful, non-zero if not */
 int testUtilRmROFile(const char *filename) {
 #ifdef _WIN32
     wchar_t *filenameW;
-    utf8_to_wide(filename, filenameW);
+    utf8_to_wide(filename, filenameW, -1 /*fail return*/);
     if (SetFileAttributesW(filenameW, GetFileAttributesW(filenameW) & ~FILE_ATTRIBUTE_READONLY) == 0) {
         return -1;
     }
