@@ -2430,6 +2430,7 @@ static int test_cpy_str(void) {
 
 static int test_ncpy_str(void) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    /* NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding) disable "Excessive padding" warning */
     static const struct { int buf_size; const char *str; int str_max; const char *buf; } data[] = {
         /*  0*/ { 10, "", 0, "" },
         /*  1*/ { 10, "123", 0, "" },
