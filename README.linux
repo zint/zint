@@ -1,4 +1,4 @@
-% README.linux 2025-12-15
+% README.linux 2026-01-01
 % Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
 % Fedora Linux 43 (Workstation Edition)
 
@@ -75,7 +75,7 @@ or Ubuntu 20.04
 
     sudo apt install qt5-default qt5-uitools
 
-or Fedora (not recommended)
+or Fedora
 
      sudo dnf install qt5-qtbase-devel qt5-qttools-devel qt5-qttools-static qt5-qtsvg-devel
 
@@ -118,6 +118,10 @@ The rest is standard CMake
     cmake ..
     make
     sudo make install
+
+Note if using Qt6, need to specify
+
+    cmake -DZINT_QT6=ON ..
 
 
 4. Run
