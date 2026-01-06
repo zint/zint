@@ -1,7 +1,7 @@
 /*  qr.c Handles QR Code, Micro QR Code, UPNQR and rMQR */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1003,7 +1003,7 @@ static void qr_populate_grid(unsigned char *grid, const int h_size, const int v_
     i = 0;
     while (i < n) {
         int x = x_start - (row * 2);
-        int r = y * h_size;
+        const int r = y * h_size;
 
         if (x < 6 && not_rmqr)
             x--; /* skip over vertical timing pattern */
@@ -1308,11 +1308,11 @@ static void qr_add_format_info(unsigned char *grid, const int size, const int ec
 static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_level, const int user_mask,
             const int fast_encode, const int debug_print) {
     int x, y;
-    int r, k;
+    int k;
     int bit;
     int pattern, penalty[8];
     int best_pattern;
-    int size_squared = size * size;
+    const int size_squared = size * size;
     unsigned char *mask = (unsigned char *) z_alloca(size_squared);
     unsigned char *local = (unsigned char *) z_alloca(size_squared);
 #ifdef ZINTLOG
@@ -1322,41 +1322,13 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
     /* Perform data masking */
     memset(mask, 0, size_squared);
     for (y = 0; y < size; y++) {
-        r = y * size;
+        const int ymod = y % 12;
+        const int r = y * size;
         for (x = 0; x < size; x++) {
 
-            /* all eight bitmask variants are encoded in the 8 bits of the bytes that make up the mask array. */
-            if (!(grid[r + x] & 0xF0)) { /* exclude areas not to be masked. */
-                if (((y + x) & 1) == 0) {
-                    mask[r + x] |= 0x01;
-                }
-                if (!fast_encode) {
-                    if ((y & 1) == 0) {
-                        mask[r + x] |= 0x02;
-                    }
-                }
-                if (x % 3 == 0) {
-                    mask[r + x] |= 0x04;
-                }
-                if (!fast_encode) {
-                    if ((y + x) % 3 == 0) {
-                        mask[r + x] |= 0x08;
-                    }
-                }
-                if (((y / 2 + x / 3) & 1) == 0) {
-                    mask[r + x] |= 0x10;
-                }
-                if (!fast_encode) {
-                    if ((y * x) % 6 == 0) { /* Equivalent to (y * x) % 2 + (y * x) % 3 == 0 */
-                        mask[r + x] |= 0x20;
-                    }
-                    if (((((y * x) & 1) + (y * x) % 3) & 1) == 0) {
-                        mask[r + x] |= 0x40;
-                    }
-                }
-                if (((((y + x) & 1) + (y * x) % 3) & 1) == 0) {
-                    mask[r + x] |= 0x80;
-                }
+            /* All eight bitmask variants are encoded in the 8 bits of the bytes that make up the mask array. */
+            if (!(grid[r + x] & 0xF0)) { /* Exclude areas not to be masked. */
+                mask[r + x] = qr_masks[ymod][x % 6]; /* Pre-calculated table ala BWIPP, see "qr.h" */
             }
         }
     }
@@ -1364,7 +1336,7 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
     if (user_mask) {
         best_pattern = user_mask - 1;
     } else {
-        /* all eight bitmask variants have been encoded in the 8 bits of the bytes
+        /* All eight bitmask variants have been encoded in the 8 bits of the bytes
          * that make up the mask array. select them for evaluation according to the
          * desired pattern.*/
         best_pattern = 0;
@@ -1854,7 +1826,7 @@ INTERNAL int zint_qrcode(struct zint_symbol *symbol, struct zint_seg segs[], con
     symbol->rows = size;
 
     for (i = 0; i < size; i++) {
-        int r = i * size;
+        const int r = i * size;
         for (j = 0; j < size; j++) {
             if (grid[r + j] & 0x01) {
                 z_set_module(symbol, i, j);
@@ -1981,11 +1953,10 @@ static void microqr_setup_grid(unsigned char *grid, const int size) {
 
 
     /* Reserve space for format information */
-    for (i = 0; i < 8; i++) {
+    for (i = 1; i <= 8; i++) {
         grid[(8 * size) + i] |= 0x20;
         grid[(i * size) + 8] |= 0x20;
     }
-    grid[(8 * size) + 8] |= 20;
 }
 
 static void microqr_populate_grid(unsigned char *grid, const int size, const char full_stream[], int bp) {
@@ -2063,36 +2034,23 @@ static int microqr_evaluate(const unsigned char *grid, const int size, const int
 
 static int microqr_apply_bitmask(unsigned char *grid, const int size, const int user_mask, const int debug_print) {
     int x, y;
-    int r, k;
+    int k;
     int bit;
     int pattern, value[4];
     int best_pattern;
-    int size_squared = size * size;
+    const int size_squared = size * size;
     unsigned char *mask = (unsigned char *) z_alloca(size_squared);
     unsigned char *eval = (unsigned char *) z_alloca(size_squared);
 
     /* Perform data masking */
     memset(mask, 0, size_squared);
     for (y = 0; y < size; y++) {
-        r = y * size;
+        const int ymod = y % 12;
+        const int r = y * size;
         for (x = 0; x < size; x++) {
 
             if (!(grid[r + x] & 0xF0)) {
-                if ((y & 1) == 0) {
-                    mask[r + x] |= 0x01;
-                }
-
-                if (((y / 2 + x / 3) & 1) == 0) {
-                    mask[r + x] |= 0x02;
-                }
-
-                if (((((y * x) & 1) + (y * x) % 3) & 1) == 0) {
-                    mask[r + x] |= 0x04;
-                }
-
-                if (((((y + x) & 1) + (y * x) % 3) & 1) == 0) {
-                    mask[r + x] |= 0x08;
-                }
+                mask[r + x] = microqr_masks[ymod][x % 6]; /* Pre-calculated table ala BWIPP, see "qr.h" */
             }
         }
     }

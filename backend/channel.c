@@ -1,7 +1,7 @@
 /* channel.c - Handles Channel */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -87,7 +87,8 @@ static int channel_copy_precalc(channel_precalc *const precalc, int B[8], int S[
    assume no liability for the use of this document." */
 static void CHNCHR(int channels, int target_value, int B[8], int S[8]) {
     /* Use of initial pre-calculations taken from Barcode Writer in Pure PostScript (BWIPP)
-     * Copyright (c) 2004-2020 Terry Burton (MIT/X-Consortium license) */
+       Copyright (c) 2004-2026 Terry Burton */
+    /* SPDX-License-Identifier: MIT */
     static channel_precalc initial_precalcs[6] = {
         { 0, { 1, 1, 1, 1, 1, 2, 1, 2, }, { 1, 1, 1, 1, 1, 1, 1, 3, }, { 1, 1, 1, 1, 1, 3, 2, },
             { 1, 1, 1, 1, 1, 3, 3, }, },
