@@ -1,7 +1,7 @@
 /* common.h - Header for all common functions in common.c */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -141,7 +141,7 @@ typedef unsigned __int64 uint64_t;
 #define z_isupper(c) ((c) >= 'A' && (c) <= 'Z')
 #define z_islower(c) ((c) >= 'a' && (c) <= 'z')
 #define z_isascii(c) (!((c) & ~0x7F))
-#define z_iscntrl(c) (z_isascii(c) && ((c) < 32 || (c) == 127))
+#define z_iscntrl(c) (!((c) & ~0x1F) || (c) == 127)
 
 /* Shorthands to cast away char pointer signedness */
 #define ZUCP(p)     ((unsigned char *) (p))

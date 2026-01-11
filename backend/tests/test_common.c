@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -49,6 +49,44 @@ static int is_sane_orig(const char test_string[], const unsigned char source[], 
     }
 
     return 0;
+}
+
+static void test_isXXX(const testCtx *const p_ctx) {
+
+    struct item {
+        char ch;
+        int ret_isascii;
+        int ret_iscntrl;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { '\177', 1, 1 }, /* DEL */
+        /*  1*/ { '\200', 0, 0 },
+        /*  3*/ { '\0', 1, 1 },
+        /*  3*/ { '\001', 1, 1 }, /* SOH */
+        /*  2*/ { '\t', 1, 1 },
+        /*  4*/ { '\037', 1, 1 }, /* US */
+        /*  5*/ { ' ', 1, 0 },
+        /*  6*/ { '!', 1, 0 },
+        /*  7*/ { '~', 1, 0 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, ret;
+
+    testStart(p_ctx->func_name);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        ret = z_isascii(data[i].ch);
+        assert_equal(ret, data[i].ret_isascii, "i:%d isascii ret %d != %d\n", i, ret, data[i].ret_isascii);
+
+        ret = z_iscntrl(data[i].ch);
+        assert_equal(ret, data[i].ret_iscntrl, "i:%d iscntrl ret %d != %d\n", i, ret, data[i].ret_iscntrl);
+    }
+
+    testFinish();
 }
 
 static void test_to_int(const testCtx *const p_ctx) {
@@ -1439,6 +1477,7 @@ static void test_debug_test_codeword_dump_int(const testCtx *const p_ctx) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
+        { "test_isXXX", test_isXXX },
         { "test_to_int", test_to_int },
         { "test_to_upper", test_to_upper },
         { "test_chr_cnt", test_chr_cnt },

@@ -1,5 +1,6 @@
 /*  gen_corpora.c - write out initial fuzz data for zint, allowing for how `set_symbol()` in "fuzz.h" uses first X
     bytes to set various `zint_symbol` members (namely `input_mode`, `option_1`, `option_2`, `eci`, `option_3`) */
+/* NOLINTBEGIN(clang-diagnostic-comment) */
 /*
     From "backend/tests/fuzz" directory:
 
@@ -10,6 +11,7 @@
     zip -j fuzz_data_seed_corpus.zip fuzz_data_corpus/*
     zip -j fuzz_gs1_seed_corpus.zip fuzz_gs1_corpus/*
 */
+/* NOLINTEND(clang-diagnostic-comment) */
 /*
     libzint - the open source barcode library
     Copyright (C) 2024-2025 Robin Stuart <rstuart114@gmail.com>
@@ -52,6 +54,7 @@ extern "C" {
 #include "fuzz.h"
 
 /* Data item */
+/* NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding) disable "Excessive padding" warning */
 struct item {
     int test_fuzz_idx;
     int symbology;

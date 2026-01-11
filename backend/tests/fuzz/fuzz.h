@@ -1,7 +1,7 @@
 /*  fuzz.h - common functions for fuzzing libzint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2024-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2024-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -175,12 +175,12 @@ static const struct settings_item settings[] = {
     {   7, BARCODE_C25IND,             NEON_F,           0,  -1,           0,   2,           0,             1,   79 },
     {   8, BARCODE_CODE39,           SILVER_F,           0,  -1,           0,   2,           0,             1,   86 },
     {   9, BARCODE_EXCODE39,         SILVER_F,           0,  -1,           0,   2,           0,             1,   86 },
-    {  10, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  11, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  12, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
+    {  10, BARCODE_EAN8,         SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   14 },
+    {  11, BARCODE_EAN_2ADDON,         NEON_F,           0,  -1,           0,  -1,           0,             1,    2 },
+    {  12, BARCODE_EAN_5ADDON,         NEON_F,           0,  -1,           0,  -1,           0,             1,    5 },
     {  13, BARCODE_EANX,         SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   19 },
     {  14, BARCODE_EANX_CHK,     SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   19 },
-    {  15, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
+    {  15, BARCODE_EAN13,        SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   19 },
     {  16, BARCODE_GS1_128,       ASCII_PRT_F,           0,  -1,           0,  -1,           0,             3,  198 },
     {  17, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
     {  18, BARCODE_CODABAR,         CALCIUM_F,           0,  -1,           0,   2,           0,             3,  103 },
@@ -313,6 +313,8 @@ static const struct settings_item settings[] = {
     { 145, BARCODE_RMQR,                    0,          -1,   4,           0,  38,           0,             1,  361 },
     { 146, BARCODE_BC412,           ARSENIC_F,           0,  -1,           0,  -1,           0,             7,   18 },
     { 147, BARCODE_DXFILMEDGE,       SILVER_F,           0,  -1,           0,  -1,           0,             1,   10 },
+    { 148, BARCODE_EAN8_CC,      SODIUM_PLS_F,           0,   2,           0,  -1,           0,             1,  335 },
+    { 149, BARCODE_EAN13_CC,     SODIUM_PLS_F,           0,   2,           0,  -1,           0,             1,  338 },
 };
 
 /* Make sure value `v` is between `min` and `max` */

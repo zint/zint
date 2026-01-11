@@ -1,7 +1,7 @@
 /*  fuzz_gs1.c - fuzzer for libzint (GS1-enabled symbologies, GS1_MODE) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2024-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -84,11 +84,11 @@ int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
 
         if (is_composite) {
             if (idx == BARCODE_GS1_128_CC || idx == BARCODE_DBAR_EXP_CC || idx == BARCODE_DBAR_EXPSTK_CC) {
-                strcpy(symbol->primary, primary_ai);
+                memcpy(symbol->primary, primary_ai, sizeof(primary_ai));
             } else if (idx == BARCODE_UPCE_CC) {
-                strcpy(symbol->primary, primary_upce);
+                memcpy(symbol->primary, primary_upce, sizeof(primary_upce));
             } else {
-                strcpy(symbol->primary, primary);
+                memcpy(symbol->primary, primary, sizeof(primary));
             }
         }
 

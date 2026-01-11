@@ -1,7 +1,7 @@
 /*  library.c - external functions of libzint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1048,18 +1048,28 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         const int len = local_segs[0].length;
         const int primary_len = symbol->primary[0] ? (int) strlen(symbol->primary) : 0;
         char name[32];
-        char source[151], primary[151]; /* 30*5 + 1 = 151 */
+        char source[1001]; /* 200*5 + 1 = 1001 */
         (void) ZBarcode_BarcodeName(symbol->symbology, name);
-        z_debug_print_escape(local_segs[0].source, len > 30 ? 30 : len, source);
-        z_debug_print_escape(ZCUCP(symbol->primary), primary_len > 30 ? 30 : primary_len, primary);
-        printf("\nZBarcode_Encode_Segs: %s (%d), input_mode: 0x%X, ECI: %d, option_1/2/3: (%d, %d, %d)\n"
-                "                      scale: %g, output_options: 0x%X, fg: %s, bg: %s, seg_count: %d,\n"
-                "                      %ssource%s (%d): \"%s\",\n"
-                "                      %sprimary (%d): \"%s\"\n",
-                name, symbol->symbology, symbol->input_mode, symbol->eci, symbol->option_1, symbol->option_2,
-                symbol->option_3, symbol->scale, symbol->output_options, symbol->fgcolour, symbol->bgcolour,
-                seg_count, len > 30 ? "first 30 " : "", seg_count > 1 ? "[0]" : "", len, source,
-                primary_len > 30 ? "first 30 " : "", primary_len, primary);
+        z_debug_print_escape(local_segs[0].source, len > 200 ? 200 : len, source);
+        printf("\nZBarcode_Encode_Segs: %s (%d), height %g, scale: %g, whitespace: (%d, %d), border_width: %d\n"
+                "                      output_options: 0x%X, fg: \"%s\", bg: \"%s\"\n"
+                "                      outfile: \"%s\"\n"
+                "                      primary (%d): \"%s\"\n"
+                "                      option_1/2/3: (%d, %d, %d), show_hrt: %d, input_mode: 0x%X, ECI: %d, dpmm: %g"
+                ", dot_size: %g\n"
+                "                      text_gap: %g, guard_descent: %g, structapp index/count/id: (%d, %d, \"%s\")"
+                ", warn_level: %d, seg_count %d\n"
+                "                      %ssource%s (%d): \"%s\"\n",
+                name, symbol->symbology, symbol->height, symbol->scale, symbol->whitespace_width,
+                    symbol->whitespace_height, symbol->border_width,
+                symbol->output_options, symbol->fgcolour, symbol->bgcolour,
+                symbol->outfile,
+                primary_len, symbol->primary,
+                symbol->option_1, symbol->option_2, symbol->option_3, symbol->show_hrt, symbol->input_mode,
+                    symbol->eci, symbol->dpmm, symbol->dot_size,
+                symbol->text_gap, symbol->guard_descent, symbol->structapp.index, symbol->structapp.count,
+                    symbol->structapp.id, symbol->warn_level, seg_count,
+                len > 200 ? "first 200 " : "", seg_count > 1 ? "[0]" : "", len, source);
         fflush(stdout);
     }
 
