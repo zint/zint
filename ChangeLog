@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2025-12-31)
+Version 2.16.0.9 (dev) not released yet (2025-01-12)
 ====================================================
 
 **Incompatible changes**
@@ -15,6 +15,8 @@ Changes
 
 Bugs
 ----
+- CODE128: fix not handling FNC1 at end of data when in manual switching mode
+  or any FNC1 after manual C mode selected and no other non-C data
 - CLI: fix "--scalexdimdp" X-dim inch units being divided instead of multiplied
   on conversion to mm
 

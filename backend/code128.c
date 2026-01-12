@@ -1,7 +1,7 @@
 /* code128.c - Handles Code 128 and GS1-128 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
     Bugfixes thanks to Christian Sakowski and BogDan Vatra
 
     Redistribution and use in source and binary forms, with or without
@@ -446,21 +446,24 @@ INTERNAL int zint_code128(struct zint_symbol *symbol, unsigned char source[], in
             have_a |= !mask_0x60;
             have_b |= mask_0x60 == 0x60;
         }
+    } else if (have_fnc1) {
+        have_a = have_b = have_c = 1;
+        for (i = 0; i < length; i++) {
+            have_extended |= src[i] & 0x80;
+        }
     } else {
         int prev_digit, digit = 0;
         for (i = 0; i < length; i++) {
             const unsigned char ch = src[i];
-            const int is_fnc1 = ch == '\x1D' && fncs[i];
-            if (!is_fnc1) {
-                const unsigned char mask_0x60 = ch & 0x60; /* 0 for (ch & 0x7F) < 32, 0x60 for (ch & 0x7F) >= 96 */
-                const int manual = manuals[i];
-                have_extended |= ch & 0x80;
-                have_a |= !mask_0x60 || manual == C128_A0;
-                have_b |= mask_0x60 == 0x60 || manual == C128_B0;
-                prev_digit = digit;
-                digit = z_isdigit(ch);
-                have_c |= prev_digit && digit;
-            }
+            const unsigned char mask_0x60 = ch & 0x60; /* 0 for (ch & 0x7F) < 32, 0x60 for (ch & 0x7F) >= 96 */
+            const int manual = manuals[i];
+            assert(!(ch == '\x1D' && fncs[i])); /* Can't be FNC1 */
+            have_extended |= ch & 0x80;
+            have_a |= !mask_0x60 || manual == C128_A0;
+            have_b |= mask_0x60 == 0x60 || manual == C128_B0;
+            prev_digit = digit;
+            digit = z_isdigit(ch);
+            have_c |= prev_digit && digit;
         }
     }
     c128_set_priority(priority, have_a, have_b, have_c, have_extended);

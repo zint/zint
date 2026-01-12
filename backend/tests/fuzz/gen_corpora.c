@@ -14,7 +14,7 @@
 /* NOLINTEND(clang-diagnostic-comment) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2024-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2024-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -866,6 +866,15 @@ static const struct item data_data[] = {
     /* 40*/ { 6, BARCODE_DOTCODE, -1, -1, -1, -1, -1, "\237", -1 }, /* As above L1090 */
     /* 41*/ { 0, BARCODE_MAXICODE, -1, -1, -1, -1, -1, "\223\223\223\223\223\200\000\060\060\020\122\104\060\343\000\000\040\104\104\104\104\177\377\040\000\324\336\000\000\000\000\104\060\060\060\060\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\060\104\104\000\000\000\040\104\104\104\104\177\377\377\377\324\336\000\000\000\000\104\377\104\001\104\104\104\104\104\104\233\233\060\060\060\060\060\060\060\060\060\325\074", 107 }, /* #181 Nico Gunkel OSS-Fuzz - original OSS-Fuzz triggering data */
     /* 42*/ { 1, BARCODE_MAXICODE, -1, -1, -1, -1, -1, "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789", -1 }, /* Add 6 lowercase a's so 6 SHIFTS inserted so 6 + 138 (max input len) = 144 and numbers come at end of buffer */
+    /* 43*/ { 0, BARCODE_CODE128, DATA_MODE | EXTRA_ESCAPE_MODE, -1, -1, -1, -1,
+                "\003\134\136\103\103\103\103\103\103\103\103\103\103\103\103\103\103\103\103\103\103\000\000\051\000\054\103\103\103\377\377\377"
+                "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+                "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\242\053\134\136\061\067\242\242\242\242\242"
+                "\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242"
+                "\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242"
+                "\136\136",
+                162
+            }, /* fuzz_data (1st) */
 };
 
 /* GS1_MODE data */

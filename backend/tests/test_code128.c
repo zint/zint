@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -106,7 +106,7 @@ static void test_large(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char ret_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -294,7 +294,7 @@ static void test_hrt(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char ret_buf[8192];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -419,7 +419,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char ret_buf[8192];
 
-    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do zxing-cpp test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
     testStartSymbol(p_ctx->func_name, &symbol);
@@ -649,6 +649,17 @@ static void test_input(const testCtx *const p_ctx) {
         /*139*/ { UNICODE_MODE, "12é12é", -1, 0, 123, 0, 1, "(11) 105 12 100 100 73 17 18 100 73 17 106", "StartC 12 CodeB FNC4 é 1 2 FNC4 é; BWIPP different encodation (StartB)" },
         /*140*/ { UNICODE_MODE, "1234é123456é", -1, 0, 167, 1, 1, "(15) 105 12 34 100 100 73 99 12 34 56 100 100 73 15 106", "StartC 12 34 CodeB FNC4 é CodeC 12 34 56 CodeB FNC4 é" },
         /*141*/ { DATA_MODE, "\256^a\357\033\270\017,\274u$B\305\311\006\011]\273\025u\315\2638\263\333", -1, 0, 453, 1, 899, "(41) 104 100 14 62 65 100 79 101 91 101 24 79 12 101 28 98 85 4 34 101 37 101 41 70 73 61", "" },
+        /*142*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^C\\^1", -1, 0, 46, 0, 0, "(4) 105 102 1 106", "StartC FNC1; From fuzz 2026-01-12; BWIPP see below; zxing-cpp empty text" },
+        /*143*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\\^1", -1, 0, 46, 0, 0, "(4) 103 102 102 106", "StartA FNC1; From fuzz 2026-01-12; BWIPP see below; zxing-cpp empty text" },
+        /*144*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^B\\^1", -1, 0, 46, 1, 0, "(4) 104 102 0 106", "StartB FNC1; From fuzz 2026-01-12; zxing-cpp empty text" },
+        /*145*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^1", -1, 0, 46, 0, 0, "(4) 105 102 1 106", "StartC FNC1; BWIPP see above; zxing-cpp empty text" },
+        /*146*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^C\\^1A", -1, 0, 68, 0, 3, "(6) 105 102 100 33 94 106", "StartC CodeB FNC1 A; BWIPP see below" },
+        /*147*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\\^1A", -1, 0, 57, 0, 3, "(5) 103 102 33 65 106", "StartA FNC1 A; BWIPP see below" },
+        /*148*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^B\\^1A", -1, 0, 57, 1, 3, "(5) 104 102 33 66 106", "StartB FNC1 A" },
+        /*149*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^1A", -1, 0, 57, 1, 3, "(5) 104 102 33 66 106", "StartB FNC1 A" },
+        /*150*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "A\\^1", -1, 0, 57, 1, 3, "(5) 104 33 102 32 106", "StartB A FNC1" },
+        /*151*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^C\\^112", -1, 0, 57, 1, 3, "(5) 105 102 12 25 106", "StartC FNC1 12" },
+        /*152*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C\\^1é", -1, 0, 79, 0, 1, "(7) 105 102 100 100 73 72 106", "StartC FNC1 CodeB FNC4 é; BWIPP different encodation (StartB)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -660,7 +671,7 @@ static void test_input(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char ret_buf[8192];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -719,22 +730,28 @@ static void test_input(const testCtx *const p_ctx) {
                     }
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
-                    int cmp_len, ret_len;
-                    char modules_dump[4096];
-                    assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
-                                "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
-                                cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
-                                i, testUtilBarcodeName(symbol->symbology), ret);
+                    if (!data[i].zxingcpp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not zxing-cpp compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
+                    } else {
+                        int cmp_len, ret_len;
+                        char modules_dump[4096];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                                    cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
-                                NULL /*primary*/, ret_buf, &ret_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg,
-                                testUtilEscape(cmp_buf, cmp_len, escaped, sizeof(escaped)),
-                                testUtilEscape(ret_buf, ret_len, escaped2, sizeof(escaped2)));
+                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                    NULL /*primary*/, ret_buf, &ret_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg,
+                                    testUtilEscape(cmp_buf, cmp_len, escaped, sizeof(escaped)),
+                                    testUtilEscape(ret_buf, ret_len, escaped2, sizeof(escaped2)));
+                    }
                 }
             }
         }
@@ -798,7 +815,7 @@ static void test_gs1_128_input(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char ret_buf[8192];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -924,7 +941,7 @@ static void test_hibc_input(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char ret_buf[8192];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -1215,7 +1232,7 @@ static void test_dpd_input(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char ret_buf[8192];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -1340,8 +1357,8 @@ static void test_upu_s10_input(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char ret_buf[8192];
 
-    /* Only do ZXing-C++ test if asked, too slow otherwise */
-    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do zxing-cpp test if asked, too slow otherwise */
+    /* Only do zxing-cpp test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
     testStartSymbol(p_ctx->func_name, &symbol);
@@ -1587,7 +1604,7 @@ static void test_encode(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char ret_buf[8192];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -1673,6 +1690,91 @@ static void test_encode(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_fuzz(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int symbology;
+        int input_mode;
+        int option_1;
+        int option_2;
+        const char *data;
+        int length;
+        int ret;
+        const char *expected_errtxt;
+        int zxingcpp_cmp;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, DATA_MODE | EXTRA_ESCAPE_MODE, -1, -1,
+                    "\003\134\136\103\103\103\103\103\103\103\103\103\103\103\103\103\103\103\103\103\103\000\000\051\000\054\103\103\103\377\377\377"
+                    "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
+                    "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\242\053\134\136\061\067\242\242\242\242\242"
+                    "\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242"
+                    "\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242\242"
+                    "\136\136",
+                    162, ZINT_ERROR_TOO_LONG, "Error 341: Input too long, requires 167 symbol characters (maximum 102)", 3
+                }, /* fuzz_data (2nd, 2026-01-12) */
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    char escaped[8192];
+    char cmp_buf[32768];
+    char cmp_msg[8192];
+
+    /* Only do zxing-cpp test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                    i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
+
+        if (ret < ZINT_ERROR) {
+
+            if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                int cmp_len, ret_len;
+                char modules_dump[22801 + 1];
+                assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                            "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                            cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/,
+                            escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
@@ -1687,6 +1789,7 @@ int main(int argc, char *argv[]) {
         { "test_dpd_input", test_dpd_input },
         { "test_upu_s10_input", test_upu_s10_input },
         { "test_encode", test_encode },
+        { "test_fuzz", test_fuzz },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
