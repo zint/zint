@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -40,32 +40,43 @@ static void test_large(const testCtx *const p_ctx) {
         int length;
         int ret;
         const char *expected_errtxt;
+        int bwipp_cmp;
+        int zxingcpp_cmp;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { 200, '0', 2940, 0, "" }, /* 2940 largest Code Set C data that fits in 200x199 HxW */
-        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)" },
-        /*  2*/ { 200, '9', 200, 0, "" }, /* Changes a number of mask scores re pre-Rev. 4 version, but best score still the same (7) */
-        /*  3*/ { 200, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '203' is too large (maximum 200)" }, /* Width > 200 also */
-        /*  4*/ { 200, 'A', 1470, 0, "" },
-        /*  5*/ { 200, 'A', 1471, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)" },
-        /*  6*/ { 200, '\240', 1225, 0, "" },
-        /*  7*/ { 200, '\240', 1226, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)" },
-        /*  8*/ { 200, '0', 1, 0, "" }, /* Padding codewords 35 - probably max */
-        /*  9*/ { 200, '0', 2, 0, "" }, /* Padding codewords 35 */
-        /* 10*/ { 30, '\001', 71, 0, "" }, /* Codeword length 72, ECC length 39, for ND + 1 == 112 */
-        /* 11*/ { -1, '0', 1968, 0, "" },
-        /* 12*/ { -1, '0', 1969, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)" },
-        /* 13*/ { -1, 'A', 984, 0, "" },
-        /* 14*/ { -1, 'A', 985, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)" },
-        /* 15*/ { -1, '\240', 820, 0, "" },
-        /* 16*/ { -1, '\240', 821, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)" },
+        /*  0*/ { 200, '0', 2940, 0, "", 1, 1, "" }, /* 2940 largest Code Set C data that fits in 200x199 HxW */
+        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)", 1, 1, "" },
+        /*  2*/ { 200, '9', 200, 0, "", 1, 1, "" }, /* Changes a number of mask scores re pre-Rev. 4 version, but best score still the same (7) */
+        /*  3*/ { 200, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '203' is too large (maximum 200)", 1, 1, "" }, /* Width > 200 also */
+        /*  4*/ { 200, 'A', 1470, 0, "", 1, 1, "" },
+        /*  5*/ { 200, 'A', 1471, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)", 1, 1, "" },
+        /*  6*/ { 200, '\240', 1225, 0, "", 1, 899, "" },
+        /*  7*/ { 200, '\240', 1226, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)", 1, 899, "" },
+        /*  8*/ { 200, '0', 1, 0, "", 1, 1, "" }, /* Padding codewords 35 - probably max */
+        /*  9*/ { 200, '0', 2, 0, "", 1, 1, "" }, /* Padding codewords 35 */
+        /* 10*/ { 30, '\001', 71, 0, "", 1, 1, "" }, /* Codeword length 72, ECC length 39, for ND + 1 == 112 */
+        /* 11*/ { -1, '0', 1968, 0, "", 1, 1, "" },
+        /* 12*/ { -1, '0', 1969, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)", 1, 1, "" },
+        /* 13*/ { -1, 'A', 984, 0, "", 1, 1, "" },
+        /* 14*/ { -1, 'A', 985, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)", 1, 1, "" },
+        /* 15*/ { -1, '\240', 820, 0, "", 1, 899, "" },
+        /* 16*/ { -1, '\240', 821, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)", 1, 899, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
     char data_buf[4096];
+
+    char escaped[8192];
+    char cmp_buf[50000];
+    char cmp_msg[1024];
+
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -83,6 +94,43 @@ static void test_large(const testCtx *const p_ctx) {
         ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+
+        if (ret < ZINT_ERROR) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    char modules_dump[200 * 200 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data_buf, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
+            if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data_buf, length, debug)) {
+                if (!data[i].zxingcpp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not zxing-cpp compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    int cmp_len, ret_len;
+                    char modules_dump[200 * 200 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, data[i].zxingcpp_cmp,
+                                cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length,
+                                NULL /*primary*/, escaped, &ret_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
+                }
+            }
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -232,10 +280,14 @@ static void test_input(const testCtx *const p_ctx) {
         /* 37*/ { DATA_MODE, -1, -1, -1, { 0, 0, "" }, "\200\201\202\203\061\062\063\064", -1, 0, "70 13 56 0A 59 2C 67 0C 22", 1, 899, "BinaryLatch (0x70) 0x80 0x81 0x82 0x83 Intr2xShiftC (0x67) 12 3" },
         /* 38*/ { DATA_MODE, -1, -1, -1, { 0, 0, "" }, "\001\200\201\202\203\204\200\201\202\203\204", -1, 0, "65 41 70 31 5A 35 21 5A 5F 31 5A 35 21 5A 5F", 1, 899, "LatchA (0x65) SOH BinaryLatch (0x70) 0x80 0x81 0x82 0x83 0x80 0x81 0x82 0x83" },
         /* 39*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "\001abc\011\015\012\036", -1, 0, "65 41 65 41 42 43 61 60 64", 1, 1, "LatchA (0x65) SOH 6xShiftB (0x65) a b c HT CR/LF RS" },
-        /* 40*/ { UNICODE_MODE, -1, -1, -1, { 35, 35, "" }, "ABCDE", -1, 0, "6A 21 22 23 24 25 3A 3A 6C", 1, 1, "LatchB (0x6A) A B C D E Z Z FNC2" },
-        /* 41*/ { UNICODE_MODE, -1, -1, -1, { 9, 10, "" }, "1234567890", -1, 0, "6B 0C 22 38 4E 5A 65 19 21 6C", 1, 1, "FNC1 (0x6B) 12 34 56 78 90 LatchA (0x65) 9 A FNC2" },
-        /* 42*/ { UNICODE_MODE, -1, -1, -1, { 2, 3, "" }, "\001\002\003\004", -1, 0, "65 41 42 43 44 6A 12 13 6C", 1, 1, "LatchA (0x65) <SOH> <STX> <ETX> <EOT> PAD 2 3 FNC2" },
-        /* 43*/ { DATA_MODE, -1, -1, -1, { 1, 34, "" }, "\200\201\202\203", -1, 0, "70 13 56 0A 59 2C 6D 11 39 6C", 1, 899, "BinaryLatch (0x70) (...) TermA (0x6D) 1 Y FNC2" },
+        /* 40*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "00", -1, 0, "6B 00", 0, 1, "BWIPP: different dim (13x10 vs 9x14), see below" },
+        /* 41*/ { UNICODE_MODE, -1, 13, -1, { 0, 0, "" }, "00", -1, 0, "6B 00 6A", 1, 1, "" },
+        /* 42*/ { UNICODE_MODE, -1, 200, -1, { 0, 0, "" }, "00", -1, 0, "(35) 6B 00 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A", 1, 1, "" },
+        /* 43*/ { DATA_MODE, -1, 50, -1, { 0, 0, "" }, "\354\202f", -1, 0, "70 05 4F 48 6E 46 6A", 1, 899, "" },
+        /* 44*/ { UNICODE_MODE, -1, -1, -1, { 35, 35, "" }, "ABCDE", -1, 0, "6A 21 22 23 24 25 3A 3A 6C", 1, 1, "LatchB (0x6A) A B C D E Z Z FNC2" },
+        /* 45*/ { UNICODE_MODE, -1, -1, -1, { 9, 10, "" }, "1234567890", -1, 0, "6B 0C 22 38 4E 5A 65 19 21 6C", 1, 1, "FNC1 (0x6B) 12 34 56 78 90 LatchA (0x65) 9 A FNC2" },
+        /* 46*/ { UNICODE_MODE, -1, -1, -1, { 2, 3, "" }, "\001\002\003\004", -1, 0, "65 41 42 43 44 6A 12 13 6C", 1, 1, "LatchA (0x65) <SOH> <STX> <ETX> <EOT> PAD 2 3 FNC2" },
+        /* 47*/ { DATA_MODE, -1, -1, -1, { 1, 34, "" }, "\200\201\202\203", -1, 0, "70 13 56 0A 59 2C 6D 11 39 6C", 1, 899, "BinaryLatch (0x70) (...) TermA (0x6D) 1 Y FNC2" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -1,7 +1,7 @@
 /* Test BWIPP against ZXing-C++ (no zint involved) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2025-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -120,7 +120,9 @@ static void test_bwipp_random(const testCtx *const p_ctx, const struct random_it
         ret = testUtilZXingCPP(i, symbol, data_buf, length, bwipp_buf, 899 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf),
                                 &cmp_len);
         assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
-        /*fprintf(stderr, "cmp_len %d\n", cmp_len);*/
+        #if 0
+        fprintf(stderr, "cmp_len %d\n", cmp_len);
+        #endif
 
         ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/,
                     ret_buf, &ret_len);
@@ -187,15 +189,9 @@ static void test_datamatrix(const testCtx *const p_ctx) {
     test_bwipp_random(p_ctx, &rdata, sqrt_width_func);
 }
 
-/* TODO: explore why "zxingcppdecoder" fails */
-#if 0
 static int dotcode_width_func(const struct random_item *rdata, const int bwipp_len) {
-    const int row_bits = rdata->option_2 >= 1 ? bwipp_len / rdata->option_2 : 0;
-    const int mod = row_bits ? bwipp_len % row_bits : -1;
-    if (mod) {
-        fprintf(stderr, "dotcode_width_func: row_bits %d, bwipp_len %d, mod %d\n", row_bits, bwipp_len, mod);
-    }
-    return mod == 0 ? row_bits : 0;
+    (void)bwipp_len;
+    return rdata->option_2;
 }
 
 static void test_dotcode(const testCtx *const p_ctx) {
@@ -205,7 +201,6 @@ static void test_dotcode(const testCtx *const p_ctx) {
 
     test_bwipp_random(p_ctx, &rdata, dotcode_width_func);
 }
-#endif
 
 static int micropdf417_width_func(const struct random_item *rdata, const int bwipp_len) {
     static const short widths[4] = { 38, 55, 82, 99 };
@@ -532,9 +527,7 @@ int main(int argc, char *argv[]) {
         { "test_codablockf", test_codablockf },
         { "test_code128", test_code128 },
         { "test_datamatrix", test_datamatrix },
-        #if 0
         { "test_dotcode", test_dotcode },
-        #endif
         { "test_micropdf417", test_micropdf417 },
         { "test_pdf417", test_pdf417 },
         { "test_qr", test_qr },

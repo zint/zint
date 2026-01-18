@@ -1,7 +1,7 @@
 /* dotcode.c - Handles DotCode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2017-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2017-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -532,7 +532,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
         if (symbol->output_options & READER_INIT) {
             codeword_array[ap++] = 109; /* FNC3 */
 
-        } else if (!gs1 && eci == 0 && length > 2 && z_is_twodigits(source, length, 0)) {
+        } else if (!gs1 && eci == 0 && length >= 2 && z_is_twodigits(source, length, 0)) {
             codeword_array[ap++] = 107; /* FNC1 */
 
         } else if (z_posn(lead_specials, source[0]) != -1) {

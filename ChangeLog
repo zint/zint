@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2025-01-12)
+Version 2.16.0.9 (dev) not released yet (2025-01-18)
 ====================================================
 
 **Incompatible changes**
@@ -19,6 +19,8 @@ Bugs
   or any FNC1 after manual C mode selected and no other non-C data
 - CLI: fix "--scalexdimdp" X-dim inch units being divided instead of multiplied
   on conversion to mm
+- DOTCODE: fix not emitting FNC1 (signalling not GS1) if input is just 2 digits
+- CMake: set `rpath` of CLI on macOS install (ticket #346, props Hagen Röwer)
 
 
 Version 2.16.0 (2025-12-19)

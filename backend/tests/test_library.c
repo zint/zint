@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -408,7 +408,7 @@ static void test_input_data(const testCtx *const p_ctx) {
         char data_buf[ZINT_MAX_DATA_LEN + 10];
         int expected_ret = ZINT_ERROR_TOO_LONG;
         const char *expected_errtxt[] = {
-            "Error 797: Input too long",
+            "Error 796: Input too long",
             "Error 340: Input length 17399 too long (maximum 256)",
             "Error 799: Invalid primary, must be NUL-terminated",
             "Error 854: Invalid primary (linear component), must be NUL-terminated",

@@ -1029,7 +1029,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                 return error_tag(error_number, symbol, -1, NULL);
             }
             if (escaped_len > ZINT_MAX_DATA_LEN) {
-                return error_tag(ZINT_ERROR_TOO_LONG, symbol, 797, "Input too long");
+                return error_tag(ZINT_ERROR_TOO_LONG, symbol, 796, "Input too long");
             }
             total_len += escaped_len;
         } else {
