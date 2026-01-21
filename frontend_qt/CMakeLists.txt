@@ -1,5 +1,5 @@
 # Copyright (C) 2008 by BogDan Vatra < bogdan@licentia.eu >
-# Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-or-later
 # vim: set ts=4 sw=4 et :
 
@@ -51,5 +51,8 @@ endif()
 target_link_libraries(${PROJECT_NAME} QZint
                         Qt${QT_VERSION_MAJOR}::UiTools Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Svg
                         Qt${QT_VERSION_MAJOR}::Core)
+
+get_property(libdir GLOBAL PROPERTY ZINT_LIBDIR)
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${libdir}")
 
 install(TARGETS ${PROJECT_NAME} DESTINATION "${CMAKE_INSTALL_BINDIR}" RUNTIME)

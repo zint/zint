@@ -1,5 +1,6 @@
-% README.macos 2025-10-02
+% README.macos 2026-01-21
 % Tested on macOS 12.7.2 Monterey VirtualBox (thanks to https://github.com/myspaghetti/macos-virtualbox)
+% and macOS 14.8.3 Sonoma (thanks to https://github.com/kholia/OSX-KVM)
 
 1. Prerequisites for building zint and zint-qt
 ==============================================
@@ -10,14 +11,11 @@ First if not already installed, install the developer command line tools
 
     xcode-select --install
 
-This can take a (very) long time. Once done, check for updates by selecting "System Preferences" > "Software Update",
-and clicking "Advanced" and "OK" (with all the checkboxes set) to trigger the check. If updates are found, install.
-This can also take a long time.
-
-With the latest versions of the command line tools, "/usr/include" no longer has the standard C include files. Set
-SDKROOT to overcome this (https://stackoverflow.com/a/60002595/664741)
+(On Monterey but not Sonoma or later, the latest versions of the command line tools may not have "/usr/include"
+in the standard C include directories. Set SDKROOT to overcome this (https://stackoverflow.com/a/60002595/664741)
 
     export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+)
 
 Install Homebrew (unless already installed)
 

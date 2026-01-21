@@ -147,6 +147,9 @@ if(NOT HAVE_GETOPT_LONG_ONLY)
     add_subdirectory(getopt)
 endif()
 
+# For setting rpath in frontend and frontend_qt
+set_property(GLOBAL PROPERTY ZINT_LIBDIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+
 add_subdirectory(backend)
 if(ZINT_FRONTEND)
     add_subdirectory(frontend)
