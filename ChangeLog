@@ -1,9 +1,11 @@
-Version 2.16.0.9 (dev) not released yet (2025-01-18)
+Version 2.16.0.9 (dev) not released yet (2025-01-21)
 ====================================================
 
 **Incompatible changes**
 ------------------------
 - New Qt Backend method `save_as_memfile()` to save file to memory
+- Aztec error codeword percentages adjusted to be at least advertised values
+  (may cause symbol size change or generation failure when specified)
 
 Changes
 -------
@@ -21,6 +23,8 @@ Bugs
   on conversion to mm
 - DOTCODE: fix not emitting FNC1 (signalling not GS1) if input is just 2 digits
 - CMake: set `rpath` of CLI on macOS install (ticket #346, props Hagen Röwer)
+- AZTEC: fix ECC to be at least advertised percentages (ticket #347, props
+  Francois Grieu)
 
 
 Version 2.16.0 (2025-12-19)

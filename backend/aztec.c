@@ -1,7 +1,7 @@
 /* aztec.c - Handles Aztec 2D Symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -815,20 +815,28 @@ static int az_bitrun_stuff(const char *binary_string, const int data_length, con
 }
 
 /* Helper to add padding, accounting for bitrun stuffing */
-static int az_add_padding(const int padbits, const int codeword_size, char adjusted_string[AZTEC_MAX_CAPACITY],
-            int adjusted_length) {
-    int i, count = 0;
+static int az_add_padding(const int codeword_size, char adjusted_string[AZTEC_MAX_CAPACITY], int adjusted_length,
+            const int debug_print) {
+    const int remainder = adjusted_length % codeword_size;
+    const int padbits = remainder ? codeword_size - remainder : 0;
 
-    for (i = 0; i < padbits; i++) {
-        adjusted_string[adjusted_length++] = '1';
-    }
+    if (padbits) {
+        int i, count = 0;
 
-    for (i = (adjusted_length - codeword_size); i < adjusted_length; i++) {
-        count += adjusted_string[i] == '1';
+        assert(adjusted_length + padbits <= AZTEC_BIN_CAPACITY);
+
+        for (i = 0; i < padbits; i++) {
+            adjusted_string[adjusted_length++] = '1';
+        }
+
+        for (i = (adjusted_length - codeword_size); i < adjusted_length; i++) {
+            count += adjusted_string[i] == '1';
+        }
+        if (count == codeword_size) {
+            adjusted_string[adjusted_length - 1] = '0';
+        }
     }
-    if (count == codeword_size) {
-        adjusted_string[adjusted_length - 1] = '0';
-    }
+    if (debug_print) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
 
     return adjusted_length;
 }
@@ -860,7 +868,6 @@ INTERNAL int zint_aztec(struct zint_symbol *symbol, struct zint_seg segs[], cons
     unsigned char desc_data[4], desc_ecc[6];
     int error_number;
     int compact, data_length, data_maxsize, codeword_size, adjusted_length;
-    int remainder, padbits, adjustment_size;
     int bp = 0;
     int gs1_bp = 0;
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
@@ -945,9 +952,11 @@ INTERNAL int zint_aztec(struct zint_symbol *symbol, struct zint_seg segs[], cons
     }
 
     data_maxsize = 0; /* Keep compiler happy! */
-    adjustment_size = 0;
-    if (symbol->option_2 == 0) { /* The size of the symbol can be determined by Zint */
+
+    if (symbol->option_2 == 0) {
+        /* The size of the symbol can be determined by Zint */
         int ecc_level = symbol->option_1;
+        int adjustment_size = 0;
 
         if (ecc_level <= 0) {
             ecc_level = 2;
@@ -959,14 +968,16 @@ INTERNAL int zint_aztec(struct zint_symbol *symbol, struct zint_seg segs[], cons
             layers = 0;
 
             /* For each level of error correction work out the smallest symbol which the data will fit in */
-            for (i = compact_loop_start; i > 0; i--) {
-                if (data_length + adjustment_size <= AztecCompactDataSizes[ecc_level - 1][i - 1]) {
-                    layers = i;
-                    compact = 1;
-                    data_maxsize = AztecCompactDataSizes[ecc_level - 1][i - 1];
+            if (data_length + adjustment_size <= AztecCompactDataSizes[ecc_level - 1][compact_loop_start - 1]) {
+                for (i = compact_loop_start; i > 0; i--) {
+                    if (data_length + adjustment_size <= AztecCompactDataSizes[ecc_level - 1][i - 1]) {
+                        layers = i;
+                        compact = 1;
+                        data_maxsize = AztecCompactDataSizes[ecc_level - 1][i - 1];
+                    }
                 }
             }
-            if (!compact) {
+            if (!compact && data_length + adjustment_size <= AztecDataSizes[ecc_level - 1][32 - 1]) {
                 for (i = 32; i > 0; i--) {
                     if (data_length + adjustment_size <= AztecDataSizes[ecc_level - 1][i - 1]) {
                         layers = i;
@@ -992,27 +1003,21 @@ INTERNAL int zint_aztec(struct zint_symbol *symbol, struct zint_seg segs[], cons
 
             adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size,
                                                 adjustment_size ? data_maxsize : AZTEC_BIN_CAPACITY, adjusted_string);
+            if (adjusted_length) {
+                /* Add padding */
+                adjusted_length = az_add_padding(codeword_size, adjusted_string, adjusted_length, debug_print);
+                adjustment_size = adjusted_length - data_length;
+            }
+            if (debug_print) {
+                printf("Adjusted Length: %d, Data Max Size %d, Data Length %d\n",
+                        adjusted_length, data_maxsize, data_length);
+            }
+
             if (adjusted_length == 0) {
                 return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 705,
                                     "Input too long for ECC level %1$d, requires too many codewords (maximum %2$d)",
                                     ecc_level, (adjustment_size ? data_maxsize : AZTEC_BIN_CAPACITY) / codeword_size);
             }
-            adjustment_size = adjusted_length - data_length;
-
-            /* Add padding */
-            remainder = adjusted_length % codeword_size;
-
-            padbits = codeword_size - remainder;
-            if (padbits == codeword_size) {
-                padbits = 0;
-            }
-            if (debug_print) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
-
-            assert(adjusted_length <= AZTEC_BIN_CAPACITY);
-
-            adjusted_length = az_add_padding(padbits, codeword_size, adjusted_string, adjusted_length);
-
-            if (debug_print) printf("Adjusted Length: %d, Data Max Size %d\n", adjusted_length, data_maxsize);
 
         } while (adjusted_length > data_maxsize);
         /* This loop will only repeat on the rare occasions when the rule about not having all 1s or all 0s
@@ -1021,7 +1026,8 @@ INTERNAL int zint_aztec(struct zint_symbol *symbol, struct zint_seg segs[], cons
 
         symbol->option_2 = compact ? layers : layers + 4; /* Feedback options */
 
-    } else { /* The size of the symbol has been specified by the user */
+    } else {
+        /* The size of the symbol has been specified by the user */
         if (symbol->option_2 < 0 || symbol->option_2 > 36) {
             return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 510, "Version '%d' out of range (1 to 36)",
                                 symbol->option_2);
@@ -1037,13 +1043,8 @@ INTERNAL int zint_aztec(struct zint_symbol *symbol, struct zint_seg segs[], cons
                                 symbol->option_2);
             }
         }
-        if (symbol->option_2 <= 4) {
-            compact = 1;
-            layers = symbol->option_2;
-        } else {
-            compact = 0;
-            layers = symbol->option_2 - 4;
-        }
+        compact = symbol->option_2 <= 4;
+        layers = compact ? symbol->option_2 : symbol->option_2 - 4;
 
         codeword_size = az_codeword_size(layers);
         if (compact) {
@@ -1053,33 +1054,26 @@ INTERNAL int zint_aztec(struct zint_symbol *symbol, struct zint_seg segs[], cons
         }
 
         adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size, data_maxsize, adjusted_string);
+        if (adjusted_length && adjusted_length <= data_maxsize) {
+            /* Add padding */
+            adjusted_length = az_add_padding(codeword_size, adjusted_string, adjusted_length, debug_print);
+        }
+        if (debug_print) {
+            printf("Adjusted Length: %d, Data Max Size %d, Data Length %d\n",
+                    adjusted_length, data_maxsize, data_length);
+        }
+
+        /* Check if the data actually fits into the selected symbol size */
         if (adjusted_length == 0) {
             return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 704,
                                     "Input too long for Version %1$d, requires too many codewords (maximum %2$d)",
-                                    symbol->option_2, data_maxsize / codeword_size);
-        }
-
-        /* Add padding */
-        remainder = adjusted_length % codeword_size;
-
-        padbits = codeword_size - remainder;
-        if (padbits == codeword_size) {
-            padbits = 0;
-        }
-        if (debug_print) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
-
-        /* Check if the data actually fits into the selected symbol size */
-
-        if (adjusted_length + padbits > data_maxsize) {
+                                    symbol->option_2, (data_maxsize + codeword_size - 1) / codeword_size);
+        } else if (adjusted_length > data_maxsize) {
             return ZEXT z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 505,
                                     "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
-                                    symbol->option_2, (adjusted_length + padbits) / codeword_size,
+                                    symbol->option_2, (adjusted_length + codeword_size - 1) / codeword_size,
                                     data_maxsize / codeword_size);
         }
-
-        adjusted_length = az_add_padding(padbits, codeword_size, adjusted_string, adjusted_length);
-
-        if (debug_print) printf("Adjusted Length: %d\n", adjusted_length);
     }
 
     if (debug_print) {
