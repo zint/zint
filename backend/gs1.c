@@ -1,7 +1,7 @@
 /* gs1.c - Verifies GS1 data */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1712,6 +1712,15 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
         const int error_number = status == GS1_ENCODERS_INIT_FAILED_NO_MEM
                                     ? ZINT_ERROR_MEMORY : ZINT_ERROR_ENCODING_PROBLEM;
         return z_errtxtf(error_number, symbol, 266, "GS1 Syntax Engine: %s", opts.msgBuf);
+    }
+    /* Do not check for required checks for GS1-128 as may be spread across multiple barcodes - ticket #348
+       and https://github.com/gs1/gs1-syntax-dictionary/issues/24 */
+    if (symbol->symbology == BARCODE_GS1_128) {
+        if (!gs1_encoder_setValidationEnabled(ctx, gs1_encoder_vREQUISITE_AIS, false)) {
+            const char *errmsg = gs1_encoder_getErrMsg(ctx);
+            return z_errtxtf(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0, "Internal error using GS1SE: %.80s",
+                            errmsg ? errmsg : "unknown");
+        }
     }
 
     if (is_digital_link) {

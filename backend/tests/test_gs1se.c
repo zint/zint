@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2025-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -456,6 +456,7 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
+        int symbology;
         int input_mode;
         const char *data;
         int ret;
@@ -464,59 +465,68 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, "", ZINT_ERROR_INVALID_DATA, "", "264: Data does not start with an AI" },
-        /*  1*/ { -1, "A", ZINT_ERROR_INVALID_DATA, "", "264: Data does not start with an AI" },
-        /*  2*/ { -1, "[", ZINT_ERROR_INVALID_DATA, "", "268: Failed to parse AI data" },
-        /*  3*/ { -1, "[]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: " },
-        /*  4*/ { -1, "[1]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 1" },
-        /*  5*/ { -1, "[242]123456[1]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 1" },
-        /*  6*/ { -1, "[12345]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 12345" },
-        /*  7*/ { -1, "[9999]1234", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 9999" },
-        /*  8*/ { -1, "[[01]]1234", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: (01" },
-        /*  9*/ { GS1PARENS_MODE, "((01))1234", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: (01" },
-        /* 10*/ { -1, "[1A]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 1A" },
-        /* 11*/ { -1, "[10]", ZINT_ERROR_INVALID_DATA, "", "268: Failed to parse AI data" },
-        /* 12*/ { -1, "[90]\012", ZINT_ERROR_INVALID_DATA, "", "267: AI (90): A non-CSET 82 character was found where a CSET 82 character is expected. (90)|\\x0A|" },
-        /* 13*/ { -1, "[00]123456789012345678", ZINT_ERROR_INVALID_DATA, "", "267: AI (00): The numeric check digit is incorrect. (00)12345678901234567|8|" },
-        /* 14*/ { -1, "[00]123456789012345675", 0, "00123456789012345675", "" },
-        /* 15*/ { GS1PARENS_MODE, "(00)123456789012345675", 0, "00123456789012345675", "" },
-        /* 16*/ { -1, "[00]12345678901234567", ZINT_ERROR_INVALID_DATA, "", "268: AI (00) value is too short" },
-        /* 17*/ { -1, "[00]1234567890123456789", ZINT_ERROR_INVALID_DATA, "", "268: AI (00) value is too long" },
-        /* 18*/ { -1, "[3910]123123456789012345", ZINT_ERROR_INVALID_DATA, "", "267: AI (3910): A valid ISO 4217 three-digit currency code is required. (3910)|123|" },
-        /* 19*/ { -1, "[3910]997123456789012345", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (3910) are not satisfied: 8020" },
-        /* 20*/ { -1, "[3910]997123456789012345[8020]REF123", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8020) are not satisfied: 415" },
-        /* 21*/ { -1, "[3910]997123456789012345[8020]REF123[415]1234567890123", ZINT_ERROR_INVALID_DATA, "", "267: AI (415): The numeric check digit is incorrect. (415)123456789012|3|" },
-        /* 22*/ { -1, "[3910]997123456789012345[8020]REF123[415]1234567890128", 0, "3910997123456789012345\0358020REF123\0354151234567890128", "" },
-        /* 23*/ { GS1PARENS_MODE, "(3910)997123456789012345(8020)REF123(415)1234567890128", 0, "3910997123456789012345\0358020REF123\0354151234567890128", "" },
-        /* 24*/ { -1, "[402]13131313131313132", ZINT_ERROR_INVALID_DATA, "", "267: AI (402): The numeric check digit is incorrect. (402)1313131313131313|2|" },
-        /* 25*/ { -1, "[402]13131313131313130", 0, "40213131313131313130", "" },
-        /* 26*/ { -1, "[4309]1234567890123456789A", ZINT_ERROR_INVALID_DATA, "", "267: AI (4309): A non-digit character was found where a digit is expected. (4309)1234567890123456789|A|" },
-        /* 27*/ { -1, "[7006]200132", ZINT_ERROR_INVALID_DATA, "", "267: AI (7006): The date contains an illegal day of the month. (7006)2001|32|" },
-        /* 28*/ { -1, "[7006]200131", ZINT_ERROR_INVALID_DATA, "7006200131", "268: Required AIs for AI (7006) are not satisfied: 01,02" },
-        /* 29*/ { -1, "[7006]200131[01]12345678901231", 0, "7006200131\0350112345678901231", "" },
-        /* 30*/ { -1, "[8001]12345678901234", ZINT_ERROR_INVALID_DATA, "", "267: AI (8001): The winding direction must be either \"0\", \"1\" or \"9\". (8001)123456789012|3|" },
-        /* 31*/ { -1, "[8001]12345678901294", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8001) are not satisfied: 01" },
-        /* 32*/ { -1, "[8001]12345678901294[01]12345678901231", 0, "800112345678901294\0350112345678901231", "" },
-        /* 33*/ { -1, "[8004]abcdefghijklmnopqrstuvwxyz1234", ZINT_ERROR_INVALID_DATA, "", "267: AI (8004): The GS1 Company Prefix is invalid. (8004)|a|bcdefghijklmnopqrstuvwxyz1234" },
-        /* 34*/ { -1, "[8004]123", ZINT_ERROR_INVALID_DATA, "", "267: AI (8004): The component is shorter than the minimum length GS1 Company Prefix. (8004)|123|" },
-        /* 35*/ { -1, "[8004]1234efghijklmnopqrstuvwxyz1234", 0, "80041234efghijklmnopqrstuvwxyz1234", "" },
-        /* 36*/ { -1, "[8007]abcdefghijklmnopqrstuvwxyz12345678", ZINT_ERROR_INVALID_DATA, "", "267: AI (8007): The IBAN must start with a valid ISO 3166 two-character country code. (8007)|ab|cdefghijklmnopqrstuvwxyz12345678" },
-        /* 37*/ { -1, "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8007) are not satisfied: 415" },
-        /* 38*/ { -1, "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678[415]1234567890128", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (415) are not satisfied: 8020" },
-        /* 39*/ { -1, "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678[415]1234567890128[8020]REF123", 0, "8007AD95EFGHIJKLMNOPQRSTUVWXYZ12345678\03541512345678901288020REF123", "" },
-        /* 40*/ { -1, "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXY^", ZINT_ERROR_INVALID_DATA, "", "268: AI (8030) contains illegal ^ character" },
-        /* 41*/ { -1, "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8030) are not satisfied: 00,01+21,253,255,8003,8004,8006+21,8010+8011,8017,8018" },
-        /* 42*/ { -1, "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ[8018]123456789012345675", 0, "8030-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ\0358018123456789012345675", "" },
-        /* 43*/ { -1, "[01]12345678901234[7006]200101", ZINT_ERROR_INVALID_DATA, "", "267: AI (01): The numeric check digit is incorrect. (01)1234567890123|4|" },
-        /* 44*/ { -1, "[01]12345678901231[7006]200101", 0, "01123456789012317006200101", "" },
-        /* 45*/ { -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (3901) are not satisfied: 255,8020" },
-        /* 46*/ { -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12[255]1234567890128", ZINT_ERROR_INVALID_DATA, "", "268: It is invalid to pair AI (01) with AI (255)" },
-        /* 47*/ { -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12[8020]REF123", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8020) are not satisfied: 415" },
-        /* 48*/ { -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12[8020]REF123[415]1234567890128", 0, "25312345678901284\0350112345678901231390112345678901234\03520128020REF123\0354151234567890128", "" },
-        /* 49*/ { -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12[8020]REF123[415]1234567890128[90]123", 0, "25312345678901284\0350112345678901231390112345678901234\03520128020REF123\035415123456789012890123", "" },
-        /* 50*/ { -1, "[8001]12345678901294[01]12345678901231|[8012]VER1", 0, "800112345678901294\0350112345678901231|8012VER1", "" }, /* Composite */
-        /* 51*/ { -1, "[8001]12345678901294[01]12345678901231[415]1234567890128|[8020]ABCDEFGHIJKLMNOPQRSTUVXWY", 0, "800112345678901294\03501123456789012314151234567890128|8020ABCDEFGHIJKLMNOPQRSTUVXWY", "" },
-        /* 52*/ { -1, "[8001]12345678901294[01]12345678901231|[415]1234567890128[8020]ABCDEFGHIJKLMNOPQRSTUVXWY", 0, "800112345678901294\0350112345678901231|41512345678901288020ABCDEFGHIJKLMNOPQRSTUVXWY", "" },
+        /*  0*/ { BARCODE_GS1_128, -1, "", ZINT_ERROR_INVALID_DATA, "", "264: Data does not start with an AI" },
+        /*  1*/ { BARCODE_GS1_128, -1, "A", ZINT_ERROR_INVALID_DATA, "", "264: Data does not start with an AI" },
+        /*  2*/ { BARCODE_GS1_128, -1, "[", ZINT_ERROR_INVALID_DATA, "", "268: Failed to parse AI data" },
+        /*  3*/ { BARCODE_GS1_128, -1, "[]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: " },
+        /*  4*/ { BARCODE_GS1_128, -1, "[1]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 1" },
+        /*  5*/ { BARCODE_GS1_128, -1, "[242]123456[1]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 1" },
+        /*  6*/ { BARCODE_GS1_128, -1, "[12345]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 12345" },
+        /*  7*/ { BARCODE_GS1_128, -1, "[9999]1234", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 9999" },
+        /*  8*/ { BARCODE_GS1_128, -1, "[[01]]1234", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: (01" },
+        /*  9*/ { BARCODE_GS1_128, GS1PARENS_MODE, "((01))1234", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: (01" },
+        /* 10*/ { BARCODE_GS1_128, -1, "[1A]12", ZINT_ERROR_INVALID_DATA, "", "268: Unrecognised AI: 1A" },
+        /* 11*/ { BARCODE_GS1_128, -1, "[10]", ZINT_ERROR_INVALID_DATA, "", "268: Failed to parse AI data" },
+        /* 12*/ { BARCODE_GS1_128, -1, "[90]\012", ZINT_ERROR_INVALID_DATA, "", "267: AI (90): A non-CSET 82 character was found where a CSET 82 character is expected. (90)|\\x0A|" },
+        /* 13*/ { BARCODE_GS1_128, -1, "[00]123456789012345678", ZINT_ERROR_INVALID_DATA, "", "267: AI (00): The numeric check digit is incorrect. (00)12345678901234567|8|" },
+        /* 14*/ { BARCODE_GS1_128, -1, "[00]123456789012345675", 0, "00123456789012345675", "" },
+        /* 15*/ { BARCODE_GS1_128, GS1PARENS_MODE, "(00)123456789012345675", 0, "00123456789012345675", "" },
+        /* 16*/ { BARCODE_GS1_128, -1, "[00]12345678901234567", ZINT_ERROR_INVALID_DATA, "", "268: AI (00) value is too short" },
+        /* 17*/ { BARCODE_GS1_128, -1, "[00]1234567890123456789", ZINT_ERROR_INVALID_DATA, "", "268: AI (00) value is too long" },
+        /* 18*/ { BARCODE_GS1_128, -1, "[3910]123123456789012345", ZINT_ERROR_INVALID_DATA, "", "267: AI (3910): A valid ISO 4217 three-digit currency code is required. (3910)|123|" },
+        /* 19*/ { BARCODE_GS1_128, -1, "[3910]997123456789012345", 0, "3910997123456789012345", "" },
+        /* 20*/ { BARCODE_DBAR_EXP, -1, "[3910]997123456789012345", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (3910) are not satisfied: 8020" },
+        /* 21*/ { BARCODE_GS1_128, -1, "[3910]997123456789012345[8020]REF123", 0, "3910997123456789012345\0358020REF123", "" },
+        /* 22*/ { BARCODE_DBAR_EXP, -1, "[3910]997123456789012345[8020]REF123", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8020) are not satisfied: 415" },
+        /* 23*/ { BARCODE_GS1_128, -1, "[3910]997123456789012345[8020]REF123[415]1234567890123", ZINT_ERROR_INVALID_DATA, "", "267: AI (415): The numeric check digit is incorrect. (415)123456789012|3|" },
+        /* 24*/ { BARCODE_GS1_128, -1, "[3910]997123456789012345[8020]REF123[415]1234567890128", 0, "3910997123456789012345\0358020REF123\0354151234567890128", "" },
+        /* 25*/ { BARCODE_GS1_128, GS1PARENS_MODE, "(3910)997123456789012345(8020)REF123(415)1234567890128", 0, "3910997123456789012345\0358020REF123\0354151234567890128", "" },
+        /* 26*/ { BARCODE_GS1_128, -1, "[402]13131313131313132", ZINT_ERROR_INVALID_DATA, "", "267: AI (402): The numeric check digit is incorrect. (402)1313131313131313|2|" },
+        /* 27*/ { BARCODE_GS1_128, -1, "[402]13131313131313130", 0, "40213131313131313130", "" },
+        /* 28*/ { BARCODE_GS1_128, -1, "[4309]1234567890123456789A", ZINT_ERROR_INVALID_DATA, "", "267: AI (4309): A non-digit character was found where a digit is expected. (4309)1234567890123456789|A|" },
+        /* 29*/ { BARCODE_GS1_128, -1, "[7006]200132", ZINT_ERROR_INVALID_DATA, "", "267: AI (7006): The date contains an illegal day of the month. (7006)2001|32|" },
+        /* 30*/ { BARCODE_GS1_128, -1, "[7006]200131", 0, "7006200131", "" },
+        /* 31*/ { BARCODE_AZTEC, GS1_MODE, "[7006]200131", ZINT_ERROR_INVALID_DATA, "7006200131", "268: Required AIs for AI (7006) are not satisfied: 01,02" },
+        /* 32*/ { BARCODE_GS1_128, -1, "[7006]200131[01]12345678901231", 0, "7006200131\0350112345678901231", "" },
+        /* 33*/ { BARCODE_GS1_128, -1, "[8001]12345678901234", ZINT_ERROR_INVALID_DATA, "", "267: AI (8001): The winding direction must be either \"0\", \"1\" or \"9\". (8001)123456789012|3|" },
+        /* 34*/ { BARCODE_GS1_128, -1, "[8001]12345678901294", 0, "800112345678901294", "" },
+        /* 35*/ { BARCODE_QRCODE, GS1_MODE, "[8001]12345678901294", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8001) are not satisfied: 01" },
+        /* 36*/ { BARCODE_GS1_128, -1, "[8001]12345678901294[01]12345678901231", 0, "800112345678901294\0350112345678901231", "" },
+        /* 37*/ { BARCODE_GS1_128, -1, "[8004]abcdefghijklmnopqrstuvwxyz1234", ZINT_ERROR_INVALID_DATA, "", "267: AI (8004): The GS1 Company Prefix is invalid. (8004)|a|bcdefghijklmnopqrstuvwxyz1234" },
+        /* 38*/ { BARCODE_GS1_128, -1, "[8004]123", ZINT_ERROR_INVALID_DATA, "", "267: AI (8004): The component is shorter than the minimum length GS1 Company Prefix. (8004)|123|" },
+        /* 39*/ { BARCODE_GS1_128, -1, "[8004]1234efghijklmnopqrstuvwxyz1234", 0, "80041234efghijklmnopqrstuvwxyz1234", "" },
+        /* 40*/ { BARCODE_GS1_128, -1, "[8007]abcdefghijklmnopqrstuvwxyz12345678", ZINT_ERROR_INVALID_DATA, "", "267: AI (8007): The IBAN must start with a valid ISO 3166 two-character country code. (8007)|ab|cdefghijklmnopqrstuvwxyz12345678" },
+        /* 41*/ { BARCODE_GS1_128, -1, "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", 0, "8007AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", "" },
+        /* 42*/ { BARCODE_DATAMATRIX, GS1_MODE, "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8007) are not satisfied: 415" },
+        /* 43*/ { BARCODE_GS1_128, -1, "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678[415]1234567890128", 0, "8007AD95EFGHIJKLMNOPQRSTUVWXYZ12345678\0354151234567890128", "" },
+        /* 44*/ { BARCODE_PDF417, GS1_MODE, "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678[415]1234567890128", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (415) are not satisfied: 8020" },
+        /* 45*/ { BARCODE_GS1_128, -1, "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678[415]1234567890128[8020]REF123", 0, "8007AD95EFGHIJKLMNOPQRSTUVWXYZ12345678\03541512345678901288020REF123", "" },
+        /* 46*/ { BARCODE_GS1_128, -1, "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXY^", ZINT_ERROR_INVALID_DATA, "", "268: AI (8030) contains illegal ^ character" },
+        /* 47*/ { BARCODE_GS1_128, -1, "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, "8030-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ", "" },
+        /* 48*/ { BARCODE_DBAR_EXP, -1, "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8030) are not satisfied: 00,01+21,253,255,8003,8004,8006+21,8010+8011,8017,8018" },
+        /* 49*/ { BARCODE_GS1_128, -1, "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ[8018]123456789012345675", 0, "8030-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ\0358018123456789012345675", "" },
+        /* 50*/ { BARCODE_GS1_128, -1, "[01]12345678901234[7006]200101", ZINT_ERROR_INVALID_DATA, "", "267: AI (01): The numeric check digit is incorrect. (01)1234567890123|4|" },
+        /* 51*/ { BARCODE_GS1_128, -1, "[01]12345678901231[7006]200101", 0, "01123456789012317006200101", "" },
+        /* 52*/ { BARCODE_GS1_128, -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12", 0, "25312345678901284\0350112345678901231390112345678901234\0352012", "" },
+        /* 53*/ { BARCODE_AZTEC, GS1_MODE, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (3901) are not satisfied: 255,8020" },
+        /* 54*/ { BARCODE_GS1_128, -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12[255]1234567890128", ZINT_ERROR_INVALID_DATA, "", "268: It is invalid to pair AI (01) with AI (255)" },
+        /* 55*/ { BARCODE_GS1_128, -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12[8020]REF123", 0, "25312345678901284\0350112345678901231390112345678901234\03520128020REF123", "" },
+        /* 56*/ { BARCODE_DATAMATRIX, GS1_MODE, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12[8020]REF123", ZINT_ERROR_INVALID_DATA, "", "268: Required AIs for AI (8020) are not satisfied: 415" },
+        /* 57*/ { BARCODE_GS1_128, -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12[8020]REF123[415]1234567890128", 0, "25312345678901284\0350112345678901231390112345678901234\03520128020REF123\0354151234567890128", "" },
+        /* 58*/ { BARCODE_GS1_128, -1, "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12[8020]REF123[415]1234567890128[90]123", 0, "25312345678901284\0350112345678901231390112345678901234\03520128020REF123\035415123456789012890123", "" },
+        /* 59*/ { BARCODE_GS1_128, -1, "[8001]12345678901294[01]12345678901231|[8012]VER1", 0, "800112345678901294\0350112345678901231|8012VER1", "" }, /* Composite */
+        /* 60*/ { BARCODE_GS1_128, -1, "[8001]12345678901294[01]12345678901231[415]1234567890128|[8020]ABCDEFGHIJKLMNOPQRSTUVXWY", 0, "800112345678901294\03501123456789012314151234567890128|8020ABCDEFGHIJKLMNOPQRSTUVXWY", "" },
+        /* 61*/ { BARCODE_GS1_128, -1, "[8001]12345678901294[01]12345678901231|[415]1234567890128[8020]ABCDEFGHIJKLMNOPQRSTUVXWY", 0, "800112345678901294\0350112345678901231|41512345678901288020ABCDEFGHIJKLMNOPQRSTUVXWY", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -536,7 +546,7 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_GS1_128, data[i].input_mode, -1 /*eci*/,
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
                                     -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
                                     data[i].data, -1, debug);
         symbol->input_mode |= GS1SYNTAXENGINE_MODE;
@@ -544,8 +554,8 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
         ret = zint_gs1_verify(symbol, ZUCP(data[i].data), length, ZUCP(reduced), &reduced_length);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
-                        i, testUtilInputModeName(data[i].input_mode),
+            printf("        /*%3d*/ { %s, %s, \"%s\", %s, \"%s\", \"%s\" },\n",
+                        i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
                         testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(ret),
                         data[i].expected, symbol->errtxt);
         } else {

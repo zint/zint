@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2025-01-21)
+Version 2.16.0.9 (dev) not released yet (2025-01-30)
 ====================================================
 
 **Incompatible changes**
@@ -14,6 +14,8 @@ Changes
   creating temporary file
 - CLI: allow "tiff" as filetype (saved as ".tif");
   add `ZINT_TEST`-only "--test" option to do various internal tests
+- GS1SE: exclude GS1_128 from requisite AIs check as may be spread across more
+  than one barcode (ticket #348, props Harald Oehlmann and Terry Burton)
 
 Bugs
 ----
