@@ -9,7 +9,7 @@ Group:     Applications/Engineering
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 # Reset locales to "C" when exporting to EPS or SVG in order to force
-# decimal points in all language environments. 
+# decimal points in all language environments.
 # This issue has been reported upstream:
 # http://sourceforge.net/mailarchive/forum.php?thread_name=4BF78012.7090508%40uos.de&forum_name=zint-barcode
 Patch0:    zint-locale.patch
@@ -23,9 +23,9 @@ Zint is a C library for encoding data in several barcode variants. The
 bundled command-line utility provides a simple interface to the library.
 Features of the library:
 - Over 50 symbologies including all ISO/IEC standards, like QR codes.
-- Unicode translation for symbologies which support Latin-1 and 
+- Unicode translation for symbologies which support Latin-1 and
   Kanji character sets.
-- Full GS1 support including data verification and automated insertion of 
+- Full GS1 support including data verification and automated insertion of
   FNC1 characters.
 - Support for encoding binary data including NULL (ASCII 0) characters.
 - Health Industry Barcode (HIBC) encoding capabilities.
@@ -38,7 +38,7 @@ Summary:       Library and header files for %{name}
 Group:         Development/Libraries
 Requires:      %{name} = %{version}-%{release}
 
-%description -n zint-devel 
+%description -n zint-devel
 C library and header files needed to develop applications using %{name}.
 The API documentation can be found ont the project website:
 https://zint.org.uk/manual/
@@ -52,9 +52,9 @@ BuildRequires: qt-devel >= 4.4
 BuildRequires: desktop-file-utils
 
 %description -n zint-qt
-Zint Barcode Studio is a Qt-based GUI which allows desktop users to generate 
-barcodes which can then be embedded in documents or HTML pages, and a library 
-which can be used to incorporate barcode generation functionality into other 
+Zint Barcode Studio is a Qt-based GUI which allows desktop users to generate
+barcodes which can then be embedded in documents or HTML pages, and a library
+which can be used to incorporate barcode generation functionality into other
 software.
 
 
@@ -64,7 +64,7 @@ Group:         Development/Libraries
 Requires:      %{name}-devel = %{version}-%{release}
 Requires:      %{name}-qt = %{version}-%{release}
 
-%description -n zint-qt-devel 
+%description -n zint-qt-devel
 C library and header files needed to develop applications using %{name}-qt.
 
 

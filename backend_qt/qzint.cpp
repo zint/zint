@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2010-2025 Robin Stuart                                  *
+ *   Copyright (C) 2010-2026 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -1303,6 +1303,10 @@ namespace Zint {
 
         if (isEANUPC()) {
             arg_int(cmd, "--addongap=", option2());
+        }
+
+        if (m_symbol == BARCODE_AZTEC || m_symbol == BARCODE_HIBC_AZTEC) {
+            arg_bool(cmd, "--azfull", (option3() & 0xFF) == ZINT_AZTEC_FULL);
         }
 
         if (bgStr() != QSL("FFFFFF") && !nobackground) {

@@ -1048,9 +1048,9 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         const int len = local_segs[0].length;
         const int primary_len = symbol->primary[0] ? (int) strlen(symbol->primary) : 0;
         char name[32];
-        char source[1001]; /* 200*5 + 1 = 1001 */
+        char source[10001]; /* 2000*5 + 1 = 10001 */
         (void) ZBarcode_BarcodeName(symbol->symbology, name);
-        z_debug_print_escape(local_segs[0].source, len > 200 ? 200 : len, source);
+        z_debug_print_escape(local_segs[0].source, len > 2000 ? 2000 : len, source);
         printf("\nZBarcode_Encode_Segs: %s (%d), height %g, scale: %g, whitespace: (%d, %d), border_width: %d\n"
                 "                      output_options: 0x%X, fg: \"%s\", bg: \"%s\"\n"
                 "                      outfile: \"%s\"\n"
@@ -1069,7 +1069,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                     symbol->eci, symbol->dpmm, symbol->dot_size,
                 symbol->text_gap, symbol->guard_descent, symbol->structapp.index, symbol->structapp.count,
                     symbol->structapp.id, symbol->warn_level, seg_count,
-                len > 200 ? "first 200 " : "", seg_count > 1 ? "[0]" : "", len, source);
+                len > 2000 ? "first 2000 " : "", seg_count > 1 ? "[0]" : "", len, source);
         fflush(stdout);
     }
 

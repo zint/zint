@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2025 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2026 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -45,6 +45,8 @@
 #include "datawindow.h"
 #include "scalewindow.h"
 #include "sequencewindow.h"
+
+#define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 
 // Shorthand
 #define QSL     QStringLiteral
@@ -229,7 +231,7 @@ void MainWindow::mac_hack_statusBars(QWidget *win, const char* name)
 
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
         : QWidget(parent, fl), m_previewBgColor(0xF4, 0xF4, 0xF4), m_optionWidget(nullptr), m_symbology(0),
-          m_menu(nullptr),
+          m_aztecSizeIndex(-1), m_aztecECCIndex(-1), m_menu(nullptr),
           m_lblHeightPerRow(nullptr), m_spnHeightPerRow(nullptr),
           m_btnHeightPerRowDisable(nullptr), m_btnHeightPerRowDefault(nullptr),
           m_scaleWindow(nullptr)
@@ -290,7 +292,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(txt_fgcolor, SIGNAL(textEdited(QString)), this, SLOT(fgcolor_edited()));
     connect(txt_bgcolor, SIGNAL(textEdited(QString)), this, SLOT(bgcolor_edited()));
 
-    const int cnt = (int) (sizeof(bstyle_items) / sizeof(bstyle_items[0]));
+    const int cnt = ARRAY_SIZE(bstyle_items);
     for (int i = 0; i < cnt; i++) {
         bstyle->addItem(bstyle_items[i].text);
     }
@@ -1290,6 +1292,22 @@ void MainWindow::eanaddon_no_quiet_zones_ui_set()
     }
 }
 
+void MainWindow::aztec_size_index_changed()
+{
+    if (get_rad_val(QSL("radAztecSize"))) {
+        m_aztecSizeIndex = get_cmb_index(QSL("cmbAztecSize"));
+    }
+    update_preview();
+}
+
+void MainWindow::aztec_ecc_index_changed()
+{
+    if (get_rad_val(QSL("radAztecECC"))) {
+        m_aztecECCIndex = get_cmb_index(QSL("cmbAztecECC"));
+    }
+    update_preview();
+}
+
 void MainWindow::structapp_ui_set()
 {
     int symbology = bstyle_items[bstyle->currentIndex()].symbology;
@@ -1425,7 +1443,7 @@ void MainWindow::filter_symbologies()
         filter_list << filter.mid(i);
     }
     int filter_cnt = filter_list.size();
-    int cnt = (int) (sizeof(bstyle_items) / sizeof(bstyle_items[0]));
+    int cnt = ARRAY_SIZE(bstyle_items);
 
     if (filter_cnt) {
         for (int i = 0; i < cnt; i++) {
@@ -1822,11 +1840,13 @@ void MainWindow::change_options()
         connect(get_widget(QSL("radAztecAuto")), SIGNAL(toggled(bool)), SLOT(update_preview()));
         connect(get_widget(QSL("radAztecSize")), SIGNAL(toggled(bool)), SLOT(update_preview()));
         connect(get_widget(QSL("radAztecECC")), SIGNAL(toggled(bool)), SLOT(update_preview()));
-        connect(get_widget(QSL("cmbAztecSize")), SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
-        connect(get_widget(QSL("cmbAztecECC")), SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
+        connect(get_widget(QSL("cmbAztecSize")), SIGNAL(currentIndexChanged(int)), SLOT(aztec_size_index_changed()));
+        connect(get_widget(QSL("cmbAztecECC")), SIGNAL(currentIndexChanged(int)), SLOT(aztec_ecc_index_changed()));
         connect(get_widget(QSL("radAztecStand")), SIGNAL(toggled(bool)), SLOT(update_preview()));
         connect(get_widget(QSL("radAztecGS1")), SIGNAL(toggled(bool)), SLOT(update_preview()));
         connect(get_widget(QSL("radAztecHIBC")), SIGNAL(toggled(bool)), SLOT(update_preview()));
+        connect(get_widget(QSL("chkAztecFull")), SIGNAL(toggled(bool)), SLOT(update_preview()));
+        connect(get_widget(QSL("chkAztecFast")), SIGNAL(toggled(bool)), SLOT(update_preview()));
         connect(get_widget(QSL("cmbAztecStructAppCount")), SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
         connect(get_widget(QSL("cmbAztecStructAppCount")), SIGNAL(currentIndexChanged(int)),
                 SLOT(structapp_ui_set()));
@@ -2921,13 +2941,25 @@ void MainWindow::update_preview()
             else
                 m_bc.bc.setSymbol(BARCODE_AZTEC);
 
-            if (get_rad_val(QSL("radAztecSize")))
+            if (get_rad_val(QSL("radAztecSize"))) {
                 m_bc.bc.setOption2(get_cmb_index(QSL("cmbAztecSize")) + 1);
+                m_optionWidget->findChild<QCheckBox*>(QSL("chkAztecFull"))->setEnabled(false);
+                m_bc.bc.setOption3(0);
+            } else {
+                m_optionWidget->findChild<QCheckBox*>(QSL("chkAztecFull"))->setEnabled(true);
+                if (m_optionWidget->findChild<QCheckBox*>(QSL("chkAztecFull"))->isChecked()) {
+                    m_bc.bc.setOption3(ZINT_AZTEC_FULL);
+                }
+            }
 
             if (get_rad_val(QSL("radAztecECC")))
                 m_bc.bc.setOption1(get_cmb_index(QSL("cmbAztecECC")) + 1);
 
             set_gs1_mode(get_rad_val(QSL("radAztecGS1")));
+
+            if (get_chk_val(QSL("chkAztecFast"))) {
+                m_bc.bc.setInputMode(FAST_MODE | m_bc.bc.inputMode());
+            }
 
             if ((item_val = get_cmb_index(QSL("cmbAztecStructAppCount"))) != 0) {
                 m_bc.bc.setStructApp(item_val + 1, get_cmb_index(QSL("cmbAztecStructAppIndex")) + 1,
@@ -3665,30 +3697,30 @@ void MainWindow::automatic_info_set()
     if (symbology == BARCODE_AZTEC || symbology == BARCODE_HIBC_AZTEC) {
         if ((txt = m_optionWidget->findChild<QLineEdit*>(QSL("txtAztecAutoInfo")))) {
             if (!isError) {
-                const int w = m_bc.bc.encodedWidth();
                 const int z = m_bc.bc.encodedOption2();
                 const int ecc = m_bc.bc.encodedOption1() >> 8; // Percentage
-                QString sizeStr, eccStr;
-                if (z >= 1 && z <= 36) {
-                    if (z <= 4) {
-                        sizeStr = QSL("%1 X %2 Compact (Zint %3)").arg(w).arg(w).arg(z);
-                    } else {
-                        sizeStr = QSL("%1 X %2 (%3 Layers) (Zint %4)").arg(w).arg(w).arg(z - 4).arg(z);
-                    }
-                }
+                QString eccStr;
                 if (ecc > 0 && ecc < 100) {
                     eccStr = QSL("%1% + 3 words").arg(ecc);
                 } else {
                     eccStr = QSL("3 words");
                 }
-                if (get_rad_val("radAztecAuto") && !sizeStr.isEmpty() && !eccStr.isEmpty()) {
-                    txt->setText(QSL("%1, ECC %2").arg(sizeStr).arg(eccStr));
-                } else if (get_rad_val("radAztecSize") && !eccStr.isEmpty()) {
-                    txt->setText(QSL("ECC %1").arg(eccStr));
-                } else if (get_rad_val("radAztecECC") && !sizeStr.isEmpty()) {
-                    txt->setText(sizeStr);
+                txt->setText(QSL("ECC %1").arg(eccStr));
+                if (get_rad_val("radAztecSize")) {
+                    set_cmb_index(QSL("cmbAztecSize"), m_aztecSizeIndex);
+                } else if (z >= 1 && z <= 36) {
+                    set_cmb_index(QSL("cmbAztecSize"), z - 1);
+                }
+                if (get_rad_val("radAztecECC")) {
+                    set_cmb_index(QSL("cmbAztecECC"), m_aztecECCIndex);
                 } else {
-                    txt->setText(QSEmpty);
+                    static int ecc_percents[] = { 10, 23, 36, 50 };
+                    for (int i = ARRAY_SIZE(ecc_percents) - 1; i >= 0; i--) {
+                        if (ecc >= ecc_percents[i]) {
+                            set_cmb_index(QSL("cmbAztecECC"), i);
+                            break;
+                        }
+                    }
                 }
             } else {
                 txt->setText(QSEmpty);
@@ -4131,6 +4163,15 @@ int MainWindow::get_cmb_index(const QString &name)
 }
 
 /* Helper to set item in combobox from index in settings, checking for NULL */
+void MainWindow::set_cmb_index(const QString &name, const int index)
+{
+    QComboBox *comboBox = m_optionWidget ? m_optionWidget->findChild<QComboBox*>(name) : nullptr;
+    if (comboBox) {
+        comboBox->setCurrentIndex(index);
+    }
+}
+
+/* Helper to set item in combobox from index in settings, checking for NULL */
 void MainWindow::set_cmb_from_setting(QSettings &settings, const QString &setting, const QString &name,
             int default_val)
 {
@@ -4326,11 +4367,13 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         case BARCODE_HIBC_AZTEC:
             settings.setValue(QSL("studio/bc/aztec/autoresizing"), get_rad_grp_index(
                 QStringList() << QSL("radAztecAuto") << QSL("radAztecSize") << QSL("radAztecECC")));
-            settings.setValue(QSL("studio/bc/aztec/size"), get_cmb_index(QSL("cmbAztecSize")));
-            settings.setValue(QSL("studio/bc/aztec/ecc"), get_cmb_index(QSL("cmbAztecECC")));
+            settings.setValue(QSL("studio/bc/aztec/size"), m_aztecSizeIndex);
+            settings.setValue(QSL("studio/bc/aztec/ecc"), m_aztecECCIndex);
             settings.setValue(QSL("studio/bc/aztec/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radAztecStand") << QSL("radAztecGS1") << QSL("radAztecHIBC")));
             settings.setValue(QSL("studio/bc/aztec/structapp_count"), get_cmb_index(QSL("cmbAztecStructAppCount")));
+            settings.setValue(QSL("studio/bc/aztec/chk_full"), get_chk_val(QSL("chkAztecFull")));
+            settings.setValue(QSL("studio/bc/aztec/chk_fast"), get_chk_val(QSL("chkAztecFast")));
             settings.setValue(QSL("studio/bc/aztec/structapp_index"), get_cmb_index(QSL("cmbAztecStructAppIndex")));
             settings.setValue(QSL("studio/bc/aztec/structapp_id"), get_txt_val(QSL("txtAztecStructAppID")));
             break;
@@ -4789,10 +4832,19 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_HIBC_AZTEC:
             set_rad_from_setting(settings, QSL("studio/bc/aztec/autoresizing"),
                 QStringList() << QSL("radAztecAuto") << QSL("radAztecSize") << QSL("radAztecECC"));
-            set_cmb_from_setting(settings, QSL("studio/bc/aztec/size"), QSL("cmbAztecSize"));
+            m_aztecSizeIndex = settings.value(QSL("studio/bc/aztec/size"), -1).toInt();
+            if (get_rad_val(QSL("radAztecSize"))) {
+                set_cmb_index(QSL("cmbAztecSize"), m_aztecSizeIndex);
+            }
+            m_aztecECCIndex = settings.value(QSL("studio/bc/aztec/ecc"), -1).toInt();
+            if (get_rad_val(QSL("radAztecECC"))) {
+                set_cmb_index(QSL("cmbAztecECC"), m_aztecECCIndex);
+            }
             set_cmb_from_setting(settings, QSL("studio/bc/aztec/ecc"), QSL("cmbAztecECC"));
             set_rad_from_setting(settings, QSL("studio/bc/aztec/encoding_mode"),
                 QStringList() << QSL("radAztecStand") << QSL("radAztecGS1") << QSL("radAztecHIBC"));
+            set_chk_from_setting(settings, QSL("studio/bc/aztec/chk_full"), QSL("chkAztecFull"));
+            set_chk_from_setting(settings, QSL("studio/bc/aztec/chk_fast"), QSL("chkAztecFast"));
             set_cmb_from_setting(settings, QSL("studio/bc/aztec/structapp_count"), QSL("cmbAztecStructAppCount"));
             set_cmb_from_setting(settings, QSL("studio/bc/aztec/structapp_index"), QSL("cmbAztecStructAppIndex"));
             set_txt_from_setting(settings, QSL("studio/bc/aztec/structapp_id"), QSL("txtAztecStructAppID"), QSEmpty);

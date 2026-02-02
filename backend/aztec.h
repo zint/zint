@@ -96,15 +96,87 @@ static const char AztecSymbolChar[128] = {
     17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 29, 25, 30, 26, 27
 };
 
+/* Modes */
+#define AZ_U  1
+#define AZ_L  2
+#define AZ_M  3
+#define AZ_P  4
+#define AZ_D  5
+#define AZ_B  6 /* 5 or 11-bit Byte (ideally would be separate modes, but not done due to performance hit) */
+
+/* Pseudo-modes */
+#define AZ_X  7 /* Used to indicate chars belonging to more than one mode */
+#define AZ_E  8 /* Used to signal no next mode */
+
+#define AZ_NUM_MODES 6
+
+#define AZ_MASK(m)  ((m) & 0x0F)
+
+#define AZ_PS   0x10
+#define AZ_US   0x20
+
+/* P/S */
+#define AZ_U_PS (AZ_U | AZ_PS)
+#define AZ_L_PS (AZ_L | AZ_PS)
+#define AZ_M_PS (AZ_M | AZ_PS)
+#define AZ_D_PS (AZ_D | AZ_PS)
+
+/* U/S */
+#define AZ_L_US (AZ_L | AZ_US)
+#define AZ_D_US (AZ_D | AZ_US)
+
 static const char AztecModes[128] = {
-    'B', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'M', 'X', 'B', 'B',
-    'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'M', 'M', 'M', 'M', 'M',
-    'X', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'X', 'P', 'X', 'P',
-    'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'P', 'P', 'P', 'P', 'P', 'P',
-    'M', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U',
-    'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'P', 'M', 'P', 'M', 'M',
-    'M', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L',
-    'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'P', 'M', 'P', 'M', 'M'
+    AZ_B, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_X, AZ_B, AZ_B,
+    AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M,
+    AZ_X, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_X, AZ_P, AZ_X, AZ_P,
+    AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P,
+    AZ_M, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U,
+    AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_P, AZ_M, AZ_P, AZ_M, AZ_M,
+    AZ_M, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L,
+    AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_P, AZ_M, AZ_P, AZ_M, AZ_M
+};
+
+/* Testable flags */
+#define AZ_U_F  0x01
+#define AZ_L_F  0x02
+#define AZ_M_F  0x04
+#define AZ_P_F  0x08
+#define AZ_D_F  0x10
+
+/* Flag version of `AztecModes[]` */
+static const char AztecFlags[128] = {
+                                   0,          AZ_M_F,          AZ_M_F,          AZ_M_F, /*  0-3*/
+                              AZ_M_F,          AZ_M_F,          AZ_M_F,          AZ_M_F, /*  4-7*/
+                              AZ_M_F,          AZ_M_F,          AZ_M_F,          AZ_M_F, /*  8-11*/
+                              AZ_M_F, AZ_M_F | AZ_P_F,               0,               0, /* 12-15*/
+                                   0,               0,               0,               0, /* 16-19*/
+                                   0,               0,               0,               0, /* 20-23*/
+                                   0,               0,               0,          AZ_M_F, /* 24-27*/
+                              AZ_M_F,          AZ_M_F,          AZ_M_F,          AZ_M_F, /* 28-31*/
+   AZ_U_F | AZ_L_F | AZ_M_F | AZ_D_F,          AZ_P_F,          AZ_P_F,          AZ_P_F, /* 32-35*/
+                              AZ_P_F,          AZ_P_F,          AZ_P_F,          AZ_P_F, /* 36-39*/
+                              AZ_P_F,          AZ_P_F,          AZ_P_F,          AZ_P_F, /* 40-43*/
+                     AZ_P_F | AZ_D_F,          AZ_P_F, AZ_P_F | AZ_D_F,          AZ_P_F, /* 44-47*/
+                              AZ_D_F,          AZ_D_F,          AZ_D_F,          AZ_D_F, /* 48-51*/
+                              AZ_D_F,          AZ_D_F,          AZ_D_F,          AZ_D_F, /* 52-55*/
+                              AZ_D_F,          AZ_D_F,          AZ_P_F,          AZ_P_F, /* 56-59*/
+                              AZ_P_F,          AZ_P_F,          AZ_P_F,          AZ_P_F, /* 60-63*/
+                              AZ_M_F,          AZ_U_F,          AZ_U_F,          AZ_U_F, /* 64-67*/
+                              AZ_U_F,          AZ_U_F,          AZ_U_F,          AZ_U_F, /* 68-71*/
+                              AZ_U_F,          AZ_U_F,          AZ_U_F,          AZ_U_F, /* 72-75*/
+                              AZ_U_F,          AZ_U_F,          AZ_U_F,          AZ_U_F, /* 76-79*/
+                              AZ_U_F,          AZ_U_F,          AZ_U_F,          AZ_U_F, /* 80-83*/
+                              AZ_U_F,          AZ_U_F,          AZ_U_F,          AZ_U_F, /* 84-87*/
+                              AZ_U_F,          AZ_U_F,          AZ_U_F,          AZ_P_F, /* 88-91*/
+                              AZ_M_F,          AZ_P_F,          AZ_M_F,          AZ_M_F, /* 92-95*/
+                              AZ_M_F,          AZ_L_F,          AZ_L_F,          AZ_L_F, /* 96-99*/
+                              AZ_L_F,          AZ_L_F,          AZ_L_F,          AZ_L_F, /* 100-103*/
+                              AZ_L_F,          AZ_L_F,          AZ_L_F,          AZ_L_F, /* 104-107*/
+                              AZ_L_F,          AZ_L_F,          AZ_L_F,          AZ_L_F, /* 108-111*/
+                              AZ_L_F,          AZ_L_F,          AZ_L_F,          AZ_L_F, /* 112-115*/
+                              AZ_L_F,          AZ_L_F,          AZ_L_F,          AZ_L_F, /* 116-119*/
+                              AZ_L_F,          AZ_L_F,          AZ_L_F,          AZ_P_F, /* 120-123*/
+                              AZ_M_F,          AZ_P_F,          AZ_M_F,          AZ_M_F, /* 124-127*/
 };
 
 /* Codewords per symbol */

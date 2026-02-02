@@ -1,7 +1,7 @@
 /* common.c - Contains functions needed for a number of barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,13 +36,13 @@
 #include "common.h"
 
 /* Converts a character 0-9, A-F to its equivalent integer value */
-INTERNAL int z_ctoi(const char source) {
-    if (z_isdigit(source))
-        return (source - '0');
-    if (source >= 'A' && source <= 'F')
-        return (source - 'A' + 10);
-    if (source >= 'a' && source <= 'f')
-        return (source - 'a' + 10);
+INTERNAL int z_ctoi(const char ch) {
+    if (z_isdigit(ch))
+        return (ch - '0');
+    if (ch >= 'A' && ch <= 'F')
+        return (ch - 'A' + 10);
+    if (ch >= 'a' && ch <= 'f')
+        return (ch - 'a' + 10);
     return -1;
 }
 
@@ -70,20 +70,20 @@ INTERNAL void z_to_upper(unsigned char source[], const int length) {
     }
 }
 
-/* Returns the number of times a character occurs in `source` */
-INTERNAL int z_chr_cnt(const unsigned char source[], const int length, const unsigned char c) {
+/* Returns the number of times a character `ch` occurs in `source` */
+INTERNAL int z_chr_cnt(const unsigned char source[], const int length, const unsigned char ch) {
     int count = 0;
     int i;
 
     for (i = 0; i < length; i++) {
-        count += source[i] == c;
+        count += source[i] == ch;
     }
     return count;
 }
 
 /* Flag table for `is_chr()` and `z_not_sane()` */
 #define IS_CLS_F    (IS_CLI_F | IS_SIL_F)
-static const unsigned short flgs[256] = {
+static const unsigned short flags[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*00-1F*/
                IS_SPC_F,            IS_C82_F,            IS_C82_F,            IS_HSH_F, /*20-23*/ /*  !"# */
                IS_CLS_F, IS_SIL_F | IS_C82_F,            IS_C82_F,            IS_C82_F, /*24-27*/ /* $%&' */
@@ -115,17 +115,17 @@ static const unsigned short flgs[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*E0-FF*/
 };
 
-/* Whether a character matches `flg` */
-INTERNAL int z_is_chr(const unsigned int flg, const unsigned int c) {
-    return z_isascii(c) && (flgs[c] & flg);
+/* Whether a character `ch` matches `flag` */
+INTERNAL int z_is_chr(const unsigned int flag, const unsigned int ch) {
+    return z_isascii(ch) && (flags[ch] & flag); /* As passed an int ch need to check it's ASCII */
 }
 
 /* Verifies if a string only uses valid characters, returning 1-based position in `source` if not, 0 for success */
-INTERNAL int z_not_sane(const unsigned int flg, const unsigned char source[], const int length) {
+INTERNAL int z_not_sane(const unsigned int flag, const unsigned char source[], const int length) {
     int i;
 
     for (i = 0; i < length; i++) {
-        if (!(flgs[source[i]] & flg)) {
+        if (!(flags[source[i]] & flag)) {
             return i + 1;
         }
     }
@@ -849,7 +849,7 @@ INTERNAL void z_hrt_cpy_cat_nochk(struct zint_symbol *symbol, const unsigned cha
     symbol->text[total_length] = '\0';
 }
 
-/* Copy a single ASCII character into `symbol->text` (i.e. replaces content) */
+/* Copy a single ASCII character `ch` into `symbol->text` (i.e. replaces content) */
 INTERNAL void z_hrt_cpy_chr(struct zint_symbol *symbol, const char ch) {
     symbol->text[0] = ch;
     symbol->text_length = 1;

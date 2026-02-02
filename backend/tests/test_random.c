@@ -168,7 +168,15 @@ static void test_random(const testCtx *const p_ctx, const struct random_item *rd
 
 static void test_aztec(const testCtx *const p_ctx) {
     struct random_item rdata = {
-        FLAG_FULL_8BIT, BARCODE_AZTEC, DATA_MODE, 899, 1, 0, 0, -1, 1590
+        FLAG_FULL_8BIT, BARCODE_AZTEC, DATA_MODE, 899, 1, 0, 0, -1, 1900
+    };
+
+    test_random(p_ctx, &rdata);
+}
+
+static void test_aztec_fast(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_FULL_8BIT, BARCODE_AZTEC, DATA_MODE | FAST_MODE, 899, 1, 0, 0, -1, 1590
     };
 
     test_random(p_ctx, &rdata);
@@ -298,6 +306,7 @@ int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
         { "test_aztec", test_aztec },
+        { "test_aztec_fast", test_aztec_fast },
         { "test_codablockf", test_codablockf },
         { "test_codablockf_ascii", test_codablockf_ascii },
         { "test_code128", test_code128 },

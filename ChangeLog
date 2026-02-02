@@ -1,11 +1,12 @@
-Version 2.16.0.9 (dev) not released yet (2025-01-30)
+Version 2.16.0.9 (dev) not released yet (2026-02-02)
 ====================================================
 
 **Incompatible changes**
 ------------------------
-- New Qt Backend method `save_as_memfile()` to save file to memory
 - Aztec error codeword percentages adjusted to be at least advertised values
-  (may cause symbol size change or generation failure when specified)
+  (may cause symbol size change, and generation failure if specified)
+- Improved Aztec encodation algorithm (may cause symbol size change)
+- New Qt Backend method `save_as_memfile()` to save file to memory
 
 Changes
 -------
@@ -16,6 +17,10 @@ Changes
   add `ZINT_TEST`-only "--test" option to do various internal tests
 - GS1SE: exclude GS1_128 from requisite AIs check as may be spread across more
   than one barcode (ticket #348, props Harald Oehlmann and Terry Burton)
+- AZTEC: add almost optimal encoding algorithm, previous algoritm available via
+  "--fast" (input_mode |= FAST_MODE)
+- AZTEC: add new option "--azfull" (option_3 = ZINT_AZTEC_FULL) to only
+  consider Full symbols (not Compact ones) on automatic sizing
 
 Bugs
 ----

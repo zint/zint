@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.16.0.9
-December 2025
+February 2026
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -4510,10 +4510,10 @@ recommended, and anything less than 5% + 3 codewords will result in a warning).
 
   Mode   Error Correction Capacity
   ------ ---------------------------
-  1      >10% + 3 codewords
-  2      >23% + 3 codewords
-  3      >36% + 3 codewords
-  4      >50% + 3 codewords
+  1      >=10% + 3 codewords
+  2      >=23% + 3 codewords
+  3      >=36% + 3 codewords
+  4      >=50% + 3 codewords
 
   Table 39: Aztec Code Error Correction Modes
 
@@ -4521,10 +4521,16 @@ It is not possible to select both symbol size and error correction capacity for
 the same symbol. If both options are selected then the error correction capacity
 selection will be ignored.
 
+Compact symbols can be excluded from consideration on automatic sizing by
+specifying --azfull (API symbol->option_3 = ZINT_AZTEC_FULL).
+
 Aztec Code supports ECI encoding and can encode up to a maximum length of
 approximately 3823 numeric or 3067 alphabetic characters or 1914 bytes of data.
 A separate symbology ID (BARCODE_HIBC_AZTEC) can be used to encode Health
 Industry Barcode (HIBC) data.
+
+For a faster but less optimal encodation, the --fast option (API
+input_mode |= FAST_MODE) may be used.
 
 Aztec Code supports Structured Append of up to 26 symbols and an optional
 alphanumeric ID of up to 32 characters, which can be set by using the
@@ -4813,7 +4819,7 @@ maximum of 128 digits and does not include a check digit.
 
 7.1 License
 
-Zint, libzint and Zint Barcode Studio are Copyright © 2025 Robin Stuart. All
+Zint, libzint and Zint Barcode Studio are Copyright © 2026 Robin Stuart. All
 historical versions are distributed under the GNU General Public License version
 3 or later. Versions 2.5 and later are released under a dual license: the
 encoding library is released under the BSD (3 clause) license whereas the GUI,
@@ -5105,7 +5111,7 @@ configured barcode is updated when the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.16.0.9 % % December 2025
+% ZINT(1) Version 2.16.0.9 % % February 2026
 
 NAME
 
@@ -5151,6 +5157,11 @@ OPTIONS
     For EAN/UPC symbologies, set the gap between the main data and the add-on.
     INTEGER is in integral multiples of the X-dimension. The maximum gap that
     can be set is 12. The minimum is 7, except for UPC-A, when the minimum is 9.
+
+--azfull
+
+    For Aztec Code symbols, exclude Compact versions when considering automatic
+    sizes (i.e. consider Full versions only).
 
 --batch
 
@@ -5819,7 +5830,7 @@ AIM ITS/04-023 (2022)
 
 COPYRIGHT
 
-Copyright © 2025 Robin Stuart. Released under GNU GPL 3.0 or later.
+Copyright © 2026 Robin Stuart. Released under GNU GPL 3.0 or later.
 
 AUTHOR
 

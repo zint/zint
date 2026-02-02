@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.16.0.9
 %
-% December 2025
+% February 2026
 
 # NAME
 
@@ -40,6 +40,11 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 :   For EAN/UPC symbologies, set the gap between the main data and the add-on. *INTEGER* is in integral multiples of
     the X-dimension. The maximum gap that can be set is 12. The minimum is 7, except for UPC-A, when the minimum is 9.
+
+`--azfull`
+
+:   For Aztec Code symbols, exclude Compact versions when considering automatic sizes (i.e. consider Full versions
+    only).
 
 `--batch`
 
@@ -668,7 +673,7 @@ ISO/IEC 18004:2024, ISO/IEC 23941:2022, AIM ITS/04-023 (2022)
 
 # COPYRIGHT
 
-Copyright © 2025 Robin Stuart. Released under GNU GPL 3.0 or later.
+Copyright © 2026 Robin Stuart. Released under GNU GPL 3.0 or later.
 
 # AUTHOR
 

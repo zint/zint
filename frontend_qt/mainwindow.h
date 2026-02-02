@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2024 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2026 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -75,6 +75,8 @@ public slots:
     void upcean_no_quiet_zones_ui_set();
     void upcae_no_quiet_zones_ui_set();
     void eanaddon_no_quiet_zones_ui_set();
+    void aztec_size_index_changed();
+    void aztec_ecc_index_changed();
     void structapp_ui_set();
     void clear_text_gap();
     void on_encoded();
@@ -183,6 +185,7 @@ protected:
     bool get_rad_val(const QString &name);
 
     int get_cmb_index(const QString &name);
+    void set_cmb_index(const QString &name, const int index);
     void set_cmb_from_setting(QSettings &settings, const QString &setting, const QString &name, int default_val = 0);
 
     int get_chk_val(const QString &name);
@@ -215,6 +218,8 @@ private:
     QWidget *m_optionWidget;
     QGraphicsScene *scene;
     int m_symbology;
+    int m_aztecSizeIndex;
+    int m_aztecECCIndex;
     QMenu *m_menu;
     QShortcut *m_saveAsShortcut;
     QShortcut *m_factoryResetShortcut;

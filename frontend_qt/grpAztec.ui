@@ -40,12 +40,30 @@ be set based on data</string>
       </widget>
      </item>
      <item row="0" column="1">
+      <widget class="QCheckBox" name="chkAztecFull">
+         <property name="text">
+          <string>Full O&amp;nly</string>
+         </property>
+         <property name="toolTip">
+          <string>Only consider Full versions on automatic symbol
+size selection, suppressing Compact versions
+(ignored if disabled)</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
       <widget class="QLineEdit" name="txtAztecAutoInfo">
        <property name="frame">
         <bool>false</bool>
        </property>
        <property name="readonly">
         <bool>true</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
@@ -62,7 +80,7 @@ be set based on data</string>
        </attribute>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="1" column="1" colspan="2">
       <widget class="QComboBox" name="cmbAztecSize">
        <property name="maxVisibleItems">
         <number>21</number>
@@ -269,7 +287,7 @@ for error correction codewords</string>
        </attribute>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="2" column="1" colspan="2">
       <widget class="QComboBox" name="cmbAztecECC">
        <property name="enabled">
         <bool>false</bool>
@@ -280,22 +298,22 @@ for error correction codewords</string>
        </property>
        <item>
         <property name="text">
-         <string>10% + 3 words</string>
+         <string>&gt;=10% + 3 words</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>23% + 3 words</string>
+         <string>&gt;=23% + 3 words</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>36% + 3 words</string>
+         <string>&gt;=36% + 3 words</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>50% + 3 words</string>
+         <string>&gt;=50% + 3 words</string>
         </property>
        </item>
       </widget>
@@ -352,6 +370,20 @@ the data with a slash &quot;/&quot;</string>
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkAztecFast">
+     <property name="text">
+      <string>&amp;Fast encoding</string>
+     </property>
+     <property name="toolTip">
+      <string>Use a faster but less optimal algorithm
+for encoding the data</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
     </widget>
    </item>
    <item>

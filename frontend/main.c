@@ -1,7 +1,7 @@
 /* main.c - Command line handling routines for Zint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,9 +64,9 @@ typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 
 #  define z_alloca(nmemb) alloca(nmemb)
 #endif
 
-#define z_isdigit(c) ((c) <= '9' && (c) >= '0')
-#define z_isupper(c) ((c) >= 'A' && (c) <= 'Z')
-#define z_islower(c) ((c) >= 'a' && (c) <= 'z')
+#define z_isdigit(ch) ((ch) <= '9' && (ch) >= '0')
+#define z_isupper(ch) ((ch) >= 'A' && (ch) <= 'Z')
+#define z_islower(ch) ((ch) >= 'a' && (ch) <= 'z')
 
 #define ZUCP(p)     ((unsigned char *) (p))
 #define ZCCP(p)     ((const char *) (p))
@@ -170,30 +170,31 @@ static void usage(const int no_png, const int have_gs1syntaxengine) {
     printf("Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n\n", no_png_type);
     fputs( "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
            "  --addongap=INTEGER    Set add-on gap in multiples of X-dimension for EAN/UPC\n"
+           "  --azfull              Ignore Compact Aztec Codes on automatic size selection\n"
            "  --batch               Treat each line of input file as a separate data set\n"
-           "  --bg=COLOUR           Specify a background colour (as RGB(A) or \"C,M,Y,K\")\n"
-           "  --binary              Treat input as raw binary data\n", stdout);
-    fputs( "  --bind                Add boundary bars\n"
+           "  --bg=COLOUR           Specify a background colour (as RGB(A) or \"C,M,Y,K\")\n", stdout);
+    fputs( "  --binary              Treat input as raw binary data\n"
+           "  --bind                Add boundary bars\n"
            "  --bindtop             Add top boundary bar only\n"
            "  --bold                Use bold text (HRT)\n"
-           "  --border=INTEGER      Set width of border in multiples of X-dimension\n"
-           "  --box                 Add a box around the symbol\n", stdout);
-    fputs( "  --cmyk                Use CMYK colour space in EPS/TIF symbols\n"
+           "  --border=INTEGER      Set width of border in multiples of X-dimension\n", stdout);
+    fputs( "  --box                 Add a box around the symbol\n"
+           "  --cmyk                Use CMYK colour space in EPS/TIF symbols\n"
            "  --cols=INTEGER        Set the number of data columns in symbol\n"
            "  --compliantheight     Warn if height not compliant, and use standard default\n"
-           "  -d, --data=DATA       Set the symbol data content (segment 0)\n"
-           "  --direct              Send output to stdout\n", stdout);
-    fputs( "  --dmiso144            Use ISO format for 144x144 Data Matrix symbols\n"
+           "  -d, --data=DATA       Set the symbol data content (segment 0)\n", stdout);
+    fputs( "  --direct              Send output to stdout\n"
+           "  --dmiso144            Use ISO format for 144x144 Data Matrix symbols\n"
            "  --dmre                Allow Data Matrix Rectangular Extended\n"
            "  --dotsize=NUMBER      Set radius of dots in dotty mode\n"
-           "  --dotty               Use dots instead of squares for matrix symbols\n"
-           "  --dump                Dump hexadecimal representation to stdout\n", stdout);
-    fputs( "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n"
+           "  --dotty               Use dots instead of squares for matrix symbols\n", stdout);
+    fputs( "  --dump                Dump hexadecimal representation to stdout\n"
+           "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n"
            "  --eci=INTEGER         Set the ECI code for the data (segment 0)\n"
            "  --embedfont           Embed font in vector output (SVG only)\n"
-           "  --esc                 Process escape sequences in input data\n"
-           "  --extraesc            Process symbology-specific escape sequences (Code 128)\n", stdout);
-    fputs( "  --fast                Use faster encodation or other shortcuts if available\n"
+           "  --esc                 Process escape sequences in input data\n", stdout);
+    fputs( "  --extraesc            Process symbology-specific escape sequences (Code 128)\n"
+           "  --fast                Use faster encodation or other shortcuts if available\n"
            "  --fg=COLOUR           Specify a foreground colour (as RGB(A) or \"C,M,Y,K\")\n", stdout);
     printf("  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n", no_png_type);
     fputs( "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
@@ -1539,7 +1540,8 @@ int main(int argc, char **argv) {
     opterr = 0; /* Disable `getopt_long_only()` printing errors */
     while (1) {
         enum options {
-            OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
+            OPT_ADDONGAP = 128, OPT_AZFULL,
+            OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
             OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT,
             OPT_DIRECT, OPT_DMISO144, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FULLMULTIBYTE,
@@ -1557,6 +1559,7 @@ int main(int argc, char **argv) {
         };
         static const struct option long_options[] = {
             {"addongap", 1, NULL, OPT_ADDONGAP},
+            {"azfull", 0, NULL, OPT_AZFULL},
             {"barcode", 1, NULL, 'b'},
             {"batch", 0, NULL, OPT_BATCH},
             {"binary", 0, NULL, OPT_BINARY},
@@ -1643,10 +1646,10 @@ int main(int argc, char **argv) {
             {"whitesp", 1, NULL, 'w'},
             {NULL, 0, NULL, 0}
         };
-        const int c = getopt_long_only(argc, argv, "b:d:ehi:o:rtvw:", long_options, NULL);
-        if (c == -1) break;
+        const int opt = getopt_long_only(argc, argv, "b:d:ehi:o:rtvw:", long_options, NULL);
+        if (opt == -1) break;
 
-        switch (c) {
+        switch (opt) {
             case OPT_ADDONGAP:
                 if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 139: Invalid add-on gap value (digits only)\n");
@@ -1659,6 +1662,9 @@ int main(int argc, char **argv) {
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
+                break;
+            case OPT_AZFULL:
+                my_symbol->option_3 = ZINT_AZTEC_FULL | (my_symbol->option_3 & ~0xFF);
                 break;
             case OPT_BATCH:
                 if (data_cnt == 0) {
@@ -2010,12 +2016,12 @@ int main(int argc, char **argv) {
             case OPT_SEG8:
             case OPT_SEG9:
                 if (batch_mode == 0) {
-                    val = c - OPT_SEG1 + 1; /* Segment number */
+                    val = opt - OPT_SEG1 + 1; /* Segment number */
                     if (segs[val].source) {
                         fprintf(stderr, "Error 164: Duplicate segment %d\n", val);
                         return do_exit(ZINT_ERROR_INVALID_OPTION);
                     }
-                    if (!validate_seg(optarg, c - OPT_SEG1 + 1, segs, errbuf)) {
+                    if (!validate_seg(optarg, opt - OPT_SEG1 + 1, segs, errbuf)) {
                         fprintf(stderr, "Error 166: %s\n", errbuf);
                         return do_exit(ZINT_ERROR_INVALID_OPTION);
                     }
@@ -2160,7 +2166,7 @@ int main(int argc, char **argv) {
             case 'd': /* we have some data! */
                 if (batch_mode == 0) {
                     arg_opts[data_arg_num].arg = optarg;
-                    arg_opts[data_arg_num].opt = c;
+                    arg_opts[data_arg_num].opt = opt;
                     data_arg_num++;
                     data_cnt++;
                 } else {
@@ -2173,7 +2179,7 @@ int main(int argc, char **argv) {
             case 'i': /* Take data from file */
                 if (batch_mode == 0 || input_cnt == 0) {
                     arg_opts[data_arg_num].arg = optarg;
-                    arg_opts[data_arg_num].opt = c;
+                    arg_opts[data_arg_num].opt = opt;
                     data_arg_num++;
                     input_cnt++;
                 } else {
@@ -2219,7 +2225,7 @@ int main(int argc, char **argv) {
                 break;
 
             default: /* Shouldn't happen */
-                fprintf(stderr, "Error 123: ?? getopt error 0%o\n", c); /* Not reached */
+                fprintf(stderr, "Error 123: ?? getopt error 0%o\n", opt); /* Not reached */
                 return do_exit(ZINT_ERROR_ENCODING_PROBLEM);
                 break;
         }

@@ -334,7 +334,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.16.0.9</p>
-<p class="date">December 2025</p>
+<p class="date">February 2026</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -7478,30 +7478,35 @@ Correction Modes</caption>
 <tbody>
 <tr>
 <td>1</td>
-<td>&gt;10% + 3 codewords</td>
+<td>&gt;=10% + 3 codewords</td>
 </tr>
 <tr>
 <td>2</td>
-<td>&gt;23% + 3 codewords</td>
+<td>&gt;=23% + 3 codewords</td>
 </tr>
 <tr>
 <td>3</td>
-<td>&gt;36% + 3 codewords</td>
+<td>&gt;=36% + 3 codewords</td>
 </tr>
 <tr>
 <td>4</td>
-<td>&gt;50% + 3 codewords</td>
+<td>&gt;=50% + 3 codewords</td>
 </tr>
 </tbody>
 </table>
 <p>It is not possible to select both symbol size and error correction
 capacity for the same symbol. If both options are selected then the
 error correction capacity selection will be ignored.</p>
+<p>Compact symbols can be excluded from consideration on automatic
+sizing by specifying <code>--azfull</code> (API
+<code>symbol-&gt;option_3 = ZINT_AZTEC_FULL</code>).</p>
 <p>Aztec Code supports ECI encoding and can encode up to a maximum
 length of approximately 3823 numeric or 3067 alphabetic characters or
 1914 bytes of data. A separate symbology ID
 (<code>BARCODE_HIBC_AZTEC</code>) can be used to encode Health Industry
 Barcode (HIBC) data.</p>
+<p>For a faster but less optimal encodation, the <code>--fast</code>
+option (API <code>input_mode |= FAST_MODE</code>) may be used.</p>
 <p>Aztec Code supports Structured Append of up to 26 symbols and an
 optional alphanumeric ID of up to 32 characters, which can be set by
 using the <code>--structapp</code> option (see <a
@@ -8291,7 +8296,7 @@ alt="zint -b FLAT -d &quot;1304056&quot;" />
 Information</h1>
 <h2 id="license">7.1 License</h2>
 <p>Zint, <code>libzint</code> and Zint Barcode Studio are Copyright ©
-2025 Robin Stuart. All historical versions are distributed under the GNU
+2026 Robin Stuart. All historical versions are distributed under the GNU
 General Public License version 3 or later. Versions 2.5 and later are
 released under a dual license: the encoding library is released under
 the BSD (3 clause) license whereas the GUI, Zint Barcode Studio, and the
@@ -8976,6 +8981,11 @@ names are case-insensitive, and non-alphanumerics are ignored.</p>
 add-on. <em>INTEGER</em> is in integral multiples of the X-dimension.
 The maximum gap that can be set is 12. The minimum is 7, except for
 UPC-A, when the minimum is 9.</p>
+</dd>
+<dt><code>--azfull</code></dt>
+<dd>
+<p>For Aztec Code symbols, exclude Compact versions when considering
+automatic sizes (i.e. consider Full versions only).</p>
 </dd>
 <dt><code>--batch</code></dt>
 <dd>
@@ -9681,7 +9691,7 @@ ISO/IEC 16390:2007, ISO/IEC 16023:2000, ISO/IEC 24728:2006, ISO/IEC
 15438:2015, ISO/IEC 18004:2024, ISO/IEC 23941:2022, AIM ITS/04-023
 (2022)</p>
 <h2 id="copyright">COPYRIGHT</h2>
-<p>Copyright © 2025 Robin Stuart. Released under GNU GPL 3.0 or
+<p>Copyright © 2026 Robin Stuart. Released under GNU GPL 3.0 or
 later.</p>
 <h2 id="author">AUTHOR</h2>
 <p>Robin Stuart <a href="mailto:robin@zint.org.uk"

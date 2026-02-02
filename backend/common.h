@@ -137,11 +137,11 @@ typedef unsigned __int64 uint64_t;
 #define z_isfintf(arg) (fmodf(arg, 1.0f) == 0.0f)
 
 /* Simple versions of <ctype.h> functions with no dependence on locale */
-#define z_isdigit(c) ((c) <= '9' && (c) >= '0')
-#define z_isupper(c) ((c) >= 'A' && (c) <= 'Z')
-#define z_islower(c) ((c) >= 'a' && (c) <= 'z')
-#define z_isascii(c) (!((c) & ~0x7F))
-#define z_iscntrl(c) (!((c) & ~0x1F) || (c) == 127)
+#define z_isdigit(ch) ((ch) <= '9' && (ch) >= '0')
+#define z_isupper(ch) ((ch) >= 'A' && (ch) <= 'Z')
+#define z_islower(ch) ((ch) >= 'a' && (ch) <= 'z')
+#define z_isascii(ch) (!((ch) & ~0x7F))
+#define z_iscntrl(ch) (!((ch) & ~0x1F) || (ch) == 127)
 
 /* Shorthands to cast away char pointer signedness */
 #define ZUCP(p)     ((unsigned char *) (p))
@@ -155,7 +155,7 @@ typedef unsigned __int64 uint64_t;
 #define z_xtoc(i) ((i) < 10 ? z_itoc(i) : ((i) - 10) + 'A')
 
 /* Converts a character 0-9, A-F to its equivalent integer value */
-INTERNAL int z_ctoi(const char source);
+INTERNAL int z_ctoi(const char ch);
 
 /* Converts decimal string of length <= 9 to integer value. Returns -1 if not numeric */
 INTERNAL int z_to_int(const unsigned char source[], const int length);
@@ -163,8 +163,8 @@ INTERNAL int z_to_int(const unsigned char source[], const int length);
 /* Converts lower case characters to upper case in string `source` */
 INTERNAL void z_to_upper(unsigned char source[], const int length);
 
-/* Returns the number of times a character occurs in `source` */
-INTERNAL int z_chr_cnt(const unsigned char source[], const int length, const unsigned char c);
+/* Returns the number of times a character `ch` occurs in `source` */
+INTERNAL int z_chr_cnt(const unsigned char source[], const int length, const unsigned char ch);
 
 /* `z_is_chr()` & `z_not_sane()` flags */
 #define IS_SPC_F    0x0001 /* Space */
@@ -190,11 +190,11 @@ INTERNAL int z_chr_cnt(const unsigned char source[], const int length, const uns
 /* The most commonly used set */
 #define NEON_F      IS_NUM_F /* NEON "0123456789" */
 
-/* Whether a character matches `flg` */
-INTERNAL int z_is_chr(const unsigned int flg, const unsigned int c);
+/* Whether a character `ch` matches `flag` */
+INTERNAL int z_is_chr(const unsigned int flag, const unsigned int ch);
 
 /* Verifies if a string only uses valid characters, returning 1-based position in `source` if not, 0 for success */
-INTERNAL int z_not_sane(const unsigned int flg, const unsigned char source[], const int length);
+INTERNAL int z_not_sane(const unsigned int flag, const unsigned char source[], const int length);
 
 /* Verifies if a string only uses valid characters as above, but also returns `test_string` position of each in
    `posns` array */
@@ -319,7 +319,7 @@ INTERNAL void z_hrt_cpy_nochk(struct zint_symbol *symbol, const unsigned char so
 INTERNAL void z_hrt_cpy_cat_nochk(struct zint_symbol *symbol, const unsigned char source[], const int length,
                 const char separator, const unsigned char cat[], const int cat_length);
 
-/* Copy a single ASCII character into `symbol->text` (i.e. replaces content) */
+/* Copy a single ASCII character `ch` into `symbol->text` (i.e. replaces content) */
 INTERNAL void z_hrt_cpy_chr(struct zint_symbol *symbol, const char ch);
 
 /* No-check as-is append of ASCII to `symbol->text`, assuming current `symbol->text_length` + `length` fits */

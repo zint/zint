@@ -13,7 +13,7 @@
 /* See https://sourceforge.net/p/zint/mailman/message/59278637/
    and https://github.com/bwipp/postscriptbarcode/commit/763fb4ffbfad7b379723dd3570183c769b28c786
    and "Pre-calculated QR and MicroQR tables" comment in "qr.h"
-   
+
    Paste output after comment
 */
 

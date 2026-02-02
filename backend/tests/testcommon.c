@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -617,7 +617,13 @@ const char *testUtilOption3Name(int symbology, int option_3) {
     const char *name = NULL;
     const unsigned int high_byte = option_3 == -1 ? 0 : (option_3 >> 8) & 0xFF;
 
-    if (symbology == BARCODE_DATAMATRIX || symbology == BARCODE_HIBC_DM) {
+    if (symbology == BARCODE_AZTEC || symbology == BARCODE_HIBC_AZTEC) {
+        if ((option_3 & 0xFF) == ZINT_AZTEC_FULL) {
+            name = "ZINT_AZTEC_FULL";
+        } else {
+            name = (option_3 & 0xFF) ? "-1" : "0";
+        }
+    } else if (symbology == BARCODE_DATAMATRIX || symbology == BARCODE_HIBC_DM) {
         if (option_3 > 0) {
             if ((option_3 & 0x7F) == DM_SQUARE) {
                 if ((option_3 & DM_ISO_144) == DM_ISO_144) {

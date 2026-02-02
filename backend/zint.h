@@ -1,7 +1,7 @@
 /*  zint.h - definitions for libzint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -322,10 +322,13 @@ extern "C" {
 #define GS1NOCHECK_MODE         0x0020  /* Do not check validity of GS1 data (except that printable ASCII only) */
 #define HEIGHTPERROW_MODE       0x0040  /* Interpret `height` as per-row rather than as overall height */
 #define FAST_MODE               0x0080  /* Use faster if less optimal encodation or other shortcuts if available */
-                                        /* Note: affects DATAMATRIX, MICROPDF417, PDF417, QRCODE & UPNQR only */
+                                        /* (affects AZTEC, DATAMATRIX, MICROPDF417, PDF417, QRCODE & UPNQR only) */
 #define EXTRA_ESCAPE_MODE       0x0100  /* Process special symbology-specific escape sequences as well as others */
                                         /* Note: currently Code 128 only */
 #define GS1SYNTAXENGINE_MODE    0x0200  /* Use the GS1 Syntax Engine (if available) to strictly validate GS1 input */
+
+/* Aztec Code specific options (`symbol->option_3`) */
+#define ZINT_AZTEC_FULL         128     /* Only consider Full versions on automatic symbol size selection */
 
 /* Data Matrix specific options (`symbol->option_3`) */
 #define DM_SQUARE               100     /* Only consider square versions on automatic symbol size selection */

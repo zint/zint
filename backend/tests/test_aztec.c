@@ -36,9 +36,11 @@ static void test_large(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
+        int input_mode;
         int eci;
         int option_1;
         int option_2;
+        int option_3;
         int output_options;
         struct zint_structapp structapp;
         const char *pattern;
@@ -52,130 +54,133 @@ static void test_large(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2051, 0, 151, 151, "", 3, "" },
-        /*  1*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2052, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 1, requires 1495 codewords (maximum 1494)", 3, "" },
-        /*  2*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2236, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 1, requires 1630 codewords (maximum 1494)", 3, "" },
-        /*  3*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2237, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1494)", 3, "" },
-        /*  4*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "1", 3832, 0, 151, 151, "", 1, "" },
-        /*  5*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "1", 3833, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 2, requires 1279 codewords (maximum 1278)", 1, "" },
-        /*  6*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "A", 3067, 0, 151, 151, "", 1, "" },
-        /*  7*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "A", 3068, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1278)", 1, "" },
-        /*  8*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "\240", 1914, 0, 151, 151, "", 3, "This is what Table 1 gives as Bytes capacity (no bit-stuffing)" },
-        /*  9*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "\240", 1915, ZINT_ERROR_TOO_LONG, 151, 151, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1278)", 3, "" },
-        /* 10*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "\377", 1754, 0, 151, 151, "", 3, "This is Bytes capacity with max bit-stuffing" },
-        /* 11*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "\377", 1755, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 2, requires 1279 codewords (maximum 1278)", 3, "" },
-        /* 12*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "1", 3181, 0, 151, 151, "", 1, "" },
-        /* 13*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "1", 3182, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 3, requires 1062 codewords (maximum 1061)", 1, "" },
-        /* 14*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "A", 2402, 0, 147, 147, "", 1, "" },
-        /* 15*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "A", 2549, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 3, requires too many codewords (maximum 1061)", 1, "" },
-        /* 16*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "\377", 1456, 0, 151, 151, "", 3, "" },
-        /* 17*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "\377", 1457, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 3, requires 1062 codewords (maximum 1061)", 3, "" },
-        /* 18*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "1", 2485, 0, 151, 151, "", 1, "" },
-        /* 19*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "1", 2486, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 4, requires too many codewords (maximum 829)", 1, "" },
-        /* 20*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "A", 1989, 0, 151, 151, "", 1, "" },
-        /* 21*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "A", 1990, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 4, requires too many codewords (maximum 829)", 1, "" },
-        /* 22*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "\377", 1137, 0, 151, 151, "", 3, "" },
-        /* 23*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "\377", 1138, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 4, requires 830 codewords (maximum 829)", 3, "" },
-        /* 24*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 7, 0, 15, 15, "", 3, "4 ECC codewords" },
-        /* 25*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", 3, "" },
-        /* 26*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 2078, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", 3, "" },
-        /* 27*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 21, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 36", 3, "4 ECC codewords" },
-        /* 28*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 22, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
-        /* 29*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 23, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", 3, "" },
-        /* 30*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 1866, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", 3, "" },
-        /* 31*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 39, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
-        /* 32*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 3, requires too many codewords (maximum 48)", 3, "" },
-        /* 33*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 51, 0, 27, 27, "", 3, "15 ECC codewords (Version 4 (compact) spare 12 ECC blocks bonus)" },
-        /* 34*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 4, requires too many codewords (maximum 61)", 3, "" },
-        /* 35*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 10, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
-        /* 36*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 5, requires too many codewords (maximum 18)", 3, "" },
-        /* 37*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 27, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
-        /* 38*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 6, requires too many codewords (maximum 45)", 3, "" },
-        /* 39*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 47, ZINT_WARN_NONCOMPLIANT, 27, 27, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
-        /* 40*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 7, requires too many codewords (maximum 57)", 3, "" },
-        /* 41*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 71, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 84", 3, "4 ECC codewords" },
-        /* 42*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 72, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 43*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 73, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 8, requires too many codewords (maximum 85)", 3, "" },
-        /* 44*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 98, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 708: Number of ECC codewords 5 less than 5% + 3 of data codewords 115", 3, "5 ECC codewords" },
-        /* 45*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 100, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 46*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 101, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 9, requires too many codewords (maximum 117)", 3, "" },
-        /* 47*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 128, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 7 less than 5% + 3 of data codewords 149", 3, "7 ECC codewords" },
-        /* 48*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 129, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 6 less than 5% + 3 of data codewords 150", 3, "" },
-        /* 49*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 131, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 50*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 10, requires too many codewords (maximum 153)", 3, "" },
-        /* 51*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 166, ZINT_WARN_NONCOMPLIANT, 45, 45, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 52*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 167, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 11, requires too many codewords (maximum 193)", 3, "" },
-        /* 53*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 205, ZINT_WARN_NONCOMPLIANT, 49, 49, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 54*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 206, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 12, requires too many codewords (maximum 237)", 3, "" },
-        /* 55*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 253, ZINT_WARN_NONCOMPLIANT, 53, 53, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 56*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 254, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 13, requires too many codewords (maximum 227)", 3, "" },
-        /* 57*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 300, ZINT_WARN_NONCOMPLIANT, 57, 57, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 58*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 301, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 14, requires too many codewords (maximum 269)", 3, "" },
-        /* 59*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 349, ZINT_WARN_NONCOMPLIANT, 61, 61, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 60*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 350, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 15, requires too many codewords (maximum 313)", 3, "" },
-        /* 61*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 403, ZINT_WARN_NONCOMPLIANT, 67, 67, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 62*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 404, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 16, requires too many codewords (maximum 361)", 3, "" },
-        /* 63*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 462, ZINT_WARN_NONCOMPLIANT, 71, 71, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 64*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 463, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 17, requires too many codewords (maximum 413)", 3, "" },
-        /* 65*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 501, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 22 less than 5% + 3 of data codewords 448", 3, "22 ECC codewords (448 data codewords)" },
-        /* 66*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 502, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 21 less than 5% + 3 of data codewords 449", 3, "" },
-        /* 67*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 523, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 68*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 524, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 18, requires too many codewords (maximum 467)", 3, "" },
-        /* 69*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 588, ZINT_WARN_NONCOMPLIANT, 79, 79, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 70*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 589, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 19, requires too many codewords (maximum 525)", 3, "" },
-        /* 71*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 655, ZINT_WARN_NONCOMPLIANT, 83, 83, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 72*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 656, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 20, requires too many codewords (maximum 585)", 3, "" },
-        /* 73*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 727, ZINT_WARN_NONCOMPLIANT, 87, 87, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 74*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 728, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 21, requires too many codewords (maximum 649)", 3, "" },
-        /* 75*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 804, ZINT_WARN_NONCOMPLIANT, 91, 91, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 76*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 805, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 22, requires too many codewords (maximum 717)", 3, "" },
-        /* 77*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 883, ZINT_WARN_NONCOMPLIANT, 95, 95, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 78*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 884, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 23, requires too many codewords (maximum 787)", 3, "" },
-        /* 79*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 966, ZINT_WARN_NONCOMPLIANT, 101, 101, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 80*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 967, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 24, requires too many codewords (maximum 861)", 3, "" },
-        /* 81*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1051, ZINT_WARN_NONCOMPLIANT, 105, 105, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 82*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1052, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 25, requires too many codewords (maximum 937)", 3, "" },
-        /* 83*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1091, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 48 less than 5% + 3 of data codewords 972", 3, "" },
-        /* 84*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1092, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 47 less than 5% + 3 of data codewords 973", 3, "" },
-        /* 85*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1141, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 86*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1142, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 26, requires too many codewords (maximum 1017)", 3, "" },
-        /* 87*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1258, ZINT_WARN_NONCOMPLIANT, 113, 113, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 88*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1259, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 27, requires too many codewords (maximum 917)", 3, "" },
-        /* 89*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1357, ZINT_WARN_NONCOMPLIANT, 117, 117, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 90*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1358, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 28, requires too many codewords (maximum 989)", 3, "" },
-        /* 91*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1459, ZINT_WARN_NONCOMPLIANT, 121, 121, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 92*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1460, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 29, requires too many codewords (maximum 1063)", 3, "" },
-        /* 93*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1566, ZINT_WARN_NONCOMPLIANT, 125, 125, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 94*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1567, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 30, requires too many codewords (maximum 1141)", 3, "" },
-        /* 95*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1676, ZINT_WARN_NONCOMPLIANT, 131, 131, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 96*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1677, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 31, requires too many codewords (maximum 1221)", 3, "" },
-        /* 97*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1789, ZINT_WARN_NONCOMPLIANT, 135, 135, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /* 98*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1790, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 32, requires too many codewords (maximum 1303)", 3, "" },
-        /* 99*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1907, ZINT_WARN_NONCOMPLIANT, 139, 139, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /*100*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1908, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 33, requires too many codewords (maximum 1389)", 3, "" },
-        /*101*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4429, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
-        /*102*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4430, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 34, requires 1478 codewords (maximum 1477)", 1, "" },
-        /*103*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2028, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /*104*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2029, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 34, requires too many codewords (maximum 1477)", 3, "" },
-        /*105*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4699, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
-        /*106*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4700, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", 1, "" },
-        /*107*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3590, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 74 less than 5% + 3 of data codewords 1496", 1, "74 ECC codewords (1496 data codewords)" },
-        /*108*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3591, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 73 less than 5% + 3 of data codewords 1497", 1, "" },
-        /*109*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3760, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
-        /*110*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3761, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", 1, "" },
-        /*111*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2149, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /*112*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2150, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 35, requires too many codewords (maximum 1567)", 3, "" },
-        /*113*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4753, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 79 less than 5% + 3 of data codewords 1585", 1, "79 ECC codewords (1585 data codewords)" },
-        /*114*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4981, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
-        /*115*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4982, ZINT_ERROR_TOO_LONG, 0, 0, "Error 502: Input too long, requires too many codewords (maximum 1661)", 1, "" },
-        /*116*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2279, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /*117*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2280, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", 3, "" },
-        /*118*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /*119*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", 3, "" },
-        /*120*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /*121*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", 3, "" },
-        /*122*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2273, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
-        /*123*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2274, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 36, requires 1662 codewords (maximum 1661)", 3, "" },
+        /*  0*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, -1, { 0, 0, "" }, "1A", 10921, ZINT_ERROR_TOO_LONG, 0, 0, "Error 502: Input too long, requires too many codewords (maximum 1661)", 3, "Does not trigger USHRT_MAX check" },
+        /*  1*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, -1, { 0, 0, "" }, "1A", 10922, ZINT_ERROR_TOO_LONG, 0, 0, "Error 502: Input too long, requires too many codewords (maximum 1661)", 3, "Triggers USHRT_MAX check" },
+        /*  2*/ { BARCODE_AZTEC, FAST_MODE, -1, 1, -1, -1, -1, { 0, 0, "" }, "1A", 10922, ZINT_ERROR_TOO_LONG, 0, 0, "Error 502: Input too long, requires too many codewords (maximum 1661)", 3, "FAST_MODE has no such check (and doesn't need it)" },
+        /*  3*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, -1, { 0, 0, "" }, "\377", 2051, 0, 151, 151, "", 3, "" },
+        /*  4*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, -1, { 0, 0, "" }, "\377", 2052, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 1, requires 1495 codewords (maximum 1494)", 3, "" },
+        /*  5*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, -1, { 0, 0, "" }, "\377", 2236, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 1, requires 1630 codewords (maximum 1494)", 3, "" },
+        /*  6*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, -1, { 0, 0, "" }, "\377", 2237, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1494)", 3, "" },
+        /*  7*/ { BARCODE_AZTEC, -1, -1, 2, -1, -1, -1, { 0, 0, "" }, "1", 3832, 0, 151, 151, "", 1, "" },
+        /*  8*/ { BARCODE_AZTEC, -1, -1, 2, -1, -1, -1, { 0, 0, "" }, "1", 3833, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 2, requires 1279 codewords (maximum 1278)", 1, "" },
+        /*  9*/ { BARCODE_AZTEC, -1, -1, 2, -1, -1, -1, { 0, 0, "" }, "A", 3067, 0, 151, 151, "", 1, "" },
+        /* 10*/ { BARCODE_AZTEC, -1, -1, 2, -1, -1, -1, { 0, 0, "" }, "A", 3068, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1278)", 1, "" },
+        /* 11*/ { BARCODE_AZTEC, -1, -1, 2, -1, -1, -1, { 0, 0, "" }, "\240", 1914, 0, 151, 151, "", 3, "This is what Table 1 gives as Bytes capacity (no bit-stuffing)" },
+        /* 12*/ { BARCODE_AZTEC, -1, -1, 2, -1, -1, -1, { 0, 0, "" }, "\240", 1915, ZINT_ERROR_TOO_LONG, 151, 151, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1278)", 3, "" },
+        /* 13*/ { BARCODE_AZTEC, -1, -1, 2, -1, -1, -1, { 0, 0, "" }, "\377", 1754, 0, 151, 151, "", 3, "This is Bytes capacity with max bit-stuffing" },
+        /* 14*/ { BARCODE_AZTEC, -1, -1, 2, -1, -1, -1, { 0, 0, "" }, "\377", 1755, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 2, requires 1279 codewords (maximum 1278)", 3, "" },
+        /* 15*/ { BARCODE_AZTEC, -1, -1, 3, -1, -1, -1, { 0, 0, "" }, "1", 3181, 0, 151, 151, "", 1, "" },
+        /* 16*/ { BARCODE_AZTEC, -1, -1, 3, -1, -1, -1, { 0, 0, "" }, "1", 3182, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 3, requires 1062 codewords (maximum 1061)", 1, "" },
+        /* 17*/ { BARCODE_AZTEC, -1, -1, 3, -1, -1, -1, { 0, 0, "" }, "A", 2402, 0, 147, 147, "", 1, "" },
+        /* 18*/ { BARCODE_AZTEC, -1, -1, 3, -1, -1, -1, { 0, 0, "" }, "A", 2549, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 3, requires too many codewords (maximum 1061)", 1, "" },
+        /* 19*/ { BARCODE_AZTEC, -1, -1, 3, -1, -1, -1, { 0, 0, "" }, "\377", 1456, 0, 151, 151, "", 3, "" },
+        /* 20*/ { BARCODE_AZTEC, -1, -1, 3, -1, -1, -1, { 0, 0, "" }, "\377", 1457, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 3, requires 1062 codewords (maximum 1061)", 3, "" },
+        /* 21*/ { BARCODE_AZTEC, -1, -1, 4, -1, -1, -1, { 0, 0, "" }, "1", 2485, 0, 151, 151, "", 1, "" },
+        /* 22*/ { BARCODE_AZTEC, -1, -1, 4, -1, -1, -1, { 0, 0, "" }, "1", 2486, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 4, requires too many codewords (maximum 829)", 1, "" },
+        /* 23*/ { BARCODE_AZTEC, -1, -1, 4, -1, -1, -1, { 0, 0, "" }, "A", 1989, 0, 151, 151, "", 1, "" },
+        /* 24*/ { BARCODE_AZTEC, -1, -1, 4, -1, -1, -1, { 0, 0, "" }, "A", 1990, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 4, requires too many codewords (maximum 829)", 1, "" },
+        /* 25*/ { BARCODE_AZTEC, -1, -1, 4, -1, -1, -1, { 0, 0, "" }, "\377", 1137, 0, 151, 151, "", 3, "" },
+        /* 26*/ { BARCODE_AZTEC, -1, -1, 4, -1, -1, -1, { 0, 0, "" }, "\377", 1138, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 4, requires 830 codewords (maximum 829)", 3, "" },
+        /* 27*/ { BARCODE_AZTEC, -1, -1, -1, 1, -1, -1, { 0, 0, "" }, "\377", 7, 0, 15, 15, "", 3, "4 ECC codewords" },
+        /* 28*/ { BARCODE_AZTEC, -1, -1, -1, 1, -1, -1, { 0, 0, "" }, "\377", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", 3, "" },
+        /* 29*/ { BARCODE_AZTEC, -1, -1, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2078, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", 3, "" },
+        /* 30*/ { BARCODE_AZTEC, -1, -1, -1, 2, -1, -1, { 0, 0, "" }, "\377", 21, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 36", 3, "4 ECC codewords" },
+        /* 31*/ { BARCODE_AZTEC, -1, -1, -1, 2, -1, -1, { 0, 0, "" }, "\377", 22, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 32*/ { BARCODE_AZTEC, -1, -1, -1, 2, -1, -1, { 0, 0, "" }, "\377", 23, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", 3, "" },
+        /* 33*/ { BARCODE_AZTEC, -1, -1, -1, 2, -1, -1, { 0, 0, "" }, "\377", 1866, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", 3, "" },
+        /* 34*/ { BARCODE_AZTEC, -1, -1, -1, 3, -1, -1, { 0, 0, "" }, "\377", 39, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 35*/ { BARCODE_AZTEC, -1, -1, -1, 3, -1, -1, { 0, 0, "" }, "\377", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 3, requires too many codewords (maximum 48)", 3, "" },
+        /* 36*/ { BARCODE_AZTEC, -1, -1, -1, 4, -1, -1, { 0, 0, "" }, "\377", 51, 0, 27, 27, "", 3, "15 ECC codewords (Version 4 (compact) spare 12 ECC blocks bonus)" },
+        /* 37*/ { BARCODE_AZTEC, -1, -1, -1, 4, -1, -1, { 0, 0, "" }, "\377", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 4, requires too many codewords (maximum 61)", 3, "" },
+        /* 38*/ { BARCODE_AZTEC, -1, -1, -1, 5, -1, -1, { 0, 0, "" }, "\377", 10, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 39*/ { BARCODE_AZTEC, -1, -1, -1, 5, -1, -1, { 0, 0, "" }, "\377", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 5, requires too many codewords (maximum 18)", 3, "" },
+        /* 40*/ { BARCODE_AZTEC, -1, -1, -1, 6, -1, -1, { 0, 0, "" }, "\377", 27, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 41*/ { BARCODE_AZTEC, -1, -1, -1, 6, -1, -1, { 0, 0, "" }, "\377", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 6, requires too many codewords (maximum 45)", 3, "" },
+        /* 42*/ { BARCODE_AZTEC, -1, -1, -1, 7, -1, -1, { 0, 0, "" }, "\377", 47, ZINT_WARN_NONCOMPLIANT, 27, 27, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 43*/ { BARCODE_AZTEC, -1, -1, -1, 7, -1, -1, { 0, 0, "" }, "\377", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 7, requires too many codewords (maximum 57)", 3, "" },
+        /* 44*/ { BARCODE_AZTEC, -1, -1, -1, 8, -1, -1, { 0, 0, "" }, "\377", 71, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 84", 3, "4 ECC codewords" },
+        /* 45*/ { BARCODE_AZTEC, -1, -1, -1, 8, -1, -1, { 0, 0, "" }, "\377", 72, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 46*/ { BARCODE_AZTEC, -1, -1, -1, 8, -1, -1, { 0, 0, "" }, "\377", 73, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 8, requires too many codewords (maximum 85)", 3, "" },
+        /* 47*/ { BARCODE_AZTEC, -1, -1, -1, 9, -1, -1, { 0, 0, "" }, "\377", 98, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 708: Number of ECC codewords 5 less than 5% + 3 of data codewords 115", 3, "5 ECC codewords" },
+        /* 48*/ { BARCODE_AZTEC, -1, -1, -1, 9, -1, -1, { 0, 0, "" }, "\377", 100, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 49*/ { BARCODE_AZTEC, -1, -1, -1, 9, -1, -1, { 0, 0, "" }, "\377", 101, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 9, requires too many codewords (maximum 117)", 3, "" },
+        /* 50*/ { BARCODE_AZTEC, -1, -1, -1, 10, -1, -1, { 0, 0, "" }, "\377", 128, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 7 less than 5% + 3 of data codewords 149", 3, "7 ECC codewords" },
+        /* 51*/ { BARCODE_AZTEC, -1, -1, -1, 10, -1, -1, { 0, 0, "" }, "\377", 129, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 6 less than 5% + 3 of data codewords 150", 3, "" },
+        /* 52*/ { BARCODE_AZTEC, -1, -1, -1, 10, -1, -1, { 0, 0, "" }, "\377", 131, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 53*/ { BARCODE_AZTEC, -1, -1, -1, 10, -1, -1, { 0, 0, "" }, "\377", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 10, requires too many codewords (maximum 153)", 3, "" },
+        /* 54*/ { BARCODE_AZTEC, -1, -1, -1, 11, -1, -1, { 0, 0, "" }, "\377", 166, ZINT_WARN_NONCOMPLIANT, 45, 45, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 55*/ { BARCODE_AZTEC, -1, -1, -1, 11, -1, -1, { 0, 0, "" }, "\377", 167, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 11, requires too many codewords (maximum 193)", 3, "" },
+        /* 56*/ { BARCODE_AZTEC, -1, -1, -1, 12, -1, -1, { 0, 0, "" }, "\377", 205, ZINT_WARN_NONCOMPLIANT, 49, 49, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 57*/ { BARCODE_AZTEC, -1, -1, -1, 12, -1, -1, { 0, 0, "" }, "\377", 206, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 12, requires too many codewords (maximum 237)", 3, "" },
+        /* 58*/ { BARCODE_AZTEC, -1, -1, -1, 13, -1, -1, { 0, 0, "" }, "\377", 253, ZINT_WARN_NONCOMPLIANT, 53, 53, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 59*/ { BARCODE_AZTEC, -1, -1, -1, 13, -1, -1, { 0, 0, "" }, "\377", 254, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 13, requires too many codewords (maximum 227)", 3, "" },
+        /* 60*/ { BARCODE_AZTEC, -1, -1, -1, 14, -1, -1, { 0, 0, "" }, "\377", 300, ZINT_WARN_NONCOMPLIANT, 57, 57, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 61*/ { BARCODE_AZTEC, -1, -1, -1, 14, -1, -1, { 0, 0, "" }, "\377", 301, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 14, requires too many codewords (maximum 269)", 3, "" },
+        /* 62*/ { BARCODE_AZTEC, -1, -1, -1, 15, -1, -1, { 0, 0, "" }, "\377", 349, ZINT_WARN_NONCOMPLIANT, 61, 61, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 63*/ { BARCODE_AZTEC, -1, -1, -1, 15, -1, -1, { 0, 0, "" }, "\377", 350, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 15, requires too many codewords (maximum 313)", 3, "" },
+        /* 64*/ { BARCODE_AZTEC, -1, -1, -1, 16, -1, -1, { 0, 0, "" }, "\377", 403, ZINT_WARN_NONCOMPLIANT, 67, 67, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 65*/ { BARCODE_AZTEC, -1, -1, -1, 16, -1, -1, { 0, 0, "" }, "\377", 404, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 16, requires too many codewords (maximum 361)", 3, "" },
+        /* 66*/ { BARCODE_AZTEC, -1, -1, -1, 17, -1, -1, { 0, 0, "" }, "\377", 462, ZINT_WARN_NONCOMPLIANT, 71, 71, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 67*/ { BARCODE_AZTEC, -1, -1, -1, 17, -1, -1, { 0, 0, "" }, "\377", 463, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 17, requires too many codewords (maximum 413)", 3, "" },
+        /* 68*/ { BARCODE_AZTEC, -1, -1, -1, 18, -1, -1, { 0, 0, "" }, "\377", 501, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 22 less than 5% + 3 of data codewords 448", 3, "22 ECC codewords (448 data codewords)" },
+        /* 69*/ { BARCODE_AZTEC, -1, -1, -1, 18, -1, -1, { 0, 0, "" }, "\377", 502, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 21 less than 5% + 3 of data codewords 449", 3, "" },
+        /* 70*/ { BARCODE_AZTEC, -1, -1, -1, 18, -1, -1, { 0, 0, "" }, "\377", 523, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 71*/ { BARCODE_AZTEC, -1, -1, -1, 18, -1, -1, { 0, 0, "" }, "\377", 524, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 18, requires too many codewords (maximum 467)", 3, "" },
+        /* 72*/ { BARCODE_AZTEC, -1, -1, -1, 19, -1, -1, { 0, 0, "" }, "\377", 588, ZINT_WARN_NONCOMPLIANT, 79, 79, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 73*/ { BARCODE_AZTEC, -1, -1, -1, 19, -1, -1, { 0, 0, "" }, "\377", 589, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 19, requires too many codewords (maximum 525)", 3, "" },
+        /* 74*/ { BARCODE_AZTEC, -1, -1, -1, 20, -1, -1, { 0, 0, "" }, "\377", 655, ZINT_WARN_NONCOMPLIANT, 83, 83, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 75*/ { BARCODE_AZTEC, -1, -1, -1, 20, -1, -1, { 0, 0, "" }, "\377", 656, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 20, requires too many codewords (maximum 585)", 3, "" },
+        /* 76*/ { BARCODE_AZTEC, -1, -1, -1, 21, -1, -1, { 0, 0, "" }, "\377", 727, ZINT_WARN_NONCOMPLIANT, 87, 87, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 77*/ { BARCODE_AZTEC, -1, -1, -1, 21, -1, -1, { 0, 0, "" }, "\377", 728, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 21, requires too many codewords (maximum 649)", 3, "" },
+        /* 78*/ { BARCODE_AZTEC, -1, -1, -1, 22, -1, -1, { 0, 0, "" }, "\377", 804, ZINT_WARN_NONCOMPLIANT, 91, 91, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 79*/ { BARCODE_AZTEC, -1, -1, -1, 22, -1, -1, { 0, 0, "" }, "\377", 805, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 22, requires too many codewords (maximum 717)", 3, "" },
+        /* 80*/ { BARCODE_AZTEC, -1, -1, -1, 23, -1, -1, { 0, 0, "" }, "\377", 883, ZINT_WARN_NONCOMPLIANT, 95, 95, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 81*/ { BARCODE_AZTEC, -1, -1, -1, 23, -1, -1, { 0, 0, "" }, "\377", 884, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 23, requires too many codewords (maximum 787)", 3, "" },
+        /* 82*/ { BARCODE_AZTEC, -1, -1, -1, 24, -1, -1, { 0, 0, "" }, "\377", 966, ZINT_WARN_NONCOMPLIANT, 101, 101, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 83*/ { BARCODE_AZTEC, -1, -1, -1, 24, -1, -1, { 0, 0, "" }, "\377", 967, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 24, requires too many codewords (maximum 861)", 3, "" },
+        /* 84*/ { BARCODE_AZTEC, -1, -1, -1, 25, -1, -1, { 0, 0, "" }, "\377", 1051, ZINT_WARN_NONCOMPLIANT, 105, 105, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 85*/ { BARCODE_AZTEC, -1, -1, -1, 25, -1, -1, { 0, 0, "" }, "\377", 1052, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 25, requires too many codewords (maximum 937)", 3, "" },
+        /* 86*/ { BARCODE_AZTEC, -1, -1, -1, 26, -1, -1, { 0, 0, "" }, "\377", 1091, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 48 less than 5% + 3 of data codewords 972", 3, "" },
+        /* 87*/ { BARCODE_AZTEC, -1, -1, -1, 26, -1, -1, { 0, 0, "" }, "\377", 1092, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 47 less than 5% + 3 of data codewords 973", 3, "" },
+        /* 88*/ { BARCODE_AZTEC, -1, -1, -1, 26, -1, -1, { 0, 0, "" }, "\377", 1141, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 89*/ { BARCODE_AZTEC, -1, -1, -1, 26, -1, -1, { 0, 0, "" }, "\377", 1142, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 26, requires too many codewords (maximum 1017)", 3, "" },
+        /* 90*/ { BARCODE_AZTEC, -1, -1, -1, 27, -1, -1, { 0, 0, "" }, "\377", 1258, ZINT_WARN_NONCOMPLIANT, 113, 113, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 91*/ { BARCODE_AZTEC, -1, -1, -1, 27, -1, -1, { 0, 0, "" }, "\377", 1259, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 27, requires too many codewords (maximum 917)", 3, "" },
+        /* 92*/ { BARCODE_AZTEC, -1, -1, -1, 28, -1, -1, { 0, 0, "" }, "\377", 1357, ZINT_WARN_NONCOMPLIANT, 117, 117, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 93*/ { BARCODE_AZTEC, -1, -1, -1, 28, -1, -1, { 0, 0, "" }, "\377", 1358, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 28, requires too many codewords (maximum 989)", 3, "" },
+        /* 94*/ { BARCODE_AZTEC, -1, -1, -1, 29, -1, -1, { 0, 0, "" }, "\377", 1459, ZINT_WARN_NONCOMPLIANT, 121, 121, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 95*/ { BARCODE_AZTEC, -1, -1, -1, 29, -1, -1, { 0, 0, "" }, "\377", 1460, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 29, requires too many codewords (maximum 1063)", 3, "" },
+        /* 96*/ { BARCODE_AZTEC, -1, -1, -1, 30, -1, -1, { 0, 0, "" }, "\377", 1566, ZINT_WARN_NONCOMPLIANT, 125, 125, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 97*/ { BARCODE_AZTEC, -1, -1, -1, 30, -1, -1, { 0, 0, "" }, "\377", 1567, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 30, requires too many codewords (maximum 1141)", 3, "" },
+        /* 98*/ { BARCODE_AZTEC, -1, -1, -1, 31, -1, -1, { 0, 0, "" }, "\377", 1676, ZINT_WARN_NONCOMPLIANT, 131, 131, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 99*/ { BARCODE_AZTEC, -1, -1, -1, 31, -1, -1, { 0, 0, "" }, "\377", 1677, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 31, requires too many codewords (maximum 1221)", 3, "" },
+        /*100*/ { BARCODE_AZTEC, -1, -1, -1, 32, -1, -1, { 0, 0, "" }, "\377", 1789, ZINT_WARN_NONCOMPLIANT, 135, 135, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*101*/ { BARCODE_AZTEC, -1, -1, -1, 32, -1, -1, { 0, 0, "" }, "\377", 1790, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 32, requires too many codewords (maximum 1303)", 3, "" },
+        /*102*/ { BARCODE_AZTEC, -1, -1, -1, 33, -1, -1, { 0, 0, "" }, "\377", 1907, ZINT_WARN_NONCOMPLIANT, 139, 139, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*103*/ { BARCODE_AZTEC, -1, -1, -1, 33, -1, -1, { 0, 0, "" }, "\377", 1908, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 33, requires too many codewords (maximum 1389)", 3, "" },
+        /*104*/ { BARCODE_AZTEC, -1, -1, -1, 34, -1, -1, { 0, 0, "" }, "1", 4429, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
+        /*105*/ { BARCODE_AZTEC, -1, -1, -1, 34, -1, -1, { 0, 0, "" }, "1", 4430, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 34, requires 1478 codewords (maximum 1477)", 1, "" },
+        /*106*/ { BARCODE_AZTEC, -1, -1, -1, 34, -1, -1, { 0, 0, "" }, "\377", 2028, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*107*/ { BARCODE_AZTEC, -1, -1, -1, 34, -1, -1, { 0, 0, "" }, "\377", 2029, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 34, requires too many codewords (maximum 1477)", 3, "" },
+        /*108*/ { BARCODE_AZTEC, -1, -1, -1, 35, -1, -1, { 0, 0, "" }, "1", 4699, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
+        /*109*/ { BARCODE_AZTEC, -1, -1, -1, 35, -1, -1, { 0, 0, "" }, "1", 4700, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", 1, "" },
+        /*110*/ { BARCODE_AZTEC, -1, -1, -1, 35, -1, -1, { 0, 0, "" }, "A", 3590, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 74 less than 5% + 3 of data codewords 1496", 1, "74 ECC codewords (1496 data codewords)" },
+        /*111*/ { BARCODE_AZTEC, -1, -1, -1, 35, -1, -1, { 0, 0, "" }, "A", 3591, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 73 less than 5% + 3 of data codewords 1497", 1, "" },
+        /*112*/ { BARCODE_AZTEC, -1, -1, -1, 35, -1, -1, { 0, 0, "" }, "A", 3760, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
+        /*113*/ { BARCODE_AZTEC, -1, -1, -1, 35, -1, -1, { 0, 0, "" }, "A", 3761, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", 1, "" },
+        /*114*/ { BARCODE_AZTEC, -1, -1, -1, 35, -1, -1, { 0, 0, "" }, "\377", 2149, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*115*/ { BARCODE_AZTEC, -1, -1, -1, 35, -1, -1, { 0, 0, "" }, "\377", 2150, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 35, requires too many codewords (maximum 1567)", 3, "" },
+        /*116*/ { BARCODE_AZTEC, -1, -1, -1, 36, -1, -1, { 0, 0, "" }, "1", 4753, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 79 less than 5% + 3 of data codewords 1585", 1, "79 ECC codewords (1585 data codewords)" },
+        /*117*/ { BARCODE_AZTEC, -1, -1, -1, 36, -1, -1, { 0, 0, "" }, "1", 4981, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
+        /*118*/ { BARCODE_AZTEC, -1, -1, -1, 36, -1, -1, { 0, 0, "" }, "1", 4982, ZINT_ERROR_TOO_LONG, 0, 0, "Error 502: Input too long, requires too many codewords (maximum 1661)", 1, "" },
+        /*119*/ { BARCODE_AZTEC, -1, -1, -1, 36, -1, -1, { 0, 0, "" }, "\377", 2279, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*120*/ { BARCODE_AZTEC, -1, -1, -1, 36, -1, -1, { 0, 0, "" }, "\377", 2280, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", 3, "" },
+        /*121*/ { BARCODE_AZTEC, -1, 899, -1, 36, -1, -1, { 0, 0, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*122*/ { BARCODE_AZTEC, -1, 899, -1, 36, -1, -1, { 0, 0, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", 3, "" },
+        /*123*/ { BARCODE_AZTEC, -1, -1, -1, 36, -1, -1, { 2, 3, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*124*/ { BARCODE_AZTEC, -1, -1, -1, 36, -1, -1, { 2, 3, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", 3, "" },
+        /*125*/ { BARCODE_AZTEC, -1, 899, -1, 36, -1, -1, { 2, 3, "" }, "\377", 2273, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*126*/ { BARCODE_AZTEC, -1, 899, -1, 36, -1, -1, { 2, 3, "" }, "\377", 2274, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 36, requires 1662 codewords (maximum 1661)", 3, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -203,8 +208,8 @@ static void test_large(const testCtx *const p_ctx) {
         assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n",
                     i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, data[i].eci,
-                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci,
+                                    data[i].option_1, data[i].option_2, data[i].option_3, data[i].output_options,
                                     data_buf, data[i].length, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
@@ -217,8 +222,12 @@ static void test_large(const testCtx *const p_ctx) {
                     i, ret ? "set" : "empty", symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %d, %s, { %d, %d, \"\" }, \"%s\", %d, %s, %d, %d, \"%s\", %d, \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), data[i].eci, data[i].option_1, data[i].option_2,
+            printf("        /*%3d*/ { %s, %s, %d, %d, %d, %s, %s, { %d, %d, \"\" }, \"%s\","
+                                    " %d, %s, %d, %d, \"%s\", %d, \"%s\" },\n",
+                    i, testUtilBarcodeName(data[i].symbology),
+                    testUtilInputModeName(data[i].input_mode),
+                    data[i].eci, data[i].option_1, data[i].option_2,
+                    testUtilOption3Name(data[i].symbology, data[i].option_3),
                     testUtilOutputOptionsName(data[i].output_options), data[i].structapp.index,
                     data[i].structapp.count,
                     testUtilEscape(data[i].pattern, (int) strlen(data[i].pattern), escaped, sizeof(escaped)),
@@ -268,6 +277,7 @@ static void test_options(const testCtx *const p_ctx) {
         int output_options;
         int option_1;
         int option_2;
+        int option_3;
         struct zint_structapp structapp;
         const char *data;
         int ret;
@@ -277,56 +287,61 @@ static void test_options(const testCtx *const p_ctx) {
         const char *expected_errtxt;
         int expected_option_1;
         int expected_option_2;
+        int expected_option_3;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", (47 << 8) | 4, 1 },
-        /*  1*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1 },
-        /*  2*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", (47 << 8) | 4, 1 },
-        /*  3*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1 },
-        /*  4*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "12345678901", 0, 15, 15, "", (29 << 8) | 2, 1 },
-        /*  5*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "123456789012", 0, 15, 15, "", (29 << 8) | 2, 1 },
-        /*  6*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890123456", 0, 15, 15, "", (11 << 8) | 1, 1 },
-        /*  7*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "123456789012345678", 0, 19, 19, "", (60 << 8) | 4, 2 },
-        /*  8*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890123456789", 0, 19, 19, "", (57 << 8) | 4, 2 },
-        /*  9*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1 },
-        /* 10*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "", (72 << 8) | 4, 2 },
-        /* 11*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "12345678901", 0, 19, 19, "", (70 << 8) | 4, 2 },
-        /* 12*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "", (72 << 8) | 4, 2 },
-        /* 13*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", ZINT_WARN_INVALID_OPTION, 15, 15, "Warning 503: Error correction level '5' out of range (1 to 4), ignoring", (35 << 8) | 3, 1 },
-        /* 14*/ { BARCODE_AZTEC, -1, -1, -1, 1, { 0, 0, "" }, "12345678901234567890", ZINT_ERROR_TOO_LONG, -1, -1, "Error 505: Input too long for Version 1, requires 15 codewords (maximum 14)", -1, 1 },
-        /* 15*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890", 0, 19, 19, "", (47 << 8) | 4, 5 },
-        /* 16*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "12345678901", 0, 19, 19, "", (42 << 8) | 3, 5 },
-        /* 17*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890123456", 0, 19, 19, "", (28 << 8) | 2, 5 },
-        /* 18*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "123456789012345678901", 0, 19, 19, "", (14 << 8) | 1, 5 },
-        /* 19*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "123456789012345678901234", ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 17", (4 << 8) | 0, 5 },
-        /* 20*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890123456780123456", ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", -1, 5 },
-        /* 21*/ { BARCODE_AZTEC, -1, -1, -1, 36, { 0, 0, "" }, "1234567890", 0, 151, 151, "", (99 << 8) | 4, 36 },
-        /* 22*/ { BARCODE_AZTEC, -1, -1, -1, 37, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '37' out of range (1 to 36)", -1, 37 },
-        /* 23*/ { BARCODE_AZTEC, -1, -1, -1, -2, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '-2' out of range (1 to 36)", -1, -2 },
-        /* 24*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, { 0, 0, "" }, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 501: Cannot use Reader Initialisation in GS1 mode", -1, 0 },
-        /* 25*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "", (41 << 8) | 3, 1 },
-        /* 26*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "", (41 << 8) | 3, 1 },
-        /* 27*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)(", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 253: Malformed AI in input (brackets don't match)", -1, 0 },
-        /* 28*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)\\(", 0, 15, 15, "", (41 << 8) | 3, 1 }, /* Escaped parens now work without ESCAPE_MODE */
-        /* 29*/ { BARCODE_AZTEC, GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)\\(", 0, 15, 15, "", (41 << 8) | 3, 1 },
-        /* 30*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "", (99 << 8) | 4, 26 }, /* 22 layers */
-        /* 31*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 709: Version '27' out of range for Reader Initialisation symbols (maximum 26)", -1, 27 }, /* 23 layers */
-        /* 32*/ { BARCODE_AZTEC, -1, READER_INIT, 4, -1, { 0, 0, "" }, "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377", ZINT_ERROR_TOO_LONG, -1, -1, "Error 506: Input too long for Reader Initialisation, requires 23 layers (maximum 22)", 4, 27 }, /* 23 layers */
-        /* 33*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1 }, /* Compact 1 layer */
-        /* 34*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 3, { 0, 0, "" }, "A", 0, 19, 19, "", (80 << 8) | 4, 5 }, /* Compact 3 layers gets set to full 1 layer if READER_INIT set */
-        /* 35*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1 }, /* Compact 1 layer */
-        /* 36*/ { BARCODE_AZTEC, -1, READER_INIT, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1 }, /* Still compact 1 layer if READER_INIT set */
-        /* 37*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "0001", ZINT_ERROR_TOO_LONG, -1, -1, "Error 507: Input length 4 too long (maximum 3)", -1, 0 },
-        /* 38*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 508: Invalid character at position 1 in input (digits only)", -1, 0 },
-        /* 39*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "256", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 509: Input value out of range (0 to 255)", -1, 0 },
-        /* 40*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "" }, "1234567890", 0, 19, 19, "", (65 << 8) | 4, 2 },
-        /* 41*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, {'1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2'} }, "1234567890", 0, 23, 23, "", (41 << 8) | 3, 3 },
-        /* 42*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 1, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 701: Structured Append count '1' out of range (2 to 26)", -1, 0 },
-        /* 43*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '0' out of range (1 to count 2)", -1, 0 },
-        /* 44*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 3, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '3' out of range (1 to count 2)", -1, 0 },
-        /* 45*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "A B" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 703: Structured Append ID cannot contain spaces", -1, 0 },
-        /* 46*/ { BARCODE_HIBC_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890;", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 11 in input (alphanumerics, space and \"-.$/+%\" only)", -1, 0 },
+        /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", (47 << 8) | 4, 1, 0 },
+        /*  1*/ { BARCODE_AZTEC, -1, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, "1234567", 0, 19, 19, "", (57 << 8) | 4, 5, ZINT_AZTEC_FULL },
+        /*  2*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1, 0 },
+        /*  3*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", (47 << 8) | 4, 1, 0 },
+        /*  4*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1, 0 },
+        /*  5*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, { 0, 0, "" }, "12345678901", 0, 15, 15, "", (29 << 8) | 2, 1, 0 },
+        /*  6*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, { 0, 0, "" }, "123456789012", 0, 15, 15, "", (29 << 8) | 2, 1, 0 },
+        /*  7*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, { 0, 0, "" }, "1234567890123456", 0, 15, 15, "", (11 << 8) | 1, 1, 0 },
+        /*  8*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, { 0, 0, "" }, "123456789012345678", 0, 19, 19, "", (60 << 8) | 4, 2, 0 },
+        /*  9*/ { BARCODE_AZTEC, -1, -1, 1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, "123456789012345678", 0, 19, 19, "", (23 << 8) | 2, 5, ZINT_AZTEC_FULL },
+        /* 10*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, { 0, 0, "" }, "1234567890123456789", 0, 19, 19, "", (57 << 8) | 4, 2, 0 },
+        /* 11*/ { BARCODE_AZTEC, -1, -1, 2, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1, 0 },
+        /* 12*/ { BARCODE_AZTEC, -1, -1, 3, -1, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "", (72 << 8) | 4, 2, 0 },
+        /* 13*/ { BARCODE_AZTEC, -1, -1, 3, -1, -1, { 0, 0, "" }, "12345678901", 0, 19, 19, "", (70 << 8) | 4, 2, 0 },
+        /* 14*/ { BARCODE_AZTEC, -1, -1, 4, -1, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "", (72 << 8) | 4, 2, 0 },
+        /* 15*/ { BARCODE_AZTEC, -1, -1, 5, -1, -1, { 0, 0, "" }, "1234567890", ZINT_WARN_INVALID_OPTION, 15, 15, "Warning 503: Error correction level '5' out of range (1 to 4), ignoring", (35 << 8) | 3, 1, 0 },
+        /* 16*/ { BARCODE_AZTEC, -1, -1, -1, 1, -1, { 0, 0, "" }, "12345678901234567890", ZINT_ERROR_TOO_LONG, -1, -1, "Error 505: Input too long for Version 1, requires 15 codewords (maximum 14)", -1, 1, 0 },
+        /* 17*/ { BARCODE_AZTEC, -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "", (47 << 8) | 4, 5, 0 },
+        /* 18*/ { BARCODE_AZTEC, -1, -1, -1, 5, -1, { 0, 0, "" }, "12345678901", 0, 19, 19, "", (42 << 8) | 3, 5, 0 },
+        /* 19*/ { BARCODE_AZTEC, -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890123456", 0, 19, 19, "", (28 << 8) | 2, 5, 0 },
+        /* 20*/ { BARCODE_AZTEC, -1, -1, -1, 5, -1, { 0, 0, "" }, "123456789012345678901", 0, 19, 19, "", (14 << 8) | 1, 5, 0 },
+        /* 21*/ { BARCODE_AZTEC, -1, -1, -1, 5, -1, { 0, 0, "" }, "123456789012345678901234", ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 17", (4 << 8) | 0, 5, 0 },
+        /* 22*/ { BARCODE_AZTEC, -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890123456780123456", ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", -1, 5, 0 },
+        /* 23*/ { BARCODE_AZTEC, -1, -1, -1, 36, -1, { 0, 0, "" }, "1234567890", 0, 151, 151, "", (99 << 8) | 4, 36, 0 },
+        /* 24*/ { BARCODE_AZTEC, -1, -1, -1, 37, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '37' out of range (1 to 36)", -1, 37, 0 },
+        /* 25*/ { BARCODE_AZTEC, -1, -1, -1, -2, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '-2' out of range (1 to 36)", -1, -2, 0 },
+        /* 26*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, -1, { 0, 0, "" }, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 501: Cannot use Reader Initialisation in GS1 mode", -1, 0, 0 },
+        /* 27*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "", (41 << 8) | 3, 1, 0 },
+        /* 28*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "", (41 << 8) | 3, 1, 0 },
+        /* 29*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(91)(", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 253: Malformed AI in input (brackets don't match)", -1, 0, 0 },
+        /* 30*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(91)\\(", 0, 15, 15, "", (41 << 8) | 3, 1, 0 }, /* Escaped parens now work without ESCAPE_MODE */
+        /* 31*/ { BARCODE_AZTEC, GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(91)\\(", 0, 15, 15, "", (41 << 8) | 3, 1, 0 },
+        /* 32*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, -1, { 0, 0, "" }, "A", 0, 109, 109, "", (99 << 8) | 4, 26, 0 }, /* 22 layers */
+        /* 33*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 709: Version '27' out of range for Reader Initialisation symbols (maximum 26)", -1, 27, 0 }, /* 23 layers */
+        /* 34*/ { BARCODE_AZTEC, -1, READER_INIT, 4, -1, -1, { 0, 0, "" }, "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377", ZINT_ERROR_TOO_LONG, -1, -1, "Error 506: Input too long for Reader Initialisation, requires 23 layers (maximum 22)", 4, 27, 0 }, /* 23 layers */
+        /* 35*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1, 0 }, /* Compact 1 layer */
+        /* 36*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 3, -1, { 0, 0, "" }, "A", 0, 19, 19, "", (80 << 8) | 4, 5, 0 }, /* Compact 3 layers gets set to full 1 layer if READER_INIT set */
+        /* 37*/ { BARCODE_AZTEC, -1, -1, 1, -1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1, 0 }, /* Compact 1 layer */
+        /* 38*/ { BARCODE_AZTEC, -1, READER_INIT, 1, -1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1, 0 }, /* Still compact 1 layer if READER_INIT set */
+        /* 39*/ { BARCODE_AZTEC, -1, READER_INIT, -1, -1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1, 0 }, /* Compact 1 layer */
+        /* 40*/ { BARCODE_AZTEC, -1, READER_INIT, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, "A", 0, 19, 19, "", (80 << 8) | 4, 5, ZINT_AZTEC_FULL }, /* Full 1 layer */
+        /* 41*/ { BARCODE_AZRUNE, -1, -1, -1, -1, -1, { 0, 0, "" }, "0001", ZINT_ERROR_TOO_LONG, -1, -1, "Error 507: Input length 4 too long (maximum 3)", -1, 0, 0 },
+        /* 42*/ { BARCODE_AZRUNE, -1, -1, -1, -1, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 508: Invalid character at position 1 in input (digits only)", -1, 0, 0 },
+        /* 43*/ { BARCODE_AZRUNE, -1, -1, -1, -1, -1, { 0, 0, "" }, "256", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 509: Input value out of range (0 to 255)", -1, 0, 0 },
+        /* 44*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, { 1, 2, "" }, "1234567890", 0, 19, 19, "", (65 << 8) | 4, 2, 0 },
+        /* 45*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, { 1, 2, {'1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2'} }, "1234567890", 0, 23, 23, "", (41 << 8) | 3, 3, 0 },
+        /* 46*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, { 1, 1, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 701: Structured Append count '1' out of range (2 to 26)", -1, 0, 0 },
+        /* 47*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, { 0, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '0' out of range (1 to count 2)", -1, 0, 0 },
+        /* 48*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, { 3, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '3' out of range (1 to count 2)", -1, 0, 0 },
+        /* 49*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, { 1, 2, "A B" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 703: Structured Append ID cannot contain spaces", -1, 0, 0 },
+        /* 50*/ { BARCODE_HIBC_AZTEC, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234567890;", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 11 in input (alphanumerics, space and \"-.$/+%\" only)", -1, 0, 0 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -342,7 +357,7 @@ static void test_options(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
-                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                                    data[i].option_1, data[i].option_2, data[i].option_3, data[i].output_options,
                                     data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
@@ -366,7 +381,8 @@ static void test_options(const testCtx *const p_ctx) {
                     data[i].expected_option_1, symbol->option_2);
         assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
                     i, symbol->option_2, data[i].expected_option_2);
-        assert_zero(symbol->option_3, "i:%d symbol->option_3 %d != 0\n", i, symbol->option_3); /* Unchanged */
+        assert_equal(symbol->option_3, data[i].expected_option_3, "i:%d symbol->option_3 %d != %d\n",
+                    i, symbol->option_3, data[i].expected_option_3);
 
         ZBarcode_Delete(symbol);
     }
@@ -384,6 +400,7 @@ static void test_encode(const testCtx *const p_ctx) {
         int output_options;
         int option_1;
         int option_2;
+        int option_3;
         struct zint_structapp structapp;
         const char *data;
         int length;
@@ -396,8 +413,9 @@ static void test_encode(const testCtx *const p_ctx) {
         const char *comment;
         const char *expected;
     };
+    /* s/\v(\/\*)[ 0-9]*(\*\/)/\=printf("%s%3d%s", submatch(1), (@z+setreg('z',@z+1)), submatch(2))/ | let @z=0: */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, { 0, 0, "" }, "123456789012", -1, 0, 15, 15, 1, 1, "ISO/IEC 24778:2008 Figure 1 (left)",
+        /*  0*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "123456789012", -1, 0, 15, 15, 1, 1, "ISO/IEC 24778:2008 Figure 1 (left)",
                     "000111000011100"
                     "110111001110010"
                     "111100001000100"
@@ -414,7 +432,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101011110101010"
                     "100010001000101"
                 },
-        /*  1*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Aztec Code is a public domain 2D matrix barcode symbology of nominally square symbols built on a square grid with a distinctive square bullseye pattern at their center.", -1, 0, 41, 41, 0, 1, "ISO/IEC 24778:2008 Figure 1 (right) NOTE: Not the same but down to single encoding mode difference (UPPER space rather than LOWER space after 2D); BWIPP same encodation as figure",
+        /*  1*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "123456789012", -1, 0, 15, 15, 1, 1, "ISO/IEC 24778:2008 Figure 1 (left), same as above",
+                    "000111000011100"
+                    "110111001110010"
+                    "111100001000100"
+                    "001111111111100"
+                    "010100000001000"
+                    "100101111101010"
+                    "100101000101110"
+                    "001101010101100"
+                    "101101000101111"
+                    "101101111101010"
+                    "110100000001101"
+                    "000111111111111"
+                    "110001010010001"
+                    "101011110101010"
+                    "100010001000101"
+                },
+        /*  2*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "Aztec Code is a public domain 2D matrix barcode symbology of nominally square symbols built on a square grid with a distinctive square bullseye pattern at their center.", -1, 0, 41, 41, 0, 1, "ISO/IEC 24778:2008 Figure 1 (right) NOTE: Not the same but down to single encoding mode difference (UPPER space rather than LOWER space after 2D); BWIPP same encodation as figure",
                     "00001100110010010010111000010100001011000"
                     "01000110010110110001000000100101101000001"
                     "01011100101011001110101100000001100011001"
@@ -457,7 +492,50 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00010010010011001011011010000110001000101"
                     "10001000001010100110100000001001001110000"
                 },
-        /*  2*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 0, 1, "ISO/IEC 24778:2008 Figure G.2; BWIPP defaults to full (see following)",
+        /*  3*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "Aztec Code is a public domain 2D matrix barcode symbology of nominally square symbols built on a square grid with a distinctive square bullseye pattern at their center.", -1, 0, 41, 41, 0, 1, "See above",
+                    "00001100110010010010111000010100001011000"
+                    "01000110010110110001000000100101101000001"
+                    "01011100101011001110101100000001100011001"
+                    "11100000010100001000010010010100110001010"
+                    "10101010101010101010101010101010101010101"
+                    "00110101011100000001000100011001101100010"
+                    "11001000100011110101100010110100011011010"
+                    "01000101001101011011011111101100000101011"
+                    "11011010111101111111101010001101111011100"
+                    "01000101001000110011010101001101110100111"
+                    "01011101100011100001100000101010111011001"
+                    "00100101100111100101001111011011011100101"
+                    "11101000000100001111101011010101101010101"
+                    "00000100011101100101000001011110110000000"
+                    "01001101010001111111111111110101101011100"
+                    "00110000000010100000000000110100010000111"
+                    "00001011011111101111111110100110000011110"
+                    "00000111010010101000000010110011101100000"
+                    "11001001010101101011111010111111100010111"
+                    "11110001000101101010001010100111001100011"
+                    "10101010101010101010101010101010101010101"
+                    "00100100010000101010001010100101100000000"
+                    "00001100111110101011111010111001111010000"
+                    "10010101000010101000000010110110111001010"
+                    "01011101011011101111111110110000110011110"
+                    "00110101011100100000000000111011010100100"
+                    "00111101000010111111111111110100011011011"
+                    "00000010101100011111001110001000111000010"
+                    "10001000010111101001100110011000001010001"
+                    "10010001111100101111011100100011110101101"
+                    "01111100000001001110100011011011110011000"
+                    "10000001000010110110010010010101111000000"
+                    "00101100010010001011111101101111111110101"
+                    "00100001101000100101010001001110010001111"
+                    "10011001111110000001110100000001010010011"
+                    "10110010000000111110011001111111100101011"
+                    "10101010101010101010101010101010101010101"
+                    "10000010011110010010000100001010001101110"
+                    "10101101110100001100111100110101001010001"
+                    "00010010010011001011011010000110001000101"
+                    "10001000001010100110100000001001001110000"
+                },
+        /*  4*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 0, 1, "ISO/IEC 24778:2008 Figure G.2; BWIPP defaults to full (see following)",
                     "000110001100000"
                     "000000110000010"
                     "101100001000101"
@@ -474,7 +552,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011000011011010"
                     "111001101100000"
                 },
-        /*  3*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 1, 1, "ISO/IEC 24778:2008 Figure G.2; specify size",
+        /*  5*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 1, 1, "ISO/IEC 24778:2008 Figure G.2; specify size",
                     "000110001100000"
                     "000000110000010"
                     "101100001000101"
@@ -491,7 +569,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011000011011010"
                     "111001101100000"
                 },
-        /*  4*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\015\012", -1, 0, 53, 53, 1, 1, "ISO/IEC 24778:2008 Figure I.1 (left) (note CRLF at end!), same",
+        /*  6*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 1, 1, "ISO/IEC 24778:2008 Figure G.2; specify size, same as above",
+                    "000110001100000"
+                    "000000110000010"
+                    "101100001000101"
+                    "011111111111100"
+                    "111100000001101"
+                    "000101111101100"
+                    "100101000101111"
+                    "001101010101001"
+                    "001101000101010"
+                    "010101111101001"
+                    "100100000001011"
+                    "100111111111101"
+                    "010001100010010"
+                    "011000011011010"
+                    "111001101100000"
+                },
+        /*  7*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\015\012", -1, 0, 53, 53, 1, 1, "ISO/IEC 24778:2008 Figure I.1 (left) (note CRLF at end!), same",
                     "00010101011010101010101010110101010101010110101010101"
                     "00101010100101010101010101001010101010101001010101010"
                     "11100101011010101010101010110101010101010110101010110"
@@ -546,7 +641,62 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01010101010010101010101010010101010101010100101010110"
                     "10101010101101010101010101101010101010101011010101001"
                 },
-        /*  5*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333\015\012", -1, 0, 53, 53, 1, 1, "ISO/IEC 24778:2008 Figure I.1 (right) (CRLF at end), same",
+        /*  8*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\015\012", -1, 0, 53, 53, 1, 1, "ISO/IEC 24778:2008 Figure I.1 (left) (note CRLF at end!), same, see above",
+                    "00010101011010101010101010110101010101010110101010101"
+                    "00101010100101010101010101001010101010101001010101010"
+                    "11100101011010101010101010110101010101010110101010110"
+                    "11011010100101010101010101001010101010101001010101001"
+                    "00101001011010101010101010110101010101010110101011010"
+                    "01010110100101010101010101001010101010101001010100101"
+                    "10101010011010101010101010110101010101010110101101010"
+                    "01010101100101010101010101001010101010101001010010101"
+                    "10101010101010101010101010110101010101010110110101010"
+                    "01010101010101010101010101001010101010101001001010101"
+                    "10101010101010101010101010101010101010101010101010101"
+                    "10101010100101010100000010000100011110011001010101010"
+                    "01010101011010010011110110111000110101111010101010101"
+                    "10101010100100011100001111011001101011001101010101010"
+                    "01010101011011001111111011100110111001001010101010101"
+                    "10101010100101001000001100001111011001011101010101010"
+                    "01010101011001100000011100110001110001100010101010101"
+                    "10101010100001100100101000011101101100111001010101010"
+                    "01010101011001000110001101100101011101111110101010101"
+                    "10101010100101001101101000000010011100011001010101010"
+                    "01010101011111010101111111111111110111010110101010101"
+                    "10101010100110110101100000000000111000100001010101010"
+                    "01010101011110111010101111111110101101000110101010101"
+                    "10101010100010011000101000000010100100000101010101010"
+                    "01010101011111010010101011111010101011110010101010101"
+                    "10101010100000010001101010001010101011010001010101010"
+                    "10101010101010101010101010101010101010101010101010101"
+                    "01010101010101000111101010001010111100101100101010101"
+                    "10101010101111111001101011111010111101000011010101010"
+                    "01010101010110010001101000000010111100111100101010101"
+                    "10101010101011010100101111111110101010010011010101010"
+                    "01010101010000101110100000000000101111001000101010101"
+                    "10101010101001000000111111111111111110110111010101010"
+                    "01010101010101101100010110000110000111110100101010101"
+                    "10101010101101110101011101100001010010100111010101010"
+                    "01010101010000111001101101011011011010111000101010101"
+                    "10101010101001011011011100100001001001001011010101010"
+                    "01010101010001110110101010000110111100000000101010101"
+                    "10101010101000001110110100101011000011001111010101010"
+                    "01010101010001110010110111010101111111101100101010101"
+                    "10101010101100100010010111110110111100001111010101010"
+                    "01010101010000011101010001000010011111011100101010101"
+                    "10101010101010101010101010101010101010101010101010101"
+                    "10101010010010101010101010010101010101010101010101010"
+                    "01010101101101010101010101101010101010101010101010101"
+                    "10101001010010101010101010010101010101010100110101010"
+                    "01010110101101010101010101101010101010101011001010101"
+                    "10100101010010101010101010010101010101010100101101010"
+                    "01011010101101010101010101101010101010101011010010101"
+                    "10010101010010101010101010010101010101010100101011010"
+                    "01101010101101010101010101101010101010101011010100101"
+                    "01010101010010101010101010010101010101010100101010110"
+                    "10101010101101010101010101101010101010101011010101001"
+                },
+        /*  9*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333\015\012", -1, 0, 53, 53, 1, 1, "ISO/IEC 24778:2008 Figure I.1 (right) (CRLF at end), same",
                     "00111111111111111111111111111111111111111111111111111"
                     "00000000000000000000000000000000000000000000000000000"
                     "11101111111111111111111111111111111111111111111111101"
@@ -601,7 +751,62 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00000000000000000000000000000000000000000000000000001"
                     "11111111111111111111111111111111111111111111111111101"
                 },
-        /*  6*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]03453120000011[17]120508[10]ABCD1234[410]9501101020917", -1, 0, 23, 23, 1, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+        /* 10*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333\015\012", -1, 0, 53, 53, 1, 1, "ISO/IEC 24778:2008 Figure I.1 (right) (CRLF at end), same, see above",
+                    "00111111111111111111111111111111111111111111111111111"
+                    "00000000000000000000000000000000000000000000000000000"
+                    "11101111111111111111111111111111111111111111111111101"
+                    "11100000000000000000000000000000000000000000000000001"
+                    "00101011111111111111111111111111111111111111111110101"
+                    "10101000000000000000000000000000000000000000000000101"
+                    "10101010111111111111111111111111111111111111111010101"
+                    "10101010000000000000000000000000000000000000000010101"
+                    "10101010101111111111111111111111111111111111101010101"
+                    "10101010100000000000000000000000000000000000001010101"
+                    "10101010101010101010101010101010101010101010101010101"
+                    "10101010100100101111110001000100101100100000101010101"
+                    "10101010101101111101110010111000101000111010101010101"
+                    "10101010100101100101101111010110010110001000101010101"
+                    "10101010101101110110011100100101011101001110101010101"
+                    "10101010100100101010001101001001101000011100101010101"
+                    "10101010101000101001010110111111111000100110101010101"
+                    "10101010100000101001101101000111100001001100101010101"
+                    "10101010101001011101100000110001101011000010101010101"
+                    "10101010100100000111101000000010010100011100101010101"
+                    "10101010101111001011111111111111111011111110101010101"
+                    "10101010100110110111100000000000111101001100101010101"
+                    "10101010101111001010101111111110100000100110101010101"
+                    "10101010100001001000101000000010101010000000101010101"
+                    "10101010101100110010101011111010100101111110101010101"
+                    "10101010100010111111101010001010100001100000101010101"
+                    "10101010101010101010101010101010101010101010101010101"
+                    "10101010100111000101101010001010111101001100101010101"
+                    "10101010101001000011101011111010110001011010101010101"
+                    "10101010100111011011101000000010111000000100101010101"
+                    "10101010101011100110101111111110100100011110101010101"
+                    "10101010100001010110100000000000100011100100101010101"
+                    "10101010101110101100111111111111110011110010101010101"
+                    "10101010100100000010010110000110000110001100101010101"
+                    "10101010101110101100110100111110100111001110101010101"
+                    "10101010100100011000111110000001100011101000101010101"
+                    "10101010101010100111001011111011100101111110101010101"
+                    "10101010100011101001111001000100101000111100101010101"
+                    "10101010101101100101110101110101101010110010101010101"
+                    "10101010100101000101110100010000011101011100101010101"
+                    "10101010101000110100111011110110000101000010101010101"
+                    "10101010100101010001100000001011100001110000101010101"
+                    "10101010101010101010101010101010101010101010101010101"
+                    "10101010000000000000000000000000000000000000101010101"
+                    "10101010111111111111111111111111111111111110101010101"
+                    "10101000000000000000000000000000000000000000001010101"
+                    "10101011111111111111111111111111111111111111101010101"
+                    "10100000000000000000000000000000000000000000000010101"
+                    "10101111111111111111111111111111111111111111111010101"
+                    "10000000000000000000000000000000000000000000000000101"
+                    "10111111111111111111111111111111111111111111111110101"
+                    "00000000000000000000000000000000000000000000000000001"
+                    "11111111111111111111111111111111111111111111111111101"
+                },
+        /* 11*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "[01]03453120000011[17]120508[10]ABCD1234[410]9501101020917", -1, 0, 23, 23, 1, 1, "#189 Follow embedded FLG(n) with FLG(0)",
                     "00100000101111000100100"
                     "00011101100110001010000"
                     "00000111000111101011011"
@@ -626,7 +831,32 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00010001010101010101011"
                     "11101100000000000010110"
                 },
-        /*  7*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]95012345678903[3103]000123", -1, 0, 19, 19, 1, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+        /* 12*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "[01]03453120000011[17]120508[10]ABCD1234[410]9501101020917", -1, 0, 23, 23, 1, 1, "Same as above",
+                    "00100000101111000100100"
+                    "00011101100110001010000"
+                    "00000111000111101011011"
+                    "01000001010100001100010"
+                    "00001001100110000111110"
+                    "00011011111000110101101"
+                    "00001011100111101111110"
+                    "11000111111111111010000"
+                    "11001101000000010111110"
+                    "00111011011111010111110"
+                    "01000001010001011110010"
+                    "00011001010101011111101"
+                    "01101111010001011110011"
+                    "10011001011111011011100"
+                    "01011011000000010010110"
+                    "00011101111111111001100"
+                    "10101100110111100001101"
+                    "10110101111100111010001"
+                    "11101001010000011001110"
+                    "00101010101010001111001"
+                    "11000101000100100000100"
+                    "00010001010101010101011"
+                    "11101100000000000010110"
+                },
+        /* 13*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "[01]95012345678903[3103]000123", -1, 0, 19, 19, 1, 1, "#189 Follow embedded FLG(n) with FLG(0)",
                     "0000000100001010101"
                     "0001101111011000000"
                     "0111100100010110100"
@@ -647,7 +877,71 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000110111011000101"
                     "1010100000101101001"
                 },
-        /*  8*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]04610044273252[21]LRFX)k<C7ApWJ[91]003A[92]K8rNAqdvjmdxsmCVuj3FhaoNzQuq7Uff0sHXfz1TT/doiMaGQqNF+VPwMvwVbm1fxjzuDt6jxLCcc8o/tqbEDA==", -1, 0, 45, 45, 1, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+        /* 14*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "[01]95012345678903[3103]000123", -1, 0, 19, 19, 1, 1, "Same as above",
+                    "0000000100001010101"
+                    "0001101111011000000"
+                    "0111100100010110100"
+                    "0011000110100100110"
+                    "0010110101010010110"
+                    "0101111111111110101"
+                    "0011110000000101000"
+                    "0101010111110100011"
+                    "1101110100010110100"
+                    "1000010101010111010"
+                    "0011110100010100110"
+                    "1000110111110111110"
+                    "0010110000000101010"
+                    "1111011111111111101"
+                    "1001001111001000100"
+                    "1111111110110100011"
+                    "0111000111101011001"
+                    "1000110111011000101"
+                    "1010100000101101001"
+                },
+        /* 15*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "[01]04610044273252[21]LRFX)k<C7ApWJ[91]003A[92]K8rNAqdvjmdxsmCVuj3FhaoNzQuq7Uff0sHXfz1TT/doiMaGQqNF+VPwMvwVbm1fxjzuDt6jxLCcc8o/tqbEDA==", -1, 0, 41, 41, 1, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+                    "00111001111110111011100000000101111010001"
+                    "00110010101000101100011010000000110001010"
+                    "00101011111100100010101010001010101011010"
+                    "01000011101100011000011011001001010100101"
+                    "10101010101010101010101010101010101010101"
+                    "00110010101111100011010010110011111001010"
+                    "00111110111010111101110011111011010111010"
+                    "00110110010100111111011000101000010001010"
+                    "11101011000111100101101101100100001111000"
+                    "11000011100000011011010111100110101001100"
+                    "00001010110011011110110101011000001011000"
+                    "01100100101111110010001001100001000101100"
+                    "00101101111010001111111011101010011110000"
+                    "01010101111011100101000001011000000000001"
+                    "10001001001101111111111111110110010110111"
+                    "01010001000000100000000000111010011100111"
+                    "00011100010110101111111110111011001111110"
+                    "11100100000010101000000010101001010101110"
+                    "01111011110000101011111010101010100110100"
+                    "00100110111110101010001010111100001100001"
+                    "10101010101010101010101010101010101010101"
+                    "00100001011001101010001010111010110001010"
+                    "01111000110100101011111010110011100111100"
+                    "10010101010010101000000010101100111100101"
+                    "01111111000001101111111110111000110010111"
+                    "00000001011100100000000000110110110100001"
+                    "01011000111100111111111111111101001011000"
+                    "00010011111110011000000000000000000100100"
+                    "11111011001000111101111010111101101111101"
+                    "00000010001010011001010001111000011001101"
+                    "11111110101011010111101011000011100010111"
+                    "00010000010000010111000010111110101101101"
+                    "10001011010011001100110100000000101111110"
+                    "01010111000010101010010110100001010101001"
+                    "00111000100001010001111010110110010010010"
+                    "10010001110101100110001111011010000001100"
+                    "10101010101010101010101010101010101010101"
+                    "10100001100111011110011100111010000001001"
+                    "10101010101110100111100110111000101110000"
+                    "00100000011101101011010111010110011100101"
+                    "10111101001101010101110111011000110011011"
+                },
+        /* 16*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "[01]04610044273252[21]LRFX)k<C7ApWJ[91]003A[92]K8rNAqdvjmdxsmCVuj3FhaoNzQuq7Uff0sHXfz1TT/doiMaGQqNF+VPwMvwVbm1fxjzuDt6jxLCcc8o/tqbEDA==", -1, 0, 45, 45, 1, 1, "Same as above",
                     "000000101110011010101010010110011000001010111"
                     "000110001111011100111101101110110000000000011"
                     "001000101100101011000011111111101110111010101"
@@ -694,7 +988,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000011010110101110000101110100000111000011010"
                     "101001110101010110100011010010001111001101101"
                 },
-        /*  9*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "H123ABC01234567890", -1, 0, 19, 19, 1, 1, "ANSI/HIBC 2.6 - 2016 Figure C1",
+        /* 17*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "H123ABC01234567890", -1, 0, 19, 19, 1, 1, "ANSI/HIBC 2.6 - 2016 Figure C1",
                     "0010111011010110001"
                     "0011011111011111101"
                     "0101100111010110010"
@@ -715,7 +1009,28 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000010101101010001"
                     "1001001001100001100"
                 },
-        /* 10*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "/ACMRN123456/V200912190833", -1, 0, 19, 19, 1, 1, "HIBC/PAS Section 2.2 Patient Id, same",
+        /* 18*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "H123ABC01234567890", -1, 0, 19, 19, 1, 1, "Same as above",
+                    "0010111011010110001"
+                    "0011011111011111101"
+                    "0101100111010110010"
+                    "1001010011110110110"
+                    "0011110101001010101"
+                    "0011111111111110110"
+                    "1010110000000101110"
+                    "0110110111110110110"
+                    "1111010100010100111"
+                    "1110010101010100000"
+                    "0010110100010110110"
+                    "0101110111110100000"
+                    "1000010000000101011"
+                    "1000011111111111011"
+                    "0000000000010001000"
+                    "1010100000110101111"
+                    "1111100111101000001"
+                    "1000010101101010001"
+                    "1001001001100001100"
+                },
+        /* 19*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "/ACMRN123456/V200912190833", -1, 0, 19, 19, 1, 1, "HIBC/PAS Section 2.2 Patient Id, same",
                     "0001110111000101110"
                     "0010000101001101000"
                     "0101011111101000101"
@@ -736,7 +1051,53 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0010110100110111011"
                     "1101111110100000110"
                 },
-        /* 11*/ { BARCODE_AZTEC, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 23, 23, 0, 1, "HIBC/PAS Section 2.2 Patient Id Macro **NOT SAME** different encodation, Zint 1 codeword longer; BWIPP same as figure",
+        /* 20*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "/ACMRN123456/V200912190833", -1, 0, 19, 19, 1, 1, "Same as above",
+                    "0001110111000101110"
+                    "0010000101001101000"
+                    "0101011111101000101"
+                    "1001011010110011000"
+                    "0001110101100010100"
+                    "0001111111111110010"
+                    "0010110000000100011"
+                    "0011010111110110010"
+                    "1011010100010101011"
+                    "1001110101010110011"
+                    "0011010100010111110"
+                    "0010010111110110001"
+                    "1011110000000111101"
+                    "0010011111111110000"
+                    "1010000100111001100"
+                    "0000000111110111100"
+                    "1111010101111100001"
+                    "0010110100110111011"
+                    "1101111110100000110"
+                },
+        /* 21*/ { BARCODE_AZTEC, ESCAPE_MODE, -1, -1, -1, 3, -1, { 0, 0, "" }, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 23, 23, 1, 1, "HIBC/PAS Section 2.2 Patient Id Macro, same",
+                    "11000001111110000001101"
+                    "11110100010110110001101"
+                    "10011001100011001111001"
+                    "10100010111011011100001"
+                    "01010010110101110000100"
+                    "01100010101111110101101"
+                    "01100111100111001101001"
+                    "10001111111111111011010"
+                    "11010101000000010111100"
+                    "00111101011111010000101"
+                    "10010101010001010110011"
+                    "10100001010101011001011"
+                    "01011111010001010000111"
+                    "00010101011111010100110"
+                    "11011101000000010101111"
+                    "11000101111111111101000"
+                    "10101000110001100000110"
+                    "00100111000001011001011"
+                    "01101100001101100010010"
+                    "11011111101011111111100"
+                    "10110101010000111010010"
+                    "01000110011100010011000"
+                    "01000101001001110111010"
+                },
+        /* 22*/ { BARCODE_AZTEC, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 23, 23, 0, 1, "HIBC/PAS Section 2.2 Patient Id Macro **NOT SAME** different encodation, Zint 1 codeword longer; BWIPP same as figure",
                     "11010110110000110111011"
                     "10111111001000110100000"
                     "11000001011011010011010"
@@ -761,7 +1122,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11110110111110011000100"
                     "10110000010101011110010"
                 },
-        /* 12*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, 3, -1, { 0, 0, "" }, "/EO523201", -1, 0, 19, 19, 1, 1, "HIBC/PAS Section 2.2 Purchase Order, same",
+        /* 23*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, 3, -1, -1, { 0, 0, "" }, "/EO523201", -1, 0, 19, 19, 1, 1, "HIBC/PAS Section 2.2 Purchase Order, same",
                     "0011100011001101111"
                     "0010011001010110110"
                     "0110100100101000000"
@@ -782,7 +1143,28 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0111011100001111101"
                     "1010000000101001001"
                 },
-        /* 13*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "/KN12345", -1, 0, 19, 19, 1, 1, "HIBC/PAS Section 2.2 Asset Tag, same",
+        /* 24*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, 3, -1, -1, { 0, 0, "" }, "/EO523201", -1, 0, 19, 19, 1, 1, "Same as above",
+                    "0011100011001101111"
+                    "0010011001010110110"
+                    "0110100100101000000"
+                    "1001111000110011001"
+                    "0011110100101011001"
+                    "0001111111111110101"
+                    "0001010000000100100"
+                    "0001010111110101000"
+                    "1000010100010100011"
+                    "1001010101010111001"
+                    "0000010100010110100"
+                    "0111010111110111101"
+                    "1000110000000101001"
+                    "1001011111111111010"
+                    "0010000000111001101"
+                    "0110010000010110011"
+                    "1110001000101101001"
+                    "0111011100001111101"
+                    "1010000000101001001"
+                },
+        /* 25*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "/KN12345", -1, 0, 19, 19, 1, 1, "HIBC/PAS Section 2.2 Asset Tag, same",
                     "0011111101100100110"
                     "0010011100111110101"
                     "0111110010101101110"
@@ -803,7 +1185,28 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0010000010110001111"
                     "1001101110111100011"
                 },
-        /* 14*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "A123ABCDEFGHI1234567891/$$420020216LOT123456789012345/SXYZ456789012345678/16D20130202", -1, 0, 27, 27, 1, 1, "IDAutomation example, same",
+        /* 26*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "/KN12345", -1, 0, 19, 19, 1, 1, "Same as above",
+                    "0011111101100100110"
+                    "0010011100111110101"
+                    "0111110010101101110"
+                    "1000010111011000001"
+                    "0001110100101010001"
+                    "0010111111111110110"
+                    "0001110000000111110"
+                    "0000010111110110011"
+                    "1010010100010100000"
+                    "1011010101010100101"
+                    "0010010100010100100"
+                    "1101110111110110110"
+                    "0011110000000110110"
+                    "0100011111111110100"
+                    "1110000011111000011"
+                    "1100001111010010010"
+                    "1100001101001110001"
+                    "0010000010110001111"
+                    "1001101110111100011"
+                },
+        /* 27*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "A123ABCDEFGHI1234567891/$$420020216LOT123456789012345/SXYZ456789012345678/16D20130202", -1, 0, 27, 27, 1, 1, "IDAutomation example, same",
                     "001010100100100010000010110"
                     "000110110110001000101000100"
                     "010010001101110110001000110"
@@ -832,7 +1235,36 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011010111000111110011011110"
                     "000010010001000011010000001"
                 },
-        /* 15*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, { 0, 0, "" }, "\377\000\000\377\300\000\017\377\376\217\300\017", 12, 0, 19, 19, 1, 899, "6 bit words",
+        /* 28*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "A123ABCDEFGHI1234567891/$$420020216LOT123456789012345/SXYZ456789012345678/16D20130202", -1, 0, 27, 27, 1, 1, "Same as above",
+                    "001010100100100010000010110"
+                    "000110110110001000101000100"
+                    "010010001101110110001000110"
+                    "000110101101000001010111100"
+                    "000101110011011000111100000"
+                    "000100110000110111011011010"
+                    "011100000100000111111000001"
+                    "011101111110011100111011100"
+                    "110001001111110110101101100"
+                    "100100001111111111100110000"
+                    "001000101100000001011001101"
+                    "111011010101111101111010001"
+                    "010010101101000101001101100"
+                    "001000110101010101010011100"
+                    "011011001101000101010011111"
+                    "011111010101111101000100100"
+                    "110000011100000001001111011"
+                    "101110110111111111111001001"
+                    "001110110000000110000001101"
+                    "010010001010001000001011001"
+                    "000100111010110100000100110"
+                    "000010100010001000000111001"
+                    "111100011100100010001100100"
+                    "001110101000001010011010101"
+                    "100001000110111011000010111"
+                    "011010111000111110011011110"
+                    "000010010001000011010000001"
+                },
+        /* 29*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\377\000\000\377\300\000\017\377\376\217\300\017", 12, 0, 19, 19, 1, 899, "6 bit words",
                     "1101000001111000001"
                     "1101011000011100000"
                     "1000001010001001001"
@@ -853,7 +1285,28 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011110000001001011"
                     "0011111100000000010"
                 },
-        /* 16*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 3, { 0, 0, "" }, "\377\377\377\377\377\000\000\000\000\377\377\377\000\000\377\377\377\377\000\000\000\000\000", 23, 0, 23, 23, 1, 899, "8 bit words",
+        /* 30*/ { BARCODE_AZTEC, DATA_MODE | FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\377\000\000\377\300\000\017\377\376\217\300\017", 12, 0, 19, 19, 1, 899, "Same as above",
+                    "1101000001111000001"
+                    "1101011000011100000"
+                    "1000001010001001001"
+                    "0110011100001000011"
+                    "1001110101001011011"
+                    "0111111111111110100"
+                    "1111010000000110101"
+                    "1110110111110100001"
+                    "1010010100010101001"
+                    "1110010101010111111"
+                    "0001110100010101011"
+                    "0000010111110101101"
+                    "0011010000000110011"
+                    "0011011111111110011"
+                    "0110000011010001001"
+                    "0010101001100111111"
+                    "0001000100011100011"
+                    "1011110000001001011"
+                    "0011111100000000010"
+                },
+        /* 31*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 3, -1, { 0, 0, "" }, "\377\377\377\377\377\000\000\000\000\377\377\377\000\000\377\377\377\377\000\000\000\000\000", 23, 0, 23, 23, 1, 899, "8 bit words",
                     "11111111111111111100000"
                     "11011101110111011110001"
                     "11110110111011010101100"
@@ -878,7 +1331,32 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11011100001000100010010"
                     "11111110000000000000000"
                 },
-        /* 17*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 13, { 0, 0, "" }, "\000\000\000\377\377\000\000\000\000\377\377\377\377\000\377\377\377\377\000\000\377\000\000", 23, 0, 53, 53, 1, 899, "10 bit words",
+        /* 32*/ { BARCODE_AZTEC, DATA_MODE | FAST_MODE, -1, -1, -1, 3, -1, { 0, 0, "" }, "\377\377\377\377\377\000\000\000\000\377\377\377\000\000\377\377\377\377\000\000\000\000\000", 23, 0, 23, 23, 1, 899, "Same as above",
+                    "11111111111111111100000"
+                    "11011101110111011110001"
+                    "11110110111011010101100"
+                    "01111000111100011111100"
+                    "11000101111110011010100"
+                    "11001111001011001100000"
+                    "11000111100110101001011"
+                    "10001111111111111100111"
+                    "11000111000000011111011"
+                    "11010111011111010001101"
+                    "11000011010001011010111"
+                    "10000101010101011000011"
+                    "11001011010001010001011"
+                    "11011011011111011101001"
+                    "11001111000000011010011"
+                    "10001001111111111111011"
+                    "11001100000000000000111"
+                    "11011011001100000010011"
+                    "11000011001011110101011"
+                    "10001000111111011110000"
+                    "11000000001110101011000"
+                    "11011100001000100010010"
+                    "11111110000000000000000"
+                },
+        /* 33*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 13, -1, { 0, 0, "" }, "\000\000\000\377\377\000\000\000\000\377\377\377\377\000\377\377\377\377\000\000\377\000\000", 23, 0, 53, 53, 1, 899, "10 bit words",
                     "00011010011110010011110101110010000000111111010101001"
                     "00000010100101010010001000010100000010101101001111110"
                     "11101010001110100001111100110101111010110110110001010"
@@ -933,7 +1411,62 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101111010111010000111101011101111011000000001011100"
                     "11111111111111110000111111111111111111100010000011111"
                 },
-        /* 18*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 27, { 0, 0, "" }, "\377\377\377\000\000\377\377\377\377\000\000\000\000\377\000\000\000\000\377\377\000\377\377\377\000\000\000", 27, 0, 113, 113, 1, 899, "12 bit words",
+        /* 34*/ { BARCODE_AZTEC, DATA_MODE | FAST_MODE, -1, -1, -1, 13, -1, { 0, 0, "" }, "\000\000\000\377\377\000\000\000\000\377\377\377\377\000\377\377\377\377\000\000\377\000\000", 23, 0, 53, 53, 1, 899, "Same as above",
+                    "00011010011110010011110101110010000000111111010101001"
+                    "00000010100101010010001000010100000010101101001111110"
+                    "11101010001110100001111100110101111010110110110001010"
+                    "11000010110001100001000100010011110110001001110110011"
+                    "11101001111011111001010000100101101011101010101000100"
+                    "01110000100100011010101111011100111000100001000011011"
+                    "11001000001101011010001111100001101111000011010001110"
+                    "00001110000100111010100000000110101111011101001101001"
+                    "00101001111001011001001000110011011001110011110010111"
+                    "00001110100001001111111111001011001010001101001101111"
+                    "10101010101010101010101010101010101010101010101010101"
+                    "00010011000110111100001100011010011010101101000001000"
+                    "01110111011000100011111111111111010100110010010100110"
+                    "00011101100100100001111111000100111100010101101010011"
+                    "00010100011010010011101101101001100101111110110010011"
+                    "00110110000001100111111101001111100011110101011110000"
+                    "00111110111111001011010000100001100001101010001101110"
+                    "01010011000110100110101111000100000010000000000111110"
+                    "00011001011011101101110111100010000100010011111011110"
+                    "00011010000111001001101000000000010100110001000111010"
+                    "00000100001011100111111111111111111000010010001010101"
+                    "11110000100101010111100000000000100000101101001011100"
+                    "11100011101111001100101111111110111111010110000001111"
+                    "11000000010100001101101000000010100100010000101010110"
+                    "11011000001010101011101011111010110100101011100111110"
+                    "11101111100010111000101010001010101011011001010101001"
+                    "10101010101010101010101010101010101010101010101010101"
+                    "11000100000110100000101010001010101100101000011000011"
+                    "10110100011010000110101011111010100100100111000101100"
+                    "11000001010101000101101000000010111010100100000101001"
+                    "10110111011110011110101111111110110011001110000001100"
+                    "00000111100110110001100000000000111000101101111011111"
+                    "00100101001001100110111111111111110110100111011101000"
+                    "00001100110000110010001101011000001100110001110010010"
+                    "00001010111110011011011100110001001110011110100100100"
+                    "00111111000010000111110111010111101010101101000100010"
+                    "00110100101110101000101110100101010110101111001010100"
+                    "00100100000010111111001101001100000011110001111100101"
+                    "01011111101101001110100101101000000111101110110111001"
+                    "00001111000100101010011111001100011101011100010011010"
+                    "00001011111001000011100001100001000001111011010101111"
+                    "00000101010011100101010000010010000010011001111101011"
+                    "10101010101010101010101010101010101010101010101010101"
+                    "00000011000011110011111000001000000110011100110110010"
+                    "01100110111101101010001110101001111111000111011110000"
+                    "00010110000111101110001011011110001100100100000001000"
+                    "00110110011101001010011110111110111101010110001011100"
+                    "00100010010011101001001010000101011011011101011100010"
+                    "01101001101111101010010000110100110011000111011010000"
+                    "11110001000011110111001100010011011001010001110101000"
+                    "11011000101001001101101111100111101001010110111011100"
+                    "11101111010111010000111101011101111011000000001011100"
+                    "11111111111111110000111111111111111111100010000011111"
+                },
+        /* 35*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 27, -1, { 0, 0, "" }, "\377\377\377\000\000\377\377\377\377\000\000\000\000\377\000\000\000\000\377\377\000\377\377\377\000\000\000", 27, 0, 113, 113, 1, 899, "12 bit words",
                     "11111010101001000010110010110110001010111011100001100010111010111011011110010101111001111110001101011111100000011"
                     "11111001010001010111110100101000101000010110010011001000011010011001111000010101011110010001110101100110011001100"
                     "11101100111000011000000011000001001001111001111110000001110100001110010010001100100011101110000011010101101011011"
@@ -1048,7 +1581,122 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000000001000001011101101101101101001100000101000000000010111000000100101000110010000110010000011000101011111000"
                     "11100000100000001110111110110000111110011100000010001110101010101111000011001011111001101101010010001011111011101"
                 },
-        /* 19*/ { BARCODE_AZTEC, UNICODE_MODE, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "",
+        /* 36*/ { BARCODE_AZTEC, DATA_MODE | FAST_MODE, -1, -1, -1, 27, -1, { 0, 0, "" }, "\377\377\377\000\000\377\377\377\377\000\000\000\000\377\000\000\000\000\377\377\000\377\377\377\000\000\000", 27, 0, 113, 113, 1, 899, "Same as above",
+                    "11111010101001000010110010110110001010111011100001100010111010111011011110010101111001111110001101011111100000011"
+                    "11111001010001010111110100101000101000010110010011001000011010011001111000010101011110010001110101100110011001100"
+                    "11101100111000011000000011000001001001111001111110000001110100001110010010001100100011101110000011010101101011011"
+                    "10110010001100011001110101101111111010100000010000011010011100111110010000000111011110010111110001010010000011001"
+                    "11101111110100000110110011100000101100011010001010011100110001010111001110011001100010101101000101001000110110110"
+                    "11000001000111110000011001001100110001010000000001010111000100101100100000011011001001000111011001101101001111101"
+                    "11011101101011110011011110111101101101001100010010101010100001111111100110011101010100011100110111111101101100000"
+                    "11011110000101110011110000101111100111100101011010100010011000011100010001111000100110100101011011001101011001101"
+                    "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "11101110000011011000110000100100010110100010110101111111000011111011010101010011000101000110111111111011001101111"
+                    "11010011100011001101011011110000010100011001100100111111111110001010111110000000001111001110000001111011110100101"
+                    "11110101011101110000011001000111000101000011000110111011000110110011100100000111101100000011000100001010011111001"
+                    "10111001111000101000101111110101001000001000001100011100111001011010001110110000101011001001111001100011101001010"
+                    "11101000001010100010000000100110101011010100010000110101010111111011000101110100001101110110010101010101011010000"
+                    "11101110101000010010010111101100100110111000111001011010110110010001111010010011011100001001011101110010110111111"
+                    "11101110001111110110010000110111101100010000111100110111000110111101101001111001101010010100011010001001001110001"
+                    "11111000100110000011010110111010101001001011001101111000110110001011000110100000100100001111000000000100101010001"
+                    "11001110001110100010000001100110100001100010001110001011000100111100111101100000011101000001010110101111010011001"
+                    "10100001101001100010010010110010111001101000010101110110111010000111100110000001110111111000110001000110100100101"
+                    "00111101011000111111010101011111111011000000001110101111011101110111100100011111001100110000110000011001010001100"
+                    "00000011111100000101111110100000010010101000000011011011111110011000100010011000010100011001010101001000101100001"
+                    "00000010011110111000110101001101011101010011011111011111010110100000111000100001110010110001110111110101001100011"
+                    "00100101101010111011111011011011100110011100100111100111101011010011100010100110101011001111111010100111111011111"
+                    "00100001011101110100100001001101011101010111100001000100001000110111111100010011110001010000100001110001000001111"
+                    "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "01101111010111101011110101110001010000100011000111100011010110111101011101000001001011110111110101100000001010101"
+                    "00011110100001100110001010110011001011011110110110110000101100100110100110001111111011111111010100111000101101111"
+                    "00001100001111101101101000011101111101100100001011000001001000010111101100100011101101110001010010111001001111111"
+                    "01001010110111011110001110101011101100111110100101100000101001111101010011001111110101011110101011100001100010001"
+                    "11111110010100000110111001001010100011010100110101011101001000111010100100010011011111000100001100000000001100100"
+                    "11101010100001010011100010010010100010001000001000110000110110000100011110001101001101111111110011001010101101110"
+                    "11010001000111100010100000111000011111000110011101100001001011010110111001101011111100000000000001010011010111010"
+                    "11001011110110001001101111000111101010011100001011011001101010000000110111111011100011111010100100001110100001001"
+                    "11110111010110000000011100111110101000110110101110001000011011111010001001111000110010110011110110010110001100101"
+                    "11011000101011000111010111110110101000001010001011111000101010110010110011000100100101001100010110100001111111110"
+                    "11001100010000000000101100001110011101100111100110101110000100101010111000100001001000000001011111100100011111011"
+                    "11001000101100010101000010000100110001001101101110100100100111110111011011010111100011101011001001100001110010110"
+                    "10000100001000101100011001011111100110010111111111011011000011011110001100001000101110100100001010010000000001110"
+                    "11001001100000100110010111011101111010111011110011100110110011110110111011011101000001111001100111111100110110010"
+                    "11110100010011101010111101111011100100010001110000100010010100011110001101101100000110100110001010001100000110110"
+                    "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "11101010011001111101000001000100111100010111100110100011011111100010100100100100101000000000011110011010011111100"
+                    "11011000110000000101010110110011111000111110100100000011100111011010110111101010110000001011111100010110111101101"
+                    "11100100001010010001100001001100000011100000110001000110011110100000001101000000101000000000111111011111001011111"
+                    "10110100101101001001110110110000100011111101000011110010101110001111001010010110100100001001111111101000111111111"
+                    "11110111000000010110101000100110010010110011111011100001001001101110111101001101111001100101111010110110010010110"
+                    "10101010111100101100111010010101101111001101011101100110101000101011110011001001011001011010000111100110110001100"
+                    "00011000010111101000001001100001101110000101000100001100011010111000100100011111001101110010101010100011011000000"
+                    "00000001111010100010111111010011001010011100111010010001110001111100000111000100011011101000011111000011101011111"
+                    "00101011000110101001011000111011011001010100111101110110000000010011101100100011101001110111001101011110000000011"
+                    "00010000101001010000110011111001001110111111011011111111111111110010110110011111010101101110111011111001111001100"
+                    "00000011011110011110000101111111101001000011011010100000000000100100010101010110111110100000000101100011011100101"
+                    "00010111100101101100111111000001100010011011011010101111111110110110100011001010000100111001100001101001100100010"
+                    "00001011011111110001111001100001000111000000010011101000000010100011100100001110000011000100111111010001011011001"
+                    "00110000100100110001100110101011100110111011100001101011111010101111100110111011010000111011011001001110110100001"
+                    "00011001010000110100101000001000011000110011111011101010001010111010101001111011110010000111010001110101011110010"
+                    "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "01100111001110010110110100001110110000000110011110101010001010110000011001000001000101100010011011100101000111001"
+                    "00101001100010010001111010100101101110111011101000101011111010100001011110110000010010101100110011011010111001101"
+                    "00000100001011011100011101111011101110110010010100101000000010111010010100110110101110110000100010101100001011011"
+                    "00110010111110000001110111010110010101101101000000101111111110111000110111100000001111001011010001000110101010110"
+                    "00100101010110001001011100111010111001110110111111100000000000110010011000111011101110000010100011011001000001001"
+                    "00000000111101111101111110111000101000011111000100111111111111110100010011100110010001101011001100111011110101110"
+                    "01011111001111001111101001100010110011000001010110011110010001000110101001101111110100000000111100001101010010000"
+                    "01110001111101111010111011100110010011101111011111100000100101001111010111111101100111001100101001111000100011011"
+                    "11101100000100010100011100001011011101010101101101001010000101001111100101101100001100110101001010100000010000011"
+                    "11001111110100111000110111111000110001001111110000010111101010000000010011100111010011111000101111100000101111101"
+                    "11111011011110101010100101110100001011110000000000010001011011001111000101010000001100000111100001100110001100101"
+                    "10001111111110011011110011111110001110011000010011101000101000011100111010000101111110001110011110001101100001101"
+                    "00001100001010000010100001011101011100110010110010001000010010011101011001110011011001110001100111101110001001001"
+                    "00100110110000000101000010110101010001001110101110000010110110101111001010011011110111101011101010011000110010000"
+                    "00011111000011010010101000010001110010100110101010010101000010101111100100010010111010110000010011111100011000100"
+                    "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "00100110010000010110110100011110100001000011011000110110001011000011011101101011101010100101110110101111010010101"
+                    "00001100100010111111111011011000100110101110110010000111100110001100111110001110101100101100001011001101100100100"
+                    "00000100000110001111010000100000100011010000011111111010011011110000111000011110001000010101100001100001010010110"
+                    "01010011111111111100001010101100001010111101001111100010111110010000101010100000011100101001110011011110101011101"
+                    "00100110001010001111011101101111100000000000001101010011010111010100100000010011101011100101111001111101011100101"
+                    "00111011100011001100100011001110001011111010000101101001100110001110111010111110000101111100011110010110101110100"
+                    "00011000001101000110001001000010010101010111011101100101010000000101100000010001111001010101100101100011001000110"
+                    "00101001111001011010110111010101001010101111111011010111100111001100010010010001101010111000100111000110111101110"
+                    "00001000011101110110110101111110100010100100011110000111010100000100010100101111010101110101001111000101001110010"
+                    "01010111110111001101011110101101001110001011010011011111100000100011101010101110111101001111110001100010111001011"
+                    "00000111000100111011101101010100001100100110010110010010011000111000010000011100000110100010000100001011011011010"
+                    "00001101101110011111110010000111100110111100101011011110111111010101111111000000111110011011110000010111101100000"
+                    "00010010001110011111110101110000001100010001111001101111000000101000000001010001100111100001101100010010010111110"
+                    "01110011101110110110110011011101110100001010010110100110110011101011100011001111011110111110101111011101110010001"
+                    "11111010000100110111101100110110111010110011110111110010000010011000011101111101001101100100111000110001011110001"
+                    "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "11010010010101011110111001111011101100010101010111000000011011011111101100010000000100000011100111000011010101101"
+                    "11001111111111001010101010000001010001011100101100110110100110111010101011101111100100011011100110110101101010011"
+                    "11110011000011100100010001101001000101000010111111010101001110110000010000000001000101010101100111010110011101100"
+                    "11100101100001000110100111011001011000001100010001100110101111110110101111100101010001001100110011010101101001110"
+                    "11111001000100001001110100011001001110010011001100000000011111000110010000010100001011010010100010111111000100001"
+                    "11001100111001110001010011110110011110101010100001111011111010111011011011010010110010101000001111000100111100110"
+                    "10010100001100111111100101101000111001110111010011011110000000110111001101100010110110100001111011001011011000100"
+                    "00111010100010111011001111110001000000101010011111111111100000100101110110101010011101111010110100100001100001100"
+                    "00110001010001110111011100011011110111110110100010000100011011110100000000100000101000000010010100011101010100100"
+                    "00101000100110010001111010000110100101011000011111101110110000100111100011000110000010011011111100100010110011000"
+                    "00000101001010101000010101000110010110110101000100100110011010100101110000110100100111010100111100100100011110111"
+                    "11011100101011111001110111001000101111001001101101010111101101011110110011110110001110011001001000010010110001101"
+                    "11000010011001001000100101001100111011000101100000111110011011110011100101000010101011000000110000100101011010000"
+                    "11000001111010110010111011110100100100101100111101111100111010000011110010011001111110101100101000001000100110010"
+                    "11110111000001001010010000001000101101110101001110110011011011011010010101111110000000000111001111010010011000111"
+                    "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "11000011011111001011001101010001011100100111010000101011000101111101101101000101110101110110010011100011001101100"
+                    "11001000101111010000101011101000011011001010110010101000100011110101111111000001000110001101100001001110111100101"
+                    "11101110000100001111001001001101100111000010011100011111001010100010101000011110000111000010101001100010010001111"
+                    "10000001111010110010110010001111101001111011011100110001111111001011010010100000001011001111010010101100111010111"
+                    "11110101011110010111100001100001000000010111111010101111000001100011111101110001000001000001100000100110000001011"
+                    "11101101100010110000110110001100111001001101000101110001101010000111011110000001111001011010110100011101110011100"
+                    "11000000001000001011101101101101101001100000101000000000010111000000100101000110010000110010000011000101011111000"
+                    "11100000100000001110111110110000111110011100000010001110101010101111000011001011111001101101010010001011111011101"
+                },
+        /* 37*/ { BARCODE_AZTEC, UNICODE_MODE, -1, READER_INIT, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "",
                     "000011000111101"
                     "001110010011000"
                     "011100100000100"
@@ -1065,7 +1713,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110110000101100"
                     "010001010010110"
                 },
-        /* 20*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 2, { 0, 0, "" }, "121212121abcd", -1, 0, 19, 19, 1, 1, "#210",
+        /* 38*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, READER_INIT, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "000011000111101"
+                    "001110010011000"
+                    "011100100000100"
+                    "011111111111110"
+                    "101100000001010"
+                    "110101111101100"
+                    "111101000101010"
+                    "100101010101000"
+                    "100101000101111"
+                    "100101111101101"
+                    "000100000001010"
+                    "100111111111100"
+                    "100011001110001"
+                    "110110000101100"
+                    "010001010010110"
+                },
+        /* 39*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "121212121abcd", -1, 0, 19, 19, 1, 1, "#210",
                     "1101101111001101010"
                     "1101111011110110000"
                     "0001111101100010000"
@@ -1086,7 +1751,735 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0011111001001010011"
                     "1001101000100100001"
                 },
-        /* 21*/ { BARCODE_AZTEC, DATA_MODE, 3, -1, -1, 1, { 0, 0, "" }, "\101\300", -1, 0, 15, 15, 1, 899, "AÀ",
+        /* 40*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "121212121abcd", -1, 0, 19, 19, 1, 1, "#210, same as above",
+                    "1101101111001101010"
+                    "1101111011110110000"
+                    "0001111101100010000"
+                    "0100011111001001001"
+                    "1010110100101010010"
+                    "1000111111111111101"
+                    "0001110000000111110"
+                    "0111010111110110100"
+                    "1001010100010101010"
+                    "1001010101010101100"
+                    "0010010100010101100"
+                    "0110110111110111011"
+                    "1001110000000111010"
+                    "1011011111111110010"
+                    "0011000011111001100"
+                    "0110100001100101011"
+                    "1001001010110011011"
+                    "0011111001001010011"
+                    "1001101000100100001"
+                },
+        /* 41*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "4\000:", 3, 0, 19, 19, 1, 1, "",
+                    "1111001000000011100"
+                    "1100100101110000100"
+                    "1010011010100010011"
+                    "0011110011010111101"
+                    "0100110100011011100"
+                    "1000111111111111011"
+                    "0111010000000100100"
+                    "1001010111110111101"
+                    "1001110100010111101"
+                    "0001110101010111110"
+                    "0010110100010100010"
+                    "0101110111110111111"
+                    "0011110000000111010"
+                    "0010011111111111101"
+                    "0111001011001001101"
+                    "0100001011101101010"
+                    "1111010001010110100"
+                    "1111101010111001001"
+                    "0011111000011010100"
+                },
+        /* 42*/ { BARCODE_AZTEC, DATA_MODE | FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "4\000:", 3, 0, 19, 19, 0, 1, "BWIPP: different encodation, one codeword shorter (see above)",
+                    "1100110110001101111"
+                    "1100110000100110010"
+                    "0010011101101111010"
+                    "1100010011001100011"
+                    "0100110100011010100"
+                    "1100111111111111011"
+                    "0110110000000110000"
+                    "1111010111110100101"
+                    "1101110100010110111"
+                    "0001110101010101011"
+                    "0001110100010111101"
+                    "1001010111110111101"
+                    "0001110000000101011"
+                    "0001011111111111001"
+                    "0100001000001000010"
+                    "0000001100100111000"
+                    "0000111011010110111"
+                    "1000110111011101111"
+                    "0011111000100011101"
+                },
+        /* 43*/ { BARCODE_AZTEC, ESCAPE_MODE, 899, -1, -1, 4, -1, { 0, 0, "" }, "\\xA4\\xE2\\x80\\xB8\\xEF4\\xF80O\\xE0|3\\xF2\\xD8\\xA54\\x8A\\xE2kb\\x06\\\\\\x0ADe_\\xA3\\x9C\\xCF\\xDB\\xC0\\xE4", -1, 0, 27, 27, 0, 1, "BWIPP: different encodation (1 codeword longer)",
+                    "001110010010001000001101100"
+                    "000110001011101111010010001"
+                    "001000100001000111101110010"
+                    "010110000110110001011100000"
+                    "001111010111100011001111111"
+                    "001000001101010100000000001"
+                    "111011010101111000011000110"
+                    "101011100101000001101111110"
+                    "101010101111100100100000101"
+                    "101101101111111111100000111"
+                    "111110001100000001110010011"
+                    "101001010101111101110100010"
+                    "111001011101000101001010101"
+                    "110100111101010101100001110"
+                    "110110111101000101110011000"
+                    "101111101101111101001011101"
+                    "101010111100000001010000011"
+                    "010010100111111111100111011"
+                    "010111000001110110010100100"
+                    "011001100111011110111101100"
+                    "001111001000110101100100000"
+                    "101111000110110101010110011"
+                    "011001111111000001000000011"
+                    "111111110001011010111101111"
+                    "000100111101101010111011110"
+                    "110001110111101001110010001"
+                    "000000010010110110110001000"
+                },
+        /* 44*/ { BARCODE_AZTEC, ESCAPE_MODE | FAST_MODE, 899, -1, -1, 4, -1, { 0, 0, "" }, "\\xA4\\xE2\\x80\\xB8\\xEF4\\xF80O\\xE0|3\\xF2\\xD8\\xA54\\x8A\\xE2kb\\x06\\\\\\x0ADe_\\xA3\\x9C\\xCF\\xDB\\xC0\\xE4", -1, 0, 27, 27, 0, 1, "BWIPP: different encodation, 7 codewords shorter",
+                    "001010110111011111001111101"
+                    "000001100111001101110110110"
+                    "001000110001110111010101111"
+                    "010101010001101111010110101"
+                    "000100100100101011011100011"
+                    "001101011100100011001110100"
+                    "111111011011011000000100100"
+                    "100001010111001110111010101"
+                    "101100111111101100110011011"
+                    "100101011111111111101110110"
+                    "111101001100000001111001100"
+                    "100111100101111101111101101"
+                    "111100001101000101100111111"
+                    "111101000101010101010101011"
+                    "110010010101000101011111100"
+                    "100101000101111101000100100"
+                    "000111001100000001111001110"
+                    "100001010111111111101000111"
+                    "110101000000100100011011010"
+                    "010100011110000010101110010"
+                    "000101001010011011011000100"
+                    "101100111000001110111101111"
+                    "010010010000111011110101011"
+                    "111110100011001100001101000"
+                    "000010010011110111111110101"
+                    "110001110111111010101100111"
+                    "000000010010111101111110011"
+                },
+        /* 45*/ { BARCODE_AZTEC, ESCAPE_MODE, 899, -1, -1, 2, -1, { 0, 0, "" }, "*; )WF+", -1, 0, 19, 19, 1, 1, "",
+                    "0000111010001110001"
+                    "0000111101000011001"
+                    "0101101110101001101"
+                    "0001101000111000001"
+                    "0011110100110010101"
+                    "0100111111111111101"
+                    "0100110000000111101"
+                    "1110110111110100000"
+                    "0100110100010111101"
+                    "0110010101010110101"
+                    "0111010100010111010"
+                    "1110110111110100010"
+                    "0110010000000111000"
+                    "1011011111111110101"
+                    "0011001100100001110"
+                    "0010101000000010000"
+                    "0111110010100000000"
+                    "1000010010001010011"
+                    "1100110000001110010"
+                },
+        /* 46*/ { BARCODE_AZTEC, ESCAPE_MODE | FAST_MODE, 899, -1, -1, 2, -1, { 0, 0, "" }, "*; )WF+", -1, 0, 19, 19, 1, 1, "Same as above",
+                    "0000111010001110001"
+                    "0000111101000011001"
+                    "0101101110101001101"
+                    "0001101000111000001"
+                    "0011110100110010101"
+                    "0100111111111111101"
+                    "0100110000000111101"
+                    "1110110111110100000"
+                    "0100110100010111101"
+                    "0110010101010110101"
+                    "0111010100010111010"
+                    "1110110111110100010"
+                    "0110010000000111000"
+                    "1011011111111110101"
+                    "0011001100100001110"
+                    "0010101000000010000"
+                    "0111110010100000000"
+                    "1000010010001010011"
+                    "1100110000001110010"
+                },
+        /* 47*/ { BARCODE_AZTEC, DATA_MODE, 899, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, "\200F`\015\012", -1, 0, 19, 19, 1, 1, "",
+                    "0010111110010100100"
+                    "0011001011010001010"
+                    "0011000000000000110"
+                    "0111111111111111101"
+                    "0011000000000001001"
+                    "0001011111111101011"
+                    "0111010000000101110"
+                    "0111010111110101010"
+                    "1101010100010101111"
+                    "0101010101010101010"
+                    "0111010100010101111"
+                    "0101010111110101010"
+                    "0101010000000101110"
+                    "1111011111111101001"
+                    "0101000000000001011"
+                    "1101111111111111101"
+                    "1100110110100110000"
+                    "1001000011110010011"
+                    "1001000000111111010"
+                },
+        /* 48*/ { BARCODE_AZTEC, FAST_MODE, 899, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, "\200F`\015\012", -1, 0, 19, 19, 0, 1, "BWIPP: different encodation, 1 codeword shorter, see above",
+                    "0011101100000101001"
+                    "0010101111101010000"
+                    "0011000000000000101"
+                    "0111111111111111111"
+                    "0011000000000001010"
+                    "0011011111111101000"
+                    "0111010000000101111"
+                    "0111010111110101111"
+                    "1111010100010101010"
+                    "0101010101010101010"
+                    "0101010100010101000"
+                    "0101010111110101011"
+                    "0101010000000101011"
+                    "1111011111111101101"
+                    "0111000000000001010"
+                    "1101111111111111100"
+                    "1100111110001100000"
+                    "1001000011110010010"
+                    "1001000000111111000"
+                },
+        /* 49*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGH\032abcdefgh\032ABCDEFGH\032~~~~~~~~\032ABCDEFGH\032;;;;;;;;;\032ABCDEFGH\032123456789\032ABCDEFGH", -1, 0, 37, 37, 1, 1, "Cycle from Upper to other modes between Byte-onlys",
+                    "0010100101001100111100111001110011111"
+                    "0101111100001111100011100111001110001"
+                    "1010101010101010101010101010101010101"
+                    "0000000110111011000111100001110100001"
+                    "0010110110100000101110010100111000111"
+                    "1100000000100011110000101100010110001"
+                    "0010011001000011101110110111100011101"
+                    "1001101111100010100011011111010010010"
+                    "0010001001111111111011111110101000100"
+                    "0101001101110001110110010111111011010"
+                    "0110011010110100001011111010010100100"
+                    "0000111001011001000000010110110010001"
+                    "1110101010011111111111111110001010111"
+                    "0000011110001000000000001011011100011"
+                    "0111111000001011111111101010111001110"
+                    "1100000001011010000000101000100100001"
+                    "0110100101001010111110101110011111100"
+                    "0001110011101010100010101010110100000"
+                    "1010101010101010101010101010101010101"
+                    "0000100000101010100010101101111000010"
+                    "1010011101001010111110101100000010111"
+                    "0100001001001010000000101011111100010"
+                    "1111000110111011111111101110111101100"
+                    "1100100000001000000000001100100101011"
+                    "1011110010001111111111111101101110100"
+                    "0001100111000100100100110000110100010"
+                    "0111001011110110101001100100001110110"
+                    "0000010111001001000001110001001000000"
+                    "0110101110100100001100001001000001101"
+                    "1000000101110100100011110101110011000"
+                    "1010100010010001011110111101111011111"
+                    "1101001101011100010111000000101111000"
+                    "1010101100111001111001110011100111100"
+                    "0001111111100111000111001110011110010"
+                    "1010101010101010101010101010101010101"
+                    "0000101000010010000101110000111101000"
+                    "0110010001101011101001110010100111101"
+                },
+        /* 50*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "abcdefgh\032ABCDEFGH\032abcdefgh\032~~~~~~~~\032abcdefgh\032;;;;;;;;;\032abcdefgh\032123456789\032abcdefgh", -1, 0, 37, 37, 1, 1, "Cycle from Lower to other modes between Byte-onlys",
+                    "1111100001111100111100111001110010110"
+                    "1000010100110011100011100111001111011"
+                    "1010101010101010101010101010101010101"
+                    "0001100000101100100100111000111010010"
+                    "0011011101100111101000111010001001111"
+                    "1000010100100111010001111111110101000"
+                    "0010001111001110101111010111111101101"
+                    "0101011001000010100001010010011100000"
+                    "1010010101000000111101100101110000100"
+                    "0100100000011101000110001111000110011"
+                    "0011010000011101001000000000110101111"
+                    "0000101010011001000000010100010110011"
+                    "1010010101111111111111111110010100100"
+                    "1000010111111000000000001011101001010"
+                    "0111010010011011111111101010011000100"
+                    "1001011001111010000000101000110100001"
+                    "0010111111011010111110101110100001101"
+                    "1101010111011010100010101110101111011"
+                    "1010101010101010101010101010101010101"
+                    "1000011011111010100010101111111101000"
+                    "1011111100111010111110101010100101101"
+                    "0001010010101010000000101110000010010"
+                    "0111000011001011111111101011011000101"
+                    "0000001111111000000000001100010110001"
+                    "1110100011001111111111111110011100100"
+                    "1100001000100110010110110000100101000"
+                    "1111110101110011101000000110011101110"
+                    "0001110011101001110010001101010011001"
+                    "0011111111101001111001101100101111110"
+                    "1000010111101010100011111110010111000"
+                    "0010000001010000101010001011101011101"
+                    "1101000100100011010011100011111101000"
+                    "0110111111111001111001110011100110100"
+                    "0100100101100111000111001110011110001"
+                    "1010101010101010101010101010101010101"
+                    "1001001001000110100111000111001010011"
+                    "1111100001010000101010001011100001101"
+                },
+        /* 51*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "~~~~~~~~\032ABCDEFGH\032~~~~~~~~\032abcdefgh\032~~~~~~~~\032;;;;;;;;;\032~~~~~~~~\032123456789\032~~~~~~~~", -1, 0, 37, 37, 1, 1, "Ditto Mixed",
+                    "1111111000011101001010010000101000100"
+                    "1000100101001110000111010110001001000"
+                    "1010101010101010101010101010101010101"
+                    "1101101000001011110111000011111001011"
+                    "1011010111011001101100101001100111110"
+                    "1001011000011100010011110101100001010"
+                    "1111110110100111011000101000110101111"
+                    "0100100011000100100111110110001110000"
+                    "0110110010010000101110010011110010101"
+                    "1001001110010111100101011000011011000"
+                    "1011010100011010111101111110100001100"
+                    "1101110011111001000000010101100101011"
+                    "0110110000011111111111111101101010111"
+                    "0100111000011000000000001011110110010"
+                    "1011011111111011111111101000010011110"
+                    "1001010011001010000000101001110101011"
+                    "1111111111101010111110101111100001101"
+                    "0100111100111010100010101110011010001"
+                    "1010101010101010101010101010101010101"
+                    "0100110110101010100010101011110110010"
+                    "1011000100111010111110101011101111110"
+                    "1001001010011010000000101000011110011"
+                    "1111100011001011111111101110000011101"
+                    "0100101110011000000000001000110010001"
+                    "0110110111101111111111111100101010110"
+                    "1101110101100001110100100000110011010"
+                    "1111111101101111011100010010101000111"
+                    "0000010011010010110110000101010101001"
+                    "0010011001111011101111011011000000101"
+                    "1001010000111110000111011011100100010"
+                    "0010001110011100111100111110010101110"
+                    "1101111001110011100011100110110011011"
+                    "0111110011100111001111001110011111101"
+                    "0100011110011100110100111001110111001"
+                    "1010101010101010101010101010101010101"
+                    "1100100100011010110100011100101001011"
+                    "1010000101000010011000101110000111101"
+                },
+        /* 52*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, ";;;;;;;;;\032ABCDEFGH\032;;;;;;;;;\032abcdefgh\032;;;;;;;;;\032~~~~~~~~\032;;;;;;;;;\032123456789\032;;;;;;;;;", -1, 0, 37, 37, 1, 1, "Ditto Punct",
+                    "1110111010110001001100111100001111111"
+                    "1000001001000010100000010010100101011"
+                    "1010101010101010101010101010101010101"
+                    "1100111110111001110001110011100111001"
+                    "1110001111100111001111001110011100110"
+                    "1001111110110000010100011000110011010"
+                    "1011100101010001111110110000110010111"
+                    "1101100100010100010010001001101010001"
+                    "0110010000001111011111011110000111101"
+                    "0100000000110100100110100000000100010"
+                    "1011011101010011111000101100010001110"
+                    "1000001100011001000000010110011100011"
+                    "1111101010111111111111111111001000101"
+                    "0100111010101000000000001010001111001"
+                    "0110110111111011111111101000110111110"
+                    "1001100111101010000000101110010110010"
+                    "1010111101001010111110101110101010111"
+                    "1101101111011010100010101011111011001"
+                    "1010101010101010101010101010101010101"
+                    "0101100011101010100010101011101101001"
+                    "0110101010111010111110101001110101110"
+                    "1000101101001010000000101001010110010"
+                    "1011001011011011111111101010011010111"
+                    "1101010110011000000000001110111011001"
+                    "0111101011101111111111111110111101101"
+                    "0100111111100000100010000010000101010"
+                    "1010110010010011011110000111110110110"
+                    "1001000000101001110111011010101010011"
+                    "1111010011110110001010011110101011111"
+                    "0101101100100111100011010001111101010"
+                    "1110100011011001011001011001110101111"
+                    "1100111111111100000111111111000110010"
+                    "1110011100111011111000101001010010110"
+                    "1001110011100111110110000111111111011"
+                    "1010101010101010101010101010101010101"
+                    "1000001100001010000010010001011100000"
+                    "1010101000100100011101011100011100101"
+                },
+        /* 53*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "123456789\032ABCDEFGH\032123456789\032abcdefgh\032123456789\032~~~~~~~~\032123456789\032;;;;;;;;;\032123456789", -1, 0, 37, 37, 1, 1, "Ditto Digit",
+                    "1111011001010011101001110101100010101"
+                    "1101001111000011100100010010000101000"
+                    "1010101010101010101010101010101010101"
+                    "0000111100111001110001101001010011000"
+                    "0110010011100111001111111111000011100"
+                    "1000101010101010100101101001111110001"
+                    "1010101011011111011101010100101111111"
+                    "0000110010110000100010000110110011001"
+                    "1011010011001010001111111110011010101"
+                    "1000111000111101000011011101110010010"
+                    "1111101101000110101100010110111010100"
+                    "0001001010011001000000010101101011010"
+                    "1110010010111111111111111110101000100"
+                    "1101011110011000000000001001010110001"
+                    "0010111011011011111111101001010100111"
+                    "0101011100001010000000101000111111011"
+                    "0011010000001010111110101101010111101"
+                    "1101011000011010100010101110011100011"
+                    "1010101010101010101010101010101010101"
+                    "0101110011101010100010101001000011011"
+                    "0111100100011010111110101011100001101"
+                    "0101001111011010000000101010111101001"
+                    "1111100100001011111111101111100000101"
+                    "1101101100011000000000001010001001010"
+                    "0111010000001111111111111110111001101"
+                    "1100010111000001110100100011001010000"
+                    "1110111101001100011010101011011100101"
+                    "0000011100111110110111000111111111011"
+                    "0010100111101110011111110100011111110"
+                    "1001001110011000000011011000100010001"
+                    "0011000000101101011111111000100011110"
+                    "1101111011101100010000111111010010010"
+                    "0110100111001110011110011111000010110"
+                    "0001111100111001110001110011001011000"
+                    "1010101010101010101010101010101010101"
+                    "0000101000010010000101110000111100010"
+                    "0110010001101011101001110010100110111"
+                },
+        /* 54*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, " ABCD EFGH abcd efgh ~~~~ ~~~~~ ;;;; ;;; 12345 67890", -1, 0, 27, 27, 0, 1, "Spaces; BWIPP different encodation, LL before not after space, same no. of codewords",
+                    "001100111001100000111001110"
+                    "000011100111111001100111001"
+                    "101101101010100001101001010"
+                    "000101101001110111100011111"
+                    "101101010100000001000110110"
+                    "001111010111111010110101100"
+                    "011111110001000000001111100"
+                    "101101111111111111111000010"
+                    "010001010000000000011101011"
+                    "000000010111111111010000101"
+                    "001010010100000001010011101"
+                    "100011110101111101010111010"
+                    "100100110101000101011010010"
+                    "010101010101010101010101010"
+                    "000101110101000101011101011"
+                    "011011110101111101010010101"
+                    "000010110100000001010100001"
+                    "110011110111111111010001111"
+                    "001000010000000000011111100"
+                    "011110011111111111111000100"
+                    "110001000001101010000100010"
+                    "010001001000110010100111111"
+                    "000111001111101101111100111"
+                    "001001011011110110100010100"
+                    "100100010000001010010100110"
+                    "100110010010010110001001000"
+                    "000110000010100000010101101"
+                },
+        /* 55*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, " ABCD EFGH abcd efgh ~~~~ ~~~~~ ;;;; ;;; 12345 67890", -1, 0, 27, 27, 0, 1, "BWIPP different encodation, 1 codeword less",
+                    "001100111001100000111001110"
+                    "000011100111111001100111001"
+                    "101100000000101111101010110"
+                    "000101110100010010111101111"
+                    "101100010100101100011011010"
+                    "001101010101111100101010100"
+                    "010001110001000000001110000"
+                    "100011111111111111111110010"
+                    "011110010000000000011010111"
+                    "001110110111111111010100101"
+                    "000101010100000001010110101"
+                    "101100110101111101011000010"
+                    "101101010101000101010101110"
+                    "010101010101010101010101010"
+                    "000110010101000101010101111"
+                    "010101110101111101010011101"
+                    "001011110100000001011101001"
+                    "111001110111111111011101011"
+                    "001110110000000000011000101"
+                    "010100011111111111111001011"
+                    "110110000011100000100011010"
+                    "011010100010010011101101000"
+                    "001111001100001011010111101"
+                    "001110000100010010100100000"
+                    "101111001011001110110101010"
+                    "100110010010010110001001000"
+                    "000110000010100000010101101"
+                },
+        /* 56*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, ";;;; ;;;; 1234", -1, 0, 23, 23, 0, 1, "Spaces; BWIPP different encodation, same no. of codewords, however BWIPP wins by 1-bit due to less bit-stuffing",
+                    "11010110011001000111101"
+                    "10100111111110100011101"
+                    "11100000101010100000100"
+                    "11001000010100111110000"
+                    "10001100001000000011111"
+                    "10011111111111111110010"
+                    "11110100000000000100110"
+                    "01001101111111110111111"
+                    "01101101000000010100111"
+                    "10011101011111010100000"
+                    "10000101010001010100101"
+                    "01010101010101010101010"
+                    "11011101010001010101001"
+                    "01111101011111010110110"
+                    "01010101000000010111110"
+                    "10001101111111110101010"
+                    "11100100000000000101100"
+                    "11000111111111111110010"
+                    "10110010010010111000111"
+                    "00100100011101001110100"
+                    "00001010000000011000110"
+                    "11111110011110011110100"
+                    "11011001110001110111101"
+                },
+        /* 57*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, ";;;; ;;;; 1234", -1, 0, 23, 23, 0, 1, "Same as above",
+                    "11010110011001000111101"
+                    "10100111111110100011101"
+                    "11100000101010100000100"
+                    "11001000010100111110000"
+                    "10001100001000000011111"
+                    "10011111111111111110010"
+                    "11110100000000000100110"
+                    "01001101111111110111111"
+                    "01101101000000010100111"
+                    "10011101011111010100000"
+                    "10000101010001010100101"
+                    "01010101010101010101010"
+                    "11011101010001010101001"
+                    "01111101011111010110110"
+                    "01010101000000010111110"
+                    "10001101111111110101010"
+                    "11100100000000000101100"
+                    "11000111111111111110010"
+                    "10110010010010111000111"
+                    "00100100011101001110100"
+                    "00001010000000011000110"
+                    "11111110011110011110100"
+                    "11011001110001110111101"
+                },
+        /* 58*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, "ABC\015D\015~~~~\015~~~~~\015;;;;\015;;;\015~~~~\015\012", -1, 0, 23, 23, 0, 1, "CRs; BWIPP different encodation, same no. of codewords",
+                    "00111111111010011101000"
+                    "01101000111101110011100"
+                    "00011101011010111100111"
+                    "00011011110101000011001"
+                    "11101100001000000010101"
+                    "00101111111111111110010"
+                    "10110100000000000100110"
+                    "00011101111111110110111"
+                    "00011101000000010111101"
+                    "00100101011111010110101"
+                    "00100101010001010111010"
+                    "01010101010101010101010"
+                    "01011101010001010111110"
+                    "01110101011111010101011"
+                    "00001101000000010110111"
+                    "10101101111111110110101"
+                    "11110100000000000110111"
+                    "11110111111111111111000"
+                    "01100011000010000001110"
+                    "01100000111111111010111"
+                    "11101110000000111010001"
+                    "10011100110110111001101"
+                    "01110011100011100111010"
+                },
+        /* 59*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, "ABC\015D\015~~~~\015~~~~~\015;;;;\015;;;\015~~~~\015\012", -1, 0, 23, 23, 0, 1, "Same as above",
+                    "00101111100010011101000"
+                    "01110111100101110011100"
+                    "00010001110001100111111"
+                    "00010100100100101011001"
+                    "11101100001000000011001"
+                    "00101111111111111111010"
+                    "10110100000000000100010"
+                    "00011101111111110110111"
+                    "00011101000000010110001"
+                    "00100101011111010110001"
+                    "00100101010001010110010"
+                    "01010101010101010101010"
+                    "01001101010001010110011"
+                    "01000101011111010100000"
+                    "00001101000000010111000"
+                    "10011101111111110111101"
+                    "11010100000000000111111"
+                    "11010111111111111110010"
+                    "01110011000010000000010"
+                    "01010000001110011111011"
+                    "11011111010011000100001"
+                    "10011100110110111001101"
+                    "01110011100011100111010"
+                },
+        /* 60*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "\015\012\015", -1, 0, 15, 15, 1, 1, "CR/CRLF",
+                    "001110111101100"
+                    "001100100011101"
+                    "001100000010111"
+                    "011111111111110"
+                    "001100000001101"
+                    "011101111101110"
+                    "000101000101101"
+                    "000101010101101"
+                    "000101000101001"
+                    "011101111101101"
+                    "001100000001100"
+                    "010111111111100"
+                    "110000101000000"
+                    "011001000111101"
+                    "101010100010101"
+                },
+        /* 61*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "\015\012\015", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "001110111101100"
+                    "001100100011101"
+                    "001100000010111"
+                    "011111111111110"
+                    "001100000001101"
+                    "011101111101110"
+                    "000101000101101"
+                    "000101010101101"
+                    "000101000101001"
+                    "011101111101101"
+                    "001100000001100"
+                    "010111111111100"
+                    "110000101000000"
+                    "011001000111101"
+                    "101010100010101"
+                },
+        /* 62*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "\015\015\012\015\015\012", -1, 0, 15, 15, 0, 1, "CR/CRLF; BWIPP: different encodation, same no. of codewords",
+                    "000000101100011"
+                    "111100111011110"
+                    "101100000100111"
+                    "101111111111100"
+                    "110100000001001"
+                    "100101111101110"
+                    "111101000101000"
+                    "110101010101100"
+                    "000101000101011"
+                    "000101111101000"
+                    "100100000001000"
+                    "000111111111111"
+                    "000011101110001"
+                    "000101100111000"
+                    "101110011111011"
+                },
+        /* 63*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "\015\015\012\015\015\012", -1, 0, 15, 15, 1, 1, "Same as BWIPP",
+                    "001110010000101"
+                    "110111101011100"
+                    "101100000100100"
+                    "111111111111100"
+                    "110100000001000"
+                    "100101111101111"
+                    "001101000101000"
+                    "000101010101100"
+                    "100101000101010"
+                    "000101111101011"
+                    "100100000001010"
+                    "000111111111111"
+                    "000011101110010"
+                    "000010001000101"
+                    "101110000101001"
+                },
+        /* 64*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, ", .", -1, 0, 15, 15, 1, 1, "Spaces/dots/commas: uses DL",
+                    "000001001101000"
+                    "110000011111000"
+                    "111100000010110"
+                    "011111111111111"
+                    "100100000001001"
+                    "001101111101000"
+                    "000101000101111"
+                    "110101010101010"
+                    "100101000101101"
+                    "110101111101110"
+                    "011100000001010"
+                    "110111111111100"
+                    "000000011000000"
+                    "010001111001000"
+                    "100110100000110"
+                },
+        /* 65*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, ", .", -1, 0, 15, 15, 0, 1, "Spaces/dots/commas: uses PSs, which is 3-bits more; BWIPP: see above",
+                    "000110011011010"
+                    "000101111100100"
+                    "001100000010111"
+                    "011111111111111"
+                    "001100000001101"
+                    "101101111101111"
+                    "000101000101111"
+                    "000101010101110"
+                    "000101000101011"
+                    "101101111101111"
+                    "011100000001100"
+                    "110111111111101"
+                    "110000101000000"
+                    "001110101111111"
+                    "010001001101111"
+                },
+        /* 66*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, ", . ", -1, 0, 15, 15, 1, 1, "Spaces/dots/commas: uses 2 PSs, which although 1-bit less than using DL, ends up 1-bit more after bit-stuffing",
+                    "001011111110101"
+                    "001100011001011"
+                    "001100000010110"
+                    "011111111111110"
+                    "001100000001111"
+                    "101101111101110"
+                    "000101000101110"
+                    "000101010101110"
+                    "000101000101010"
+                    "011101111101111"
+                    "001100000001110"
+                    "110111111111100"
+                    "110000101000010"
+                    "101111111111111"
+                    "110111100000011"
+                },
+        /* 67*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, ", . ", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "001011111110101"
+                    "001100011001011"
+                    "001100000010110"
+                    "011111111111110"
+                    "001100000001111"
+                    "101101111101110"
+                    "000101000101110"
+                    "000101010101110"
+                    "000101000101010"
+                    "011101111101111"
+                    "001100000001110"
+                    "110111111111100"
+                    "110000101000010"
+                    "101111111111111"
+                    "110111100000011"
+                },
+        /* 68*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, ", . , ", -1, 0, 15, 15, 0, 1, "Spaces/dots/commas",
+                    "001111110111101"
+                    "111100000011101"
+                    "101100000100111"
+                    "111111111111101"
+                    "110100000001000"
+                    "100101111101100"
+                    "001101000101011"
+                    "100101010101110"
+                    "000101000101011"
+                    "000101111101011"
+                    "110100000001001"
+                    "000111111111100"
+                    "100011101110001"
+                    "111100000110001"
+                    "011011011100111"
+                },
+        /* 69*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, ", . , ", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "001111110111101"
+                    "111100000011101"
+                    "101100000100111"
+                    "111111111111101"
+                    "110100000001000"
+                    "100101111101100"
+                    "001101000101011"
+                    "100101010101110"
+                    "000101000101011"
+                    "000101111101011"
+                    "110100000001001"
+                    "000111111111100"
+                    "100011101110001"
+                    "111100000110001"
+                    "011011011100111"
+                },
+        /* 70*/ { BARCODE_AZTEC, DATA_MODE, 3, -1, -1, 1, -1, { 0, 0, "" }, "\101\300", -1, 0, 15, 15, 1, 899, "AÀ",
                     "000000101011100"
                     "000100010100111"
                     "001100000110110"
@@ -1103,7 +2496,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110001000111110"
                     "111001100011011"
                 },
-        /* 22*/ { BARCODE_AZTEC, UNICODE_MODE, 26, -1, -1, 1, { 0, 0, "" }, "AÀ", -1, 0, 15, 15, 1, 1, "AÀ",
+        /* 71*/ { BARCODE_AZTEC, DATA_MODE | FAST_MODE, 3, -1, -1, 1, -1, { 0, 0, "" }, "\101\300", -1, 0, 15, 15, 1, 899, "Same as above",
+                    "000000101011100"
+                    "000100010100111"
+                    "001100000110110"
+                    "011111111111111"
+                    "001100000001100"
+                    "001101111101000"
+                    "011101000101110"
+                    "000101010101011"
+                    "100101000101010"
+                    "101101111101111"
+                    "101100000001111"
+                    "000111111111111"
+                    "100011000110001"
+                    "110001000111110"
+                    "111001100011011"
+                },
+        /* 72*/ { BARCODE_AZTEC, UNICODE_MODE, 26, -1, -1, 1, -1, { 0, 0, "" }, "AÀ", -1, 0, 15, 15, 1, 1, "AÀ",
                     "001111011000101"
                     "000110100011000"
                     "001100001000111"
@@ -1120,7 +2530,58 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001100010010010"
                     "011110110011000"
                 },
-        /* 23*/ { BARCODE_AZTEC, UNICODE_MODE, 100, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(3)",
+        /* 73*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, 26, -1, -1, 1, -1, { 0, 0, "" }, "AÀ", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "001111011000101"
+                    "000110100011000"
+                    "001100001000111"
+                    "011111111111111"
+                    "001100000001101"
+                    "000101111101100"
+                    "010101000101101"
+                    "011101010101001"
+                    "001101000101001"
+                    "100101111101001"
+                    "010100000001011"
+                    "000111111111111"
+                    "000001100010010"
+                    "001100010010010"
+                    "011110110011000"
+                },
+        /* 74*/ { BARCODE_AZTEC, ESCAPE_MODE, 899, -1, -1, 1, -1, { 0, 0, "" }, "\\xC3\\x95\\xAB", -1, 0, 15, 15, 1, 1, "Blank top row",
+                    "000000000000000"
+                    "001111111011111"
+                    "001100001010111"
+                    "011111111111101"
+                    "000100000001011"
+                    "001101111101010"
+                    "010101000101010"
+                    "011101010101101"
+                    "111101000101011"
+                    "011101111101111"
+                    "011100000001110"
+                    "010111111111110"
+                    "110001001010010"
+                    "111101100110011"
+                    "011100110010101"
+                },
+        /* 75*/ { BARCODE_AZTEC, ESCAPE_MODE | FAST_MODE, 899, -1, -1, 1, -1, { 0, 0, "" }, "\\xC3\\x95\\xAB", -1, 0, 15, 15, 1, 1, "Blank top row",
+                    "000000000000000"
+                    "001111111011111"
+                    "001100001010111"
+                    "011111111111101"
+                    "000100000001011"
+                    "001101111101010"
+                    "010101000101010"
+                    "011101010101101"
+                    "111101000101011"
+                    "011101111101111"
+                    "011100000001110"
+                    "010111111111110"
+                    "110001001010010"
+                    "111101100110011"
+                    "011100110010101"
+                },
+        /* 76*/ { BARCODE_AZTEC, UNICODE_MODE, 100, -1, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(3)",
                     "001101001111101"
                     "000000111011100"
                     "001100000100101"
@@ -1137,7 +2598,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100011101111100"
                     "000111110001110"
                 },
-        /* 24*/ { BARCODE_AZTEC, UNICODE_MODE, 1000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(4)",
+        /* 77*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, 100, -1, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "001101001111101"
+                    "000000111011100"
+                    "001100000100101"
+                    "011111111111110"
+                    "001100000001111"
+                    "000101111101001"
+                    "011101000101001"
+                    "010101010101001"
+                    "100101000101101"
+                    "011101111101010"
+                    "100100000001100"
+                    "010111111111111"
+                    "000011011110011"
+                    "100011101111100"
+                    "000111110001110"
+                },
+        /* 78*/ { BARCODE_AZTEC, UNICODE_MODE, 1000, -1, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(4)",
                     "001010100011011"
                     "001000100000101"
                     "001100000100111"
@@ -1154,7 +2632,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101000000111010"
                     "000001110101111"
                 },
-        /* 25*/ { BARCODE_AZTEC, UNICODE_MODE, 10000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(5)",
+        /* 79*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, 1000, -1, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "001010100011011"
+                    "001000100000101"
+                    "001100000100111"
+                    "011111111111110"
+                    "001100000001110"
+                    "000101111101000"
+                    "011101000101010"
+                    "100101010101001"
+                    "000101000101101"
+                    "011101111101011"
+                    "100100000001101"
+                    "010111111111100"
+                    "000011011110011"
+                    "101000000111010"
+                    "000001110101111"
+                },
+        /* 80*/ { BARCODE_AZTEC, UNICODE_MODE, 10000, -1, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(5)",
                     "000100110110010"
                     "000001000010111"
                     "001100000110101"
@@ -1171,7 +2666,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101010001110110"
                     "000000011000101"
                 },
-        /* 26*/ { BARCODE_AZTEC, UNICODE_MODE, 100000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(6)",
+        /* 81*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, 10000, -1, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "000100110110010"
+                    "000001000010111"
+                    "001100000110101"
+                    "011111111111111"
+                    "000100000001010"
+                    "001101111101101"
+                    "011101000101110"
+                    "100101010101100"
+                    "100101000101101"
+                    "010101111101100"
+                    "101100000001011"
+                    "010111111111111"
+                    "000011110110011"
+                    "101010001110110"
+                    "000000011000101"
+                },
+        /* 82*/ { BARCODE_AZTEC, UNICODE_MODE, 100000, -1, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(6)",
                     "000010010000010"
                     "001101000100110"
                     "001100000110111"
@@ -1188,7 +2700,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101010100011011"
                     "000000000111010"
                 },
-        /* 27*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", -1, 0, 61, 61, 0, 1, "Zint website example gui3.png NOTE now ends with D/L . instead of P/S .; BWIPP same encodation but estimates number of Data/ECC codewords differently",
+        /* 83*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, 100000, -1, -1, 1, -1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "000010010000010"
+                    "001101000100110"
+                    "001100000110111"
+                    "011111111111111"
+                    "001100000001110"
+                    "001101111101010"
+                    "011101000101111"
+                    "110101010101011"
+                    "000101000101001"
+                    "011101111101101"
+                    "101100000001110"
+                    "010111111111101"
+                    "000011000110011"
+                    "101010100011011"
+                    "000000000111010"
+                },
+        /* 84*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", -1, 0, 61, 61, 1, 1, "Zint website example ss_6.png NOTE now ends with D/L . instead of P/S .",
                     "0010110111101110101100000101001101110100010000100111011100001"
                     "0001100000000000001101110010000100010101110011000001000011110"
                     "0001111110101010100101000110101101000110011000101111011100110"
@@ -1251,36 +2780,153 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110000011010000000000100001100001000111011110011010000000001"
                     "0000010101001111100010001001111100101000010001110010010101101"
                 },
-        /* 28*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Colon: etc. NUM. 12345, num. 12345 @, 123. . . . . @.¡.!A ", -1, 0, 27, 27, 0, 1, "BWIPP different encodation (better use of D/L and B/S)",
+        /* 85*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", -1, 0, 61, 61, 1, 1, "Same as above",
+                    "0010110111101110101100000101001101110100010000100111011100001"
+                    "0001100000000000001101110010000100010101110011000001000011110"
+                    "0001111110101010100101000110101101000110011000101111011100110"
+                    "0011000000001001101011010000010110111000011110000000010001001"
+                    "0111001010111110010111100000001111101100011100100000001000000"
+                    "1001100111000000001000011101000000001011001100000111100110000"
+                    "1101101000101111010010010000101100010100100100111011011100000"
+                    "1100100110001001100001110100100101001100011000001010110010000"
+                    "0000101001000010000101001001101011110000000000100000001011111"
+                    "1011100100011001100110101001100001100011110111010110110101001"
+                    "0001101000110010111010000000001010111101010000100001001000100"
+                    "0110100010001101000100011011100011000110000011011111001010010"
+                    "0010000010110011001111011110101001010101001010100110000010000"
+                    "1110001010110000110011000100010001111110110000011011001111001"
+                    "1010101010101010101010101010101010101010101010101010101010101"
+                    "0010110110101001010101000111110011001011000111000011100111001"
+                    "1100110100101111110010000000111011110100100011101100110001100"
+                    "0001001001100101000010011100000111100000111010011000000001101"
+                    "1101000001000011101100000010011100001110110010101001000010010"
+                    "1010110011000101100001111000100001001111100010001100111001100"
+                    "0010011111000011101101000010101100001001000100100110000100001"
+                    "0000100101100001111110111011010011101000011010000100000011101"
+                    "1010011010011110110000000000011010110110101001111101010001000"
+                    "1000100001011000111011111010100000110100010111010001010001110"
+                    "1001100110000011001011011111111111111110011010101011001000000"
+                    "1011110010100101000001001000000000001100001001011011001000000"
+                    "0000011111110010010001111011111111101000000001110010001110100"
+                    "1100000001001100110101011010000000101000010110011110010011110"
+                    "0110010000111011111010111010111110101010111010111111001000010"
+                    "0001001001111101111000011010100010101011100000000000000001010"
+                    "1010101010101010101010101010101010101010101010101010101010101"
+                    "1010111000100000110011111010100010101011100001000111100001010"
+                    "1101101000101111100010101010111110101001110111100010010101110"
+                    "0010000101101001111100101010000000101101111100011110110111110"
+                    "1100101110001111000000111011111111101101000101101000010100011"
+                    "1000011000011101111101111000000000001111100100010100010011000"
+                    "0010000010010111001010001111111111111110000100101110110111011"
+                    "0001000100011000011111100010110001100011001101000000010000100"
+                    "1010001010001110100101011010001101011111010011111000011001110"
+                    "0110000110110101011111001110000010010001010111000101000010100"
+                    "0110101001110010110010011100001010001100000111111100011000000"
+                    "1010110110000001111100011001000011011001111100010110000100000"
+                    "0000011010001010000011011001101001110010001100101000111011010"
+                    "0001001010100100010010000010110110101110101100010101010001011"
+                    "1100010000010110110110101101101011111001101111110100011000011"
+                    "0110001101000001111010001100110011001111011111010010100011000"
+                    "1010101010101010101010101010101010101010101010101010101010101"
+                    "1011000001100100011100000111010101011110110011001000100000010"
+                    "0000111101110110001110101001001101000011110010100000101001010"
+                    "0100100001011000000001000100000010001011110101010011110110000"
+                    "0001001110010110101001011101101010001101000000100001101000010"
+                    "1110010011010000011001010010010101000100110100011010001101100"
+                    "0011001010010010011100110100011000111011100100110001001001001"
+                    "0000111010110000100100000001110011001110001101010100001010101"
+                    "1100010010110111011011111100001011001011001011100011100000101"
+                    "0110111000011101110110010111100000010000011101011010001110101"
+                    "0001000000111010000000001100001010101111100010100000010011101"
+                    "0101000010010000110000000010000001110010000111000111100011000"
+                    "0110100111000110011010010101111110001000000011101100000100101"
+                    "1110000011010000000000100001100001000111011110011010000000001"
+                    "0000010101001111100010001001111100101000010001110010010101101"
+                },
+        /* 86*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 4, -1, { 0, 0, "" }, "Colon: etc. NUM. 12345, num. 12345 @, 123. . . . . @.¡.!A ", -1, 0, 27, 27, 1, 1, "",
+                    "001010110110111011010110111"
+                    "100111110010100000100001110"
+                    "011000101010111011100000011"
+                    "110101011010011111110010100"
+                    "001100001100010000101000011"
+                    "100110011110010000001010101"
+                    "001110011011000100001000011"
+                    "001110100110011001101000111"
+                    "110100111111101010110101100"
+                    "011001101111111111111110101"
+                    "100010010100000001001010011"
+                    "000010111101111101110101001"
+                    "001011110101000101010110011"
+                    "110111010101010101000000110"
+                    "111010100101000101001110100"
+                    "001010001101111101110110100"
+                    "000001000100000001001001111"
+                    "001000000111111111101000111"
+                    "011100010011100010001000010"
+                    "011110011001001111111000001"
+                    "000111001101011100110100010"
+                    "111111100110110011101000010"
+                    "010110011001000100001101010"
+                    "011100101001010011110101000"
+                    "011100100101001011111111010"
+                    "001101101101111011110110111"
+                    "010111000110110101011100000"
+                },
+        /* 87*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "Colon: etc. NUM. 12345, num. 12345 @, 123. . . . . @.¡.!A ", -1, 0, 27, 27, 0, 1, "BWIPP different encodation (3 codewords less, see above)",
                     "001011011101101011011110111"
                     "101001010000010000111010101"
-                    "011101001100101111010111111"
-                    "110110011100000110101001100"
-                    "001111101101100101101110001"
-                    "100111011111010110000110011"
-                    "001000010001011010000001001"
-                    "001000110100110011000111111"
-                    "110110111111101100110000010"
-                    "011110001111111111110110000"
-                    "100101000100000001011101100"
-                    "001110100101111101010001111"
-                    "001101111101000101100011111"
-                    "110100110101010101100001010"
-                    "111010100101000101110000101"
-                    "000010101101111101000101010"
-                    "000010011100000001011100010"
-                    "001000100111111111101010010"
-                    "010101000000010100010000000"
-                    "011011001101111000010001010"
-                    "001010001110010110111001111"
-                    "110011011101100111101010100"
-                    "011011101110010010110011101"
+                    "011111000001110001101101111"
+                    "110111100100101000011111100"
+                    "001101001100111110100110001"
+                    "100111001011110111010110011"
+                    "001000111111111000111011001"
+                    "001010111111001110001101111"
+                    "110100111111101100111100010"
+                    "011111111111111111111000000"
+                    "100111111100000001110111100"
+                    "001110110101111101100001111"
+                    "001110101101000101111111111"
+                    "110100000101010101001101010"
+                    "111010100101000101001000101"
+                    "000000100101111101011001010"
+                    "000011001100000001110110010"
+                    "001011010111111111101110010"
+                    "010111100000100100000100000"
+                    "011010101111010011011001010"
+                    "001011000000001011111101111"
+                    "110010010111001100000110100"
+                    "011010111110010001101111101"
                     "011111111001010010100110111"
                     "011101011001001010010111111"
                     "000000111111011010100010100"
                     "010000011101011110110000100"
                 },
-        /* 29*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1. 1a @ A@@ @@!!@@!!1!!!!¡a ", -1, 0, 23, 23, 0, 1, "BWIPP different encodation (better use of B/S)",
+        /* 88*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 3, -1, { 0, 0, "" }, "1. 1a @ A@@ @@!!@@!!1!!!!¡a ", -1, 0, 23, 23, 0, 1, "BWIPP different encodation, same no. of codewords",
+                    "11001000100010001001111"
+                    "11100010101000100010011"
+                    "00001001010101100111100"
+                    "01100000001100000111010"
+                    "11001100011010101000110"
+                    "10010010111011111110101"
+                    "10001111100110101001001"
+                    "00100111111111111000001"
+                    "10000001000000010011110"
+                    "01011011011111011110010"
+                    "11001011010001011001100"
+                    "11101101010101010100000"
+                    "01000111010001011001100"
+                    "11011101011111011101011"
+                    "00100011000000010101100"
+                    "00100001111111111100100"
+                    "01000000001100000100000"
+                    "01011111010000001111000"
+                    "11010011010101111010001"
+                    "01001001111110100000001"
+                    "00100001110000100011000"
+                    "01100011101111001100010"
+                    "01000011000010110000011"
+                },
+        /* 89*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "1. 1a @ A@@ @@!!@@!!1!!!!¡a ", -1, 0, 23, 23, 0, 1, "BWIPP different encodation, less codewords (better use of B/S)",
                     "11110101100111101010011"
                     "11111111110111111001011"
                     "00000000001000011111000"
@@ -1305,7 +2951,36 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01100011101111001100010"
                     "11000011000010110000011"
                 },
-        /* 30*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1234\01512\015AB\015AB\015ab\015ab\01512\015ab\015!\015!\015a,a,1,a,@,", -1, 0, 27, 27, 0, 1, "BWIPP different encodation (better use of P/S CRs)",
+        /* 90*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, ZINT_AZTEC_FULL, { 0, 0, "" }, "1234\01512\015AB\015AB\015ab\015ab\01512\015ab\015!\015!\015a,a,1,a,@,", -1, 0, 27, 27, 0, 1, "BWIPP different encodation, same no. of codewords",
+                    "110001111110000001011000000"
+                    "110000100110011001111000001"
+                    "000100010101100100111100011"
+                    "011000101101110000110010100"
+                    "100101110011100110011110110"
+                    "101101111001110100000000100"
+                    "000010110001000000001011100"
+                    "100001111111111111111100100"
+                    "100001010000000000011111100"
+                    "110100110111111111010010011"
+                    "000101110100000001010000111"
+                    "001010010101111101011100011"
+                    "000100010101000101010110000"
+                    "010101010101010101010101010"
+                    "001100110101000101011100000"
+                    "010110110101111101010010110"
+                    "001111010100000001010110100"
+                    "110010110111111111010011010"
+                    "010010110000000000010001100"
+                    "000101011111111111111011100"
+                    "000000001100100100000110000"
+                    "000011011001010110111110100"
+                    "000000100101101011001000011"
+                    "000000011100111011110010000"
+                    "111010111010001101010000000"
+                    "100001000000010010000011010"
+                    "100100100001001001000011000"
+                },
+        /* 91*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234\01512\015AB\015AB\015ab\015ab\01512\015ab\015!\015!\015a,a,1,a,@,", -1, 0, 27, 27, 0, 1, "BWIPP different encodation, less codewords (better use of P/S CRs)",
                     "111111110000010110000011001"
                     "110110110010011110100000101"
                     "000011100001000111001100111"
@@ -1334,7 +3009,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000110100001100100110010100"
                     "101110010000110000111111101"
                 },
-        /* 31*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, { 0, 0, "" }, "AA!! ", -1, 0, 23, 23, 1, 1, "",
+        /* 92*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, -1, { 0, 0, "" }, "AA!! ", -1, 0, 23, 23, 1, 1, "",
                     "00110111000010111110110"
                     "01011001101100101011001"
                     "00101000101000011110111"
@@ -1359,7 +3034,108 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00111110110110100011111"
                     "10010010100010101110001"
                 },
-        /* 32*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 36, { 0, 0, "" }, "Lorem ipsum dolor sit amet.", -1, 0, 151, 151, 1, 1, "Max version 151x151",
+        /* 93*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 6, -1, { 0, 0, "" }, "AA!! ", -1, 0, 23, 23, 1, 1, "Same as above",
+                    "00110111000010111110110"
+                    "01011001101100101011001"
+                    "00101000101000011110111"
+                    "00011011100111110011101"
+                    "10011100001000000010001"
+                    "00001111111111111110000"
+                    "00010100000000000100111"
+                    "00011101111111110100111"
+                    "01000101000000010101101"
+                    "11110101011111010110011"
+                    "00110101010001010110010"
+                    "01010101010101010101010"
+                    "00010101010001010100011"
+                    "00100101011111010101001"
+                    "00100101000000010101010"
+                    "11001101111111110111100"
+                    "00011100000000000101000"
+                    "00110111111111111111011"
+                    "01100000101000010001001"
+                    "11101001010111001100010"
+                    "11110100110010110001111"
+                    "00111110110110100011111"
+                    "10010010100010101110001"
+                },
+        /* 94*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "\015\015\012", -1, 0, 15, 15, 1, 1, "",
+                    "001100000001000"
+                    "000100001000000"
+                    "001100000010111"
+                    "011111111111111"
+                    "001100000001111"
+                    "001101111101100"
+                    "100101000101110"
+                    "000101010101111"
+                    "000101000101000"
+                    "011101111101101"
+                    "001100000001101"
+                    "100111111111110"
+                    "110000101000000"
+                    "100100100100110"
+                    "111100100110111"
+                },
+        /* 95*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 1, -1, { 0, 0, "" }, "\015\015\012", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "001100000001000"
+                    "000100001000000"
+                    "001100000010111"
+                    "011111111111111"
+                    "001100000001111"
+                    "001101111101100"
+                    "100101000101110"
+                    "000101010101111"
+                    "000101000101000"
+                    "011101111101101"
+                    "001100000001101"
+                    "100111111111110"
+                    "110000101000000"
+                    "100100100100110"
+                    "111100100110111"
+                },
+        /* 96*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\015\015\012. , ; β", -1, ZINT_WARN_USES_ECI, 19, 19, 1, 1, "",
+                    "1101110010010001101"
+                    "1000110110100010001"
+                    "1101111111111001001"
+                    "1110001111110111001"
+                    "1010110100110010101"
+                    "0010111111111111101"
+                    "0010010000000100001"
+                    "0011110111110111110"
+                    "0110110100010110010"
+                    "1110010101010100110"
+                    "0101010100010101000"
+                    "1011010111110101000"
+                    "0011010000000100101"
+                    "0101011111111110110"
+                    "0001001111100001010"
+                    "0100010010100011010"
+                    "0011110101110111000"
+                    "0100110110001110011"
+                    "0101001111001110011"
+                },
+        /* 97*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\015\015\012. , ; β", -1, ZINT_WARN_USES_ECI, 19, 19, 1, 1, "Same as above",
+                    "1101110010010001101"
+                    "1000110110100010001"
+                    "1101111111111001001"
+                    "1110001111110111001"
+                    "1010110100110010101"
+                    "0010111111111111101"
+                    "0010010000000100001"
+                    "0011110111110111110"
+                    "0110110100010110010"
+                    "1110010101010100110"
+                    "0101010100010101000"
+                    "1011010111110101000"
+                    "0011010000000100101"
+                    "0101011111111110110"
+                    "0001001111100001010"
+                    "0100010010100011010"
+                    "0011110101110111000"
+                    "0100110110001110011"
+                    "0101001111001110011"
+                },
+        /* 98*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 36, -1, { 0, 0, "" }, "Lorem ipsum dolor sit amet.", -1, 0, 151, 151, 1, 1, "Max version 151x151",
                     "0110011000001101111010100010010110101010100001110111111001101101010000111100111111111001000011100001010000101001010001001010101001000111101011111001101"
                     "1011011111111000001111111001010101111011100101110110001011011000101000010101101100000110011110100000010100110111100111111011011110001000110100111100100"
                     "1110001110001111110101011110010010011011001011001000001010000010000110101010101011111110110010000010000111000010000011011110001111111001000010000000111"
@@ -1512,7 +3288,160 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000000100011011110011111011110000011111110111001111111010110101100011000111010100100010001111000101110110110100000111000011101011011101111111000011111"
                     "1000110110001001001111110010011100000100011010101101101101101001001001011110101010011110010011011110100111100111110111111110000101100111110000101010011"
                 },
-        /* 33*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 31, { 0, 0, "" }, "aztec barcode", -1, 0, 131, 131, 1, 1, "Layers 27 example from Andre Maute, mailing list 2020-12-16",
+        /* 99*/ { BARCODE_AZTEC, UNICODE_MODE | FAST_MODE, -1, -1, -1, 36, -1, { 0, 0, "" }, "Lorem ipsum dolor sit amet.", -1, 0, 151, 151, 1, 1, "Same as above",
+                    "0110011000001101111010100010010110101010100001110111111001101101010000111100111111111001000011100001010000101001010001001010101001000111101011111001101"
+                    "1011011111111000001111111001010101111011100101110110001011011000101000010101101100000110011110100000010100110111100111111011011110001000110100111100100"
+                    "1110001110001111110101011110010010011011001011001000001010000010000110101010101011111110110010000010000111000010000011011110001111111001000010000000111"
+                    "1111111110111100000010100111101000111010110101100001000110010111110111110011110100111110101100011000001010110110100001111101110111001101001101011100001"
+                    "0001111011000111110101010100010001011101110011011100001110100100111111001010100000010111000001100010110011100000111110011000101100011011000010100100001"
+                    "1010011111011100100000000001110110111000110110010101110001011100100001101101111010100110101101111101111101011101101111001001010010011000011110010111000"
+                    "0010100000000010010111100000011001110011011011101010011101101010000010010110110100010010010001000100001011100011011010101010001000010011001010110111111"
+                    "0111111001111100110000010101000101011011100110110110010011011110101110111011000100111001101100111001011011110101000100101111101001100011010100010101110"
+                    "0010010101101010010100100100110010111100100010111001000100000101000110110000110110100000011010001001101010100010011110101100110010010100011010001011011"
+                    "1110101000010010000001001011111110111011001110110000111011111010110010001011111101011101110100100000010101110001010101101001101101101110011110100001110"
+                    "0001011111001011100101100010111101000010011010000010010100000111011111100010110101100000101011011101001000000011000001011110001001001011101001101001000"
+                    "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "1110101001101000000110000100110101010101001011110010001100001111110110010000101011100011011001000110101100100110110100001010001011101111011000001110110"
+                    "0000111010111110110101010011100110100110111101010000011001110011001101100011100001000000100100110101110111010011010110011101110111100101011110001001001"
+                    "1110100110100000100100001010111100110000001000000100001010000010010110001010001111111010111001010110111100100001110110011000100011100011011001100001000"
+                    "1001000111111111011011001111011110111000011110101110011100011101110001010111001111001010100110010010000101011100110010001001011100010010111100110111101"
+                    "0001001001001100010001111110010110001101000011010111000011001000111110011110000100111111100010011001100111001001110111110000110101110001100010001000010"
+                    "0000000100011110100100000011010101101011010111110000000110110010011111110111010110100001111110011000010001110100101110000101011100001000111101100000010"
+                    "1001000010101000000001001000101000111110010000110111000111100111111010100100111101101001101010100010010010101001110011001100010001110001000000101001111"
+                    "1011010010111100010011100001111110100001100100010001001010110101111101010101111101010101011101110101011111110110011011101101001110000101110111010010110"
+                    "1000010000000110100010011000100011000000100000011111111101100001010111000010000101100110101011011010000100000100100111100010000010110100010011100010110"
+                    "1010110100110111101010110101000000001111001111011001111000010011010111001111110000111011000101000110010011011100110111101001111001000001110100001101001"
+                    "0001100110001110101110000010000000111100000011111000101110101111100111001110011001000110001011100101001100101110010000000000011111101011011011001010110"
+                    "1110001000010100000011010011011100011000010111101010111111010011001010011101010110011010001111101001100101011101100100011111111111000001010101011001011"
+                    "0100110011100111100111010110010011000001010011001100110010101000101001001010100111100110000001001101011101101000111001100100011010011000001001100111110"
+                    "0011001110110110101100000101000111010001110110010110101000010111111110100001101011000110011111000000101011011000110001010001101111000111000101000101101"
+                    "1001000100101010110101111010011011011101101000011000001011001000000011110000011110100111100011100001011001001011011100111010010100101110000000111011110"
+                    "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "1101101101100010000110100110000001010101011010111011011010101100010100000100100110011100011000100111010110100100111011101010110111100011011000011011101"
+                    "0010011010011111011100111101111001010010101100001000011000111101010100111001011100010101011100110001001100110001101111101111000110110000010111001011111"
+                    "1101000110001011110100100110010100000011000000010000111010001001010100000010110101000010000000001010000001100011101011001110011011000111101011111001000"
+                    "1001000010110011011110000111100001100001111100111111001100010111011101101111111101011101110110101110111011011100111101110001110010110001000101011011000"
+                    "0000000100100000011011001110011011001010000011110000101001100000011100110010101010010010001010010011101100100100001001101000110111000000010010011111000"
+                    "0010111110111010010000100001111110010010100111100010001100110000100111011011010111010101100110110010000010011010111011010111011111111000000101110101110"
+                    "1010101111000010110010011010101001101010111000010010010001001110010111111100110111010110111001101100000000001010101100100000101011100101100011100100101"
+                    "0110101110110100101100111001111000011000001101000011100011011010110011010011001100011101011101011100110001110110000000100011011111011100101110111100110"
+                    "0111110110101000001001001000100101011000100001110011100000000000111111100100010101001100010010011101010011000110111100010000111000000111011000100100001"
+                    "1010010111111010001001100001001101111100100110101101011000011110010111001101101001101000000101111000010010010111001100111101110110010001101101010100000"
+                    "0011100010101101110010100010101000010011001000100000010110100110110010001100001100111100001010101101001010101000011110010110110101100101001000110000001"
+                    "0000001010011110010101110111001100001101011110000011110111111010101111001101111000110000110100110001101000111100010111010011001000001010100100010111110"
+                    "1100110111001001100100000000100000000001001000011001011011100000001111100110001110001111000011111001010111100111000111111110101011100101011000000100001"
+                    "0101110000110100000101101001001011011110110101011010110110010110000001101001011001110110000101101000000011111000101100101101001100101001001110010010001"
+                    "1000000100101010101110001010101010000110100000000010010101100100001000000000100110010100001011010001110100000111110110111010011110000000000011101100001"
+                    "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "0010101101101101000001101000100111100101010000110001010010101000010000000000000010111010100010010000000010101111100001010010001101001110001001101000001"
+                    "0111010100111101011001001101101001000011000111111111110011010101000000010011101010101010010100000100110001011000100110100011110000110110000111111001101"
+                    "0001001101101100100010100000100110100000011001110010000110001011100100010010101011011000011000101011011110101011100100101000111001010001100011011100100"
+                    "1101011011011101000110100111100100011011110110101010011010011100101010000101000101000110101110001011000100110100101001011001000100011000011101000010101"
+                    "0011100100101001100001000100011011110010100000000110010100100101001000010000100111101100001011010010001101100111111000010010110000110110011001000001011"
+                    "0011100010111011110010111101010001000110110100110011101011110011111100101101011001101011001111000110111111010100100100101001111110010000100111000001010"
+                    "1100101101000011110101001110110011011100100011000011101101001001100011011000000111101011110010001100111101101100011000111100001010110100100011100100010"
+                    "0100110010010111110000101011101111111101111110000001010011111011111111101001110110001001011101100101110000111111101110000101101010010010010111110101010"
+                    "0011001100000011000111111000101001000010011011000010001111100001111011010100100110000100101000110010010011001110000100011100010111011101101001011111001"
+                    "0111110110010111010011000001010110110101010100011101001111011010001000011101100000001101101110000011000111010010100110010001110110100010010110001101100"
+                    "0110011111100110111111101000111110100100011001100010100101001100110100100010001010101110101010000110011111000001010101101100100011011100000001001110000"
+                    "0111110101010110000101100011100010010110000100110000001111110001111010010101010101100111001100011100001010010001001000101111110101001011111101001100001"
+                    "0111011010000001000101011010110010110011100010110110010011001101110011011100011110010000011001100100011001101101000110001000001000101010101010111000000"
+                    "0100000101011111110001001011011111000101011111101011101100011111001001110111110001010101011101101010110011111101100110100011001101010000000101001011001"
+                    "0011001010101111100011001010010011100001001011100111111111101111010011011100011110000110101001001101101100000100010001101010100101100001111011101001010"
+                    "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "0000011100101011001000111110011011101100011010001011010010001110111011101000101001011111010011001010100011001000000000101110010010010111010010001111010"
+                    "1001100110011100011111000101000000100000011101110101110011111000000100011011000001110011100110001001101110010011001110101101100100100100001101000010111"
+                    "0001010010100000011111001110101010100111011011000111110100000010111111101010111001000001110000111000001111101011000010100000111000001000111001111000000"
+                    "1011111100010010110100100101010100010010001110100000101001011111110011110101101110000000110101001011100011111001111101111111111010110101010110100100001"
+                    "0101111011100000110101111100110110000000000011011101110011101111000101111100011101111000111010110110100100001111101110000010101011110010110011011010011"
+                    "1110100100110011000110110101000010010011000110110100011000010010111011000111010100110100010111111100110000010011101011000011010001011100000110000100001"
+                    "0001111101001000101110001100100001011100011010101000001111100000111100111110010100011101011001010101101001001010101101001110110110001100100010000100011"
+                    "0101010000110101111110010101100100001101101101111000101000110011100101001011001111101001001110100001101111111101111011100101111001001000010101011001110"
+                    "1001010000001111111000000010011001010011100000010111101101100101010111111110000000111010000010100111010010000100000110010010011110110111110001011100100"
+                    "1010111001010011111110000101000100010101001110101101111110110101101111111111111111100100110101111001010000111001101101110001111110111010110101110011111"
+                    "1000000100100010010101011110110111100111011011101000111111001110001001000000000001010110010000000110100001100000101111001000001010100101101000010001001"
+                    "1110011000111101010011001111011010010011001100101100101110010101101111011111111101010101011110111001010001110000000010000001011110101110010111001100111"
+                    "1100100000000011110001110010001100000011001011011000111101101001001001010000000101110011010010000011011100000000101100000010000101100110111010011101000"
+                    "1001001010110111111111010011010101111010101111000101110111011011110101010111110101001000001111111111010100111001111110010101001100110100000100110000000"
+                    "1110010000000011010111110000001010000110010011100111111100000001000011010100010101101111011010110000010000000010000110111100010001001011100000000101110"
+                    "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "0111000010101100001110010100000100001100111001111010010011001110111001010100010101100001010000111111001010101010100010100010100001110101010001001110000"
+                    "1100010110010000110000100101001011111100111100101100001001111101011001010111110101000101010100111111001101011000111000010111000001011100000110000010011"
+                    "0000100111000001011000100110100010111000001010011101111100001111000101010000000101010101000011100110100101000011101100010110001001110001010000111000100"
+                    "1111110010010110011010100111010110000100111101111101111110110100000001011111111101000010010110101000010101010111010010100111010110011101110110000100011"
+                    "1100111010101111110010110100100110100010101010111111101010001101100011000000000001100010001000011110100001000001010010010000110011000001000010100011001"
+                    "1010111010010000101001111001111011111011001100101100000011010101100001111111111111111101001100110010010001110010100010010011000011100111011100110001110"
+                    "0101101101000000010100101000000111000000011011001000110000001110011000100110100010000101100000101011010110101110111111101100010111111000100001000100000"
+                    "0001101001011101010111101101111101011000001111111110000100010111011101101011010000101000110100010100100001010011111101011101110010001011101100000100100"
+                    "1101101111100101000111111110111010110101100010101010001101100000011001000110000010011001100011001101000100100111101000001100110101110101011011011010100"
+                    "1110001010010010110101010011011100000111101101111100001011111111001001010101010101001001111100010000010101011101101101001001011011110000110101101101000"
+                    "1110001011100111101011001100111010010111000001100111110001101110001101111010000011011000111010100001101011100010110010111100110111111010101000000010101"
+                    "0010100101111110111110001111000001101110100100100110011111010001001010010101000001111100100111110100001110110011111001011111010001100100101100010000001"
+                    "1010001010100100110110111010011010100010101001010101010101000011011000011110110111010010101000110101101111101011110110011100101000101101111011011011110"
+                    "0110000100010000100101110101101010010101010100001111011000111101011010110101010101101100001110011001001010111110001101100101000111011101000101101101000"
+                    "0111011011000001110010111100100001111100000011000000011010000101101010100010100101010000010001011001101101000100111100101110001100111001101001000111000"
+                    "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "1001000110000001010110111110000011111101101010010001111000101001010100010010100110001100100001001000000000000100111101111110001001000111000000000010101"
+                    "1101000100010100111100010111111111001010011111100111101011111010101110110011101010010101100101111111001100011111111111110101011000110101001110001110000"
+                    "1100010101100000000000111000000001011101010011010111000100000011100111100010010001000011101001000100010101001001110101011010010011100001010011101000000"
+                    "1011100010110110110000100101100000000010010111010101100111110101001110000101111011100110101111100010101011110011110100101111101111011011101101111111110"
+                    "1001101001000101000101000110110101001110111000011011110000100000110101110010011011100111111011100101111001001100101011000000011100010111111011010110100"
+                    "1110100111010111100010100011100000010001101101110101000001111011010000000011000110100100110101101000110000110010101001101101110100100111110111000111001"
+                    "1110011001100100010111011010001010010100001001110101001101000001101100001010110111000010001010011010100111101100000101010100001011101110001001101110111"
+                    "0011001000011100100111111111000111111100110100100100001011010101011110101101110100101101101101110111101110011101001101100111100111001101100100010110111"
+                    "1101011110001110111110100110001001000111111010011001010000100011110110110100000001101101000010010010111011101010100111101100001000100011010011111111011"
+                    "1001100111010000100111100111010110111100010110111000010011110100110010011101100110101101010111001101100100111101001011001101010110100010111110010100010"
+                    "1010100000100101000100111010101101000101011010000010011101001100110101001010001001010011010010111101000111101011011001101000001011111011010001111010011"
+                    "0001111010010010001100110101111111101100001101101001000101111111111101010001111011001011101111111010011101010110111111001111100110001101100101001100110"
+                    "0101000000101011000000010000101001011110111011111101001101000010101100101100011000000100000000001011100101001101111100110100010010100010111010011110011"
+                    "1100010010110101000101011011110100001011100101001011011101111101000111101011000000100011001111100110011010111111101001010001001100000101011101001001010"
+                    "1011111100100010001111101100010001011011001010000111110000101010000100010100101010000000011000101001100011100111010111010110010100010101111010110011000"
+                    "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "1010011001001000111101011100011010101000111000111111111111001001110110001010010101100001011010110111010101101100011101111100010111101001010011100001111"
+                    "1010000001011110101000101111001000110010000110001010111000011010110010111111110111100011001111111010001000110001111100010001100110100110100110110111100"
+                    "1110100110001001111000011110010110101001100000011010010010101110100011100110011100000010000000100100001000100101100001000000100110100011101010101110101"
+                    "0010111110010111100101011001100101010001010101101001001101011111011010011011000110001011101111001111011111011001010100010001110011101101011111101010010"
+                    "0110111010101110011111101100101011000110011011101001110100101101101100010010111101000111010010010010111100001100101010011000001000000111100010011000100"
+                    "1111111100011101110010111001000110010000101100101011101011011100110111000111010100001101001101111001001100011010111011110111111000010111010101000010100"
+                    "0101111000101010101001011010011111101111011011010010100110001110010010101010000010101111011010100000011100001101000001111110110111000100011011100111100"
+                    "0110000000011011110101001001011010100001010110010100011100111011000010000101010000001011110111111111100001010111010001110011001101010100110110000000000"
+                    "1100110001000100110100011010110011110110000011010100111010100100011000000000010000110000110000111100010001100101101101111110101110011110000010101111011"
+                    "1100110111110000010100001011001000001111001111101101010000011111001011100101110100100011110101110101011111111100001100100101100100111111010110011010110"
+                    "0110110011000111100000011110111001110001101011101000100010101101101101110100100011100110010011100111101111100101100111011110001100111011010001110001101"
+                    "0111001010110101011001001011000101101001001100110000000001111101011010001101001000010010011110101101111110011111101110100011101111001001011100101111101"
+                    "0010011101101010100111100010011100010011000011010101101000001010100011101010111111100110001000000001101100100110110000000110011001011001111011101100001"
+                    "1000110111011110100100110001000010010000100111011010001000011010111100010101001100011111101100010110000011011111101000001011111100110001101110110101011"
+                    "1101011001101010111110000110100101010000100001001110101110000100010110001110010001010011100010110101010110001100000001101000010011101010000000111101011"
+                    "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "0001001110100100001101000110101001111011101001011011001100101100111110000010101011101111010000000000100110101101001101011100000100000011011000010011101"
+                    "1000010101110010110001111011101111111001101111011011101101011110001011110101010101011011010101100011101101010100111001111001100100010000001101111001011"
+                    "1001110110000010011011111000101000110010000010000111001101100100100101110000101010011110111011010000001010101111011110100110011011100000111001100111011"
+                    "0110000100011001011000111101110001111001000101000011111110011110110101000001111101111101100111110010101010110001011011000101011001101111110100110101011"
+                    "1010100111100111101110010100001010110011000000010110011000000010100001000010101000111011100001001001010111001101010100100000110001011100011001100100100"
+                    "1101011100111100110101110101001111100100010100110111011000010110100000000101001001001100011100101011110011110101001100110011010011111011010100100011100"
+                    "0001111101101100011000100010110100110011100011011110110011101000101010010100110110010000011010100100101001100100011011111100101100101000110001100000010"
+                    "0110110101010101011000000011101100110000010110111001001100111011011100000111110110111110110111101011000010010111010101110001110101110010111101011011101"
+                    "1011010000100001101110101100011101011001000010110111111001000111101101011010110010010111010011000111101000100000110000011000010010110001011011110111110"
+                    "0011101110011110110100001101100111100101101110100010001100011100001001001001000111001000000100100110001100111011100100001101101000011101010101100000010"
+                    "0101000110101100011100101110101011111000001000010101011000000011001100101000110010100000101010110001111101101011010010010100011000001010001010010100111"
+                    "1000100000111011001011000011100010110110100111011111001000111111111110011101010011100001010100111010011011011001001001011001010001011001011101011111110"
+                    "0111110000100111111101001110011000101101110000010010101111101101000010000010000011100101011000101000011110101111100010000110010010100100110011011110010"
+                    "0110100111111100001111000011010011010101101110001001110101111011000001000001001000100010001110100100001110010010010110100011001101000001100111110101001"
+                    "0010011011100100101100011110010110011010001010001110111000101011100101001000101001001001101000010110000110101000011110110010101110101000011000000010110"
+                    "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "0000111011001011101000110110100010010000000011011011011101001010110100101110110100001010100000001000101100000100011011001100001001101011011000111010100"
+                    "1011101011110000100011110101010110111100011110111001011001010000001011111111010111001100010111110011111000110011001011111111010010110100111101001111101"
+                    "0111100100101010000001010010000101011001000001001101110000101010110000111110010110010101000010000011001011101001000110010010000011101010110001100111100"
+                    "1000101111010011001101110101000110000001001100111110010110010010010001011001010111100110110111001001001001111101101101010001011111100101110100011110100"
+                    "1101000111101110010011001110111100100110010000000110001101001001110000111100010101011100010011001101111100101110111100001000001111100000101011110110100"
+                    "0110111110110001100101011101000011111001001111010100100101110011010000111111101100100111010111000101000001010011110011100011010001111011100111001101100"
+                    "0101010101101010010000110100111010110010110001110011110011101100011111110000000101010001000011001011111100000111101000010010111111011111101000110010001"
+                    "1100111000010101000011100001001001101000111101110011001001010111011111001001011011100001101100100010000001111100101001001111110000000110101111001100111"
+                    "1001101001000001000111111110110101001101010000110110110011101100000101011010111100101000001011001101101010000010101000010110001101101011110001110010001"
+                    "1000000100011011110011111011110000011111110111001111111010110101100011000111010100100010001111000101110110110100000111000011101011011101111111000011111"
+                    "1000110110001001001111110010011100000100011010101101101101101001001001011110101010011110010011011110100111100111110111111110000101100111110000101010011"
+                },
+        /*100*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 31, -1, { 0, 0, "" }, "aztec barcode", -1, 0, 131, 131, 1, 1, "Layers 27 example from Andre Maute, mailing list 2020-12-16",
                     "10101111100010101000001110000100001111111110110110010011000100100000011000101001100000001111111010100010010101111010001011001110001"
                     "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "10001110111111000001001111011100100100010011110010101011110111111000000110101100000110101010110000010101101110010010010101001001001"
@@ -1645,7 +3574,140 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "10111010011101110010010111100011101001001011100010101101110000011000110101000011100000011000101000101010001110100000000100101100001"
                 },
-        /* 34*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 23, 23, 1, 1, "Full 2 layers example",
+        /*101*/ { BARCODE_AZTEC, DATA_MODE | FAST_MODE, -1, -1, -1, 31, -1, { 0, 0, "" }, "aztec barcode", -1, 0, 131, 131, 1, 1, "Same as above",
+                    "10101111100010101000001110000100001111111110110110010011000100100000011000101001100000001111111010100010010101111010001011001110001"
+                    "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "10001110111111000001001111011100100100010011110010101011110111111000000110101100000110101010110000010101101110010010010101001001001"
+                    "01011001101100001111011110100110011101100100000111011100011110111100111011101100010001000101010011011110111101111101110001011110110"
+                    "00010011111010010000101100000000000101100100001110001110011110010010100010101111100000011110100000010100110001100001010010110011000"
+                    "11001001110100100101100011010001110000110110011111011000000100010101001010000111111010010011110101110011001111010110000101111111010"
+                    "10111000100010000011110011100111101111010100001010111010110011010010101010001111000010011101110110111101011100010001111010011110100"
+                    "01100011011111101110100010111100110000110010011111010011011010110110001000110011110010100110011111000101011001011110001011010101111"
+                    "10111011100010110001000011000011001010001000111010011010000011000000101101111011000100110001111110110001010011100001101001000110101"
+                    "01101011010010000111110000000000010100010111001001101011100011010110011001110011110000000101011001010011011110101111100101010011010"
+                    "00101000011001101010110101101101100000111101001100100001110011101001000010100001000100001111001010100001010111010011110010111101100"
+                    "01001111101011110101110001001000111001011110110101101011000010010111101001110001110011000110000101010011000010011111100111011001011"
+                    "10101100000010001010110001101001001000111110110100111110111001011011101010111000001101111011011100011111101101011000100001111101001"
+                    "01001001100010001100011111110001110000101100101001010010001010010101110111011111011100000100011011111001111001110110000110000101011"
+                    "00100100111100100010001110101011101010001011011110110001100000110010000010100010100110100100111110111001110001100000110111101010100"
+                    "01011001010010101111111010000100110000111000011001100111010101111110011101100011010000100011101101010001101111001100010100111011111"
+                    "00000110100101111000011110111001001111101001100000001101001101101010000000110111001101010110100000111111101111001011100000010010001"
+                    "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "00010001111000001001010101001011001100010011011110101010111011101010001010001000100111101100101110111010000110100001000101111100101"
+                    "11000000111111110111010110110110011001111100111011010111010010101100100000001111010100001010000011101010111111110111001110001101011"
+                    "00010111001101000010010100010101001011100101000010011000100010101011101010110100101101111000001100100111111101111000011101100111000"
+                    "11101100100010000101010011011101110110110000100111100000001001000101101110011001111000000111010101001111101100010111001001010000011"
+                    "00001100100011000001100101011111100101110001010100011100100110001001111101011000001101010000101000100111110100111010001101100100100"
+                    "01100111110100011101010010110000011010110001111011010110011010100111001101101001011101001000000001110001010001000110100001101010010"
+                    "00100000001100011011000001111010000110011001001100111110101110111000100000110011001101010100110100011000000110111011111100111010000"
+                    "01010000101101010101110101101101110010001000000101010001011100101110101000000010111101000110000011100111101001110101110111111000010"
+                    "10110110101101011011001101001000000011000000010010010100101000011010110111011000001001101101011110001000010000100001011101000111001"
+                    "01001011100011001110101011100111111001111110010101001111111011100100010111111000011110101011011101110010100011000101001110000001011"
+                    "10011001111000000000001111011101000111011111110000010110000111111001001011101100001010110000110010100001000001100010000000001101100"
+                    "01111111110110110110111011000110110111010000000101000111011111000101001011111010011101110011100111001110011100110111110101111001111"
+                    "00000010101110011001001111000100001011110001010000001011101010011010100110000100001011101101101100111010011110111011101001001010000"
+                    "01000001101111101101100110000100010111000001101001011011011110010100001001000100010101001001000111101111101011100100011001100111110"
+                    "00011110000110100011011011001100100110011111011010111001001010100010101101001000101000001010101110101100111010000000101110011010100"
+                    "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "10001110011000100010010001101100000110110000101100111001100100110001111111110011000111011101111010011110011111001011001000010000001"
+                    "11000000010111110110000011011100011110000110010111111111111001011111010111010110011110011000101101110011011101001100011001000000110"
+                    "00111011101000001010000010100010100001111010110000110110101011110000001000011111101110100010111010110101101101100010010110100000000"
+                    "11000110110101110101111000000101011001101100101011100000010001000111111111111110110110001101111101100111101101101100010011001101111"
+                    "10101111001011100011010011000110000101100011111000001000111110011000000011011100001100011001111100101110010110100000101010101110100"
+                    "01111100001011001111100010011101110111101100000001110001101000000100100110000001011101101010111101101000110001111110000001110101010"
+                    "00001100111011011001110001010001100010110011010010001111000110100001111110001110000110101011000010001000001111001001101011001000000"
+                    "01110110101101011100010100001001110110111001011101011101010111000111110011001011011010110010011011110111000100011111101010101100010"
+                    "00110110110101010011001000111101001110101111000010100111111110110000010100001011101011110100011000001100010111111011010100000001001"
+                    "01100000111100110110110010101010110011101101010101001111111110011100111000001110111000111101011101001101011000001101001110011101110"
+                    "00010011010001100010010000001110000001001011001000111111000111000011101010000011001101001010010000011010101000000001010001000010000"
+                    "11011000101000110111001100011101111000011000011001100111011010110110101101011011010000001111101001110100110010111110100000011000010"
+                    "00011110000110001001000010101000100100110111010010000100001111100000001111010010100010110011001100100010000100011001010101100000100"
+                    "01011101100100110111011100110000011100100101011001010000111110101110100110010001110110000111000011010000101010001111110011011001110"
+                    "00111101100111011000010100100110100011000110000000010010100001101000001111010100100110010010011000101010110100110010111001110100101"
+                    "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "00111000001111011001000100110111100100110001000110001011000101010001001100111100101101000011111100111101000100101001010110101011101"
+                    "01011111010111010110011110110010111110101001000011011110011110010100100101000110010110010110101001001010000011011100101110011010111"
+                    "00001000010011010001000110010011000010111100000100001001101001110001010101001111001010100001101100000001010011001000100101100100001"
+                    "01101010100101111100001001001000111010111111001111100000110001101111001001000100010010001010001011000101010010011111000101000011011"
+                    "00000011010001101000111111100100001001100111011100000110101011111011000100001110100110011001001100110010001010111000011010101000100"
+                    "11010101010100001110111111011001011010100000100001010100110101010101011110011011111011010100110111001000011011100110000110110011010"
+                    "00000101001101101010100100111011101111101101100110101010010011000011011011110011001100101101000000101000000010110011001111010100101"
+                    "11110110001100110111101101010110010100011001001111001001001010001110010010100000011011010010100001110011110101101111111001010111111"
+                    "00110001011100010011111000001001100110011101011100111010001111010000000011110011101110010100111100110010111101001010111101001110100"
+                    "01101001000110001110111111010101110010101011100111011100101111111111111110010000110110000010011111111000011010100110101010100010111"
+                    "00111011111011000001100101100100001101011101011010001000101100000000000101000001001110101111000110111111110110000010001110101000001"
+                    "11010010101110010111101110011111110011001100100101000010011101111111110101101111111000101000010001010110001110100101101010111000010"
+                    "00001011001111111010000010001001001110111000000110001001001101000000010101011010001011011110001100001101100100011011111010101101000"
+                    "11000011000000101100000010010001110001101010111001101011111101011111010110111111111001100001100111000000111011001111101110001101110"
+                    "10101011010001000010001110011110100001110000001110110000101101010001010100000100001111011001111010000110000101100001001000111111000"
+                    "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "10000001101001111011010001101101000110011100001100110111111101010001010111111001100110010110000100111101111011101011111100000000000"
+                    "01100010100010111111110001011100110011010001010011011001010101011111010100111001111000011100111101111101011101010111001000000111010"
+                    "10001110101111110001001100101101100010101101100010111110000101000000010111101110000010111100101110100110011001101010111101011001100"
+                    "11101000101001111101011101100011110101111011000111011100111101111111110101101100010010010011001011100010111010100110101110000110111"
+                    "00011111000101111010101101100110101010101111111010101000110100000000000101011100100111111000010010011111011101011001011111101101100"
+                    "01001110110110000111110101110101110001011110111111011110110111111111111110000001010000000110110011000011111111001110101101110100011"
+                    "10000001101010010011110100000101000010110100110100110000110010010001011000100011100101100010010110000001110010101010010101001001101"
+                    "11001101011000110101110001111010111101101010100111001000000100011110111100010001110001110110000111000100111001110111000100001101110"
+                    "10010000001010100000100110001010000001010010101010010000111101100010010010100110001100011011101010011100110111000011010111100101000"
+                    "01001101110110000101100001001111010110010100111111101110100001100101000101011101011001101110100011100100100110010100011110110110110"
+                    "10111001110000110011100100001010001001011111111010010101011001111011000010010011000011001111111010011111011000110000001001111110100"
+                    "01010010101010011110101111101100110100001110110111100010001111010100010011111000010110010100011001110110111000011110101101000010010"
+                    "10101001111100001000011101000001000011001011010010111011100000101001000000101101100101011100111010101110001010111010011100000011001"
+                    "11010111100100000111010000000100011011101010001101011001010100000100101000111001011110101110001111111001111001111111011100101001011"
+                    "10001001111001001011100001100101000001100011010000100001000111110001001111100000001000111101010100011010101010011011110101110110100"
+                    "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "00100101110111111001101000000010100111110001011010010011110100011010000010010100101111011111110110001100110100011010101100000010100"
+                    "01001101110010000100000101001100010001000101010011101000000100000100100110100111111101010100100001010001000011000111110110001111011"
+                    "10001001010001101010010110011111100010001000010100010101100001100011000110011000100101111100100010001010110110010001111001000110000"
+                    "11100111010001110110100001001111010111001001110111001101100001001111010110110011011000011100101001000001010101100100000010111011011"
+                    "10010100010000000001111110100111101111000000011100100100000101011001001101101010101101101100011010101000101101110000111101101000001"
+                    "11011100101111010111010100100101110010100100100101001011110110000111110011110010110001111101101001110001101010100110100101110100010"
+                    "00110011101011000000110000010110101001111000110000111001110111110001110101110001000000011111100010110011111111100010011001010100100"
+                    "11001011110000000101011010000001011010000010011001100000001001011110000000010001010000101000110001110110000001110111001000101010111"
+                    "00011100000000110001101011111110100000010001101110001011000110100011011101000100000101101011011100111000001010100011101111010101001"
+                    "01010001010010011100101101001001110110100011111011100000001111010100001100010000110001011100101101110100110011111110010010000101110"
+                    "10000001010011100010000000111111100010010000100010111011110010101000101100000101100100010011010010000101000111001010101101001111101"
+                    "01110011110111111110011110000010111100100011010101111100100100011110100100011001011100101100011111110011101101010111111111101100110"
+                    "00100101011010001011010000100110000110101010110110110110001101000000000100011000001010001000010010101111000100011011100001111000101"
+                    "11100110011100011100101010011100011011010000011111100111101100010100000011010000010100100000001011111101001100111110000110100101011"
+                    "10010100001110110000000111101110001001001101111110010100100100101011011010001111001000101011000110011001011111101011110110000000100"
+                    "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "10111000010101100001100011100000000100000100101000000111111011100000111011101101100000011111111000011011101010100001111001011010101"
+                    "01100100010101101110101010001011011011011100111011001000000100010110111001010000110011010000101011000101111000010100111001101001011"
+                    "10001110010010010011011100101001000011000110100010110111001000101011010001110001000001100101101100000000101111001011011100111111000"
+                    "01000101001011111111111101011111111001000011100011010000110011101110111110000001111101001100110101101001010000000101101010010100111"
+                    "00111010101100100011110010101001101000110110101110011000111011101000111000110110001101000001010100000011100110110010000100101111101"
+                    "11111011101000100111000000011000110110111111110011011100110111110101101000010011111000110000011001010101100011110111011101000101110"
+                    "10001110101010101001011000000100001101010101111010000111110110101000111000010010101001010010001100111111000001010010100111111000100"
+                    "11100111011000100100001000011010011001110000000001111001101010001111111111000010110001000101000001011010011000111101010000101101111"
+                    "00001011101001000001100010010001001110101010010010011100111000001001110101010101101110010001100010110101001000010000101110010111000"
+                    "11011101100000111111001001111001010001110001100111111000100101101110101010101110011001011011000111000011011010111111101011011110111"
+                    "10010100110100100010001111000110001110000001101010000000101011001001011101111111101001000000000010111100011000110001101000011110101"
+                    "11101100000100111100101100101100111010011110111111010100101101010111001101001100111110000000111111011011000101001111011011100110111"
+                    "10101001100001010011101100011100101001111010011000000110110001011000001000000101001111111001101010011110111000111011101000101110101"
+                    "01001010100101101101010100000001010000011001101111000001000011101110000011111000011110000001000001111101111111111111101110100100011"
+                    "10101101000110101010100000000001000111110111111010011000111001011000101101101101000011000101011100010010000000110011100101001000101"
+                    "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "10011011001010011011111010010110100001000101010110001110001011111000110110010001000110001100111000010001100101110001000111100011101"
+                    "11100100101011001110001010000011010110011000010111110000001000011101100110111010111011000110000001100111110001000100110100001000110"
+                    "10101001001011011000111000110010001010011101110000110110010000010000011111000000000010100001010100111001011111011010001001011011101"
+                    "01100000001011001101101000101111111011001010011101011110011001011100110000001010011000010000010111111001111110101101001101110110110"
+                    "10000011011100100001000010111111101011010011010010011111011010010001000001000001101000101000111010111100110000110011011010100000100"
+                    "11001001000110111111000011001101110110101101000111000011001000010100100011001100110000100110010111000001000000010101011111000011111"
+                    "10101010101001111010010101110100001100110100110000001010101010010000110011101001001001110111111010100100100001010001111001010101001"
+                    "11110000111000111111110010110001011000010001111101101100110100001101000110011101011000000001000111011011101110000101010000100010010"
+                    "10110001100000011010111110000101100101000000110000010110101100011001110001101000101001101001010000010010111000100000111010100010001"
+                    "11110010110100011101100100111100010111011100001111011101101100000111011110011111111001000010111111101100111111110101110000101001010"
+                    "00010111010101110011011101100100101011000101001000111100101110111000101001111110101111000010011110010111011110000011100010011001100"
+                    "01000100010011111110101010011101110011010101110001001100110111100101001111010001111000111011011101111001001011111101101111100101011"
+                    "00011000000101000011011001001011100101101100001110101000010111001011101011001100100010001000011110010010011010011010001101000101001"
+                    "11001101000110000101110000001101110010010111000111001111110111011101100110011000010110000101011001011001110110010110100111100010011"
+                    "00110011100010101000010110010101100101101100000110100010100010111011101100111001101100111101011100001101010111110000101110101001001"
+                    "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
+                    "10111010011101110010010111100011101001001011100010101101110000011000110101000011100000011000101000101010001110100000000100101100001"
+                },
+        /*102*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 23, 23, 1, 1, "Full 2 layers example",
                     "00000100110001011110010"
                     "01111011110100100101111"
                     "00001011010000010011001"
@@ -1670,7 +3732,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11001100111110110000000"
                     "00011010100010111001011"
                 },
-        /* 35*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 7, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF", -1, 0, 27, 27, 1, 1, "Full 3 layers example",
+        /*103*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 7, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF", -1, 0, 27, 27, 1, 1, "Full 3 layers example",
                     "001011111011101010010010000"
                     "011111001111111001111010110"
                     "001111101101101100001011101"
@@ -1699,7 +3761,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110011110110011010110100110"
                     "101010010111000001000111010"
                 },
-        /* 36*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 8, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNO", -1, 0, 31, 31, 1, 1, "Full 4 layers example",
+        /*104*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 8, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNO", -1, 0, 31, 31, 1, 1, "Full 4 layers example",
                     "0011101110100110101001010110000"
                     "0110000101110011101111001100111"
                     "0000011000110010000001101101001"
@@ -1732,7 +3794,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111011001010111010011101111110"
                     "1001011100001000011100011001100"
                 },
-        /* 37*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 9, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 37, 37, 1, 1, "5 layers example",
+        /*105*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 9, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 37, 37, 1, 1, "5 layers example",
                     "0010010100110011001011100010000111101"
                     "0101111010111110110100101101010011001"
                     "1010101010101010101010101010101010101"
@@ -1771,7 +3833,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0101001010110100110101111101011110000"
                     "0111100001000111001011001100101001111"
                 },
-        /* 38*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 12, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 49, 49, 1, 1, "8 layers example",
+        /*106*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 12, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 49, 49, 1, 1, "8 layers example",
                     "0001000111011100100000001101000011110011100000101"
                     "0110100001000100011100000000110110101100010111110"
                     "0000011110010100101100001010000010000100110110111"
@@ -1822,7 +3884,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001110101111010111101010001000110101110000111011"
                     "1110001110011001010011001001010000100100101000001"
                 },
-        /* 39*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 14, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 57, 57, 1, 1, "10 layers example",
+        /*107*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 14, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 57, 57, 1, 1, "10 layers example",
                     "001011000011100111111010110111010001110110001110011100010"
                     "011110001010001111111111000000100000100100110001001011111"
                     "000101001001111111010111010010011011111011101011010110010"
@@ -1881,7 +3943,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111101011110010100100011010101100011100110010111011001001"
                     "001100101001110000101000010011000100001101011001011100010"
                 },
-        /* 40*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 16, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 67, 67, 1, 1, "12 layers example",
+        /*108*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 16, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 67, 67, 1, 1, "12 layers example",
                     "0000000100001010000100101101101010101011010000001010001111010001101"
                     "0101010101010101010101010101010101010101010101010101010101010101010"
                     "0001010100101010100010110000101110111100001101110000000100111010001"
@@ -1950,7 +4012,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0101010101010101010101010101010101010101010101010101010101010101010"
                     "0001010011000010100000100100010000011010100101110000010001110001101"
                 },
-        /* 41*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 17, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 71, 71, 1, 1, "13 layers example",
+        /*109*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 17, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 71, 71, 1, 1, "13 layers example",
                     "00001101010011011010101011001110001000011100011011001100101000001110111"
                     "01110010110000100111001011100101010101000111011001110000100101100001100"
                     "00000111000100010100111110101011100011011010001110001000101100010000011"
@@ -2023,7 +4085,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10110010001101011101001110011001111101100101011010011110111110101111111"
                     "10000010100001001000010000110101001001110000100011100001100110010100001"
                 },
-        /* 42*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 20, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 83, 83, 1, 1, "16 layers example",
+        /*110*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 20, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 83, 83, 1, 1, "16 layers example",
                     "00001011100001101001010010111011000000000010110111001100101011111010100110010011011"
                     "00001100111101010101111001100010000000000101110110000101011100011010011001001000011"
                     "00000001101101111000000010100101011010101011110011000000000101010100111000110101100"
@@ -2108,7 +4170,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01101011110001110011001111101100101011010101110111110101111101011001011101100001111"
                     "00001001000010000110101000101110000100011010001100110010100011011111011100001101110"
                 },
-        /* 43*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 23, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 95, 95, 1, 1, "19 layers example",
+        /*111*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 23, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 95, 95, 1, 1, "19 layers example",
                     "00010001011000001001011100000100010100011110001000101101010001101011000110101100111011100100000"
                     "00111000100000010000111101010111001010100110100100101001100010111101100100110001001101001001000"
                     "00110000001000100010001011100100111100110000000000111101000101101101011010001100100111011100010"
@@ -2205,7 +4267,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10011001111011010101011010011101111110101111010101011110010010111111000001000011100100110011001"
                     "00110101001011100000100011100010100110010100111000001111111101000000001100011000110110100110000"
                 },
-        /* 44*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 24, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 101, 101, 1, 1, "20 layers example",
+        /*112*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 24, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 101, 101, 1, 1, "20 layers example",
                     "00100011001001111011101000010101101000001111011011100001010111001110100001111011101010011110100110110"
                     "01001011101010010001000100010011010011001011100001000010011001000001100110100110000010001111010101011"
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
@@ -2308,7 +4370,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01011101100101011001001110111110100111101011010110010100101110001100000100001110000011101010010100001"
                     "01100101110000100011110001100110011010011000001110100010010101000111010001001111111100001101100010111"
                 },
-        /* 45*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 30, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 125, 125, 1, 1, "26 layers example",
+        /*113*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 30, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 125, 125, 1, 1, "26 layers example",
                     "00100110111101111000100011101010001011000100011001100001000110110101101111011010100110010101111010000000001001111011011101111"
                     "01000110110001010011111011000100001101000010100100110101101011001111101101110000100110101000000100001011010101000110110110011"
                     "00100000111011111011100111001111100011001111101001011011011111100001111010110111111101111111011010001000100011110110101111001"
@@ -2435,7 +4497,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11111010111101011001001001001000000000110100010101011110101011001010101011000101010010100111110010111001110100001111110111011"
                     "10011001010011111111011111100010010011110010001010100100000110100111000110011010110111001010011011101001111100110010110010011"
                 },
-        /* 46*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, 1, "GS1 with Structured Append",
+        /*114*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, 1, "GS1 with Structured Append",
                     "001101011010101"
                     "111100100000010"
                     "101100001000101"
@@ -2452,7 +4514,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001001100010110"
                     "000001101000000"
                 },
-        /* 47*/ { BARCODE_AZTEC, GS1_MODE, 3, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, 1, "GS1 with Structured Append, ECI",
+        /*115*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, -1, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, 1, "Same as above",
+                    "001101011010101"
+                    "111100100000010"
+                    "101100001000101"
+                    "111111111111110"
+                    "111100000001101"
+                    "010101111101101"
+                    "000101000101100"
+                    "011101010101010"
+                    "001101000101011"
+                    "000101111101001"
+                    "110100000001001"
+                    "000111111111111"
+                    "000001100010011"
+                    "001001100010110"
+                    "000001101000000"
+                },
+        /*116*/ { BARCODE_AZTEC, GS1_MODE, 3, -1, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, 1, "GS1 with Structured Append, ECI",
                     "1101011001100100101"
                     "1000001000001010100"
                     "1100010010010100100"
@@ -2473,7 +4552,28 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0011010000001001010"
                     "1011000010000000000"
                 },
-        /* 48*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, 6, { 2, 4, { '1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2' } }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, 1, "GS1 with Structured Append, full symbol",
+        /*117*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, 3, -1, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, 1, "Same as above",
+                    "1101011001100100101"
+                    "1000001000001010100"
+                    "1100010010010100100"
+                    "1101101011111010101"
+                    "0111110101000011000"
+                    "0011111111111110000"
+                    "0001010000000110010"
+                    "1000010111110101101"
+                    "0000010100010110111"
+                    "1011010101010111111"
+                    "1100110100010111001"
+                    "0100010111110111101"
+                    "1110110000000110100"
+                    "1101011111111110100"
+                    "1010000010110000010"
+                    "0011001010000011100"
+                    "0111101011010100100"
+                    "0011010000001001010"
+                    "1011000010000000000"
+                },
+        /*118*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, 6, -1, { 2, 4, { '1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2' } }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, 1, "GS1 with Structured Append, full symbol",
                     "11100110011000010001000"
                     "10100110000110101111010"
                     "11000101100000111000011"
@@ -2498,7 +4598,53 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01011110101100000101110"
                     "00010001000011011101100"
                 },
-        /* 49*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, { 0, 0, "" }, "\152\076\350\255\362\357\027\231\072\040\123\224\237\303\035\207", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 1st example; BWIPP different encodation",
+        /*119*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, -1, -1, -1, 6, -1, { 2, 4, { '1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2' } }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, 1, "Same as above",
+                    "11100110011000010001000"
+                    "10100110000110101111010"
+                    "11000101100000111000011"
+                    "11100111110100011101011"
+                    "01101100001000000011000"
+                    "11001111111111111110111"
+                    "11001100000000000111001"
+                    "00001101111111110100101"
+                    "00011101000000010111000"
+                    "10000101011111010110101"
+                    "01001101010001010100101"
+                    "01010101010101010101010"
+                    "10010101010001010100010"
+                    "10111101011111010110100"
+                    "00110101000000010110110"
+                    "10001101111111110101001"
+                    "10010100000000000100010"
+                    "11000111111111111111010"
+                    "00010000010000000000110"
+                    "11010000010111010111011"
+                    "11101101110011000101000"
+                    "01011110101100000101110"
+                    "00010001000011011101100"
+                },
+        /*120*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "j>\350\255\362\357\027\231: S\224\237\303\035\207", -1, 0, 19, 19, 1, 899, "BWIP-JS #354 1st example",
+                    "1101010010011101000"
+                    "1100111010011110011"
+                    "1001101000000110101"
+                    "1011101011001001011"
+                    "0011110101011011000"
+                    "0010111111111111010"
+                    "1110010000000110010"
+                    "0101110111110111000"
+                    "0111110100010101100"
+                    "0010010101010100001"
+                    "0100110100010101100"
+                    "1100010111110100101"
+                    "1111010000000110101"
+                    "0111011111111111011"
+                    "1110001101101000000"
+                    "0110001001111011110"
+                    "0011111011010111001"
+                    "1110110001011011110"
+                    "0001111011111000101"
+                },
+        /*121*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "j>\350\255\362\357\027\231: S\224\237\303\035\207", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 1st example; BWIPP different encodation, 3 codewords shorter (see above)",
                     "1111001111001101001"
                     "1011001011010001101"
                     "0010010101011000011"
@@ -2519,7 +4665,28 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0000111100101101101"
                     "1011101101111100011"
                 },
-        /* 50*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, { 0, 0, "" }, "\035\316\244\056\040\104\004\275\031\175\244\311\030\035\076\164", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 2nd example; BWIPP different encodation",
+        /*122*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\035\316\244. D\004\275\031}\244\311\030\035>t", -1, 0, 19, 19, 1, 899, "BWIP-JS #354 2nd example",
+                    "1110110111000100010"
+                    "1110111001100010100"
+                    "1010011100101001011"
+                    "1010000100011000000"
+                    "0001110101011010110"
+                    "0011111111111111001"
+                    "0011010000000111001"
+                    "1100110111110110110"
+                    "1000110100010101101"
+                    "1100010101010100011"
+                    "1011110100010101111"
+                    "0110010111110101001"
+                    "1110010000000111000"
+                    "0111011111111110111"
+                    "0111001101101001100"
+                    "0000101100011111101"
+                    "1010010010101001001"
+                    "0111010000000000111"
+                    "0001000001010001010"
+                },
+        /*123*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\035\316\244. D\004\275\031}\244\311\030\035>t", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 2nd example; BWIPP different encodation",
                     "1110001010011101111"
                     "1001010010100100110"
                     "1100010011111011111"
@@ -2540,7 +4707,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0001011110011100101"
                     "0000001100111001111"
                 },
-        /* 51*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "0", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (1st)",
+        /*124*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "0", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (1st)",
                     "11101010101"
                     "11111111111"
                     "01000000010"
@@ -2553,7 +4720,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00101010100"
                 },
-        /* 52*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "25", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (2nd)",
+        /*125*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "25", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (2nd)",
                     "11101100101"
                     "11111111111"
                     "01000000011"
@@ -2566,7 +4733,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100100000"
                 },
-        /* 53*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "125", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (3rd)",
+        /*126*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "125", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (3rd)",
                     "11110101101"
                     "11111111111"
                     "11000000011"
@@ -2579,7 +4746,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111101000"
                 },
-        /* 54*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "255", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (4th)",
+        /*127*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "255", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (4th)",
                     "11010101001"
                     "11111111111"
                     "01000000011"
@@ -2592,7 +4759,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110011100"
                 },
-        /* 55*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 11, 11, 1, 1, "",
+        /*128*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 11, 11, 1, 1, "",
                     "11101010101"
                     "11111111111"
                     "11000000011"
@@ -2605,7 +4772,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100110100"
                 },
-        /* 56*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "15", -1, 0, 11, 11, 1, 1, "",
+        /*129*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "15", -1, 0, 11, 11, 1, 1, "",
                     "11101001001"
                     "11111111111"
                     "11000000011"
@@ -2618,7 +4785,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00001111100"
                 },
-        /* 57*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "16", -1, 0, 11, 11, 1, 1, "",
+        /*130*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "16", -1, 0, 11, 11, 1, 1, "",
                     "11101110101"
                     "11111111111"
                     "11000000010"
@@ -2631,7 +4798,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111100100"
                 },
-        /* 58*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "63", -1, 0, 11, 11, 1, 1, "",
+        /*131*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "63", -1, 0, 11, 11, 1, 1, "",
                     "11100101001"
                     "11111111111"
                     "11000000011"
@@ -2644,7 +4811,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00101010000"
                 },
-        /* 59*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "64", -1, 0, 11, 11, 1, 1, "",
+        /*132*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "64", -1, 0, 11, 11, 1, 1, "",
                     "11111010101"
                     "11111111111"
                     "01000000010"
@@ -2657,7 +4824,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111011100"
                 },
-        /* 60*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "65", -1, 0, 11, 11, 1, 1, "",
+        /*133*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "65", -1, 0, 11, 11, 1, 1, "",
                     "11111010101"
                     "11111111111"
                     "11000000011"
@@ -2670,7 +4837,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110111100"
                 },
-        /* 61*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "126", -1, 0, 11, 11, 1, 1, "",
+        /*134*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "126", -1, 0, 11, 11, 1, 1, "",
                     "11110101001"
                     "11111111111"
                     "01000000010"
@@ -2683,7 +4850,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110111000"
                 },
-        /* 62*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "127", -1, 0, 11, 11, 1, 1, "",
+        /*135*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "127", -1, 0, 11, 11, 1, 1, "",
                     "11110101001"
                     "11111111111"
                     "11000000011"
@@ -2696,7 +4863,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111011000"
                 },
-        /* 63*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "128", -1, 0, 11, 11, 1, 1, "",
+        /*136*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "128", -1, 0, 11, 11, 1, 1, "",
                     "11001010101"
                     "11111111111"
                     "11000000010"
@@ -2709,7 +4876,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100010000"
                 },
-        /* 64*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "191", -1, 0, 11, 11, 1, 1, "",
+        /*137*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "191", -1, 0, 11, 11, 1, 1, "",
                     "11000101001"
                     "11111111111"
                     "01000000011"
@@ -2722,7 +4889,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100010100"
                 },
-        /* 65*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "192", -1, 0, 11, 11, 1, 1, "",
+        /*138*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "192", -1, 0, 11, 11, 1, 1, "",
                     "11011010101"
                     "11111111111"
                     "11000000010"
@@ -2735,7 +4902,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110011000"
                 },
-        /* 66*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "225", -1, 0, 11, 11, 1, 1, "",
+        /*139*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "225", -1, 0, 11, 11, 1, 1, "",
                     "11010010101"
                     "11111111111"
                     "11000000011"
@@ -2748,7 +4915,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00001100100"
                 },
-        /* 67*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "254", -1, 0, 11, 11, 1, 1, "",
+        /*140*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "254", -1, 0, 11, 11, 1, 1, "",
                     "11010101001"
                     "11111111111"
                     "11000000010"
@@ -2766,7 +4933,7 @@ static void test_encode(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char escaped[1024];
+    char escaped[8192];
     char cmp_buf[32768];
     char cmp_msg[1024];
 
@@ -2784,19 +4951,22 @@ static void test_encode(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci,
-                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                                    data[i].option_1, data[i].option_2, data[i].option_3, data[i].output_options,
                                     data[i].data, data[i].length, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                                        i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, { %d, %d, \"%.32s\" }, \"%s\", %d, %s, %d, %d, %d, %d, \"%s\",\n",
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %s, { %d, %d, \"%.32s\" }, \"%s\", %d,"
+                                                                    " %s, %d, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci,
                     testUtilOutputOptionsName(data[i].output_options), data[i].option_1, data[i].option_2,
+                    testUtilOption3Name(data[i].symbology, data[i].option_3),
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp,
@@ -2868,6 +5038,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         int output_options;
         int option_1;
         int option_2;
+        int option_3;
         struct zint_seg segs[3];
         int ret;
 
@@ -2877,8 +5048,9 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         const char *comment;
         const char *expected;
     };
+    /* s/\v(\/\*)[ 0-9]*(\*\/)/\=printf("%s%3d%s", submatch(1), (@z+setreg('z',@z+1)), submatch(2))/ | let @z=0: */
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, -1, 1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 15, 15, 1, "ISO/IEC 24778:2008 16.5 example",
+        /*  0*/ { UNICODE_MODE, -1, -1, 1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 15, 15, 1, "ISO/IEC 24778:2008 16.5 example",
                     "001111000011111"
                     "110111100100011"
                     "111100001000111"
@@ -2895,7 +5067,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "001010111001010"
                     "000001011100111"
                 },
-        /*  1*/ { UNICODE_MODE, -1, -1, 1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 15, 15, 1, "ISO/IEC 24778:2008 16.5 example auto-ECI",
+        /*  1*/ { UNICODE_MODE | FAST_MODE, -1, -1, 1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 15, 15, 1, "Same as above",
                     "001111000011111"
                     "110111100100011"
                     "111100001000111"
@@ -2912,7 +5084,41 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "001010111001010"
                     "000001011100111"
                 },
-        /*  2*/ { UNICODE_MODE, -1, -1, 2, { { TU("Ж"), -1, 7 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, 0, 19, 19, 1, "ISO/IEC 24778:2008 16.5 example inverted",
+        /*  2*/ { UNICODE_MODE, -1, -1, 1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 15, 15, 1, "ISO/IEC 24778:2008 16.5 example auto-ECI",
+                    "001111000011111"
+                    "110111100100011"
+                    "111100001000111"
+                    "101111111111111"
+                    "001100000001111"
+                    "000101111101101"
+                    "110101000101101"
+                    "011101010101001"
+                    "101101000101010"
+                    "110101111101001"
+                    "000100000001011"
+                    "000111111111111"
+                    "010001100010001"
+                    "001010111001010"
+                    "000001011100111"
+                },
+        /*  3*/ { UNICODE_MODE | FAST_MODE, -1, -1, 1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 15, 15, 1, "Same as above",
+                    "001111000011111"
+                    "110111100100011"
+                    "111100001000111"
+                    "101111111111111"
+                    "001100000001111"
+                    "000101111101101"
+                    "110101000101101"
+                    "011101010101001"
+                    "101101000101010"
+                    "110101111101001"
+                    "000100000001011"
+                    "000111111111111"
+                    "010001100010001"
+                    "001010111001010"
+                    "000001011100111"
+                },
+        /*  4*/ { UNICODE_MODE, -1, -1, 2, -1, { { TU("Ж"), -1, 7 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, 0, 19, 19, 1, "ISO/IEC 24778:2008 16.5 example inverted",
                     "0000011010000000000"
                     "0000001101101010000"
                     "0111000110100011110"
@@ -2933,7 +5139,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "1000001011111001010"
                     "0100000000011100111"
                 },
-        /*  3*/ { UNICODE_MODE, -1, -1, 2, { { TU("Ж"), -1, 0 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 19, 19, 1, "ISO/IEC 24778:2008 16.5 example inverted auto-ECI",
+        /*  5*/ { UNICODE_MODE | FAST_MODE, -1, -1, 2, -1, { { TU("Ж"), -1, 7 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, 0, 19, 19, 1, "Same as above",
                     "0000011010000000000"
                     "0000001101101010000"
                     "0111000110100011110"
@@ -2954,7 +5160,100 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "1000001011111001010"
                     "0100000000011100111"
                 },
-        /*  4*/ { UNICODE_MODE, -1, -1, -1, { { TU("product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97"), -1, 3 }, { TU("品名:Google 谷歌 Pixel 4a -128 GB的存储空间-黑色;零售价:￥3149.79"), -1, 29 }, { TU("Produkt:Google Pixel 4a - 128 GB Speicher - Schwarz;Preis:444,90 €"), -1, 17 } }, 0, 49, 49, 0, "AIM ITS/04-023:2022 Annex A example; BWIPP different encodation (better)",
+        /*  6*/ { UNICODE_MODE, -1, -1, 2, -1, { { TU("Ж"), -1, 0 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 19, 19, 1, "ISO/IEC 24778:2008 16.5 example inverted auto-ECI",
+                    "0000011010000000000"
+                    "0000001101101010000"
+                    "0111000110100011110"
+                    "0010011111100001110"
+                    "0001110100110010000"
+                    "0110111111111111110"
+                    "0000010000000100011"
+                    "1100110111110110000"
+                    "0011110100010110101"
+                    "1100010101010100001"
+                    "1110010100010100000"
+                    "1001010111110100000"
+                    "1001010000000100011"
+                    "0011011111111110001"
+                    "0100001111100000111"
+                    "1011111010011010111"
+                    "1111010101011010101"
+                    "1000001011111001010"
+                    "0100000000011100111"
+                },
+        /*  7*/ { UNICODE_MODE | FAST_MODE, -1, -1, 2, -1, { { TU("Ж"), -1, 0 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 19, 19, 1, "Same as above",
+                    "0000011010000000000"
+                    "0000001101101010000"
+                    "0111000110100011110"
+                    "0010011111100001110"
+                    "0001110100110010000"
+                    "0110111111111111110"
+                    "0000010000000100011"
+                    "1100110111110110000"
+                    "0011110100010110101"
+                    "1100010101010100001"
+                    "1110010100010100000"
+                    "1001010111110100000"
+                    "1001010000000100011"
+                    "0011011111111110001"
+                    "0100001111100000111"
+                    "1011111010011010111"
+                    "1111010101011010101"
+                    "1000001011111001010"
+                    "0100000000011100111"
+                },
+        /*  8*/ { UNICODE_MODE, -1, -1, -1, -1, { { TU("product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97"), -1, 3 }, { TU("品名:Google 谷歌 Pixel 4a -128 GB的存储空间-黑色;零售价:￥3149.79"), -1, 29 }, { TU("Produkt:Google Pixel 4a - 128 GB Speicher - Schwarz;Preis:444,90 €"), -1, 17 } }, 0, 49, 49, 0, "AIM ITS/04-023:2022 Annex A example; BWIPP different encodation, same no. of codewords",
+                    "0010101110000010101011011001100001001001100001010"
+                    "0010100001100010000000110000110010000000010010001"
+                    "0001110011100101000100111100111110001111101010101"
+                    "0101011000001100010000110000010101100110010100100"
+                    "0000011110111011010000011010111001101101110010100"
+                    "0001001100001101000100000110101111010001010100111"
+                    "0100000011000000101101001000001010101011100010101"
+                    "0100001000010010010010010010110100001100010110001"
+                    "1010101010101010101010101010101010101010101010101"
+                    "0111110100011000111110010100001100110111001000100"
+                    "1101111110001100001111111100000001100011110010010"
+                    "1011110001111011011101010101101100011111000011110"
+                    "0110100011110111110110111000010111101010100011101"
+                    "0000110000000110100100110111110111010101001011011"
+                    "0100001011000100110101011101101111101110100110010"
+                    "1010111101011000101010010101100011001001011000000"
+                    "0110010110011001110000111011110100011000111110001"
+                    "1110101000110010011001110000100100100110000011011"
+                    "0000100110011000011111111111111110010011100101100"
+                    "0000111000100010001000000000001101101111010111000"
+                    "0010100110010011001011111111101011100110110000000"
+                    "1001000101101111011010000000101110110001001111110"
+                    "1101100111011101001010111110101010101100101111001"
+                    "0110010000010110111010100010101110111110010011011"
+                    "1010101010101010101010101010101010101010101010101"
+                    "1001010000010111011010100010101010101111001110010"
+                    "0001100110101000011010111110101011000100100011000"
+                    "1010100100110101011010000000101010100100000100101"
+                    "0111010110010000101011111111101100100111110111110"
+                    "0111111101101100101000000000001110101111001010000"
+                    "0101001011110110001111111111111101101110100011100"
+                    "0010110000110010000111010010010000010111000001001"
+                    "0011011011001001111100011010100011001111110111000"
+                    "0110010000001101100100110110101111001000000110111"
+                    "0101101010000011100111011011110000000000101000011"
+                    "0100100001011010001011010011001001111110011011100"
+                    "1100010111110001001001001010011111001101110111100"
+                    "1000010000110011000001000111011010111010010101110"
+                    "0000000011000101010000011100000010101110100000010"
+                    "1001010101010101010111100110011110101001000000001"
+                    "1010101010101010101010101010101010101010101010101"
+                    "0001010001101001101011110010101111000111011110101"
+                    "1000010011001000110000001100101011001101110111010"
+                    "0010111001110110101000110010011001001000010010101"
+                    "0101111110001110110001101111110111010111110110100"
+                    "0011111100010011101100110111011100010100000001000"
+                    "0001101110111010011110011110101001011000110010010"
+                    "1001101000110101111010100111100011111001011001001"
+                    "0001001010011000000100101101100110101000101100000"
+                },
+        /*  9*/ { UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, { { TU("product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97"), -1, 3 }, { TU("品名:Google 谷歌 Pixel 4a -128 GB的存储空间-黑色;零售价:￥3149.79"), -1, 29 }, { TU("Produkt:Google Pixel 4a - 128 GB Speicher - Schwarz;Preis:444,90 €"), -1, 17 } }, 0, 49, 49, 0, "AIM ITS/04-023:2022 Annex A example; BWIPP different encodation (better)",
                     "0000110010100000001100011100010010010010100010101"
                     "0001100000010101011010010100011100000001000100010"
                     "0001110011110000000000101101100110101001100000000"
@@ -3005,7 +5304,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "1001101000110101111010100111100011111001000100101"
                     "0001001010011000000100101101100110101000100000000"
                 },
-        /*  5*/ { DATA_MODE, -1, -1, 2, { { TU("\357"), 1, 0 }, { TU("\357"), 1, 7 }, { TU("\357"), 1, 0 } }, 0, 19, 19, 1, "Standard example + extra seg, data mode",
+        /* 10*/ { DATA_MODE, -1, -1, 2, -1, { { TU("\357"), 1, 0 }, { TU("\357"), 1, 7 }, { TU("\357"), 1, 0 } }, 0, 19, 19, 1, "Standard example + extra seg, data mode",
                     "1110011101010111000"
                     "1100010001011100011"
                     "1001110101000010110"
@@ -3026,7 +5325,28 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "0110001101100001010"
                     "0111100111100000010"
                 },
-        /*  6*/ { UNICODE_MODE, -1, -1, -1, { { TU("12345678"), -1, 3 }, { TU("ABCDEFGH"), -1, 4 }, { TU("123456789"), -1, 5 } }, 0, 23, 23, 0, "Mode change between segs; BWIPP different encodation",
+        /* 11*/ { DATA_MODE | FAST_MODE, -1, -1, 2, -1, { { TU("\357"), 1, 0 }, { TU("\357"), 1, 7 }, { TU("\357"), 1, 0 } }, 0, 19, 19, 1, "Same as above",
+                    "1110011101010111000"
+                    "1100010001011100011"
+                    "1001110101000010110"
+                    "0001000011101001111"
+                    "0001110100111011000"
+                    "1111111111111110101"
+                    "1100110000000111011"
+                    "0110010111110100111"
+                    "1110110100010101011"
+                    "1010010101010110001"
+                    "0010010100010100111"
+                    "0001110111110111010"
+                    "0011110000000111100"
+                    "0000011111111110001"
+                    "0111001101000000011"
+                    "0011000000111110111"
+                    "1111111001101000010"
+                    "0110001101100001010"
+                    "0111100111100000010"
+                },
+        /* 12*/ { UNICODE_MODE, -1, -1, -1, -1, { { TU("12345678"), -1, 3 }, { TU("ABCDEFGH"), -1, 4 }, { TU("123456789"), -1, 5 } }, 0, 23, 23, 0, "Mode change between segs; BWIPP different encodation",
                     "00100011011101100111000"
                     "00101011010000010111111"
                     "00011001010101011010100"
@@ -3051,7 +5371,199 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "10101100001011010010000"
                     "10001000000000111000011"
                 },
-        /*  7*/ { GS1_MODE, -1, -1, -1, { { TU("[20]01"), -1, 0 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 0, 15, 15, 1, "GS1 with single seg ok",
+        /* 13*/ { UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, { { TU("12345678"), -1, 3 }, { TU("ABCDEFGH"), -1, 4 }, { TU("123456789"), -1, 5 } }, 0, 23, 23, 0, "Same as above",
+                    "00100011011101100111000"
+                    "00101011010000010111111"
+                    "00011001010101011010100"
+                    "01011001100000101110000"
+                    "00011000100010011101100"
+                    "00110000100011111111000"
+                    "01001111100101001111000"
+                    "01000111111111111000110"
+                    "01010111000000011000101"
+                    "11010101011111011111000"
+                    "11111101010001011100100"
+                    "00100011010101011101010"
+                    "01000001010001010001111"
+                    "10111101011111010110010"
+                    "10001001000000010111000"
+                    "00001001111111111011111"
+                    "10101100101001000010000"
+                    "10110011100001111000110"
+                    "11101000100001111011010"
+                    "00010010100111001011100"
+                    "11111111000010000100001"
+                    "10101100001011010010000"
+                    "10001000000000111000011"
+                },
+        /* 14*/ { UNICODE_MODE, -1, -1, -1, ZINT_AZTEC_FULL, { { TU("1234"), -1, 3 }, { TU("Жabcd"), -1, 7 }, { TU("的存abcd"), -1, 29 } }, 0, 23, 23, 0, "Mode changes between segs with Byte; BWIPP different encodation, same no. of codewords",
+                    "00110001001010011111001"
+                    "00100101111100101110010"
+                    "01011111001000100100010"
+                    "00001100111110010010000"
+                    "00111100001000000010000"
+                    "01101111111111111110110"
+                    "00010100000000000101100"
+                    "10101101111111110111100"
+                    "10001101000000010110001"
+                    "11010101011111010110001"
+                    "11000101010001010111000"
+                    "01010101010101010101010"
+                    "10001101010001010111100"
+                    "00110101011111010100010"
+                    "01001101000000010111001"
+                    "10101101111111110110010"
+                    "10000100000000000111000"
+                    "00010111111111111111101"
+                    "10010011000010000000110"
+                    "10001110110110000100100"
+                    "11010101001011100011000"
+                    "00010011011111100110111"
+                    "00000001011001100101110"
+                },
+        /* 15*/ { UNICODE_MODE | FAST_MODE, -1, -1, -1, ZINT_AZTEC_FULL, { { TU("1234"), -1, 3 }, { TU("Жabcd"), -1, 7 }, { TU("的存abcd"), -1, 29 } }, 0, 23, 23, 0, "Same as above",
+                    "00110001001010011111001"
+                    "00100101111100101110010"
+                    "01011111001000100100010"
+                    "00001100111110010010000"
+                    "00111100001000000010000"
+                    "01101111111111111110110"
+                    "00010100000000000101100"
+                    "10101101111111110111100"
+                    "10001101000000010110001"
+                    "11010101011111010110001"
+                    "11000101010001010111000"
+                    "01010101010101010101010"
+                    "10001101010001010111100"
+                    "00110101011111010100010"
+                    "01001101000000010111001"
+                    "10101101111111110110010"
+                    "10000100000000000111000"
+                    "00010111111111111111101"
+                    "10010011000010000000110"
+                    "10001110110110000100100"
+                    "11010101001011100011000"
+                    "00010011011111100110111"
+                    "00000001011001100101110"
+                },
+        /* 16*/ { UNICODE_MODE, -1, -1, -1, ZINT_AZTEC_FULL, { { TU("abcd"), -1, 3 }, { TU("Жabcd"), -1, 7 }, { TU("的存ABCD"), -1, 29 } }, 0, 23, 23, 0, "Mode changes between segs with Byte; BWIPP different encodation, same no. of codewords",
+                    "00101100101011100101111"
+                    "00110011000110011001011"
+                    "01001100010001110001101"
+                    "00110101110100001010000"
+                    "00011100001000000010010"
+                    "01111111111111111110101"
+                    "00100100000000000111000"
+                    "10110101111111110100000"
+                    "10100101000000010101010"
+                    "11001101011111010101000"
+                    "11010101010001010100100"
+                    "01010101010101010101010"
+                    "00000101010001010101100"
+                    "00001101011111010111010"
+                    "01110101000000010110110"
+                    "00000101111111110111000"
+                    "00101100000000000101001"
+                    "11000111111111111110100"
+                    "00010011101000110001111"
+                    "10111101100100110111000"
+                    "00011101010010000011100"
+                    "11000010101111001011010"
+                    "00000000010011100110100"
+                },
+        /* 17*/ { UNICODE_MODE | FAST_MODE, -1, -1, -1, ZINT_AZTEC_FULL, { { TU("abcd"), -1, 3 }, { TU("Жabcd"), -1, 7 }, { TU("的存ABCD"), -1, 29 } }, 0, 23, 23, 0, "Same as above",
+                    "00101100101011100101111"
+                    "00110011000110011001011"
+                    "01001100010001110001101"
+                    "00110101110100001010000"
+                    "00011100001000000010010"
+                    "01111111111111111110101"
+                    "00100100000000000111000"
+                    "10110101111111110100000"
+                    "10100101000000010101010"
+                    "11001101011111010101000"
+                    "11010101010001010100100"
+                    "01010101010101010101010"
+                    "00000101010001010101100"
+                    "00001101011111010111010"
+                    "01110101000000010110110"
+                    "00000101111111110111000"
+                    "00101100000000000101001"
+                    "11000111111111111110100"
+                    "00010011101000110001111"
+                    "10111101100100110111000"
+                    "00011101010010000011100"
+                    "11000010101111001011010"
+                    "00000000010011100110100"
+                },
+        /* 18*/ { UNICODE_MODE, -1, -1, -1, ZINT_AZTEC_FULL, { { TU("abcd"), -1, 3 }, { TU("Ж~~~~"), -1, 7 }, { TU("的存~~~~"), -1, 29 } }, 0, 23, 23, 0, "Mode changes between segs with Byte; BWIPP different encodation, same no. of codewords",
+                    "00011000100011001111001"
+                    "00110010111110010011110"
+                    "01000001101001101011000"
+                    "00111010111101011110110"
+                    "00101100001000000011000"
+                    "01011111111111111111110"
+                    "00100100000000000100100"
+                    "10111101111111110110100"
+                    "10011101000000010111000"
+                    "11010101011111010110000"
+                    "11100101010001010111110"
+                    "01010101010101010101010"
+                    "00101101010001010110011"
+                    "00110101011111010101001"
+                    "01011101000000010111101"
+                    "00011101111111110111110"
+                    "00100100000000000111010"
+                    "11100111111111111111111"
+                    "00110011000010000000001"
+                    "10000000110111001100101"
+                    "00010000001010011011011"
+                    "11000010101111001011001"
+                    "00000000010011100110111"
+                },
+        /* 19*/ { UNICODE_MODE | FAST_MODE, -1, -1, -1, ZINT_AZTEC_FULL, { { TU("abcd"), -1, 3 }, { TU("Ж~~~~"), -1, 7 }, { TU("的存~~~~"), -1, 29 } }, 0, 23, 23, 0, "Same as above",
+                    "00011000100011001111001"
+                    "00110010111110010011110"
+                    "01000001101001101011000"
+                    "00111010111101011110110"
+                    "00101100001000000011000"
+                    "01011111111111111111110"
+                    "00100100000000000100100"
+                    "10111101111111110110100"
+                    "10011101000000010111000"
+                    "11010101011111010110000"
+                    "11100101010001010111110"
+                    "01010101010101010101010"
+                    "00101101010001010110011"
+                    "00110101011111010101001"
+                    "01011101000000010111101"
+                    "00011101111111110111110"
+                    "00100100000000000111010"
+                    "11100111111111111111111"
+                    "00110011000010000000001"
+                    "10000000110111001100101"
+                    "00010000001010011011011"
+                    "11000010101111001011001"
+                    "00000000010011100110111"
+                },
+        /* 20*/ { GS1_MODE, -1, -1, -1, -1, { { TU("[20]01"), -1, 0 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 0, 15, 15, 1, "GS1 with single seg ok",
+                    "000100111011111"
+                    "000101001110001"
+                    "001100000100110"
+                    "011111111111111"
+                    "001100000001110"
+                    "000101111101000"
+                    "011101000101000"
+                    "000101010101001"
+                    "010101000101100"
+                    "111101111101010"
+                    "100100000001100"
+                    "010111111111110"
+                    "000011011110011"
+                    "000001100010000"
+                    "010101010100011"
+                },
+        /* 21*/ { GS1_MODE | FAST_MODE, -1, -1, -1, -1, { { TU("[20]01"), -1, 0 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 0, 15, 15, 1, "Same as above",
                     "000100111011111"
                     "000101001110001"
                     "001100000100110"
@@ -3091,7 +5603,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilSetSymbol(symbol, BARCODE_AZTEC, data[i].input_mode, -1 /*eci*/,
-                            data[i].option_1, data[i].option_2, -1 /*option_3*/,
+                            data[i].option_1, data[i].option_2, data[i].option_3,
                             data[i].output_options, NULL, 0, debug);
         for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
 
@@ -3102,12 +5614,16 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
-            int length = data[i].segs[0].length == -1 ? (int) z_ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
-            int length1 = data[i].segs[1].length == -1 ? (int) z_ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
-            int length2 = data[i].segs[2].length == -1 ? (int) z_ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
-            printf("        /*%3d*/ { %s, %s, %d, %d, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
+            int length = data[i].segs[0].length == -1
+                            ? (int) z_ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1
+                            ? (int) z_ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1
+                            ? (int) z_ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
+            printf("        /*%3d*/ { %s, %s, %d, %d, %s, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d },"
+                                                    " { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
-                    data[i].option_1, data[i].option_2,
+                    data[i].option_1, data[i].option_2, testUtilOption3Name(symbol->symbology, data[i].option_3),
                     testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)),
                     data[i].segs[0].length, data[i].segs[0].eci,
                     testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)),
@@ -3149,9 +5665,10 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source,
                                     data[i].segs[0].length, debug)) {
-                    if (data[i].input_mode == DATA_MODE) {
+                    if ((data[i].input_mode & 0x7) == DATA_MODE) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) {
-                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for ZXing-C++ testing\n",
+                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for"
+                                                                                " ZXing-C++ testing\n",
                                     i, testUtilBarcodeName(symbol->symbology));
                         }
                     } else {
@@ -3256,8 +5773,8 @@ static void test_rt(const testCtx *const p_ctx) {
                             i, symbol->content_segs[0].length, expected_length);
                 assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
                             "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                            testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
-                                            escaped, sizeof(escaped)),
+                            testUtilEscape((const char *) symbol->content_segs[0].source,
+                                            symbol->content_segs[0].length, escaped, sizeof(escaped)),
                             testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                             expected_length);
                 assert_equal(symbol->content_segs[0].eci, data[i].expected_content_eci,
@@ -3329,7 +5846,8 @@ static void test_rt_segs(const testCtx *const p_ctx) {
         assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
                     i, symbol->width, data[i].expected_width);
 
-        assert_equal(symbol->content_seg_count, data[i].expected_content_seg_count, "i:%d symbol->content_seg_count %d != %d\n",
+        assert_equal(symbol->content_seg_count, data[i].expected_content_seg_count,
+                    "i:%d symbol->content_seg_count %d != %d\n",
                     i, symbol->content_seg_count, data[i].expected_content_seg_count);
         if (symbol->output_options & BARCODE_CONTENT_SEGS) {
             assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
@@ -3341,7 +5859,8 @@ static void test_rt_segs(const testCtx *const p_ctx) {
                 assert_equal(symbol->content_segs[j].length, expected_length,
                             "i:%d content_segs[%d].length %d != expected_length %d\n",
                             i, j, symbol->content_segs[j].length, expected_length);
-                assert_zero(memcmp(symbol->content_segs[j].source, data[i].expected_content_segs[j].source, expected_length),
+                assert_zero(memcmp(symbol->content_segs[j].source, data[i].expected_content_segs[j].source,
+                                    expected_length),
                             "i:%d content_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
                             testUtilEscape((const char *) symbol->content_segs[j].source, expected_length, escaped,
                                             sizeof(escaped)),
@@ -3377,7 +5896,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         const char *expected_errtxt;
         int zxingcpp_cmp;
     };
-    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    /* s/\v(\/\*)[ 0-9]*(\*\/)/\=printf("%s%3d%s", submatch(1), (@z+setreg('z',@z+1)), submatch(2))/ | let @z=0: */
     static const struct item data[] = {
         /*  0*/ { BARCODE_AZTEC, DATA_MODE, -1, -1,
                     "\133\060\060\060\135\060\125\125\125\125\140\060\125\125\125\125\060\060\060\271\060\060\125\103\164\125\125\125\377\377\125\125"
@@ -3453,7 +5972,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\135\335\135\060\060\010\010\010\010\010\060",
                     2251, ZINT_ERROR_TOO_LONG, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1278)", 3
                 }, /* Original OSS-Fuzz triggering data for malloc leak */
-        /*  1*/ { BARCODE_AZTEC, DATA_MODE, -1, -1,
+        /*  1*/ { BARCODE_AZTEC, DATA_MODE | FAST_MODE, -1, -1,
                     "\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060"
                     "\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\000\060\060\060\060\000\060\060\000\060\060\060\060"
                     "\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060"
@@ -4109,6 +6628,43 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\010\060",
                     4402, ZINT_ERROR_TOO_LONG, "Error 502: Input too long, requires too many codewords (maximum 1661)", 3
                 }, /* fuzz_data (1st) */
+        /* 13*/ { BARCODE_AZTEC, DATA_MODE, -1, -1,
+                    "\xbd\x3e\x3e\x61\xfb\x2d\x37\x44\x7c\xe8\x67\xa8\x29\x35\x5e\x6c\x0e\xf3\x92\x51\x18\xa0\xf6\x59\xd4\xcd\xf1\x92\xb6\x35\x7f\x77\x8c\x6b\xf9\xd0\x9a\x71\x2b\xf1"
+                    "\xf5\x3e\x37\x60\x57\xe2\x6c\x68\x94\xee\xca\xca\xae\xda\x81\x0b\xfb\x39\xc8\x1d\xaf\x19\x2b\x41\xbb\xc3\x3d\x8b\xb9\xfa\x7b\x85\x21\x06\x29\x79\xf9\xb4\x16\xc7"
+                    "\x63\x8a\x64\x3e\x94\xc9\x89\x03\xe2\xd9\xa5\xee\xb6\x79\xd1\x1e\x04\xa1\x7c\xdb\x9c\xed\x2e\xe7\x8c\x43\xb1\x66\xed\xc0\x12\x7b\x78\x17\xf6\x90\x11\x98\x06\x4d"
+                    "\xf2\x3e\x90\x0e\xf8\x99\xc1\x04\x56\x69\xc2\x6e\x02\x9a\xbd\x81\x8c\xe0\x4c\xe6\x9c\x43\x05\x82\x63\xf2\x58\xf2\xba\x3c\xfb\xe8\x9e\xe9\xba\x2d\x56\xd8\x6a\xbc"
+                    "\x0c\x8a\x07\xf7\x0a\xc6\x9a\x25\x10\x79\xe9\x9b\x61\xd2\xd4\x70\x40\x66\x95\x0f\x36\xf3\x2e\xa9\x4d\x6c\xd6\x11\x45\x93\x58\x6a\xbc\x06\x2e\xd7\xfe\xb7\xce\x24"
+                    "\x63\x86\xe0\x67\xc7\x14\xf5\x05\xab\x83\x30\x78\x31\x95\xc5\x6a\x59\xd3\x53\x8b\x5f\x7e\x30\x4d\x70\x02\x62\x46\xdd\xfc\x66\xf6\x0e\xef\xec\x4a\x6a\xaa\xee\x8f"
+                    "\x0d\x88\x3d\x03\x2a\x37\x90\xb6\x1f\x74\x15\x3f\x3d\xbe\xdd\xc8\xa6\x43\x74\xdb\x29\x64\xee\xd9\xf7\xcb\x31\x16\xfe\x74\x60\x95\xcf\xe4\x50\x6c\x3d\xf1\x89\xc4"
+                    "\x12\x30\x35\x1e\x21\x29\x7e\x98\x73\x06\xd1\x66\x6a\x73\x5c\x66\xdd\xae\x7c\x43\x7c\x8a\xa3\x2d\xc9\xf6\x67\x3c\x89\x8d\x64\x3b\x82\xad\xdb\x2c\xbb\x95\xce\xc9"
+                    "\xba\x51\x21\xa6\xf7\x0a\xea\x49\x8b\x35\xa0\x11\xc1\x07\xd2\x8f\x0a\x24\x10\x8c\x19\x68\x49\x0e\x34\xee\x5a\xb4\x8e\x52\xf8\x83\x47\x83\x2e\x49\xc3\x8f\xb1\x06"
+                    "\x97\x8c\xa5\x1f\xe9\x24\x86\x39\x03\xb9\xba\x64\x0c\xcb\x2a\x8e\xf4\x0c\x68\xec\x46\xa7\x03\x13\xb5\x54\xed\x51\xb6\x1d\x92\xaa\x67\x78\x90\x4b\xea\xdf\x6d\xa1"
+                    "\x3f\x64\x2d\xef\x69\x9b\xf3\x12\x1c\xbe\xcb\xd3\xda\x3e\xec\x11\xda\x31\xba\xd6\xf7\xef\x76\xa3\xc6\x38\x49\x8a\xa3\xd7\x21\xea\x44\x6a\x9c\x0c\x11\x33\x57\x27"
+                    "\xd9\xc1\x6c\x3a\xe5\xe0\x2e\x04\xfd\xfd\x18\x3e\x81\x7d\x92\x72\xd2\xaf\x85\xdd\xca\x5e\x81\x21\x57\x62\x48\xae\x06\x05\x3e\x30\xe9\x3a\xe5\x7a\x08\xc3\x2b\x83"
+                    "\x33\x2a\x02\xde\x26\x65\xc6\x95\x54\x72\xd5\x9c\x36\x7f\x4c\x06\x39\xe2\x13\x22\x7a\xc8\x86\x41\xa3\x56\x1b\x1c\x42\x90\xf2\x08\x17\xf5\x9e\x5d\xbd\x06\x37\x8e"
+                    "\x60\x57\x12\x57\x29\xc4\x3e\xee\x2b\xdd\xd3\xc9\xf3\xef\xab\x7b\x05\x6a\x9e\x44\xfe\xea\x9b\x1d\xe1\xd4\x3a\xe2\xc3\xec\xdf\x54\x7c\x36\x34\x0b\xaa\x2f\x1e\xfa"
+                    "\xc3\xd6\x54\x02\xf8\xe7\x9b\x9b\xa9\xf0\x71\x52\xcd\x67\xf1\x94\xa2\xf8\x6d\x4b\x4f\x38\x22\xe5\xda\x99\xbf\x8b\x3f\xa2\x5f\x54\x33\x93\xbc\xa7\x97\x1d\xb0\xd2"
+                    "\x91\x3a\x86\xd0\x88\x68\x55\x1b\x32\xda\x76\xfa\x2c\x55\x97\xc6\xaf\x4d\x9f\x22\x65\x6b\xb6\x6b\x76\x1a\x55\x6d\xfc\xd3\x52\xaf\x1c\x8f\x1c\xc5\x08\x9d\xb5\x3d"
+                    "\x8d\x3b\x81\x06\xfc\xd7\x25\x84\xb5\x58\xfa\xae\x16\x58\x42\x40\xef\x79\x07\x1b\x45\x9d\x3d\x84\x29\x2e\x7a\x4d\x96\x5e\xd7\xbd\xf4\x7f\x12\x75\xf1\x76\x1a\x92"
+                    "\x35\x95\x88\x65\x66\x3c\x0b\x33\xaa\x13\x90\xf4\x0a\xe9\x82\x36\x04\x58\xc1\x12\x44\x27\x0e\x8e\xdf\x7d\x59\x07\x75\x4a\x23\x0c\x18\x91\x12\x18\x8c\x8d\xe5\x43"
+                    "\x25\x2a\x81\xbe\x0e\x5a\x45\xcc\x24\x7e\x9c\x8c\x97\x35\x76\x88\xb8\x49\xf4\x57\xd2\x12\xec\xac\x60\x95\xca\x05\xc6\x87\x38\xe9\x4c\x67\x50\xef\x95\x43\xcb\x46"
+                    "\x6d\x7a\x7e\x44\x3e\xf4\x14\x57\xd3\x68\xd1\x57\x15\x85\x72\x87\x69\x9f\x37\x18\xa7\x39\x56\x15\x64\xb4\x95\xf2\xf5\x22\x9f\x48\x19\x1b\xb3\x59\xf4\xd0\x2b\x83"
+                    "\x43\xa5\xf6\xd9\xad\x38\x11\xa8\x54\xa8\x79\x31\x01\x16\x37\x77\x30\x68\xaf\xb4\xb9\xf6\xb3\xac\xa5\x1c\x96\x6b\xac\x11\xd2\x55\xe1\x36\xc7\x01\x27\x9d\xde\x1c"
+                    "\x59\x2f\x3a\x37\x60\x74\x0a\x4e\xde\xe4\x26\x05\x71\x30\x40\x25\xcb\x47\xb9\xb4\x67\x23\xd4\xc5\x7e\x64\xd8\x4b\xce\x56\xa9\xbe\x94\x37\x9a\x66\x20\x60\xa5\x50"
+                    "\x2c\x75\x49\x0a\x1c\x49\xb6\x86\xb0\x73\xa1\x47\x39\x80\x69\xbd\x2c\x29\x2d\x9a\x04\x96\x40\xfc\x3c\xfc\x58\xf0\x65\x52\xa2\xaf\xfd\x5c\xc1\xbf\xde\xf2\xc0\x06"
+                    "\x2d\x2f\x33\x6b\x4a\xb7\x1e\x85\xc2\xf0\x85\xd3\x2a\xb8\xa2\xc3\x35\xca\xb0\x10\x65\x21\x10\xd3\x6d\x8c\x92\x8f\x7b\xb5\xf3\x32\xbf\x04\x0f\x76\x93\xaa\x68\x8d"
+                    "\xa3\x17\x44\x23\x4f\x1c\x14\x76\x45\x2e\x6c\x25\xdd\x77\x1f\x0c\xf2\xd8\x51\x92\xdc\x39\x40\x60\xf1\x84\xe3\xc2\xba\x3d\x89\x8b\xc2\x6a\xef\xf8\x77\x1a\x32\xca"
+                    "\x58\x92\x2c\xd9\x66\x27\x41\x4c\xb1\xaf\x34\xc7\xa3\x8c\xef\x4f\xbd\xac\xcf\x41\xed\xf3\x65\x32\x3d\xf0\x06\x41\x36\xad\x8d\x77\xf6\x78\xe9\x63\xaa\x06\xbe\xdd"
+                    "\xf4\xf5\x14\x66\x3c\x46\x13\xee\xd8\x0a\x04\x74\xbd\x3b\x2e\xef\xf0\xe3\xe4\x43\x7b\xf6\xa2\x5b\xbe\xb1\xbf\x92\xe3\xf5\x58\x43\xaf\x7c\xa1\x1e\x09\x47\x6a\xbd"
+                    "\xf8\x1c\x8b\x4e\x82\xaa\xa1\x36\x0e\x58\xaa\xce\x58\xca\x15\x93\xa3\xd0\x05\x9f\x89\xa2\xbc\xdc\x2b\x62\xd6\x89\x02\xb9\xa8\x77\x95\x7f\x31\x96\x7f\xd4\x72\x58"
+                    "\xbe\xb7\x02\x63\x55\x05\x18\x53\xeb\x21\x20\x8d\x3e\x7a\xf0\x4a\xb3\xcb\x20\x2d\x0b\xc2\x9f\x36\x08\x8d\x62\x50\xac\xed\xa1\xea\x60\x13\x68\xe9\x3b\xc0\xca\x3c"
+                    "\xb4\x44\x5e\xfe\x35\xfc\xd2\x28\x22\xee\xbd\x63\xba\xe5\x13\x3a\xf9\xb9\x90\x24\x1e\xc8\xba\x7a\x79\x51\x28\x83\x57\xcf\x3b\x50\x0b\x16\xbc\xb3\xec\xe4\xac\xf3"
+                    "\xbf\xa1\xfc\xf4\x34\xb2\xf9\x2d\x1a\xc6\xee\x0f\x75\x69\x78\x3d\x5a\x80\xd0\xa2\x47\x92\xc5\xf0\x41\x90\x90\xf5\x6d\xe8\xc8\x9f\x23\xf1\x2f\x28\x41\xf5\xae\x57"
+                    "\x8c\x2e\x98\xdd\x83\x5c\xd2\xf6\xd1\x5b\x6b\x96\xee\x4f\x65\xab\x02\x79\x01\x02\xc4\xd8\x60\xeb\x85\x74\x0e\x93\xf7\xee\x25\xba\x0b\xd8\xcc\xf6\x16\x95\x33\xbc"
+                    "\xd9\xe7\x55\x1c\xa3\x57\x8f\xde\x6a\x26\x26\x24\x93\x94\x4e\x85\x04\x2f\x40\x71\x44\x62\x0a\x9f\x2c\xcd\x6c\x66\xc3\x0b\x03\x36\xf4\xfe\x3d\x1d\x17\x30\x8b\x03"
+                    "\x25\xaa\x8f\x7c\x21\xd6\xfd\xa5\x2b\x4e\xc7\x48\x52\xdb\xa8\xde\x59\x64\x11\xb3\x32\x70\x98\x60\x12\x52\x1b\x39\xc2\xc3\x17\xd3\xd1\x40\x6c\x4b\x24\x57\x18",
+                    1359, 0, "", 899
+                }, /* #347 Francois Grieu */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

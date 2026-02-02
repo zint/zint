@@ -1,7 +1,7 @@
 /* These are not real tests, just performance indicators */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2025-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -185,11 +185,20 @@ static void test_aztec(const testCtx *const p_ctx) {
 
     static const struct perf_item data[] = {
         /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1,
+                    "ABC xyz ~~~ ??? 1234 \377\377",
+                    "", 0, 19, 19, "31 chars, Compact 6-bit words, mixed" },
+        /*  1*/ { BARCODE_AZTEC, ESCAPE_MODE, -1, -1, -1,
+                    "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E",
+                    "", 0, 23, 23, "41 chars, Compact 8-bit words, mixed" },
+        /*  2*/ { BARCODE_AZTEC, -1, -1, -1, -1,
+                    "ABCDEFGHIJKLM nopqrstuvwxyz ~~~~~~~~~~~~ ???????????? 12345678901234567890 \377\377\377",
+                    "", 0, 27, 27, "90 chars, 8-bit words, mixed" },
+        /*  3*/ { BARCODE_AZTEC, -1, -1, -1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
                     "", 0, 49, 49, "286 chars, 8-bit words, upper" },
-        /*  1*/ { BARCODE_AZTEC, -1, -1, -1, -1,
+        /*  4*/ { BARCODE_AZTEC, -1, -1, -1, -1,
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
@@ -197,7 +206,7 @@ static void test_aztec(const testCtx *const p_ctx) {
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
                     "", 0, 79, 79, "900 chars, 10-bit words, numeric" },
-        /*  2*/ { BARCODE_AZTEC, -1, -1, -1, -1,
+        /*  5*/ { BARCODE_AZTEC, -1, -1, -1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
@@ -206,7 +215,7 @@ static void test_aztec(const testCtx *const p_ctx) {
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377",
                     "", 0, 91, 91, "980 chars, 10-bit words, mixed" },
-        /*  3*/ { BARCODE_AZTEC, -1, -1, -1, -1,
+        /*  6*/ { BARCODE_AZTEC, -1, -1, -1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
@@ -219,7 +228,64 @@ static void test_aztec(const testCtx *const p_ctx) {
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377",
                     "", 0, 113, 113, "1540 chars, 12-bit words, mixed" },
-        /*  4*/ { BARCODE_AZRUNE, -1, -1, -1, -1,
+        /*  7*/ { BARCODE_AZRUNE, -1, -1, -1, -1,
+                    "255",
+                    "", 0, 11, 11, "3 chars, AZRUNE" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    const int default_iterations = 1 * 1000;
+
+    test_perf(p_ctx, default_iterations, data, data_size);
+}
+
+static void test_aztec_fast(const testCtx *const p_ctx) {
+
+    static const struct perf_item data[] = {
+        /*  0*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1,
+                    "ABC xyz ~~~ ??? 1234 \377\377",
+                    "", 0, 19, 19, "31 chars, Compact 6-bit words, mixed" },
+        /*  1*/ { BARCODE_AZTEC, ESCAPE_MODE | FAST_MODE, -1, -1, -1,
+                    "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E",
+                    "", 0, 23, 23, "41 chars, Compact 8-bit words, mixed" },
+        /*  2*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1,
+                    "ABCDEFGHIJKLM nopqrstuvwxyz ~~~~~~~~~~~~ ???????????? 12345678901234567890 \377\377\377",
+                    "", 0, 27, 27, "90 chars, 8-bit words, mixed" },
+        /*  3*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                    "", 0, 49, 49, "286 chars, 8-bit words, upper" },
+        /*  4*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1,
+                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+                    "", 0, 79, 79, "900 chars, 10-bit words, numeric" },
+        /*  5*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377",
+                    "", 0, 91, 91, "980 chars, 10-bit words, mixed" },
+        /*  6*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377",
+                    "", 0, 113, 113, "1540 chars, 12-bit words, mixed" },
+        /*  7*/ { BARCODE_AZRUNE, -1, -1, -1, -1,
                     "255",
                     "", 0, 11, 11, "3 chars, AZRUNE" },
     };
@@ -691,6 +757,7 @@ int main(int argc, char *argv[]) {
     testFunction funcs[] = { /* name, func */
         { "test_2of5", test_2of5 },
         { "test_aztec", test_aztec },
+        { "test_aztec_fast", test_aztec_fast },
         { "test_code11", test_code11 },
         { "test_code128", test_code128 },
         { "test_composite", test_composite },
