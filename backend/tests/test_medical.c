@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -290,43 +290,44 @@ static void test_encode(const testCtx *const p_ctx) {
 
         int expected_rows;
         int expected_width;
+        int expected_option_2;
         const char *comment;
         const char *expected;
     };
     static const struct item data[] = {
-        /*  0*/ { BARCODE_PHARMA, -1, "131070", 0, 1, 78, "",
+        /*  0*/ { BARCODE_PHARMA, -1, "131070", 0, 1, 78, 0, "",
                     "111001110011100111001110011100111001110011100111001110011100111001110011100111"
                 },
-        /*  1*/ { BARCODE_PHARMA, -1, "123456", 0, 1, 58, "",
+        /*  1*/ { BARCODE_PHARMA, -1, "123456", 0, 1, 58, 0, "",
                     "1110011100111001001001001110010010011100100100100100100111"
                 },
-        /*  2*/ { BARCODE_PHARMA_TWO, -1, "64570080", 0, 2, 31, "Verified manually against TEC-IT",
+        /*  2*/ { BARCODE_PHARMA_TWO, -1, "64570080", 0, 2, 31, 0, "Verified manually against TEC-IT",
                     "1010101010101010101010101010101"
                     "1010101010101010101010101010101"
                 },
-        /*  3*/ { BARCODE_PHARMA_TWO, -1, "29876543", 0, 2, 31, "Verified manually against TEC-IT",
+        /*  3*/ { BARCODE_PHARMA_TWO, -1, "29876543", 0, 2, 31, 0, "Verified manually against TEC-IT",
                     "0010100010001010001010001000101"
                     "1000101010100000100000101010000"
                 },
-        /*  4*/ { BARCODE_CODE32, -1, "34567890", 0, 1, 103, "Verified manually against TEC-IT",
+        /*  4*/ { BARCODE_CODE32, -1, "34567890", 0, 1, 103, 0, "Verified manually against TEC-IT",
                     "1001011011010101101001011010110010110101011011010010101100101101011010010101101010101100110100101101101"
                 },
-        /*  5*/ { BARCODE_CODE32, 1, "34567890", 0, 1, 103, "Make sure option_2 doesn't add extra check digit",
+        /*  5*/ { BARCODE_CODE32, 1, "34567890", 0, 1, 103, 1, "Make sure option_2 doesn't add extra check digit",
                     "1001011011010101101001011010110010110101011011010010101100101101011010010101101010101100110100101101101"
                 },
-        /*  6*/ { BARCODE_CODE32, 2, "34567890", 0, 1, 103, "Make sure option_2 doesn't add extra check digit",
+        /*  6*/ { BARCODE_CODE32, 2, "34567890", 0, 1, 103, 2, "Make sure option_2 doesn't add extra check digit",
                     "1001011011010101101001011010110010110101011011010010101100101101011010010101101010101100110100101101101"
                 },
-        /*  7*/ { BARCODE_PZN, -1, "1234567", 0, 1, 142, "Example from IFA Info Code 39 EN V2.1; verified manually against TEC-IT",
+        /*  7*/ { BARCODE_PZN, -1, "1234567", 0, 1, 142, 0, "Example from IFA Info Code 39 EN V2.1; verified manually against TEC-IT",
                     "1001011011010100101011011011010010101101011001010110110110010101010100110101101101001101010101100110101010100101101101101001011010100101101101"
                 },
-        /*  8*/ { BARCODE_PZN, -1, "2758089", 0, 1, 142, "Example from IFA Info Check Digit Calculations EN 15 July 2019; verified manually against TEC-IT",
+        /*  8*/ { BARCODE_PZN, -1, "2758089", 0, 1, 142, 0, "Example from IFA Info Check Digit Calculations EN 15 July 2019; verified manually against TEC-IT",
                     "1001011011010100101011011010110010101101010010110110110100110101011010010110101010011011010110100101101010110010110101011001011010100101101101"
                 },
-        /*  9*/ { BARCODE_PZN, 1, "123456", 0, 1, 129, "Example from BWIPP; verified manually against TEC-IT",
+        /*  9*/ { BARCODE_PZN, 1, "123456", 0, 1, 129, 1, "Example from BWIPP; verified manually against TEC-IT",
                     "100101101101010010101101101101001010110101100101011011011001010101010011010110110100110101010110011010101011001010110100101101101"
                 },
-        /* 10*/ { BARCODE_PZN, 2, "1234567", 0, 1, 142, "Make sure option_2 ignored for check digit",
+        /* 10*/ { BARCODE_PZN, 2, "1234567", 0, 1, 142, 2, "Make sure option_2 ignored for check digit",
                     "1001011011010100101011011011010010101101011001010110110110010101010100110101101101001101010101100110101010100101101101101001011010100101101101"
                 },
     };
@@ -368,6 +369,7 @@ static void test_encode(const testCtx *const p_ctx) {
 
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d (%s)\n", i, symbol->option_2, data[i].option_2, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);

@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-02-02)
+Version 2.16.0.9 (dev) not released yet (2026-02-05)
 ====================================================
 
 **Incompatible changes**
@@ -33,6 +33,7 @@ Bugs
   Bryce Harrison)
 - AZTEC: fix ECC to be at least advertised percentages (ticket #347, props
   Francois Grieu)
+- CODE32/PZN: fix not restoring `option_2` (props axxel)
 
 
 Version 2.16.0 (2025-12-19)

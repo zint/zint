@@ -1,7 +1,7 @@
 /* medical.c - Handles Pharmacode One-Track, Pharmacode Two-Track, Italian Pharmacode and PZN */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -266,7 +266,7 @@ INTERNAL int zint_code32(struct zint_symbol *symbol, unsigned char source[], int
         return error_number;
     }
 
-    if (symbol->option_2 == 1 || symbol->option_2 == 2) {
+    if (saved_option_2 == 1 || saved_option_2 == 2) {
         symbol->option_2 = saved_option_2; /* Restore */
     }
 
@@ -350,7 +350,7 @@ INTERNAL int zint_pzn(struct zint_symbol *symbol, unsigned char source[], int le
 
     error_number = zint_code39(symbol, local_source, 9 - pzn7);
 
-    if (symbol->option_2 == 1 || symbol->option_2 == 2) {
+    if (saved_option_2 == 1 || saved_option_2 == 2) {
         symbol->option_2 = saved_option_2; /* Restore */
     }
 
