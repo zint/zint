@@ -1,7 +1,7 @@
 /* postal.c - Handles POSTNET, PLANET, CEPNet, FIM. RM4SCC and Flattermarken */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
     Including bug fixes by Bryan Hatton
 
     Redistribution and use in source and binary forms, with or without
@@ -330,7 +330,7 @@ INTERNAL int zint_koreapost(struct zint_symbol *symbol, unsigned char source[], 
     memcpy(d, KoreaTable[check], 10);
     d += KoreaTable[check][8] ? 10 : 8;
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     /* TODO: Find documentation on BARCODE_KOREAPOST dimensions/height */
 
@@ -557,7 +557,7 @@ INTERNAL int zint_kix(struct zint_symbol *symbol, unsigned char source[], int le
     }
 
     writer = 0;
-    h = d - height_pattern;
+    h = (int) (d - height_pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if (height_pattern[loopey] == '1' || height_pattern[loopey] == '0') {
             z_set_module(symbol, 0, writer);
@@ -668,7 +668,7 @@ INTERNAL int zint_flat(struct zint_symbol *symbol, unsigned char source[], int l
         d += entry[2] ? 4 : 2;
     }
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     /* TODO: Find documentation on BARCODE_FLAT dimensions/height */
 
@@ -760,7 +760,7 @@ INTERNAL int zint_japanpost(struct zint_symbol *symbol, unsigned char source[], 
 
     /* Resolve pattern to 4-state symbols */
     writer = 0;
-    h = d - pattern;
+    h = (int) (d - pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if (pattern[loopey] == '2' || pattern[loopey] == '1') {
             z_set_module(symbol, 0, writer);

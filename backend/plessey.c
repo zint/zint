@@ -1,7 +1,7 @@
 /* plessey.c - Handles Plessey and MSI Plessey */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -116,7 +116,7 @@ INTERNAL int zint_plessey(struct zint_symbol *symbol, unsigned char source[], in
     memcpy(d, "331311313", 9);
     d += 9;
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     /* TODO: Find documentation on BARCODE_PLESSEY dimensions/height */
 
@@ -375,7 +375,7 @@ INTERNAL int zint_msi_plessey(struct zint_symbol *symbol, unsigned char source[]
     memcpy(d, "121", 3);
     d += 3;
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     /* TODO: Find documentation on BARCODE_MSI_PLESSEY dimensions/height */
 

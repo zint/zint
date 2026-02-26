@@ -161,7 +161,7 @@ INTERNAL int z_posn(const char set_string[], const char data) {
 
     for (s = set_string; *s; s++) {
         if (data == *s) {
-            return s - set_string;
+            return (int) (s - set_string);
         }
     }
     return -1;

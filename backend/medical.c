@@ -83,14 +83,14 @@ INTERNAL int zint_pharma(struct zint_symbol *symbol, unsigned char source[], int
         }
     } while (tester != 0);
 
-    h = in - inter;
+    h = (int) (in - inter);
     for (counter = h - 1; counter >= 0; counter--) {
         *d++ = inter[counter] == 'W' ? '3' : '1';
         *d++ = '2';
     }
     *--d = '\0'; /* Chop off final bar */
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Laetus Pharmacode Guide 1.2 Standard one-track height 8mm / 0.5mm (X) */
@@ -133,7 +133,7 @@ static int pharma_two_calc(int tester, char *d) {
         }
     } while (tester != 0);
 
-    h = in - inter;
+    h = (int) (in - inter);
     for (counter = h - 1; counter >= 0; counter--) {
         *d++ = inter[counter];
     }

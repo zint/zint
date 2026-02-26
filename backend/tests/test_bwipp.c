@@ -111,7 +111,7 @@ static void test_bwipp_random(const testCtx *const p_ctx, const struct random_it
                     bwipp_buf, sizeof(bwipp_buf), NULL);
         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-        bwipp_len = strlen(bwipp_buf);
+        bwipp_len = (int) strlen(bwipp_buf);
         assert_nonzero(bwipp_len, "i:%d bwipp_len %d = 0\n", i, bwipp_len);
 
         symbol->width = width_func ? width_func(rdata, bwipp_len) : bwipp_len;
@@ -405,7 +405,7 @@ static void test_aztec_bwipjs_354(const testCtx *const p_ctx) {
                     sizeof(bwipp_buf), NULL);
         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-        bwipp_len = strlen(bwipp_buf);
+        bwipp_len = (int) strlen(bwipp_buf);
         assert_nonzero(bwipp_len, "i:%d bwipp_len %d = 0\n", i, bwipp_len);
 
         symbol->width = sqrt_width_func(NULL /*rdata*/, bwipp_len);
@@ -496,7 +496,7 @@ static void test_codablockf_fnc4_digit(const testCtx *const p_ctx) {
                     bwipp_buf, sizeof(bwipp_buf), NULL);
         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-        bwipp_len = strlen(bwipp_buf);
+        bwipp_len = (int) strlen(bwipp_buf);
         assert_nonzero(bwipp_len, "i:%d bwipp_len %d = 0\n", i, bwipp_len);
 
         symbol->width = codablockf_width_func(rdata, bwipp_len);

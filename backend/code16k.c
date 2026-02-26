@@ -1,7 +1,7 @@
 /* code16k.c - Handles Code 16k stacked symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -560,7 +560,7 @@ INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], in
         /* Write the information into the symbol */
         writer = 0;
         flip_flop = 1;
-        for (mx_reader = 0, len = d - width_pattern; mx_reader < len; mx_reader++) {
+        for (mx_reader = 0, len = (int) (d - width_pattern); mx_reader < len; mx_reader++) {
             for (looper = 0; looper < z_ctoi(width_pattern[mx_reader]); looper++) {
                 if (flip_flop == 1) {
                     z_set_module(symbol, current_row, writer);

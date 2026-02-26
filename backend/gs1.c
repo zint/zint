@@ -86,7 +86,7 @@ static int gs1_numeric(const unsigned char *data, int data_len, int offset, int 
         for (; d < de; d++) {
             if (!z_isdigit(*d)) {
                 *p_err_no = 3;
-                *p_err_posn = d - data + 1;
+                *p_err_posn = (int) (d - data) + 1;
                 return gs1_err_msg_printf_nochk(err_msg, "Non-numeric character '%c'", *d);
             }
         }
@@ -136,7 +136,7 @@ static int gs1_cset82(const unsigned char *data, int data_len, int offset, int m
         for (; d < de; d++) {
             if (*d < '!' || *d > 'z' || gs1_c82[*d - '!'] == 82) {
                 *p_err_no = 3;
-                *p_err_posn = d - data + 1;
+                *p_err_posn = (int) (d - data) + 1;
                 return gs1_err_msg_printf_nochk(err_msg, "Invalid CSET 82 character '%c'", *d);
             }
         }
@@ -164,7 +164,7 @@ static int gs1_cset39(const unsigned char *data, int data_len, int offset, int m
             /* 0-9, A-Z and "#", "-", "/" */
             if ((*d < '0' && *d != '#' && *d != '-' && *d != '/') || (*d > '9' && *d < 'A') || *d > 'Z') {
                 *p_err_no = 3;
-                *p_err_posn = d - data + 1;
+                *p_err_posn = (int) (d - data) + 1;
                 return gs1_err_msg_printf_nochk(err_msg, "Invalid CSET 39 character '%c'", *d);
             }
         }
@@ -196,7 +196,7 @@ static int gs1_cset64(const unsigned char *data, int data_len, int offset, int m
                     break;
                 }
                 *p_err_no = 3;
-                *p_err_posn = d - data + 1;
+                *p_err_posn = (int) (d - data) + 1;
                 return gs1_err_msg_printf_nochk(err_msg, "Invalid CSET 64 character '%c'", *d);
             }
         }
@@ -232,7 +232,7 @@ static int gs1_csum(const unsigned char *data, int data_len, int offset, int min
         }
         if (checksum != *d - '0') {
             *p_err_no = 3;
-            *p_err_posn = d - data + 1;
+            *p_err_posn = (int) (d - data) + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Bad checksum '%c', expected '%c'", *d, checksum + '0');
         }
     }
@@ -274,7 +274,7 @@ static int gs1_csumalpha(const unsigned char *data, int data_len, int offset, in
 
         if (de[0] != c1 || de[1] != c2) {
             *p_err_no = 3;
-            *p_err_posn = (de - data) + 1;
+            *p_err_posn = (int) (de - data) + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Bad checksum '%.2s', expected '%c%c'", de, c1, c2);
         }
     }
@@ -665,12 +665,12 @@ static int gs1_pcenc(const unsigned char *data, int data_len, int offset, int mi
             if (*d == '%') {
                 if (de - d < 3) {
                     *p_err_no = 3;
-                    *p_err_posn = d - data + 1;
+                    *p_err_posn = (int) (d - data) + 1;
                     return gs1_err_msg_cpy_nochk(err_msg, "Invalid % escape");
                 }
                 if (strchr(hex_chars, *(++d)) == NULL || strchr(hex_chars, *(++d)) == NULL) {
                     *p_err_no = 3;
-                    *p_err_posn = d - data + 1;
+                    *p_err_posn = (int) (d - data) + 1;
                     return gs1_err_msg_cpy_nochk(err_msg, "Invalid character for percent encoding");
                 }
             }
@@ -858,19 +858,19 @@ static int gs1_iban(const unsigned char *data, int data_len, int offset, int min
         /* 1st 2 chars alphabetic country code */
         if (!z_isupper(d[0]) || !z_isupper(d[1])) {
             *p_err_no = 3;
-            *p_err_posn = d - data + 1;
+            *p_err_posn = (int) (d - data) + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Non-alphabetic IBAN country code '%.2s'", d);
         }
         if (!iso3166_alpha2((const char *) d)) {
             *p_err_no = 3;
-            *p_err_posn = d - data + 1;
+            *p_err_posn = (int) (d - data) + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Invalid IBAN country code '%.2s'", d);
         }
         d += 2;
         /* 2nd 2 chars numeric checksum */
         if (!z_isdigit(d[0]) || !z_isdigit(d[1])) {
             *p_err_no = 3;
-            *p_err_posn = d - data + 1;
+            *p_err_posn = (int) (d - data) + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Non-numeric IBAN checksum '%.2s'", d);
         }
         given_checksum = z_to_int(d, 2);
@@ -879,7 +879,7 @@ static int gs1_iban(const unsigned char *data, int data_len, int offset, int min
             /* 0-9, A-Z */
             if (*d < '0' || (*d > '9' && *d < 'A') || *d > 'Z') {
                 *p_err_no = 3;
-                *p_err_posn = d - data + 1;
+                *p_err_posn = (int) (d - data) + 1;
                 return gs1_err_msg_printf_nochk(err_msg, "Invalid IBAN character '%c'", *d);
             }
             if (*d >= 'A') {
@@ -944,14 +944,14 @@ static const unsigned char *gs1_coupon_vli(const unsigned char *data, const int 
 
     if (d - data + 1 > data_len) {
         *p_err_no = 3;
-        *p_err_posn = d - data + 1;
+        *p_err_posn = (int) (d - data) + 1;
         (void) gs1_err_msg_printf_nochk(err_msg, "%s VLI missing", name);
         return NULL;
     }
     vli = z_to_int(d, 1);
     if ((vli < vli_min || vli > vli_max) && (vli != 9 || !vli_nine)) {
         *p_err_no = 3;
-        *p_err_posn = d - data + 1;
+        *p_err_posn = (int) (d - data) + 1;
         if (vli < 0) {
             (void) gs1_err_msg_printf_nochk(err_msg, "Non-numeric %s VLI '%c'", name, *d);
         } else {
@@ -963,7 +963,7 @@ static const unsigned char *gs1_coupon_vli(const unsigned char *data, const int 
     if (vli != 9 || !vli_nine) {
         if (d - data + vli + vli_offset > data_len) {
             *p_err_no = 3;
-            *p_err_posn = d - data + 1;
+            *p_err_posn = (int) (d - data) + 1;
             (void) gs1_err_msg_printf_nochk(err_msg, "%s incomplete", name);
             return NULL;
         }
@@ -971,7 +971,7 @@ static const unsigned char *gs1_coupon_vli(const unsigned char *data, const int 
         for (; d < de; d++) {
             if (!z_isdigit(*d)) {
                 *p_err_no = 3;
-                *p_err_posn = d - data + 1;
+                *p_err_posn = (int) (d - data) + 1;
                 (void) gs1_err_msg_printf_nochk(err_msg, "Non-numeric %s '%c'", name, *d);
                 return NULL;
             }
@@ -988,14 +988,14 @@ static const unsigned char *gs1_coupon_val(const unsigned char *data, const int 
 
     if (d - data + val_len > data_len) {
         *p_err_no = 3;
-        *p_err_posn = d - data + 1;
+        *p_err_posn = (int) (d - data) + 1;
         (void) gs1_err_msg_printf_nochk(err_msg, "%s incomplete", name);
         return NULL;
     }
     val = z_to_int(d, val_len);
     if (val < 0) {
         *p_err_no = 3;
-        *p_err_posn = d - data + 1;
+        *p_err_posn = (int) (d - data) + 1;
         (void) gs1_err_msg_printf_nochk(err_msg, "Non-numeric %s", name);
         return NULL;
     }
@@ -1059,7 +1059,7 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
         }
         if (val > 5 && val < 9) {
             *p_err_no = 3;
-            *p_err_posn = d - 1 - data + 1;
+            *p_err_posn = (int) (d - 1 - data) + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Invalid Primary Purch. Req. Code '%c'", *(d - 1));
         }
         if (!(d = gs1_coupon_val(data, data_len, d, "Primary Purch. Family Code", 3, NULL, p_err_no, p_err_posn,
@@ -1080,7 +1080,7 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
                 }
                 if (val > 3) {
                     *p_err_no = 3;
-                    *p_err_posn = d - 1 - data + 1;
+                    *p_err_posn = (int) (d - 1 - data) + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid Add. Purch. Rules Code '%c'", *(d - 1));
                 }
                 if (!(d = gs1_coupon_vli(data, data_len, d, "2nd Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn,
@@ -1093,7 +1093,7 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
                 }
                 if (val > 4 && val < 9) {
                     *p_err_no = 3;
-                    *p_err_posn = d - 1 - data + 1;
+                    *p_err_posn = (int) (d - 1 - data) + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid 2nd Purch. Req. Code '%c'", *(d - 1));
                 }
                 if (!(d = gs1_coupon_val(data, data_len, d, "2nd Purch. Family Code", 3, NULL, p_err_no, p_err_posn,
@@ -1117,7 +1117,7 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
                 }
                 if (val > 4 && val < 9) {
                     *p_err_no = 3;
-                    *p_err_posn = d - 1 - data + 1;
+                    *p_err_posn = (int) (d - 1 - data) + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid 3rd Purch. Req. Code '%c'", *(d - 1));
                 }
                 if (!(d = gs1_coupon_val(data, data_len, d, "3rd Purch. Family Code", 3, NULL, p_err_no, p_err_posn,
@@ -1135,7 +1135,7 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
                                         err_msg))) {
                     return 0;
                 }
-                if (!gs1_yymmd0(data, data_len, d - 6 - data, 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
+                if (!gs1_yymmd0(data, data_len, (int) (d - 6 - data), 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
                     return 0;
                 }
 
@@ -1144,7 +1144,7 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
                 if (!(d = gs1_coupon_val(data, data_len, d, "Start Date", 6, NULL, p_err_no, p_err_posn, err_msg))) {
                     return 0;
                 }
-                if (!gs1_yymmd0(data, data_len, d - 6 - data, 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
+                if (!gs1_yymmd0(data, data_len, (int) (d - 6 - data), 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
                     return 0;
                 }
 
@@ -1170,7 +1170,7 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
                 }
                 if ((val > 2 && val < 5) || val > 6) {
                     *p_err_no = 3;
-                    *p_err_posn = d - 1 - data + 1;
+                    *p_err_posn = (int) (d - 1 - data) + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid Save Value Code '%c'", *(d - 1));
                 }
                 if (!(d = gs1_coupon_val(data, data_len, d, "Save Value Applies To", 1, &val, p_err_no, p_err_posn,
@@ -1179,7 +1179,7 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
                 }
                 if (val > 2) {
                     *p_err_no = 3;
-                    *p_err_posn = d - 1 - data + 1;
+                    *p_err_posn = (int) (d - 1 - data) + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid Save Value Applies To '%c'", *(d - 1));
                 }
                 if (!(d = gs1_coupon_val(data, data_len, d, "Store Coupon Flag", 1, NULL, p_err_no, p_err_posn,
@@ -1192,14 +1192,14 @@ static int gs1_couponcode(const unsigned char *data, int data_len, int offset, i
                 }
                 if (val > 1) {
                     *p_err_no = 3;
-                    *p_err_posn = d - 1 - data + 1;
+                    *p_err_posn = (int) (d - 1 - data) + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid Don't Multiply Flag '%c'", *(d - 1));
                 }
 
             } else {
 
                 *p_err_no = 3;
-                *p_err_posn = d - 1 - data + 1;
+                *p_err_posn = (int) (d - 1 - data) + 1;
                 if (data_field < 0) {
                     (void) gs1_err_msg_printf_nochk(err_msg, "Non-numeric Data Field '%c'", *(d - 1));
                 } else {
@@ -1247,7 +1247,7 @@ static int gs1_couponposoffer(const unsigned char *data, int data_len, int offse
         }
         if (val != 0 && val != 1) {
             *p_err_no = 3;
-            *p_err_posn = d - 1 - data + 1;
+            *p_err_posn = (int) (d - 1 - data) + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Coupon Format must be 0 or 1");
         }
         if (!(d = gs1_coupon_vli(data, data_len, d, "Coupon Funder ID", 6, 0, 6, 0, p_err_no, p_err_posn, err_msg))) {
@@ -1261,7 +1261,7 @@ static int gs1_couponposoffer(const unsigned char *data, int data_len, int offse
         }
         if (d - data != data_len) {
             *p_err_no = 3;
-            *p_err_posn = d - data + 1;
+            *p_err_posn = (int) (d - data) + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Reserved trailing characters");
         }
     }
@@ -1290,7 +1290,7 @@ static int gs1_latitude(const unsigned char *data, int data_len, int offset, int
         }
         if (lat > 1800000000) {
             *p_err_no = 3;
-            *p_err_posn = d - 1 - data + 1;
+            *p_err_posn = (int) (d - 1 - data) + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Invalid latitude");
         }
     }
@@ -1319,7 +1319,7 @@ static int gs1_longitude(const unsigned char *data, int data_len, int offset, in
         }
         if (lng > 3600000000) {
             *p_err_no = 3;
-            *p_err_posn = d - 1 - data + 1;
+            *p_err_posn = (int) (d - 1 - data) + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Invalid longitude");
         }
     }
@@ -1348,7 +1348,7 @@ static int gs1_mediatype(const unsigned char *data, int data_len, int offset, in
         }
         if (val == 0 || (val > 10 && val < 80)) {
             *p_err_no = 3;
-            *p_err_posn = d - data + 1;
+            *p_err_posn = (int) (d - data) + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Invalid AIDC media type");
         }
     }
@@ -1373,7 +1373,7 @@ static int gs1_hyphen(const unsigned char *data, int data_len, int offset, int m
         for (; d < de; d++) {
             if (*d != '-') {
                 *p_err_no = 3;
-                *p_err_posn = d - data + 1;
+                *p_err_posn = (int) (d - data) + 1;
                 return gs1_err_msg_cpy_nochk(err_msg, "Invalid temperature indicator (hyphen only)");
             }
         }
@@ -1425,17 +1425,17 @@ static int gs1_posinseqslash(const unsigned char *data, int data_len, int offset
             if (!z_isdigit(*d)) {
                 if (*d != '/') {
                     *p_err_no = 3;
-                    *p_err_posn = d - data + 1;
+                    *p_err_posn = (int) (d - data) + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid character '%c' in sequence", *d);
                 }
                 if (slash) {
                     *p_err_no = 3;
-                    *p_err_posn = d - data + 1;
+                    *p_err_posn = (int) (d - data) + 1;
                     return gs1_err_msg_cpy_nochk(err_msg, "Single sequence separator ('/') only");
                 }
                 if (d == data + offset || d + 1 == de) {
                     *p_err_no = 3;
-                    *p_err_posn = d - data + 1;
+                    *p_err_posn = (int) (d - data) + 1;
                     return gs1_err_msg_cpy_nochk(err_msg, "Sequence separator '/' cannot start or end");
                 }
                 slash = d;
@@ -1446,16 +1446,16 @@ static int gs1_posinseqslash(const unsigned char *data, int data_len, int offset
             *p_err_posn = offset + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "No sequence separator ('/')");
         }
-        pos = z_to_int(data + offset, slash - (data + offset));
+        pos = z_to_int(data + offset, (int) (slash - (data + offset)));
         if (pos == 0) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Sequence position cannot be zero");
         }
-        tot = z_to_int(slash + 1, de - (slash + 1));
+        tot = z_to_int(slash + 1, (int) (de - (slash + 1)));
         if (tot == 0) {
             *p_err_no = 3;
-            *p_err_posn = slash + 1 - data + 1;
+            *p_err_posn = (int) (slash + 1 - data) + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Sequence total cannot be zero");
         }
         if (pos > tot) {

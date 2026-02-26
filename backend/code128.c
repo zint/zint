@@ -336,7 +336,7 @@ static void c128_expand(struct zint_symbol *symbol, int values[C128_VALUES_MAX],
     }
 #endif
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 }
 
 /* Helper to set `priority` array based on flags */

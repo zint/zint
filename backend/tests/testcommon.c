@@ -1182,7 +1182,7 @@ int testUtilModulesDump(const struct zint_symbol *symbol, char dump[], int dump_
         return -1;
     }
     *d = '\0';
-    return d - dump;
+    return (int) (d - dump);
 }
 
 /* Print out module dump (for generate tests) */
@@ -1492,24 +1492,24 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
             s = s2;
         }
         *s = '\0';
-        len = s - buffer;
+        len = (int) (s - buffer);
     }
     if ((s = strstr(buffer, "/backend")) != NULL) {
         while ((s2 = strstr(s + 1, "/backend")) != NULL) { /* Find rightmost */
             s = s2;
         }
         *s = '\0';
-        len = s - buffer;
+        len = (int) (s - buffer);
     } else if ((s = strstr(buffer, "/frontend")) != NULL) {
         while ((s2 = strstr(s + 1, "/frontend")) != NULL) { /* Find rightmost */
             s = s2;
         }
         *s = '\0';
-        len = s - buffer;
+        len = (int) (s - buffer);
     }
     if (cmake_src_dir == NULL && (s = strrchr(buffer, '/')) != NULL) { /* Remove "build" dir */
         *s = '\0';
-        len = s - buffer;
+        len = (int) (s - buffer);
     }
 
     if (subdir_len) {
@@ -2196,7 +2196,7 @@ int testUtilVerifyLibreOffice(const char *filename, int debug) {
         return -1;
     }
     while (!feof(fp) && b < be) {
-        if (fgets(b, be - b, fp) == NULL) {
+        if (fgets(b, (int) (be - b), fp) == NULL) {
             fprintf(stderr, "testUtilVerifyLibreOffice: failed to get line from '%s' (%s)\n", svg, cmd);
             fclose(fp);
             return -1;
@@ -2642,7 +2642,7 @@ static char *testUtilBwippCvtGS1Data(char *bwipp_data, const int bwipp_data_size
                 *b = ')';
             } else if ((*c == '+' || *c == ' ') && upcean && !pipe) {
                 *b = ' ';
-                *addon_posn = b - bwipp_data;
+                *addon_posn = (int) (b - bwipp_data);
             } else {
                 *b = *c;
             }
@@ -3780,7 +3780,7 @@ int testUtilBwippSegs(int index, struct zint_symbol *symbol, int option_1, int o
             d += local_segs[i].length;
         }
     }
-    total_len = d - data;
+    total_len = (int) (d - data);
 
     if (unicode_mode) {
         symbol->input_mode = DATA_MODE;
@@ -4273,7 +4273,7 @@ static int textUtilZXingCPPDX(const char *expected, const int expected_len, cons
 static int textUtilZXingCPPEAN13AddOn(const char *expected, const int expected_len, char *out) {
     char *sep;
     if ((sep = strchr(expected, '+')) != NULL || (sep = strchr(expected, ' ')) != NULL) {
-        const int addon_len = expected_len - (sep + 1 - expected);
+        const int addon_len = expected_len - (int) (sep + 1 - expected);
         if (addon_len <= 2) {
             memset(out + 13, '0', 2 - addon_len);
             memcpy(out + 13 + (2 - addon_len), sep + 1, addon_len);

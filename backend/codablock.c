@@ -1,7 +1,7 @@
 /* codablock.c - Handles Codablock-F */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016-2025 Harald Oehlmann
+    Copyright (C) 2016-2026 Harald Oehlmann
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -861,7 +861,7 @@ INTERNAL int zint_codablockf(struct zint_symbol *symbol, unsigned char source[],
         }
         memcpy(d, "2331112", 7); /* Stop character (106, not in `zint_C128Table[]`) */
         d += 7;
-        z_expand(symbol, dest, d - dest);
+        z_expand(symbol, dest, (int) (d - dest));
     }
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {

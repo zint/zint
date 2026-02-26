@@ -1,7 +1,7 @@
 /* code.c - Handles Code 39, 39+, 93 and VIN */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -174,7 +174,7 @@ INTERNAL int zint_code39(struct zint_symbol *symbol, unsigned char source[], int
 
     if (symbol->symbology == BARCODE_LOGMARS || symbol->symbology == BARCODE_HIBC_39) {
         /* LOGMARS and HIBC use wider 'wide' bars than normal Code 39 */
-        counter = d - dest;
+        counter = (int) (d - dest);
         for (i = 0; i < counter; i++) {
             if (dest[i] == '2') {
                 dest[i] = '3';
@@ -186,7 +186,7 @@ INTERNAL int zint_code39(struct zint_symbol *symbol, unsigned char source[], int
         printf("Barspaces: %.*s\n", (int) (d - dest), dest);
     }
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         if (symbol->symbology == BARCODE_LOGMARS) {
@@ -261,7 +261,7 @@ INTERNAL int zint_excode39(struct zint_symbol *symbol, unsigned char source[], i
         memcpy(b, EC39Ctrl[source[i]], 2);
         b += EC39Ctrl[source[i]][1] ? 2 : 1;
     }
-    if (b - buffer > 86) {
+    if ((int) (b - buffer) > 86) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 317,
                         "Input too long, requires %d symbol characters (maximum 86)", (int) (b - buffer));
     }
@@ -275,7 +275,7 @@ INTERNAL int zint_excode39(struct zint_symbol *symbol, unsigned char source[], i
     }
 
     /* Then send the buffer to the C39 function */
-    if ((error_number = zint_code39(symbol, buffer, b - buffer)) >= ZINT_ERROR) {
+    if ((error_number = zint_code39(symbol, buffer, (int) (b - buffer))) >= ZINT_ERROR) {
         return error_number;
     }
 
@@ -341,7 +341,7 @@ INTERNAL int zint_code93(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     /* Now we can check the true length of the barcode */
-    h = b - buffer;
+    h = (int) (b - buffer);
     if (h > 123) {
         return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 332,
                         "Input too long, requires %d symbol characters (maximum 123)", h);
@@ -394,7 +394,7 @@ INTERNAL int zint_code93(struct zint_symbol *symbol, unsigned char source[], int
     memcpy(d, "1111411", 7);
     d += 7;
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* ANSI/AIM BC5-1995 Section 2.6 minimum height 0.2" or 15% of symbol length, whichever is greater
@@ -504,7 +504,7 @@ INTERNAL int zint_vin(struct zint_symbol *symbol, unsigned char source[], int le
     memcpy(d, C39Table[43], 9);
     d += 9;
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     z_hrt_cpy_nochk(symbol, source, length);
 

@@ -1,7 +1,7 @@
 /* code11.c - Handles Code 11 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -142,7 +142,7 @@ INTERNAL int zint_code11(struct zint_symbol *symbol, unsigned char source[], int
     memcpy(d, C11Table[11], 5);
     d += 5;
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     /* TODO: Find documentation on BARCODE_CODE11 dimensions/height */
 

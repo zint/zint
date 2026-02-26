@@ -1,7 +1,7 @@
 /* mailmark.c - Royal Mail 4-state and 2D Mailmark barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -467,7 +467,7 @@ INTERNAL int zint_mailmark_4s(struct zint_symbol *symbol, unsigned char source[]
 
     /* Translate 4-state data pattern to symbol */
     j = 0;
-    for (i = 0, len = d - bar; i < len; i++) {
+    for (i = 0, len = (int) (d - bar); i < len; i++) {
         if (bar[i] == 'F' || bar[i] == 'A') {
             z_set_module(symbol, 0, j);
         }

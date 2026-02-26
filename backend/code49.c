@@ -1,7 +1,7 @@
 /* code49.c - Handles Code 49 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -79,7 +79,7 @@ INTERNAL int zint_code49(struct zint_symbol *symbol, unsigned char source[], int
 
     codeword_count = 0;
     i = 0;
-    h = d - intermediate;
+    h = (int) (d - intermediate);
     do {
         if (z_isdigit(intermediate[i])) {
             /* Numeric data */

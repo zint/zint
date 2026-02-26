@@ -1,7 +1,7 @@
 /* auspost.c - Handles Australia Post 4-State Barcode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -76,7 +76,7 @@ static unsigned char aus_convert_pattern(const char data, const int shift) {
 
 /* Adds Reed-Solomon error correction to auspost */
 static char *aus_rs_error(const char data_pattern[], char *d) {
-    const int length = d - data_pattern;
+    const int length = (int) (d - data_pattern);
     int reader, triple_writer;
     unsigned char triple[31];
     unsigned char result[5];
@@ -228,7 +228,7 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
     }
 
     /* Filler bar */
-    h = d - data_pattern;
+    h = (int) (d - data_pattern);
     switch (h) {
         case 22:
         case 37:
@@ -248,7 +248,7 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
 
     /* Turn the symbol into a bar pattern ready for plotting */
     writer = 0;
-    h = d - data_pattern;
+    h = (int) (d - data_pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if (data_pattern[loopey] == '1' || data_pattern[loopey] == '0') {
             z_set_module(symbol, 0, writer);

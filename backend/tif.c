@@ -1,7 +1,7 @@
 /* tif.c - Aldus Tagged Image File Format support */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -376,7 +376,7 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
                     (void) zint_fm_close(fmp, symbol);
                     return z_errtxt(ZINT_ERROR_MEMORY, symbol, 673, "Insufficient memory for TIF LZW hash table");
                 }
-                bytes_put = zint_fm_tell(fmp) - file_pos;
+                bytes_put = (unsigned int) (zint_fm_tell(fmp) - file_pos);
                 if (bytes_put != strip_bytes[strip]) {
                     const int diff = bytes_put - strip_bytes[strip];
                     strip_bytes[strip] = bytes_put;

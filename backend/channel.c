@@ -240,7 +240,7 @@ INTERNAL int zint_channel(struct zint_symbol *symbol, unsigned char source[], in
         *d++ = z_itoc(B[i]);
     }
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* ANSI/AIM BC12-1998 gives min height as 5mm or 15% of length; X left as application specification so use

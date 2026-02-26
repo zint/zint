@@ -1468,7 +1468,7 @@ static void test_encode_file_unreadable(const testCtx *const p_ctx) {
     fd = creat(filename, S_IWUSR);
     assert_notequal(fd, -1, "Unreadable input file (%s) not created == -1 (%d: %s)\n",
                 filename, errno, strerror(errno));
-    ret = write(fd, buf, 1);
+    ret = (int) write(fd, buf, 1);
     assert_equal(ret, 1, "Unreadable write ret %d != 1\n", ret);
     ret = close(fd);
     assert_zero(ret, "Unreadable close(%s) != 0(%d: %s)\n", filename, errno, strerror(errno));

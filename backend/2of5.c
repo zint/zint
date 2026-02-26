@@ -1,7 +1,7 @@
 /* 2of5.c - Handles non-interleaved Code 2 of 5 barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -103,7 +103,7 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
     memcpy(d, start_stop[1], start_length - 1);
     d += start_length - 1;
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     /* Exclude check digit from HRT if hidden */
     z_hrt_cpy_nochk(symbol, local_source, length - (symbol->option_2 == 2));

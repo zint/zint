@@ -1,7 +1,7 @@
 /* 2of5inter.c - Handles Code 2 of 5 Interleaved */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -96,7 +96,7 @@ INTERNAL int zint_c25_inter_common(struct zint_symbol *symbol, unsigned char sou
     memcpy(d, "311", 3);
     d += 3;
 
-    z_expand(symbol, dest, d - dest);
+    z_expand(symbol, dest, (int) (d - dest));
 
     if (!dont_set_height) {
         if (symbol->output_options & COMPLIANT_HEIGHT) {
