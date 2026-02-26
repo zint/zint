@@ -1581,7 +1581,8 @@ General Specifications 26.0 Table 7-2 "GS1 AI encodable character set 82"),
 otherwise encodation would fail. In "Unbracketed AI" and raw mode, overlong AI
 data will also fail.
 
-All the GS1 options imply `--gs1`.
+All the GS1 options imply `--gs1` (unlike their API equivalents, for which see
+[5.11 Setting the Input Mode]).
 
 ## 4.12 Batch Processing
 
@@ -2564,7 +2565,8 @@ escape sequences are given in [6.1.10.1 Standard Code 128 (ISO 15417)].
 
 The GS1 options `GS1PARENS_MODE` (CLI `--gs1parens`) , `GS1NOCHECK_MODE` (CLI
 `--gs1nocheck`), `GS1SYNTAXENGINE_MODE` (CLI `--gs1strict`) and `GS1RAW_MODE`
-(CLI `--gs1raw`) are described in [4.11.3 GS1 Data Entry and Options].
+(CLI `--gs1raw`) are described in [4.11.3 GS1 Data Entry and Options]. Note that
+unlike the CLI options, they must be OR-ed with `GS1_MODE` to take effect.
 
 For `HEIGHTPERROW_MODE`, see `--heightperrow` in section [4.4 Adjusting Height].
 The `height` member should be set to the desired per-row value on input (it will

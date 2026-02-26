@@ -3062,7 +3062,9 @@ GS1 Composite input that is not in the GS1 encodable character set 82
 character set 82”), otherwise encodation would fail. In “Unbracketed AI”
 and raw mode, overlong AI data will also fail.</p></li>
 </ul>
-<p>All the GS1 options imply <code>--gs1</code>.</p>
+<p>All the GS1 options imply <code>--gs1</code> (unlike their API
+equivalents, for which see <a href="#setting-the-input-mode">5.11
+Setting the Input Mode</a>).</p>
 <h2 id="batch-processing">4.12 Batch Processing</h2>
 <p>Data can be batch processed by reading from a text file and producing
 a separate barcode image for each line of text in that file. To do this
@@ -4288,7 +4290,8 @@ in <a href="#standard-code-128-iso-15417">6.1.10.1 Standard Code 128
 <code>--gs1strict</code>) and <code>GS1RAW_MODE</code> (CLI
 <code>--gs1raw</code>) are described in <a
 href="#gs1-data-entry-and-options">4.11.3 GS1 Data Entry and
-Options</a>.</p>
+Options</a>. Note that unlike the CLI options, they must be OR-ed with
+<code>GS1_MODE</code> to take effect.</p>
 <p>For <code>HEIGHTPERROW_MODE</code>, see <code>--heightperrow</code>
 in section <a href="#adjusting-height">4.4 Adjusting Height</a>. The
 <code>height</code> member should be set to the desired per-row value on
