@@ -1710,23 +1710,25 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
                 /* Need to add initial carets */
                 local_source_buf[0] = '^';
                 local_length = 1;
+                /* Linear GSs */
                 if (symbol->primary[0] == '\x1D') { /* Allow initial GS */
-                    gs1se_gs_caret_sub(ZCUCP(symbol->primary + 1), primary_len - 1, local_source_buf + 1); /* Linear GSs */
+                    gs1se_gs_caret_sub(ZCUCP(symbol->primary + 1), primary_len - 1, local_source_buf + local_length);
                     local_length += primary_len - 1;
                 } else {
-                    gs1se_gs_caret_sub(ZCUCP(symbol->primary), primary_len, local_source_buf + 1); /* Linear GSs */
+                    gs1se_gs_caret_sub(ZCUCP(symbol->primary), primary_len, local_source_buf + local_length);
                     local_length += primary_len;
                 }
                 local_source_buf[local_length++] = '|';
                 local_source_buf[local_length++] = '^';
+                /* CC GSs */
                 if (source[0] == '\x1D') { /* Allow initial GS */
-                    gs1se_gs_caret_sub(source + 1, length - 1, local_source_buf + primary_len + 3); /* CC GSs */
+                    gs1se_gs_caret_sub(source + 1, length - 1, local_source_buf + local_length);
                     local_length += length - 1;
                 } else {
-                    gs1se_gs_caret_sub(source, length, local_source_buf + primary_len + 3); /* CC GSs */
+                    gs1se_gs_caret_sub(source, length, local_source_buf + local_length);
                     local_length += length;
                 }
-                linear_len = primary_len;
+                linear_len = primary_len - (symbol->primary[0] == '\x1D'); /* Exclude initial GS if any */
             } else {
                 memcpy(local_source_buf, symbol->primary, primary_len);
                 local_source_buf[primary_len] = '|';
