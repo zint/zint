@@ -355,6 +355,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(chkData, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(chkRInit, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(chkGS1Parens, SIGNAL(toggled(bool)), SLOT(update_preview()));
+    connect(chkGS1Raw, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(chkGS1NoCheck, SIGNAL(toggled(bool)), SLOT(update_preview()));
     if (m_bc.bc.haveGS1SyntaxEngine()) {
         chkGS1Strict->show();
@@ -469,10 +470,9 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/chk_data"), chkData->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/chk_rinit"), chkRInit->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/chk_gs1parens"), chkGS1Parens->isChecked() ? 1 : 0);
+    settings.setValue(QSL("studio/chk_gs1raw"), chkGS1Raw->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/chk_gs1nocheck"), chkGS1NoCheck->isChecked() ? 1 : 0);
-    if (chkGS1Strict->isVisible()) {
-        settings.setValue(QSL("studio/chk_gs1strict"), chkGS1Strict->isChecked() ? 1 : 0);
-    }
+    settings.setValue(QSL("studio/chk_gs1strict"), chkGS1Strict->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/autoheight"), chkAutoHeight->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/compliantheight"), chkCompliantHeight->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/height"), heightb->value());
@@ -543,10 +543,9 @@ void MainWindow::load_settings(QSettings &settings)
     chkData->setChecked(settings.value(QSL("studio/chk_data")).toInt() ? true : false);
     chkRInit->setChecked(settings.value(QSL("studio/chk_rinit")).toInt() ? true : false);
     chkGS1Parens->setChecked(settings.value(QSL("studio/chk_gs1parens")).toInt() ? true : false);
+    chkGS1Raw->setChecked(settings.value(QSL("studio/chk_gs1raw")).toInt() ? true : false);
     chkGS1NoCheck->setChecked(settings.value(QSL("studio/chk_gs1nocheck")).toInt() ? true : false);
-    if (chkGS1Strict->isVisible()) {
-        chkGS1Strict->setChecked(settings.value(QSL("studio/chk_gs1strict")).toInt() ? true : false);
-    }
+    chkGS1Strict->setChecked(settings.value(QSL("studio/chk_gs1strict")).toInt() ? true : false);
     chkAutoHeight->setChecked(settings.value(QSL("studio/appearance/autoheight"), 1).toInt() ? true : false);
     chkCompliantHeight->setChecked(
         settings.value(QSL("studio/appearance/compliantheight"), 1).toInt() ? true : false);
@@ -2420,7 +2419,7 @@ void MainWindow::change_options()
             break;
     }
 
-    // ECI, GS1Parens, GS1NoCheck, RInit, CompliantHeight will be checked in update_preview() as
+    // ECI, GS1Parens, GS1Raw, GS1NoCheck, GS1Strict, RInit, CompliantHeight will be checked in update_preview() as
     // encoding mode dependent (HIBC and/or GS1)
     chkAutoHeight->setEnabled(!m_bc.bc.isFixedRatio(symbology));
     chkHRTShow->setEnabled(m_bc.bc.hasHRT(symbology));
@@ -3394,9 +3393,11 @@ void MainWindow::update_preview()
         lblECI->setEnabled(cmbECI->isEnabled());
     }
     btnClearData->setEnabled(!txtData->text().isEmpty());
-    chkGS1Parens->setEnabled(m_bc.bc.takesGS1AIData(m_symbology) || (m_bc.bc.inputMode() & 0x07) == GS1_MODE);
-    chkGS1NoCheck->setEnabled(chkGS1Parens->isEnabled());
-    chkGS1Strict->setEnabled(chkGS1Parens->isEnabled() && !chkGS1NoCheck->isChecked());
+    lblGS1Chks->setEnabled(m_bc.bc.takesGS1AIData(m_symbology) || (m_bc.bc.inputMode() & 0x07) == GS1_MODE);
+    chkGS1Parens->setEnabled(lblGS1Chks->isEnabled() && !chkGS1Raw->isChecked());
+    chkGS1Raw->setEnabled(lblGS1Chks->isEnabled() && !chkGS1Parens->isChecked());
+    chkGS1NoCheck->setEnabled(lblGS1Chks->isEnabled());
+    chkGS1Strict->setEnabled(lblGS1Chks->isEnabled());
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
     chkCompliantHeight->setEnabled(m_bc.bc.hasCompliantHeight());
 
@@ -3417,6 +3418,7 @@ void MainWindow::update_preview()
     m_bc.bc.setCompliantHeight(chkCompliantHeight->isEnabled() && chkCompliantHeight->isChecked());
     m_bc.bc.setECI(cmbECI->isEnabled() ? cmbECI->currentIndex() : 0);
     m_bc.bc.setGS1Parens(chkGS1Parens->isEnabled() && chkGS1Parens->isChecked());
+    m_bc.bc.setGS1Raw(chkGS1Raw->isEnabled() && chkGS1Raw->isChecked());
     m_bc.bc.setGS1NoCheck(chkGS1NoCheck->isEnabled() && chkGS1NoCheck->isChecked());
     if (chkGS1Strict->isVisible()) {
         m_bc.bc.setGS1SyntaxEngine(chkGS1Strict->isEnabled() && chkGS1Strict->isChecked());
@@ -4260,11 +4262,9 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/%1/data_seg2").arg(name), txtDataSeg2->text());
             settings.setValue(QSL("studio/bc/%1/data_seg3").arg(name), txtDataSeg3->text());
         }
-        if (!grpComposite->isHidden()) {
-            settings.setValue(QSL("studio/bc/%1/composite_text").arg(name), txtComposite->toPlainText());
-            settings.setValue(QSL("studio/bc/%1/chk_composite").arg(name), chkComposite->isChecked() ? 1 : 0);
-            settings.setValue(QSL("studio/bc/%1/comp_type").arg(name), cmbCompType->currentIndex());
-        }
+        settings.setValue(QSL("studio/bc/%1/composite_text").arg(name), txtComposite->toPlainText());
+        settings.setValue(QSL("studio/bc/%1/chk_composite").arg(name), chkComposite->isChecked() ? 1 : 0);
+        settings.setValue(QSL("studio/bc/%1/comp_type").arg(name), cmbCompType->currentIndex());
         if (cmbECI->isEnabled()) {
             settings.setValue(QSL("studio/bc/%1/eci").arg(name), cmbECI->currentIndex());
             settings.setValue(QSL("studio/bc/%1/eci_seg1").arg(name), cmbECISeg1->currentIndex());
@@ -4277,7 +4277,9 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/%1/chk_rinit").arg(name), chkRInit->isChecked() ? 1 : 0);
         }
         settings.setValue(QSL("studio/bc/%1/chk_gs1parens").arg(name), chkGS1Parens->isChecked() ? 1 : 0);
+        settings.setValue(QSL("studio/bc/%1/chk_gs1raw").arg(name), chkGS1Raw->isChecked() ? 1 : 0);
         settings.setValue(QSL("studio/bc/%1/chk_gs1nocheck").arg(name), chkGS1NoCheck->isChecked() ? 1 : 0);
+        settings.setValue(QSL("studio/bc/%1/chk_gs1strict").arg(name), chkGS1Strict->isChecked() ? 1 : 0);
         if (chkAutoHeight->isEnabled()) {
             settings.setValue(
                 QSL("studio/bc/%1/appearance/autoheight").arg(name), chkAutoHeight->isChecked() ? 1 : 0);
@@ -4688,16 +4690,14 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             txtDataSeg2->setText(settings.value(QSL("studio/bc/%1/data_seg2").arg(name), QSEmpty).toString());
             txtDataSeg3->setText(settings.value(QSL("studio/bc/%1/data_seg3").arg(name), QSEmpty).toString());
         }
-        if (!grpComposite->isHidden()) {
-            const QString &composite_text = settings.value(
-                                                QSL("studio/bc/%1/composite_text").arg(name), QSEmpty).toString();
-            if (!composite_text.isEmpty()) {
-                txtComposite->setText(composite_text);
-            }
-            chkComposite->setChecked(settings.value(
-                QSL("studio/bc/%1/chk_composite").arg(name), 0).toInt() ? true : false);
-            cmbCompType->setCurrentIndex(settings.value(QSL("studio/bc/%1/comp_type").arg(name), 0).toInt());
+        const QString &composite_text = settings.value(
+                                            QSL("studio/bc/%1/composite_text").arg(name), QSEmpty).toString();
+        if (!composite_text.isEmpty()) {
+            txtComposite->setText(composite_text);
         }
+        chkComposite->setChecked(settings.value(
+            QSL("studio/bc/%1/chk_composite").arg(name), 0).toInt() ? true : false);
+        cmbCompType->setCurrentIndex(settings.value(QSL("studio/bc/%1/comp_type").arg(name), 0).toInt());
         if (cmbECI->isEnabled()) {
             cmbECI->setCurrentIndex(settings.value(QSL("studio/bc/%1/eci").arg(name), 0).toInt());
             cmbECISeg1->setCurrentIndex(settings.value(QSL("studio/bc/%1/eci_seg1").arg(name), 0).toInt());
@@ -4710,8 +4710,11 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             chkRInit->setChecked(settings.value(QSL("studio/bc/%1/chk_rinit").arg(name)).toInt() ? true : false);
         }
         chkGS1Parens->setChecked(settings.value(QSL("studio/bc/%1/chk_gs1parens").arg(name)).toInt() ? true : false);
+        chkGS1Raw->setChecked(settings.value( QSL("studio/bc/%1/chk_gs1raw").arg(name)).toInt() ? true : false);
         chkGS1NoCheck->setChecked(settings.value(
             QSL("studio/bc/%1/chk_gs1nocheck").arg(name)).toInt() ? true : false);
+        chkGS1Strict->setChecked(settings.value(
+            QSL("studio/bc/%1/chk_gs1strict").arg(name)).toInt() ? true : false);
         if (chkAutoHeight->isEnabled()) {
             chkAutoHeight->setChecked(settings.value(
                 QSL("studio/bc/%1/appearance/autoheight").arg(name), 1).toInt() ? true : false);

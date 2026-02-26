@@ -542,7 +542,7 @@ INTERNAL int zint_gs1_128_cc(struct zint_symbol *symbol, unsigned char source[],
         symbol->row_height[separator_row] = 1;
     }
 
-    error_number = zint_gs1_verify(symbol, source, length, reduced, &reduced_length);
+    error_number = zint_gs1_verify(symbol, source, length, reduced, &reduced_length, 1 /*set_hrt*/);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
@@ -612,7 +612,7 @@ INTERNAL int zint_gs1_128_cc(struct zint_symbol *symbol, unsigned char source[],
         }
     }
 
-    if (reduced_length > 48) { /* GS1 General Specifications 5.4.4.3 */
+    if (reduced_length > 48) { /* GS1 General Specifications Release 26.0 5.4.4.3 Maximum symbol length */
         if (error_number == 0) { /* Don't overwrite any `zint_gs1_verify()` warning */
             error_number = z_errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 843,
                                     "Input too long, requires %d characters (maximum 48)", reduced_length);
@@ -620,7 +620,7 @@ INTERNAL int zint_gs1_128_cc(struct zint_symbol *symbol, unsigned char source[],
     }
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
-        /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**):
+        /* GS1 General Specifications Release 26.0 5.12.3.2 Symbol specification table 2, including footnote (**):
            same as ITF-14: "in case of further space constraints" height 5.8mm / 1.016mm (X max) ~ 5.7;
            default 31.75mm / 0.495mm ~ 64.14 */
         const float min_height = 5.70866156f; /* 5.8 / 1.016 */
@@ -650,12 +650,7 @@ INTERNAL int zint_gs1_128_cc(struct zint_symbol *symbol, unsigned char source[],
                                 "Cannot use Reader Initialisation in GS1 mode, ignoring");
     }
 
-    /* Note won't overflow `text` buffer due to symbol character maximum restricted to C128_SYMBOL_MAX */
-    if (symbol->input_mode & GS1PARENS_MODE) {
-        z_hrt_cpy_nochk(symbol, source, length);
-    } else {
-        z_hrt_conv_gs1_brackets_nochk(symbol, source, length);
-    }
+    /* HRT set by `zint_gs1_verify()` */
 
     if (content_segs && z_ct_cpy(symbol, reduced, reduced_length)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */

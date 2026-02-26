@@ -4,7 +4,7 @@
  */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -713,6 +713,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
 
     /* Assume data length failure */
     *p_err_no = 2;
+    *p_err_posn = 1;
 
     if (ai < 100) {
 
@@ -1070,6 +1071,388 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
     /* Unknown AI */
     *p_err_no = 1;
     return 0;
+}
+
+/* Helper to parse non-bracketed input */
+static int gs1_lint_parse_ai(const unsigned char source[], const int length, const int position,
+            int *p_ai, int *p_min, int *p_max) {
+    int ai, ai2, ai3 = -1, ai4 = -1, min, max = 0;
+
+    *p_ai = -1;
+
+    if (position + 1 >= length || !z_isdigit(source[position]) || !z_isdigit(source[position + 1])) {
+        return 0;
+    }
+    ai2 = z_to_int(source + position, 2);
+    if (position + 3 < length && z_isdigit(source[position + 2])) {
+        ai3 = z_to_int(source + position, 3);
+        if (position + 4 < length && z_isdigit(source[position + 3])) {
+            ai4 = z_to_int(source + position, 4);
+        }
+    }
+
+    ai = ai2;
+    if (ai == 0) {
+        min = 18, max = 18;
+    } else if (ai >= 1 && ai <= 3) {
+        min = 14, max = 14;
+    } else if (ai == 10 || ai == 21 || ai == 22) {
+        min = 1, max = 20;
+    } else if ((ai >= 11 && ai <= 13) || (ai >= 15 && ai <= 17)) {
+        min = 6, max = 6;
+    } else if (ai == 20) {
+        min = 2, max = 2;
+    } else if (ai == 30 || ai == 37) {
+        min = 1, max = 8;
+    } else if (ai == 90) {
+        min = 1, max = 30;
+    } else if (ai >= 91) {
+        min = 1, max = 90;
+    }
+
+    if (max == 0 && ai3 != -1) {
+
+        if (ai3 < 300) {
+            ai = ai3;
+            if (ai == 235) {
+                min = 1, max = 28;
+            } else if (ai == 240 || ai == 241 || ai == 250 || ai == 251) {
+                min = 1, max = 30;
+            } else if (ai == 242) {
+                min = 1, max = 6;
+            } else if (ai == 243 || ai == 254) {
+                min = 1, max = 20;
+            } else if (ai == 253) {
+                min = 13, max = 30;
+            } else if (ai == 255) {
+                min = 13, max = 25;
+            }
+
+        } else if (ai3 < 500) {
+            ai = ai3;
+            if (ai == 400 || ai == 403) {
+                min = 1, max = 30;
+            } else if (ai == 401) {
+                min = 1, max = 30;
+            } else if (ai == 402) {
+                min = 17, max = 17;
+            } else if (ai >= 410 && ai <= 417) {
+                min = 13, max = 13;
+            } else if (ai == 420) {
+                min = 1, max = 20;
+            } else if (ai == 421) {
+                min = 4, max = 12;
+            } else if (ai == 422 || ai == 424 || ai == 426) {
+                min = 3, max = 3;
+            } else if (ai == 423 || ai == 425) {
+                min = 3, max = 15;
+            } else if (ai == 427) {
+                min = 1, max = 3;
+            }
+
+        } else if (ai3 < 800) {
+            ai = ai3;
+            if (ai >= 710 && ai <= 717) {
+                min = 1, max = 20;
+            }
+        }
+
+    }
+
+    if (max == 0 && ai4 != -1) {
+
+        if (ai4 < 3200) {
+            ai = ai4;
+            if ((ai >= 3100 && ai <= 3105) || (ai >= 3110 && ai <= 3115) || (ai >= 3120 && ai <= 3125)
+                    || (ai >= 3130 && ai <= 3135) || (ai >= 3140 && ai <= 3145) || (ai >= 3150 && ai <= 3155)
+                    || (ai >= 3160 && ai <= 3165)) {
+                min = 6, max = 6;
+            }
+
+        } else if (ai4 < 3300) {
+            ai = ai4;
+            if (ai <= 3205 || (ai >= 3210 && ai <= 3215) || (ai >= 3220 && ai <= 3225) || (ai >= 3230 && ai <= 3235)
+                    || (ai >= 3240 && ai <= 3245) || (ai >= 3250 && ai <= 3255) || (ai >= 3260 && ai <= 3265)
+                    || (ai >= 3270 && ai <= 3275) || (ai >= 3280 && ai <= 3285) || (ai >= 3290 && ai <= 3295)) {
+                min = 6, max = 6;
+            }
+
+        } else if (ai4 < 3400) {
+            ai = ai4;
+            if (ai <= 3305 || (ai >= 3310 && ai <= 3315) || (ai >= 3320 && ai <= 3325) || (ai >= 3330 && ai <= 3335)
+                    || (ai >= 3340 && ai <= 3345) || (ai >= 3350 && ai <= 3355) || (ai >= 3360 && ai <= 3365)
+                    || (ai >= 3370 && ai <= 3375)) {
+                min = 6, max = 6;
+            }
+
+        } else if (ai4 < 3500) {
+            ai = ai4;
+            if (ai <= 3405 || (ai >= 3410 && ai <= 3415) || (ai >= 3420 && ai <= 3425) || (ai >= 3430 && ai <= 3435)
+                    || (ai >= 3440 && ai <= 3445) || (ai >= 3450 && ai <= 3455) || (ai >= 3460 && ai <= 3465)
+                    || (ai >= 3470 && ai <= 3475) || (ai >= 3480 && ai <= 3485) || (ai >= 3490 && ai <= 3495)) {
+                min = 6, max = 6;
+            }
+
+        } else if (ai4 < 3600) {
+            ai = ai4;
+            if (ai <= 3505 || (ai >= 3510 && ai <= 3515) || (ai >= 3520 && ai <= 3525) || (ai >= 3530 && ai <= 3535)
+                    || (ai >= 3540 && ai <= 3545) || (ai >= 3550 && ai <= 3555) || (ai >= 3560 && ai <= 3565)
+                    || (ai >= 3570 && ai <= 3575)) {
+                min = 6, max = 6;
+            }
+
+        } else if (ai4 < 3700) {
+            ai = ai4;
+            if (ai <= 3605 || (ai >= 3610 && ai <= 3615) || (ai >= 3620 && ai <= 3625) || (ai >= 3630 && ai <= 3635)
+                    || (ai >= 3640 && ai <= 3645) || (ai >= 3650 && ai <= 3655) || (ai >= 3660 && ai <= 3665)
+                    || (ai >= 3670 && ai <= 3675) || (ai >= 3680 && ai <= 3685) || (ai >= 3690 && ai <= 3695)) {
+                min = 6, max = 6;
+            }
+
+        } else if (ai4 < 4000) {
+            ai = ai4;
+            if ((ai >= 3900 && ai <= 3909) || (ai >= 3920 && ai <= 3929)) {
+                min = 1, max = 15;
+            } else if ((ai >= 3910 && ai <= 3919) || (ai >= 3930 && ai <= 3939)) {
+                min = 4, max = 18;
+            } else if (ai >= 3940 && ai <= 3943) {
+                min = 4, max = 4;
+            } else if (ai >= 3950 && ai <= 3955) {
+                min = 6, max = 6;
+            }
+
+        } else if (ai4 < 4400) {
+            ai = ai4;
+            if (ai == 4300 || ai == 4301 || ai == 4310 || ai == 4311 || ai == 4320) {
+                min = 1, max = 35;
+            } else if ((ai >= 4302 && ai <= 4306) || (ai >= 4312 && ai <= 4316)) {
+                min = 1, max = 70;
+            } else if (ai == 4307 || ai == 4317) {
+                min = 2, max = 2;
+            } else if (ai == 4308 || ai == 4319) {
+                min = 1, max = 30;
+            } else if (ai == 4309) {
+                min = 20, max = 20;
+            } else if (ai == 4318) {
+                min = 1, max = 20;
+            } else if (ai >= 4321 && ai <= 4323) {
+                min = 1, max = 1;
+            } else if (ai == 4324 || ai == 4325) {
+                min = 10, max = 10;
+            } else if (ai == 4326) {
+                min = 6, max = 6;
+            } else if (ai >= 4330 && ai <= 4333) {
+                min = 6, max = 7;
+            }
+
+        } else if (ai4 < 7100) {
+            ai = ai4;
+            if (ai == 7001) {
+                min = 13, max = 13;
+            } else if (ai == 7002) {
+                min = 1, max = 30;
+            } else if (ai == 7003) {
+                min = 10, max = 10;
+            } else if (ai == 7004) {
+                min = 1, max = 4;
+            } else if (ai == 7005) {
+                min = 1, max = 12;
+            } else if (ai == 7006) {
+                min = 6, max = 6;
+            } else if (ai == 7007) {
+                min = 6, max = 12;
+            } else if (ai == 7008) {
+                min = 1, max = 3;
+            } else if (ai == 7009) {
+                min = 1, max = 10;
+            } else if (ai == 7010) {
+                min = 1, max = 2;
+            } else if (ai == 7011) {
+                min = 6, max = 10;
+            } else if (ai >= 7020 && ai <= 7022) {
+                min = 1, max = 20;
+            } else if (ai == 7023) {
+                min = 1, max = 30;
+            } else if (ai >= 7030 && ai <= 7039) {
+                min = 4, max = 30;
+            } else if (ai == 7040) {
+                min = 4, max = 4;
+            } else if (ai == 7041) {
+                min = 1, max = 4;
+            }
+
+        } else if (ai4 < 7300) {
+            ai = ai4;
+            if (ai >= 7230 && ai <= 7239) {
+                min = 3, max = 30;
+            } else if (ai == 7240) {
+                min = 1, max = 20;
+            } else if (ai == 7241) {
+                min = 2, max = 2;
+            } else if (ai == 7242) {
+                min = 1, max = 25;
+            } else if (ai == 7250) {
+                min = 8, max = 8;
+            } else if (ai == 7251) {
+                min = 12, max = 12;
+            } else if (ai == 7252) {
+                min = 1, max = 1;
+            } else if (ai == 7253 || ai == 7254 || ai == 7259) {
+                min = 1, max = 40;
+            } else if (ai == 7255) {
+                min = 1, max = 10;
+            } else if (ai == 7256) {
+                min = 1, max = 90;
+            } else if (ai == 7257) {
+                min = 1, max = 70;
+            } else if (ai == 7258) {
+                min = 3, max = 3;
+            }
+
+        } else if (ai4 < 8100) {
+            ai = ai4;
+            if (ai == 8001) {
+                min = 14, max = 14;
+            } else if (ai == 8002 || ai == 8012) {
+                min = 1, max = 20;
+            } else if (ai == 8003) {
+                min = 14, max = 30;
+            } else if (ai == 8004) {
+                min = 1, max = 30;
+            } else if (ai == 8005) {
+                min = 6, max = 6;
+            } else if (ai == 8006 || ai == 8026) {
+                min = 18, max = 18;
+            } else if (ai == 8007) {
+                min = 1, max = 34;
+            } else if (ai == 8008) {
+                min = 8, max = 12;
+            } else if (ai == 8009) {
+                min = 1, max = 50;
+            } else if (ai == 8010) {
+                min = 1, max = 30;
+            } else if (ai == 8011) {
+                min = 1, max = 12;
+            } else if (ai == 8013) {
+                min = 1, max = 25;
+            } else if (ai == 8014) {
+                min = 1, max = 25;
+            } else if (ai == 8017 || ai == 8018) {
+                min = 18, max = 18;
+            } else if (ai == 8019) {
+                min = 1, max = 10;
+            } else if (ai == 8020) {
+                min = 1, max = 25;
+            } else if (ai == 8030) {
+                min = 1, max = 90;
+            } else if (ai == 8040 || ai == 8041) {
+                min = 15, max = 15;
+            } else if (ai == 8042) {
+                min = 32, max = 32;
+            } else if (ai == 8043) {
+                min = 18, max = 20;
+            }
+
+        } else if (ai4 < 8200) {
+            ai = ai4;
+            if (ai == 8110) {
+                min = 1, max = 70;
+            } else if (ai == 8111) {
+                min = 4, max = 4;
+            } else if (ai == 8112) {
+                min = 1, max = 70;
+            }
+
+        } else if (ai4 < 8300) {
+            ai = ai4;
+            if (ai == 8200) {
+                min = 1, max = 70;
+            }
+        }
+    }
+
+    if (max == 0) {
+        *p_ai = ai2; /* Use 2-digit as feedback */
+        return 0;
+    }
+    assert(ai >= 0 && ai <= 9999);
+    assert(min >= 1);
+    assert(max >= min);
+
+    *p_ai = ai;
+    if (p_min) {
+        *p_min = min;
+    }
+    if (p_max) {
+        *p_max = max;
+    }
+    return 1;
+}
+
+/* Parse non-bracketed input */
+static int gs1_lint_parse_raw_caret(const unsigned char source[], const int length,
+            const int ai_max, int *ai_vals, int *ai_locs, int *data_locs, int *data_lens, int *p_ai_count,
+            int *p_err_no, int *p_err_posn) {
+    int i, j;
+    const int gs1_caret = source[0] == '^';
+    const unsigned char separator = gs1_caret ? '^' : '\x1D';
+    int ai, max;
+    int ai_count = 0, ai_len;
+    #ifdef NDEBUG
+    (void)ai_max;
+    #endif
+
+    i = gs1_caret || source[0] == '\x1D'; /* Allow GS at start also */
+
+    if (i >= length) {
+        *p_ai_count = 0; /* For feedback */
+        ai_vals[0] = -1;
+        ai_locs[0] = i - 1;
+        *p_err_no = 1;
+        *p_err_posn = i;
+        return 0;
+    }
+
+    while (i < length) {
+        int data_start, data_max, on_separator;
+        assert(ai_count < ai_max);
+        ai_locs[ai_count] = i;
+        if (!gs1_lint_parse_ai(source, length, i, &ai, NULL /*min*/, &max)) {
+            *p_ai_count = ai_count; /* For feedback */
+            ai_vals[ai_count] = ai; /* May be -1 */
+            *p_err_no = 1;
+            *p_err_posn = i + 1; /* Position 1-base */
+            return 0;
+        }
+        ai_vals[ai_count] = ai;
+        ai_len = ai < 100 ? 2 : ai < 1000 ? 3 : 4;
+
+        /* Following GS1 Syntax Engine tolerating superfluous FNC1s at end of AI data
+           (for both final AI and AIs with predefined length) */
+        data_start = i + ai_len;
+        data_max = data_start + max;
+        for (j = data_start; j < length && j < data_max; j++) {
+            if (source[j] == separator) {
+                break;
+            }
+        }
+        data_locs[ai_count] = data_start;
+        /* Only checking that have at least one char, and haven't exceeded max */
+        on_separator = j < length && source[j] == separator;
+        if (j == data_start || (j + 1 == length && length > data_max && !on_separator)) {
+            *p_ai_count = ai_count; /* For feedback */
+            data_lens[ai_count] = j - data_start;
+            *p_err_no = 2;
+            *p_err_posn = i + 1; /* Position 1-base */
+            return 0;
+        }
+        data_lens[ai_count] = j - data_locs[ai_count];
+        ai_count++;
+        i = j + on_separator;
+    }
+
+    *p_ai_count = ai_count;
+    return 1;
 }
 
 #endif /* Z_GS1_LINT_H */

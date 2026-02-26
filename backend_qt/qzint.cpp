@@ -199,7 +199,7 @@ namespace Zint {
             m_compliant_height(false),
             m_rotate_angle(0),
             m_eci(0),
-            m_gs1parens(false), m_gs1nocheck(false), m_gs1syntaxengine(false),
+            m_gs1parens(false), m_gs1nocheck(false), m_gs1raw(false), m_gs1syntaxengine(false),
             m_reader_init(false),
             m_guard_whitespace(false),
             m_embed_vector_font(false),
@@ -277,6 +277,9 @@ namespace Zint {
         }
         if (m_gs1nocheck) {
             m_zintSymbol->input_mode |= GS1NOCHECK_MODE;
+        }
+        if (m_gs1raw) {
+            m_zintSymbol->input_mode |= GS1RAW_MODE;
         }
         if (m_gs1syntaxengine) {
             m_zintSymbol->input_mode |= GS1SYNTAXENGINE_MODE;
@@ -739,6 +742,15 @@ namespace Zint {
 
     void QZint::setGS1NoCheck(bool gs1NoCheck) {
         m_gs1nocheck = gs1NoCheck;
+    }
+
+    /* Process as raw GS1 input (no brackets/parentheses), with separator GS for FNC1 */
+    bool QZint::gs1Raw() const {
+        return m_gs1raw;
+    }
+
+    void QZint::setGS1Raw(bool gs1Raw) {
+        m_gs1raw = gs1Raw;
     }
 
     /* Use GS1 Syntax Engine to validate GS1 data */
@@ -1394,12 +1406,16 @@ namespace Zint {
 
         if (supportsGS1()) {
             bool gs1_implied = false;
+            if (gs1NoCheck() || (inputMode() & GS1NOCHECK_MODE)) {
+                arg_bool(cmd, "--gs1nocheck", (gs1_implied = true));
+            }
             if (gs1Parens() || (inputMode() & GS1PARENS_MODE)) {
                 arg_bool(cmd, "--gs1parens", (gs1_implied = true));
             }
-            if (gs1NoCheck() || (inputMode() & GS1NOCHECK_MODE)) {
-                arg_bool(cmd, "--gs1nocheck", (gs1_implied = true));
-            } else if (gs1SyntaxEngine() || (inputMode() & GS1SYNTAXENGINE_MODE)) {
+            if (gs1Raw() || (inputMode() & GS1RAW_MODE)) {
+                arg_bool(cmd, "--gs1raw", (gs1_implied = true));
+            }
+            if (gs1SyntaxEngine() || (inputMode() & GS1SYNTAXENGINE_MODE)) {
                 arg_bool(cmd, "--gs1strict", (gs1_implied = true));
             }
             arg_bool(cmd, "--gs1", (inputMode() & 0x07) == GS1_MODE && !gs1_implied);

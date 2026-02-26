@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -360,7 +360,7 @@ static void test_large(const testCtx *const p_ctx) {
 
     char data_buf[ZINT_MAX_DATA_LEN];
 
-    char escaped[8192];
+    char escaped[8192] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_buf[32768];
     char cmp_msg[1024];
 
@@ -1304,7 +1304,7 @@ static void test_input(const testCtx *const p_ctx) {
                         && data[i].option_3 == data[i - 1].option_3
                         && data[i].output_options == data[i - 1].output_options
                         && strcmp(data[i].data, data[i - 1].data) == 0) {
-                    unsigned char binary[2][2200];
+                    unsigned char binary[2][2200] ZINT_TESTUTIL_SANITIZEM_INIT_2D;
                     int gs1;
                     int binlen;
                     int binlens[2] = {0};
@@ -1319,7 +1319,7 @@ static void test_input(const testCtx *const p_ctx) {
                                 i, expected_rows_width, prev_expected_rows_width);
 
                     if ((data[i].input_mode & 0x07) == GS1_MODE) {
-                        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), length, reduced, &length);
+                        ret = zint_gs1_verify(symbol, ZUCP(data[i].data), length, reduced, &length, 0 /*set_hrt*/);
                         assert_zero(ret, "i:%d zint_gs1_verify() ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
                         text = reduced;
                     } else {
@@ -6395,7 +6395,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_rt(const testCtx *const p_ctx) {
+static void test_ct(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
@@ -6427,9 +6427,11 @@ static void test_rt(const testCtx *const p_ctx) {
         /* 11*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 899, BARCODE_CONTENT_SEGS, "é", -1, 0, 899, "é", -1, 899 },
         /* 12*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "", -1, 0 },
         /* 13*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, BARCODE_CONTENT_SEGS, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "01049123451234591597033130128\03510ABC123", -1, 3 },
-        /* 14*/ { BARCODE_DATAMATRIX, GS1_MODE, 28, BARCODE_CONTENT_SEGS, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 28, "01049123451234591597033130128\03510ABC123", -1, 3 }, /* Note: content seg ECI rremains at default 3 */
-        /* 15*/ { BARCODE_HIBC_DM, UNICODE_MODE, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
-        /* 16*/ { BARCODE_HIBC_DM, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
+        /* 14*/ { BARCODE_DATAMATRIX, GS1_MODE, 28, BARCODE_CONTENT_SEGS, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 28, "01049123451234591597033130128\03510ABC123", -1, 3 }, /* Note: content seg ECI remains at default 3 */
+        /* 15*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, "https://example.com/01/09506000134369", -1, 0, 0, "", -1, 0 },
+        /* 16*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, BARCODE_CONTENT_SEGS, "https://example.com/01/09506000134369", -1, 0, 0, "https://example.com/01/09506000134369", -1, 3 },
+        /* 17*/ { BARCODE_HIBC_DM, UNICODE_MODE, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
+        /* 18*/ { BARCODE_HIBC_DM, UNICODE_MODE, -1, BARCODE_CONTENT_SEGS, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -6487,7 +6489,7 @@ static void test_rt(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_rt_segs(const testCtx *const p_ctx) {
+static void test_ct_segs(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
@@ -7686,8 +7688,8 @@ int main(int argc, char *argv[]) {
         { "test_input", test_input },
         { "test_encode", test_encode },
         { "test_encode_segs", test_encode_segs },
-        { "test_rt", test_rt },
-        { "test_rt_segs", test_rt_segs },
+        { "test_ct", test_ct },
+        { "test_ct_segs", test_ct_segs },
 #ifdef ZINT_TEST_ENCODING
         { "test_minimalenc", test_minimalenc },
 #endif

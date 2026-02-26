@@ -4934,7 +4934,7 @@ static void test_encode(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
-    char cmp_buf[32768];
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */

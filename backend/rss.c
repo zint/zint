@@ -1,7 +1,7 @@
 /* rss.c - GS1 DataBar (formerly Reduced Space Symbology) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1188,17 +1188,6 @@ static void dbar_exp_separator(struct zint_symbol *symbol, int width, const int 
     }
 }
 
-/* Set HRT for DataBar Expanded */
-static void dbar_exp_hrt(struct zint_symbol *symbol, unsigned char source[], const int length) {
-
-    /* Max possible length is 77 digits so will fit */
-    if (symbol->input_mode & GS1PARENS_MODE) {
-        z_hrt_cpy_nochk(symbol, source, length);
-    } else {
-        z_hrt_conv_gs1_brackets_nochk(symbol, source, length);
-    }
-}
-
 /* Return DataBar Expanded group (-1) */
 static int dbar_exp_group(const int val) {
     int i;
@@ -1225,10 +1214,11 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
     int reduced_length;
     /* Allow for 8 bits + 5-bit latch per char + 200 bits overhead/padding */
     char *binary_string = (char *) z_alloca(13 * length + 200 + 1);
+    const int set_hrt = symbol->symbology == BARCODE_DBAR_EXP || symbol->symbology == BARCODE_DBAR_EXP_CC;
     const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
-    error_number = zint_gs1_verify(symbol, source, length, reduced, &reduced_length);
+    error_number = zint_gs1_verify(symbol, source, length, reduced, &reduced_length, set_hrt);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
@@ -1318,10 +1308,6 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
 
     check_char = 211 * (symbol_chars - 4) + checksum % 211;
 
-    if (debug_print) {
-        printf("Data chars: %d, Check char: %d\n", data_chars, check_char);
-    }
-
     group = dbar_exp_group(check_char);
 
     odd = (check_char - dbar_exp_g_sum[group]) / dbar_exp_t_even[group];
@@ -1334,6 +1320,11 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
     codeblocks = (symbol_chars + 1) / 2;
     pattern_width = codeblocks * 5 + symbol_chars * 8 + 4;
     memset(elements, 0, sizeof(int) * pattern_width);
+
+    if (debug_print) {
+        printf("Data chars: %d, Check char: %d, Codeblocks: %d, Symbol chars: %d\n",
+                data_chars, check_char, codeblocks, symbol_chars);
+    }
 
     /* Put finder patterns in element array */
     p = (symbol_chars - 1) / 2 - 1;
@@ -1380,7 +1371,7 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
         }
         symbol->rows++;
 
-        dbar_exp_hrt(symbol, source, length);
+        /* HRT set by `zint_gs1_verify()` */
 
         if (content_segs && z_ct_cpy(symbol, reduced, reduced_length)) {
             return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
@@ -1498,7 +1489,7 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
 
     if (symbol->symbology == BARCODE_DBAR_EXP_CC || symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
         /* Composite separator */
-        dbar_exp_separator(symbol, symbol->width, 4, separator_row, 1 /*above*/, 0 /*special_case_row*/,
+        dbar_exp_separator(symbol, symbol->width, codeblocks, separator_row, 1 /*above*/, 0 /*special_case_row*/,
                             1 /*left_to_right*/, 0 /*odd_last_row*/, NULL);
     }
 

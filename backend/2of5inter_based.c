@@ -1,7 +1,7 @@
 /* 2of5_based.c - Handles Code 2 of 5 Interleaved derivatives ITF-14, DP Leitcode and DP Identcode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -109,7 +109,7 @@ INTERNAL int zint_itf14(struct zint_symbol *symbol, unsigned char source[], int 
 
     z_hrt_cpy_nochk(symbol, local_source, 14);
 
-    /* Use `raw_text` set by `zint_c25_inter_common()` */
+    /* Use `content_segs` set by `zint_c25_inter_common()` */
 
     return error_number;
 }
@@ -161,7 +161,7 @@ INTERNAL int zint_dpleit(struct zint_symbol *symbol, unsigned char source[], int
     z_hrt_printf_nochk(symbol, "%.5s.%.3s.%.3s.%.3s", local_source, local_source + 5, local_source + 8,
                         local_source + 11);
 
-    /* Use `raw_text` set by `zint_c25_inter_common()` */
+    /* Use `content_segs` set by `zint_c25_inter_common()` */
 
     return error_number;
 }
@@ -204,7 +204,7 @@ INTERNAL int zint_dpident(struct zint_symbol *symbol, unsigned char source[], in
     z_hrt_printf_nochk(symbol, "%.2s.%.2s %c.%.3s.%.3s %c", local_source, local_source + 2, local_source[4],
                         local_source + 5, local_source + 8, local_source[11]);
 
-    /* Use `raw_text` set by `zint_c25_inter_common()` */
+    /* Use `content_segs` set by `zint_c25_inter_common()` */
 
     return error_number;
 }

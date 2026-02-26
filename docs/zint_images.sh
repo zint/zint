@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2022-2025 <rstuart114@gmail.com>
+# Copyright (C) 2022-2026 <rstuart114@gmail.com>
 #
 # Generate the barcode .svg images for manual.pdf (via manual.pmd)
 
@@ -46,16 +46,16 @@ zint -b ITF14 --compliantheight -d "9212320967145" --scale=$SCALE_LINEAR -o imag
 zint -b ITF14 --box --compliantheight -d "9212320967145" --scale=$SCALE_LINEAR -o images/itf14_border0.svg
 zint -b DPLEIT -d "9212320967145" --scale=$SCALE_LINEAR -o images/dpleit.svg
 zint -b DPIDENT -d "91232096712" --scale=$SCALE_LINEAR -o images/dpident.svg
-zint -b UPCA --compliantheight -d "72527270270" --scale=$SCALE_UPCEAN -o images/upca.svg
-zint -b UPCA --compliantheight -d "72527270270+12345" --scale=$SCALE_UPCEAN -o images/upca_5.svg
-zint -b UPCA --compliantheight -d "72527270270+12345" --guardwhitespace --scale=$SCALE_UPCEAN -o images/upca_5_gws.svg
-zint -b UPCE --compliantheight -d "123456" --scale=$SCALE_UPCEAN -o images/upce.svg
-zint -b UPCE --compliantheight -d "123456+12" --guardwhitespace --scale=$SCALE_UPCEAN -o images/upce_2_gws.svg
-zint -b EAN13 --compliantheight -d "451234567890" --scale=$SCALE_UPCEAN -o images/ean13.svg
-zint -b EAN13 --compliantheight -d "451234567890+21" --scale=$SCALE_UPCEAN -o images/ean13_2.svg
-zint -b EAN13 --compliantheight -d "451234567890" --guarddescent=2.5 --guardwhitespace --scale=$SCALE_UPCEAN -o images/ean13_gd_gws.svg
-zint -b EAN8 --compliantheight -d "7432365" --scale=$SCALE_UPCEAN -o images/ean8.svg
-zint -b EAN8 --compliantheight -d "7432365" --guardwhitespace --scale=$SCALE_UPCEAN -o images/ean8_gws.svg
+zint -b UPCA --compliantheight -d "01234500005" --scale=$SCALE_UPCEAN -o images/upca.svg
+zint -b UPCA --compliantheight -d "01234500005+12345" --scale=$SCALE_UPCEAN -o images/upca_5.svg
+zint -b UPCA --compliantheight -d "01234500005+12345" --guardwhitespace --scale=$SCALE_UPCEAN -o images/upca_5_gws.svg
+zint -b UPCE --compliantheight -d "123455" --scale=$SCALE_UPCEAN -o images/upce.svg
+zint -b UPCE --compliantheight -d "123455+12" --guardwhitespace --scale=$SCALE_UPCEAN -o images/upce_2_gws.svg
+zint -b EAN13 --compliantheight -d "952012345678" --scale=$SCALE_UPCEAN -o images/ean13.svg
+zint -b EAN13 --compliantheight -d "952012345678+21" --scale=$SCALE_UPCEAN -o images/ean13_2.svg
+zint -b EAN13 --compliantheight -d "952012345678" --guarddescent=2.5 --guardwhitespace --scale=$SCALE_UPCEAN -o images/ean13_gd_gws.svg
+zint -b EAN8 --compliantheight -d "9520000" --scale=$SCALE_UPCEAN -o images/ean8.svg
+zint -b EAN8 --compliantheight -d "9520000" --guardwhitespace --scale=$SCALE_UPCEAN -o images/ean8_gws.svg
 zint -b ISBNX --compliantheight -d "9789295055124" --scale=$SCALE_UPCEAN -o images/isbnx.svg
 zint -b ISBNX --compliantheight -d "9789295055124" --guardwhitespace --scale=$SCALE_UPCEAN -o images/isbnx_gws.svg
 zint -b EAN_2ADDON --compliantheight -d "12" --scale=$SCALE_UPCEAN -o images/ean_2addon.svg

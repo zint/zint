@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -70,10 +70,10 @@ static void test_qr_large(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char data_buf[ZINT_MAX_DATA_LEN];
+    char data_buf[ZINT_MAX_DATA_LEN] ZINT_TESTUTIL_SANITIZEM_INIT;
 
-    char escaped[ZINT_MAX_DATA_LEN] = {0}; /* Suppress clang -fsanitize=memory false positive */
-    char cmp_buf[177 * 177 + 1] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char escaped[ZINT_MAX_DATA_LEN] ZINT_TESTUTIL_SANITIZEM_INIT;
+    char cmp_buf[177 * 177 + 1] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
@@ -489,7 +489,7 @@ static void test_qr_input(const testCtx *const p_ctx) {
     char escaped[4096];
     char escaped2[4096];
     char ret_buf[4096];
-    char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
@@ -856,7 +856,7 @@ static void test_qr_optimize(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
-    char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
@@ -4740,7 +4740,7 @@ static void test_qr_encode_segs(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
-    char cmp_buf[32768];
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
@@ -7369,7 +7369,7 @@ static void test_upnqr_encode(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
-    char cmp_buf[32768];
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     #if 0 /* Need to add "force binary mode" to BWIPP for this to work */
@@ -8078,7 +8078,7 @@ static void test_rmqr_large(const testCtx *const p_ctx) {
     char data_buf[ZINT_MAX_DATA_LEN];
 
     char escaped[4096];
-    char cmp_buf[32768];
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do ZXing-C++ test if asked, too slow otherwise */
@@ -9397,7 +9397,7 @@ static void test_rmqr_encode_segs(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
-    char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */

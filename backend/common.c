@@ -117,7 +117,7 @@ static const unsigned short flags[256] = {
 
 /* Whether a character `ch` matches `flag` */
 INTERNAL int z_is_chr(const unsigned int flag, const unsigned int ch) {
-    return z_isascii(ch) && (flags[ch] & flag); /* As passed an int ch need to check it's ASCII */
+    return z_isascii(ch) && (flags[ch] & flag); /* As `ch` passed as an int need to check it's ASCII */
 }
 
 /* Verifies if a string only uses valid characters, returning 1-based position in `source` if not, 0 for success */
@@ -780,15 +780,16 @@ INTERNAL int z_utf8_to_unicode(struct zint_symbol *symbol, const unsigned char s
 INTERNAL int z_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length) {
     int i, j;
     int warn_number = 0;
+    const int text_size = ARRAY_SIZE(symbol->text);
 
-    for (i = 0, j = 0; i < length && j < ARRAY_SIZE(symbol->text); i++) {
+    for (i = 0, j = 0; i < length && j < text_size; i++) {
         if (z_isascii(source[i])) {
             symbol->text[j++] = z_iscntrl(source[i]) ? ' ' : source[i];
         } else if (source[i] < 0xC0) {
             if (source[i] < 0xA0) { /* 0x80-0x9F not valid ISO/IEC 8859-1 */
                 symbol->text[j++] = ' ';
             } else {
-                if (j + 2 >= ARRAY_SIZE(symbol->text)) {
+                if (j + 2 >= text_size) {
                     warn_number = ZINT_WARN_HRT_TRUNCATED;
                     break;
                 }
@@ -796,7 +797,7 @@ INTERNAL int z_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char
                 symbol->text[j++] = source[i];
             }
         } else {
-            if (j + 2 >= ARRAY_SIZE(symbol->text)) {
+            if (j + 2 >= text_size) {
                 warn_number = ZINT_WARN_HRT_TRUNCATED;
                 break;
             }
@@ -804,7 +805,7 @@ INTERNAL int z_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char
             symbol->text[j++] = source[i] - 0x40;
         }
     }
-    if (j == ARRAY_SIZE(symbol->text)) {
+    if (j == text_size) {
         warn_number = ZINT_WARN_HRT_TRUNCATED;
         j--;
     }
@@ -955,7 +956,7 @@ static int ct_init_seg_source(struct zint_symbol *symbol, const int seg_idx, con
     assert(length > 0);
 
     if (!(symbol->content_segs[seg_idx].source = (unsigned char *) malloc((size_t) length))) {
-        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 245, "Insufficient memory for content text source buffer");
+        return z_errtxt(ZINT_ERROR_MEMORY, symbol, 245, "Insufficient memory for content segs source buffer");
     }
     return 0;
 }
@@ -1013,6 +1014,9 @@ INTERNAL int z_ct_cpy_cat(struct zint_symbol *symbol, const unsigned char source
     if (z_ct_init_segs(symbol, 1 /*seg_count*/) || ct_init_seg_source(symbol, 0 /*seg_idx*/, total_length)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_init_segs()` & `ct_init_seg_source()` only fail with OOM */
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang-22 -fsanitize=memory false positive (seems unable to track `*s++ =`) */
+    memset(symbol->content_segs[0].source, 0, total_length);
+#endif
     s = symbol->content_segs[0].source;
     if (length > 0) {
         memcpy(s, source, (size_t) length);
@@ -1044,6 +1048,9 @@ INTERNAL int z_ct_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char 
     if (z_ct_init_segs(symbol, 1 /*seg_count*/) || ct_init_seg_source(symbol, 0 /*seg_idx*/, length + iso_cnt)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_init_segs()` & `ct_init_seg_source()` only fail with OOM */
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang-22 -fsanitize=memory false positive (seems unable to track `*s++ =`) */
+    memset(symbol->content_segs[0].source, 0, length + iso_cnt);
+#endif
     s = symbol->content_segs[0].source;
 
     for (i = 0; i < length; i++) {

@@ -95,7 +95,7 @@ static int gs1_numeric(const unsigned char *data, int data_len, int offset, int 
     return 1;
 }
 
-/* GS1 General Specifications 21.0.1 Figure 7.9.5-1. GS1 AI encodable character reference values.
+/* GS1 General Specifications Release 26.0 Table 7-18 GS1 AI encodable character reference values.
    Also used to determine if character in set 82 - a value of 82 means not in */
 static const char gs1_c82[] = {
     /*   !   "   #   $   %   &   '   (   )   *   */
@@ -118,7 +118,8 @@ static const char gs1_c82[] = {
         72, 73, 74, 75, 76, 77, 78, 79, 80, 81,
 };
 
-/* Validate of character set 82 (GS1 General Specifications Figure 7.11-1) */
+/* Validate of character set 82
+   (GS1 General Specifications Release 26.0 Table 7-20 GS1 AI encodable character set 82) */
 static int gs1_cset82(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
@@ -144,7 +145,8 @@ static int gs1_cset82(const unsigned char *data, int data_len, int offset, int m
     return 1;
 }
 
-/* Validate of character set 39 (GS1 General Specifications Figure 7.11-2) */
+/* Validate of character set 39
+   (GS1 General Specifications Release 26.0 Table 7-21 GS1 AI encodable character set 39) */
 static int gs1_cset39(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
@@ -203,7 +205,8 @@ static int gs1_cset64(const unsigned char *data, int data_len, int offset, int m
     return 1;
 }
 
-/* Check a check digit (GS1 General Specifications 7.9.1) */
+/* Check a check digit
+   (GS1 General Specifications Release 26.0 7.9.1 Standard check digit calculations for GS1 data structures) */
 static int gs1_csum(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
@@ -237,7 +240,8 @@ static int gs1_csum(const unsigned char *data, int data_len, int offset, int min
     return 1;
 }
 
-/* Check alphanumeric check characters (GS1 General Specifications 7.9.5) */
+/* Check alphanumeric check characters
+   (GS1 General Specifications Release 26.0 7.9.5 Check character calculation (for alphanumeric keys)) */
 static int gs1_csumalpha(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
@@ -280,7 +284,7 @@ static int gs1_csumalpha(const unsigned char *data, int data_len, int offset, in
 
 #define GS1_GCP_MIN_LENGTH  4 /* Minimum length of GS1 Company Prefix */
 
-/* Check for a GS1 Prefix (GS1 General Specifications GS1 1.4.2) */
+/* Check for a GS1 Prefix (GS1 General Specifications Release 26.0 1.2.3.3 GS1 Company Prefix) */
 static int gs1_gcppos1(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
@@ -406,7 +410,8 @@ static int gs1_yymmd0(const unsigned char *data, int data_len, int offset, int m
 
     if (!length_only && data_len) {
         /* For leap year detection, only matters if 00 represents century divisible by 400 or not */
-        /* Following good until 2050 when 00 will mean 2100 (GS1 General Specifications 7.12) */
+        /* Following good until 2050 when 00 will mean 2100
+           (GS1 General Specifications Release 26.0 7.12 Determination of century in dates) */
         unsigned char buf[8] = { '2', '0' };
 
         memcpy(buf + 2, data + offset, 6);
@@ -697,7 +702,8 @@ static int gs1_yesno(const unsigned char *data, int data_len, int offset, int mi
     return 1;
 }
 
-/* Check for importer index (GS1 General Specifications 3.8.17) */
+/* Check for importer index
+   (GS1 General Specifications Release 26.0 3.8.18 GS1 UIC with Extension 1 and Importer index: AI (7040)) */
 static int gs1_importeridx(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
@@ -745,7 +751,7 @@ static int gs1_nonzero(const unsigned char *data, int data_len, int offset, int 
     return 1;
 }
 
-/* Check winding direction (0/1/9) (GS1 General Specifications 3.9.1) */
+/* Check winding direction (0/1/9) (GS1 General Specifications Release 26.0 3.9.1 Roll products) */
 static int gs1_winding(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
@@ -789,7 +795,9 @@ static int gs1_zero(const unsigned char *data, int data_len, int offset, int min
     return 1;
 }
 
-/* Check piece of a trade item (GS1 General Specifications 3.9.6 and 3.9.17) */
+/* Check piece of a trade item
+   (GS1 General Specifications Release 26.0 3.9.6 Identification of an individual trade item piece
+    and 3.9.18 Identification of pieces of a trade item (ITIP) contained in a logistic unit) */
 static int gs1_pieceoftotal(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
@@ -914,8 +922,8 @@ static int gs1_nozeroprefix(const unsigned char *data, int data_len, int offset,
     }
 
     if (!length_only && data_len) {
-        /* GS1 General Specifications 3.9.11 "The C/P serial number SHALL NOT begin with a "0" digit, unless the
-           entire serial number consists of the single digit '0'." */
+        /* GS1 General Specifications Release 26.0 3.9.11 "The C/P serial number SHALL NOT begin with a "0" digit,
+           unless the entire serial number consists of the single digit '0'." */
         if (data[0] == '0' && data_len != 1) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
@@ -1609,34 +1617,72 @@ static int gs1_packagetype(const unsigned char *data, int data_len, int offset, 
     return 1;
 }
 
+/* Helper to say if AI pointed to by `source` has predefined length according to GS1 General Specifications 26.0
+   Figure 7-6 "Element strings with predefined length using GS1 Application Identifiers" */
+static int gs1_predefined_len(const unsigned char source[]) {
+    const int ai2 = z_to_int(source, 2); /* First 2 digits */
+
+    /* NOTE: previously allowed legacy 23, removed 2026-02-26 */
+    return (ai2 >= 0 && ai2 <= 4) || (ai2 >= 11 && ai2 <= 20) || (ai2 >= 31 && ai2 <= 36) || ai2 == 41;
+}
+
 /* Generated by "php backend/tools/gen_gs1_linter.php > backend/gs1_lint.h" */
 #include "gs1_lint.h"
 
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int zint_test_gs1_lint_parse_raw_caret(const unsigned char source[], const int length,
+            const int ai_max, int *ai_vals, int *ai_locs, int *data_locs, int *data_lens, int *p_ai_count,
+            int *p_err_no, int *p_err_posn) {
+    return gs1_lint_parse_raw_caret(source, length,
+                ai_max, ai_vals, ai_locs, data_locs, data_lens, p_ai_count, p_err_no, p_err_posn);
+}
+#endif
+
 /* Whether starts with Digital Link URI */
 static int gs1_is_digital_link(const unsigned char *source, const int length) {
-    return (length >= 8 && (memcmp(source, "https://", 8) == 0 || memcmp(source, "HTTPS://", 8) == 0))
-            || (length >= 7 && (memcmp(source, "http://", 7) == 0 || memcmp(source, "HTTP://", 7) == 0));
+    return length >= 7 && (memcmp(source, "http://", 7) == 0 || memcmp(source, "HTTP://", 7) == 0
+                            || (length >= 8 && (memcmp(source, "https://", 8) == 0
+                                                || memcmp(source, "HTTPS://", 8) == 0)));
 }
 
 /* If built with GS1 Syntax Engine library */
 #ifdef ZINT_HAVE_GS1SE
 
+/* Helper to set `errtxt` on internal error and exit, freeing `ctx` */
+static int gs1se_internal_errtxt(struct zint_symbol *symbol, const int err_id, gs1_encoder *ctx) {
+    const char *errmsg = gs1_encoder_getErrMsg(ctx);
+    z_errtxtf(0, symbol, err_id, "Internal error using GS1 Syntax Engine: %.80s", *errmsg ? errmsg : "unknown");
+    gs1_encoder_free(ctx);
+    return ZINT_ERROR_ENCODING_PROBLEM;
+}
+
+/* Helper to replace GSs with carets */
+static void gs1se_gs_caret_sub(const unsigned char *src, const int length, unsigned char *dst) {
+    int i;
+    for (i = 0; i < length; i++) {
+        dst[i] = src[i] == '\x1D' ? '^' : src[i];
+    }
+    dst[length] = '\0';
+}
+
 /* Use GS1 Syntax Engine to verify */
 static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[], const int length,
                 unsigned char reduced[], int *p_reduced_length) {
     int i, j;
-    const int is_composite = z_is_composite(symbol->symbology);
-    const int primary_len = is_composite ? (int) strlen(symbol->primary) : 0;
+    const int primary_len = z_is_composite(symbol->symbology) ? (int) strlen(symbol->primary) : 0;
     const int gs1parens_mode = symbol->input_mode & GS1PARENS_MODE;
-    const char obracket = gs1parens_mode ? '(' : '[';
-    const int parens_cnt = !gs1parens_mode ? z_chr_cnt(source, length, '(') : 0;
+    const int gs1raw_mode = !!(symbol->input_mode & GS1RAW_MODE);
+    const int gs1_caret = source[0] == '^';
+    const int is_digital_link = !primary_len && !gs1_caret && gs1_is_digital_link(source, length);
+    const int parens_cnt = !gs1parens_mode && !gs1raw_mode && !gs1_caret ? z_chr_cnt(source, length, '(') : 0;
+
     int local_length = length;
     const unsigned char *local_source = source;
     const unsigned char *local_source2 = source;
-    unsigned char *local_source_buf = (unsigned char *) z_alloca(ARRAY_SIZE(symbol->primary) + length + 1);
+    unsigned char *local_source_buf = (unsigned char *) z_alloca(ARRAY_SIZE(symbol->primary) + 4 + length + 1);
     unsigned char *local_source2_buf = (unsigned char *) z_alloca(ARRAY_SIZE(symbol->primary) * 2 + length
                                                                     + parens_cnt + 1);
-    int is_digital_link = 0;
+    int linear_len = 0;
     char msgBuf[120];
     gs1_encoder_init_status_t status = GS1_ENCODERS_INIT_SUCCESS;
     gs1_encoder_init_opts_t opts = {
@@ -1646,35 +1692,89 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
     gs1_encoder *ctx;
     int gs1se_ret;
 
+    if (length < 2 + gs1_caret) {
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 802, "Data does not start with an AI");
+    }
+
+    /* Only matrix symbols can encode Digital Link URIs */
+    if (is_digital_link && !z_is_fixed_ratio(symbol->symbology)) {
+        return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 264, "Data does not start with an AI");
+    }
+
     /* Need "linear|composite" format to check required AIs */
-    if (is_composite && primary_len) {
+    if (primary_len) {
         if (symbol->symbology == BARCODE_GS1_128_CC || symbol->symbology == BARCODE_DBAR_EXP_CC
                 || symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
-            memcpy(local_source_buf, symbol->primary, primary_len);
-            local_source_buf[primary_len] = '|';
-            memcpy(local_source_buf + 1 + primary_len, source, length + 1); /* Include terminating NUL */
-            local_length += 1 + primary_len;
+            /* These take GS1 data in the linear part */
+            if (gs1raw_mode) {
+                /* Need to add initial carets */
+                local_source_buf[0] = '^';
+                local_length = 1;
+                if (symbol->primary[0] == '\x1D') { /* Allow initial GS */
+                    gs1se_gs_caret_sub(ZCUCP(symbol->primary + 1), primary_len - 1, local_source_buf + 1); /* Linear GSs */
+                    local_length += primary_len - 1;
+                } else {
+                    gs1se_gs_caret_sub(ZCUCP(symbol->primary), primary_len, local_source_buf + 1); /* Linear GSs */
+                    local_length += primary_len;
+                }
+                local_source_buf[local_length++] = '|';
+                local_source_buf[local_length++] = '^';
+                if (source[0] == '\x1D') { /* Allow initial GS */
+                    gs1se_gs_caret_sub(source + 1, length - 1, local_source_buf + primary_len + 3); /* CC GSs */
+                    local_length += length - 1;
+                } else {
+                    gs1se_gs_caret_sub(source, length, local_source_buf + primary_len + 3); /* CC GSs */
+                    local_length += length;
+                }
+                linear_len = primary_len;
+            } else {
+                memcpy(local_source_buf, symbol->primary, primary_len);
+                local_source_buf[primary_len] = '|';
+                memcpy(local_source_buf + primary_len + 1, source, length + 1); /* Include terminating NUL */
+                local_length += primary_len + 1;
+                linear_len = primary_len - 1; /* Only actual linear data counts - exclude initial caret */
+            }
         } else {
             /* Just use dummy "01" linear */
-            memcpy(local_source_buf, gs1parens_mode ? "(01)12345678901231|" : "[01]12345678901231|", 19);
-            memcpy(local_source_buf + 19, source, length + 1); /* Include terminating NUL */
-            local_length += 19;
+            if (gs1_caret || gs1raw_mode) {
+                memcpy(local_source_buf, "^0112345678901231|^", 18 + gs1raw_mode);
+                if (gs1_caret) {
+                    memcpy(local_source_buf + 18, source, length + 1); /* Include terminating NUL */
+                } else {
+                    gs1se_gs_caret_sub(source, length, local_source_buf + 19);
+                }
+                local_length += 18 + gs1raw_mode;
+            } else {
+                memcpy(local_source_buf, gs1parens_mode ? "(01)12345678901231|" : "[01]12345678901231|", 19);
+                memcpy(local_source_buf + 19, source, length + 1); /* Include terminating NUL */
+                local_length += 19;
+            }
+            linear_len = 16; /* Only actual linear data "0112345678901231" counts */
+        }
+        local_source = local_source_buf;
+        local_source2 = local_source_buf;
+    } else if (gs1raw_mode && !is_digital_link) {
+        if (symbol->symbology == BARCODE_GS1_128 || symbol->symbology == BARCODE_DBAR_EXP
+                || symbol->symbology == BARCODE_DBAR_EXPSTK || z_is_fixed_ratio(symbol->symbology)
+                || symbol->symbology == BARCODE_CODABLOCKF) { /* Codablock-F will be GS1-enabled in the future */
+            /* Prefix caret */
+            local_source_buf[0] = '^';
+            if (source[0] == '\x1D') { /* Allow initial GS */
+                gs1se_gs_caret_sub(source + 1, length - 1, local_source_buf + 1);
+            } else {
+                gs1se_gs_caret_sub(source, length, local_source_buf + 1);
+                local_length++;
+            }
+        } else {
+            /* Just copy over */
+            memcpy(local_source_buf, source, length + 1); /* Include terminating NULL */
         }
         local_source = local_source_buf;
         local_source2 = local_source_buf;
     }
 
-    if (local_source[0] != obracket) {
-        if (!z_is_fixed_ratio(symbol->symbology)) { /* Only matrix symbols can encode Digital Link URIs */
-            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 264, "Data does not start with an AI");
-        }
-        if (!(is_digital_link = gs1_is_digital_link(local_source, local_length))) {
-            return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 265,
-                            "Data does not start with an AI or a Digital Link URI");
-        }
-    }
-
-    if (!is_digital_link) {
+    if (!is_digital_link && !gs1raw_mode && !gs1_caret) {
+        assert(local_length > 0);
         /* Convert to GS1 Syntax Engine parenthesis mode */
         if (!gs1parens_mode) {
             /* Replace '[' and ']' with '(' and ')' & escape any data opening parentheses (not closing parentheses) */
@@ -1711,19 +1811,20 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
     if (!(ctx = gs1_encoder_init_ex(NULL /*mem*/, &opts))) {
         const int error_number = status == GS1_ENCODERS_INIT_FAILED_NO_MEM
                                     ? ZINT_ERROR_MEMORY : ZINT_ERROR_ENCODING_PROBLEM;
-        return z_errtxtf(error_number, symbol, 266, "GS1 Syntax Engine: %s", opts.msgBuf);
+        return z_errtxtf(error_number, symbol, 266, "Failed to initialize GS1 Syntax Engine: %.80s",
+                        *opts.msgBuf ? opts.msgBuf : "unknown error");
     }
     /* Do not check for required checks for GS1-128 as may be spread across multiple barcodes - ticket #348
        and https://github.com/gs1/gs1-syntax-dictionary/issues/24 */
     if (symbol->symbology == BARCODE_GS1_128) {
         if (!gs1_encoder_setValidationEnabled(ctx, gs1_encoder_vREQUISITE_AIS, false)) {
-            const char *errmsg = gs1_encoder_getErrMsg(ctx);
-            return z_errtxtf(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0, "Internal error using GS1SE: %.80s",
-                            errmsg ? errmsg : "unknown");
+            return gs1se_internal_errtxt(symbol, 0 /*err_id*/, ctx);
         }
     }
 
-    if (is_digital_link) {
+    if (is_digital_link || gs1raw_mode || gs1_caret) {
+        /* Required for `gs1_encoder_getScanData()` */
+        gs1_encoder_setSym(ctx, primary_len ? gs1_encoder_sGS1_128_CCA : gs1_encoder_sDM);
         gs1se_ret = gs1_encoder_setDataStr(ctx, ZCCP(local_source2));
     } else {
         gs1se_ret = gs1_encoder_setAIdataStr(ctx, ZCCP(local_source2));
@@ -1733,81 +1834,285 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
         const int errmsg_len = (int) strlen(errmsg);
         const char *errmarkup = gs1_encoder_getErrMarkup(ctx);
         int errmarkup_len = (int) strlen(errmarkup);
-        if (errmarkup_len && errmsg_len + 1 + errmarkup_len < ARRAY_SIZE(symbol->errtxt)) {
+        int errtxt_set = 0;
+        if (errmsg_len && errmarkup_len && errmsg_len + 1 + errmarkup_len < ARRAY_SIZE(symbol->errtxt)) {
             char *local_errmarkup = (char *) z_alloca(errmarkup_len * 4 + 1);
             z_debug_print_escape(ZCUCP(errmarkup), errmarkup_len, local_errmarkup);
             errmarkup_len = (int) strlen(local_errmarkup);
             if (errmsg_len + 1 + errmarkup_len < ARRAY_SIZE(symbol->errtxt)) {
                 ZEXT z_errtxtf(0, symbol, 267, "%1$s %2$s", errmsg, local_errmarkup);
-            } else {
-                z_errtxt(0, symbol, 268, errmsg);
+                errtxt_set = 1;
             }
-        } else {
-            z_errtxt(0, symbol, 268, errmsg);
+        }
+        if (!errtxt_set) {
+            z_errtxt(0, symbol, 268, *errmsg ? errmsg : "Unknown error using GS1 Syntax Engine");
         }
         gs1_encoder_free(ctx);
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    /* If Digital Link, set `reduced` */
-    if (is_digital_link) {
+    /* If Digital Link or raw/caret mode, set `reduced` */
+    if (is_digital_link || gs1raw_mode || gs1_caret) {
         const char *scan_data;
-
-        gs1_encoder_setSym(ctx, gs1_encoder_sDM); /* Required for `gs1_encoder_getScanData()` */
+        int reduced_length;
 
         if (!(scan_data = gs1_encoder_getScanData(ctx))) { /* Shouldn't happen */
-            const char *errmsg = gs1_encoder_getErrMsg(ctx);
-            z_errtxt(0, symbol, 269, strlen(errmsg) ? errmsg : "Internal error");
-            gs1_encoder_free(ctx);
-            return ZINT_ERROR_ENCODING_PROBLEM;
+            return gs1se_internal_errtxt(symbol, 269 /*err_id*/, ctx);
         }
-        *p_reduced_length = (int) strlen(scan_data);
+        reduced_length = (int) strlen(scan_data);
 
         /* Skip over Symbology Identifier */
-        if (*p_reduced_length >= 3 && scan_data[0] == ']') {
+        if (reduced_length >= 3 && scan_data[0] == ']') {
             scan_data += 3;
-            *p_reduced_length -= 3;
+            reduced_length -= 3;
         }
+        /* Skip over any linear stuff */
+        if (linear_len) {
+            scan_data += linear_len;
+            reduced_length -= linear_len;
+            /* Need to check if the last linear AI was non-predefined length, when a GS is added */
+            if (*scan_data == '\x1D') { /* Skip */
+                scan_data++;
+                reduced_length--;
+            }
+        }
+        assert(reduced_length <= length);
 
-        memcpy(reduced, scan_data, *p_reduced_length + 1); /* Include terminating NUL */
+        memcpy(reduced, scan_data, reduced_length + 1); /* Include terminating NUL */
+        reduced[reduced_length] = '\0';
+        *p_reduced_length = reduced_length;
     } else {
-        *p_reduced_length = 0; /* Not Digital Link & `reduced` not set */
+        *p_reduced_length = 0; /* `reduced` not set */
     }
 
     gs1_encoder_free(ctx);
 
     return 0;
 }
+
 #endif /* ZINT_HAVE_GS1SE */
+
+/* Check for valid AI values and data lengths according to GS1 General Specifications Release 26, January 2026 */
+static int gs1_run_lint(struct zint_symbol *symbol, const unsigned char source[], const int ai_count,
+            int *ai_vals, int *ai_locs, int *data_locs, int *data_lens) {
+    int i;
+    int error_number = 0;
+
+    for (i = 0; i < ai_count; i++) {
+        int err_no, err_posn;
+        char err_msg[50];
+        if (!gs1_lint(ai_vals[i], source + data_locs[i], data_lens[i], &err_no, &err_posn,
+                        err_msg)) {
+            if (err_no == 1) {
+                ZEXT z_errtxtf(0, symbol, 260, "Invalid AI (%1$02d) at position %2$d",
+                                ai_vals[i], ai_locs[i] + 1);
+            } else if (err_no == 2 || err_no == 4) { /* 4 is backward-incompatible bad length */
+                ZEXT z_errtxtf(0, symbol, 259, "Invalid data length for AI (%1$02d) at position %2$d",
+                                ai_vals[i], ai_locs[i] + 1);
+            } else {
+                ZEXT z_errtxtf(0, symbol, 261, "AI (%1$02d) data position %2$d: %3$s", ai_vals[i], err_posn, err_msg);
+            }
+            /* For backward compatibility only error on unknown AI or bad length */
+            if (err_no == 1 || err_no == 2) {
+                return ZINT_ERROR_INVALID_DATA;
+            }
+            error_number = ZINT_WARN_NONCOMPLIANT;
+        }
+    }
+    return error_number;
+}
+
+/* Helper to convert parsed AIs to HRT */
+static int gs1_hrt_conv_parsed(struct zint_symbol *symbol, const unsigned char source[], const int length,
+            const int ai_count, const int *ai_vals, const int *ai_locs, const int *data_locs, const int *data_lens,
+            const int no_errtxt) {
+    int i, j;
+    int warn_number = 0;
+    const int text_size = ARRAY_SIZE(symbol->text);
+#ifdef NDEBUG
+    (void)length;
+#endif
+
+    for (i = 0, j = 0; i < ai_count && j < text_size; i++) {
+        const int ai_len = 2 + (ai_vals[i] >= 100) + (ai_vals[i] >= 1000);
+        if (j + 1 + ai_len + 1 + data_lens[i] >= text_size) {
+            warn_number = ZINT_WARN_HRT_TRUNCATED;
+            break;
+        }
+        symbol->text[j++] = '(';
+        memcpy(symbol->text + j, source + ai_locs[i], ai_len);
+        j += ai_len;
+        symbol->text[j++] = ')';
+        assert(data_locs[i] + data_lens[i] <= length);
+        memcpy(symbol->text + j, source + data_locs[i], data_lens[i]);
+        j += data_lens[i];
+    }
+
+    if (j == text_size) {
+        warn_number = ZINT_WARN_HRT_TRUNCATED;
+        j--;
+    }
+    symbol->text_length = j;
+    symbol->text[j] = '\0';
+
+    if (warn_number && !no_errtxt) {
+        z_errtxt(0, symbol, 799, "Human Readable Text truncated");
+    }
+    return warn_number;
+
+}
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int zint_test_gs1_hrt_conv_parsed(struct zint_symbol *symbol, const unsigned char source[], const int length,
+            const int ai_count, const int *ai_vals, const int *ai_locs, const int *data_locs, const int *data_lens,
+            const int no_errtxt) {
+    return gs1_hrt_conv_parsed(symbol, source, length, ai_count, ai_vals, ai_locs, data_locs, data_lens,
+                no_errtxt);
+}
+#endif
+
+/* Helper to set HRT when have GS1PARENS_MODE - truncates if too long for HRT buffer */
+static int gs1_hrt_cpy(struct zint_symbol *symbol, const unsigned char source[], const int length,
+            const int no_errtxt) {
+    int warn_number;
+    const int text_size = ARRAY_SIZE(symbol->text);
+
+    assert(symbol->input_mode & GS1PARENS_MODE);
+    assert(source[0] == '(');
+
+    if (length < text_size) {
+        memcpy(symbol->text, source, length + 1); /* Include terminating NUL */
+        symbol->text_length = length;
+        warn_number = 0;
+    } else {
+        /* Find last full AI - need to scan forward to track escaped opening parens */
+        int i, last_opening_bracket = 0;
+        for (i = 0; i < text_size; i++) {
+            if (source[i] == '\\' && i + 1 < length && (source[i + 1] == '\\' || source[i + 1] == '(')) {
+                i++;
+            } else if (source[i] == '(') {
+                last_opening_bracket = i;
+            }
+        }
+        if (text_size < length && source[text_size] == '(') {
+            /* Finished at end of AI data */
+            memcpy(symbol->text, source, text_size - 1);
+            symbol->text_length = text_size - 1;
+            symbol->text[text_size - 1] = '\0';
+        } else {
+            /* Use last full AI + data */
+            memcpy(symbol->text, source, last_opening_bracket);
+            symbol->text_length = last_opening_bracket;
+            symbol->text[last_opening_bracket] = '\0';
+        }
+        warn_number = ZINT_WARN_HRT_TRUNCATED;
+        if (!no_errtxt) {
+            z_errtxt(0, symbol, 801, "Human Readable Text truncated");
+        }
+    }
+    return warn_number;
+}
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int zint_test_gs1_hrt_cpy(struct zint_symbol *symbol, const unsigned char source[], const int length,
+            const int no_errtxt) {
+    return gs1_hrt_cpy(symbol, source, length, no_errtxt);
+}
+#endif
+
+/* Helper to set HRT when don't have GS1PARENS_MODE - substitutes square brackets with parentheses
+   & truncates if too long for HRT buffer */
+static int gs1_hrt_conv_brackets(struct zint_symbol *symbol, const unsigned char source[], const int length,
+            const int no_errtxt) {
+    int i;
+    int warn_number = 0;
+    int bracket_level = 0; /* Non-compliant closing square brackets may be in text */
+    int last_opening_bracket = 0;
+    const int text_size = ARRAY_SIZE(symbol->text);
+    const int max_len = length > text_size ? text_size : length;
+
+    assert((symbol->input_mode & GS1PARENS_MODE) == 0);
+    assert(source[0] == '[');
+
+    for (i = 0; i < max_len; i++) {
+        if (source[i] == '[') {
+            symbol->text[i] = '(';
+            bracket_level++;
+            last_opening_bracket = i;
+        } else if (source[i] == ']' && bracket_level) {
+            symbol->text[i] = ')';
+            bracket_level--;
+        } else {
+            symbol->text[i] = source[i];
+        }
+    }
+    if (i == text_size) {
+        i--;
+        if (source[i] != '[') {
+            i = last_opening_bracket;
+        }
+        warn_number = ZINT_WARN_HRT_TRUNCATED;
+    }
+    symbol->text_length = i;
+    symbol->text[i] = '\0';
+
+    if (warn_number && !no_errtxt) {
+        z_errtxt(0, symbol, 798, "Human Readable Text truncated");
+    }
+    return warn_number;
+}
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int zint_test_gs1_hrt_conv_brackets(struct zint_symbol *symbol, const unsigned char source[],
+                const int length, const int no_errtxt) {
+    return gs1_hrt_conv_brackets(symbol, source, length, no_errtxt);
+}
+#endif
 
 #define GS1_PARENS_PLACEHOLDER_MASK 0x20  /* Mask `(` or `)` by this if escaped (get BS (\x08) or HT (\x09)) */
 
+/* Helper to re-instate escaped parentheses */
+static void gs1_reinstate_escaped_parens(unsigned char source[], const int length) {
+    int i;
+    for (i = 0; i < length; i++) {
+        if (source[i] < '\x1D') {
+            source[i] |= GS1_PARENS_PLACEHOLDER_MASK;
+        }
+    }
+}
+
 /* Verify a GS1 input string */
 INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int length,
-                unsigned char reduced[], int *p_reduced_length) {
+                unsigned char reduced[], int *p_reduced_length, const int set_hrt) {
     int i, j;
-    int error_number = 0;
+    int error_number = 0, warn_number = 0;
     int bracket_level = 0;
     int ai_latch;
     int local_length = length;
     const unsigned char *local_source = source;
     unsigned char *local_source_buf = (unsigned char *) z_alloca(length + 1);
+    int *ai_vals, *ai_locs, *data_locs, *data_lens;
+
     const int gs1parens_mode = symbol->input_mode & GS1PARENS_MODE;
     const char obracket = gs1parens_mode ? '(' : '[';
     const char cbracket = gs1parens_mode ? ')' : ']';
     int done_gs1se = 0;
     int is_digital_link = 0; /* Is Digital Link? */
+    const int gs1raw_mode = symbol->input_mode & GS1RAW_MODE;
+    const int gs1nocheck_mode = symbol->input_mode & GS1NOCHECK_MODE;
 
     /* Note: Digital Link URIs only validated if have GS1 Syntax Engine and GS1SYNTAXENGINE_MODE set */
 
+    *p_reduced_length = 0;
+
 #ifdef ZINT_HAVE_GS1SE
-    if ((symbol->input_mode & GS1SYNTAXENGINE_MODE) && !(symbol->input_mode & GS1NOCHECK_MODE)) {
+    if ((symbol->input_mode & GS1SYNTAXENGINE_MODE) && !gs1nocheck_mode) {
         /* Strict verification */
         if ((error_number = gs1se_verify(symbol, source, length, reduced, p_reduced_length))) {
             return error_number;
         }
         done_gs1se = 1;
-        is_digital_link = *p_reduced_length != 0; /* `p_reduced_length` will be set if Digital Link */
+        /* `p_reduced_length` will be set if Digital Link or raw/caret */
     }
 #endif
 
@@ -1821,7 +2126,7 @@ INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, const unsigned char sou
             if (source[i] == '\0') {
                 return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 262, "NUL characters not permitted in GS1 mode");
             }
-            if (source[i] < 32) {
+            if (source[i] < 32 && (!gs1raw_mode || source[i] != '\x1D')) {
                 return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 251, "Control characters are not supported by GS1");
             }
             if (source[i] == 127) {
@@ -1829,24 +2134,90 @@ INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, const unsigned char sou
             }
         }
 
+        is_digital_link = gs1_is_digital_link(source, length);
+
+        if (source[0] != obracket && !is_digital_link && (gs1raw_mode || source[0] == '^')) {
+            int ai_count;
+            int err_no, err_posn;
+            const int ai_max = (length + 2) / 3 + 1; /* Min AI 2, min data 1 */
+
+            ai_vals = (int *) z_alloca(sizeof(int) * ai_max);
+            ai_locs = (int *) z_alloca(sizeof(int) * ai_max);
+            data_locs = (int *) z_alloca(sizeof(int) * ai_max);
+            data_lens = (int *) z_alloca(sizeof(int) * ai_max);
+            if (!gs1_lint_parse_raw_caret(source, length, ai_max, ai_vals, ai_locs, data_locs, data_lens, &ai_count,
+                    &err_no, &err_posn)) {
+                /* Both raw & caret modes require valid AIs and underlong data lengths to work, so check regardless of
+                   GS1NOCHECK_MODE */
+                if (err_no == 1) {
+                    if (ai_vals[ai_count] != -1) {
+                        ZEXT z_errtxtf(0, symbol, 856, "Invalid AI (%1$02d) at position %2$d", ai_vals[ai_count],
+                                        err_posn);
+                    } else {
+                        z_errtxtf(0, symbol, 857, "Invalid AI at position %d", err_posn);
+                    }
+                } else {
+                    assert(err_no == 2);
+                    if (data_lens[ai_count] == 0) {
+                        ZEXT z_errtxtf(0, symbol, 858, "Empty data field for AI (%1$02d) at position %2$d",
+                                        ai_vals[ai_count], err_posn);
+                    } else {
+                        ZEXT z_errtxtf(0, symbol, 859, "Invalid data length for AI (%1$02d) at position %2$d",
+                                        ai_vals[ai_count], err_posn);
+                    }
+                }
+                return ZINT_ERROR_INVALID_DATA;
+            }
+            assert(ai_count < ai_max); /* Suppress clang-tidy-22 clang-analyzer-security.ArrayBound */
+            if (!gs1nocheck_mode) {
+                /* Do lint to check that data values are ok */
+                error_number = gs1_run_lint(symbol, source, ai_count, ai_vals, ai_locs, data_locs, data_lens);
+                if (error_number >= ZINT_ERROR) {
+                    return error_number;
+                }
+            }
+
+            if (set_hrt) {
+                warn_number = gs1_hrt_conv_parsed(symbol, source, length, ai_count, ai_vals, ai_locs, data_locs,
+                                data_lens, error_number != 0 /*no_errtxt*/);
+            }
+
+            /* Set reduced - need to set it via `ai_vals` etc. so as to lose any superfluous carets/GSs */
+            for (i = 0, j = 0; i < ai_count; i++) {
+                const int ai_len = 2 + (ai_vals[i] >= 100) + (ai_vals[i] >= 1000);
+                memcpy(reduced + j, source + ai_locs[i], ai_len);
+                j += ai_len;
+                memcpy(reduced + j, source + data_locs[i], data_lens[i]);
+                j += data_lens[i];
+                if (i + 1 != ai_count && !gs1_predefined_len(source + ai_locs[i])) {
+                    reduced[j++] = '\x1D';
+                }
+            }
+            reduced[j] = '\0';
+            *p_reduced_length = j;
+            return error_number ? error_number : warn_number;
+        }
         if (source[0] != obracket) {
             if (!z_is_fixed_ratio(symbol->symbology)) { /* Only matrix symbols can encode Digital Link URIs */
                 return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 252, "Data does not start with an AI");
             }
-            if (!(is_digital_link = gs1_is_digital_link(source, length))) {
+            if (!is_digital_link) {
                 return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 855,
                                 "Data does not start with an AI or Digital Link URI");
             }
         }
     }
 
-    if (is_digital_link) {
+    if (is_digital_link || (done_gs1se && *p_reduced_length)) {
         if (!done_gs1se) {
             /* Just copy over Digital Link URI - no verification */
             memcpy(reduced, source, length + 1); /* Include terminating NUL */
             *p_reduced_length = length;
+            if (set_hrt) {
+                error_number = z_hrt_cpy_iso8859_1(symbol, source, length);
+            }
         }
-        return 0;
+        return error_number;
     }
 
     if (gs1parens_mode) {
@@ -1881,10 +2252,11 @@ INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, const unsigned char sou
         int ai_zero_len_no_data = 0, ai_single_digit = 0, ai_nonnumeric = 0;
         int ai_nonnumeric_pos = 0; /* Suppress gcc 14 "-Wmaybe-uninitialized" false positive */
         const int ai_max = z_chr_cnt(local_source, local_length, obracket) + 1; /* Plus 1 so non-zero */
-        int *ai_value = (int *) z_alloca(sizeof(int) * ai_max);
-        int *ai_location = (int *) z_alloca(sizeof(int) * ai_max);
-        int *data_location = (int *) z_alloca(sizeof(int) * ai_max);
-        int *data_length = (int *) z_alloca(sizeof(int) * ai_max);
+
+        ai_vals = (int *) z_alloca(sizeof(int) * ai_max);
+        ai_locs = (int *) z_alloca(sizeof(int) * ai_max);
+        data_locs = (int *) z_alloca(sizeof(int) * ai_max);
+        data_lens = (int *) z_alloca(sizeof(int) * ai_max);
 
         /* Check the balance of the brackets & AI lengths */
         ai_latch = 0;
@@ -1941,7 +2313,7 @@ INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, const unsigned char sou
         if (min_ai_length <= 1) {
             /* Allow too short AI if GS1NOCHECK_MODE and no single-digit AIs and all zero-length AIs have some data
                - permits dummy "[]" workaround for ticket #204 data with no valid AI */
-            if (!(symbol->input_mode & GS1NOCHECK_MODE) || ai_single_digit || ai_zero_len_no_data) {
+            if (!gs1nocheck_mode || ai_single_digit || ai_zero_len_no_data) {
                 /* AI is too short */
                 return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 256,
                                 "Invalid AI at position %d in input (AI too short)", min_ai_pos);
@@ -1954,36 +2326,32 @@ INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, const unsigned char sou
                             "Invalid AI at position %d in input (non-numeric characters in AI)", ai_nonnumeric_pos);
         }
 
-        if (!(symbol->input_mode & GS1NOCHECK_MODE)) {
+        if (!gs1nocheck_mode) {
             const unsigned char *local_source2 = local_source;
             unsigned char *local_source2_buf = (unsigned char *) z_alloca(local_length + 1);
             int ai_count = 0;
             for (i = 1; i < local_length; i++) {
                 if (local_source[i - 1] == obracket) {
-                    ai_location[ai_count] = i;
+                    ai_locs[ai_count] = i - 1;
                     for (j = 1; local_source[i + j] != cbracket; j++);
-                    ai_value[ai_count] = z_to_int(local_source + i, j);
+                    ai_vals[ai_count] = z_to_int(local_source + i, j);
                     ai_count++;
                     i += j;
                 }
             }
 
             for (i = 0; i < ai_count; i++) {
-                if (ai_value[i] >= 1000) {
-                    data_location[i] = ai_location[i] + 5;
-                } else if (ai_value[i] >= 100) {
-                    data_location[i] = ai_location[i] + 4;
-                } else {
-                    data_location[i] = ai_location[i] + 3;
+                data_locs[i] = ai_locs[i] + 2 /*brackets*/ + 2 + (ai_vals[i] >= 100) + (ai_vals[i] >= 1000);
+                data_lens[i] = 0;
+                while (data_locs[i] + data_lens[i] < local_length
+                        && local_source[data_locs[i] + data_lens[i]] != obracket) {
+                    data_lens[i]++;
                 }
-                data_length[i] = 0;
-                while (data_location[i] + data_length[i] < local_length
-                        && local_source[data_location[i] + data_length[i]] != obracket) {
-                    data_length[i]++;
-                }
-                if (data_length[i] == 0) {
+                if (data_lens[i] == 0) {
                     /* No data for given AI */
-                    return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 258, "Empty data field in input");
+                    return ZEXT z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 258,
+                                            "Empty data field for AI (%1$02d) at position %2$d",
+                                            ai_vals[i], ai_locs[i] + 1);
                 }
             }
 
@@ -1991,82 +2359,54 @@ INTERNAL int zint_gs1_verify(struct zint_symbol *symbol, const unsigned char sou
                 /* Temporarily re-instate escaped parentheses before linting */
                 local_source2 = local_source2_buf;
                 memcpy(local_source2_buf, local_source, local_length + 1); /* Include terminating NUL */
-                for (i = 0; i < local_length; i++) {
-                    if (local_source2_buf[i] < '\x1D') {
-                        local_source2_buf[i] |= GS1_PARENS_PLACEHOLDER_MASK;
-                    }
-                }
+                gs1_reinstate_escaped_parens(local_source2_buf, local_length);
             }
 
-            /* Check for valid AI values and data lengths according to GS1 General
-               Specifications Release 25, January 2025 */
-            for (i = 0; i < ai_count; i++) {
-                int err_no, err_posn;
-                char err_msg[50];
-                if (!gs1_lint(ai_value[i], local_source2 + data_location[i], data_length[i], &err_no, &err_posn,
-                                err_msg)) {
-                    if (err_no == 1) {
-                        z_errtxtf(0, symbol, 260, "Invalid AI (%02d)", ai_value[i]);
-                    } else if (err_no == 2 || err_no == 4) { /* 4 is backward-incompatible bad length */
-                        z_errtxtf(0, symbol, 259, "Invalid data length for AI (%02d)", ai_value[i]);
-                    } else {
-                        ZEXT z_errtxtf(0, symbol, 261, "AI (%1$02d) position %2$d: %3$s", ai_value[i], err_posn,
-                                        err_msg);
-                    }
-                    /* For backward compatibility only error on unknown AI or bad length */
-                    if (err_no == 1 || err_no == 2) {
-                        return ZINT_ERROR_INVALID_DATA;
-                    }
-                    error_number = ZINT_WARN_NONCOMPLIANT;
-                }
+            /* Check AI/data */
+            error_number = gs1_run_lint(symbol, local_source2, ai_count, ai_vals, ai_locs, data_locs, data_lens);
+            if (error_number >= ZINT_ERROR) {
+                return error_number;
             }
         }
     }
 
-    /* Resolve AI data - put resulting string in 'reduced' */
-    j = 0;
-    ai_latch = 1;
-    for (i = 0; i < local_length; i++) {
-        if (local_source[i] == obracket) {
-            bracket_level++;
-            /* Start of an AI string */
-            if (ai_latch == 0) {
-                reduced[j++] = '\x1D';
-            }
-            if (i + 1 != local_length) {
-                int last_ai = z_to_int(local_source + i + 1, 2);
-                ai_latch = 0;
-                /* The following values from GS1 General Specifications Release 25.0
-                   Figure 7.8.5-2 "Element strings with predefined length using GS1 Application Identifiers" */
-                if ((last_ai >= 0 && last_ai <= 4) || (last_ai >= 11 && last_ai <= 20)
-                        /* NOTE: as noted by Terry Burton the following complies with ISO/IEC 24724:2011 Table
-                           D.1, but clashes with TPX AI [235], introduced May 2019; awaiting feedback from GS1 */
-                        || last_ai == 23 /* legacy support */ /* TODO: probably remove */
-                        || (last_ai >= 31 && last_ai <= 36) || last_ai == 41) {
-                    ai_latch = 1;
+    if (!*p_reduced_length) {
+        /* Resolve AI data - put resulting string in `reduced` */
+        j = 0;
+        ai_latch = 1;
+        for (i = 0; i < local_length; i++) {
+            if (local_source[i] == obracket) {
+                bracket_level++;
+                /* Start of an AI string */
+                if (ai_latch == 0) {
+                    reduced[j++] = '\x1D';
                 }
+                if (i + 1 != local_length) {
+                    ai_latch = gs1_predefined_len(local_source + i + 1);
+                }
+            } else if (local_source[i] == cbracket && bracket_level) {
+                bracket_level--;
+            } else {
+                reduced[j++] = local_source[i];
             }
-        } else if (local_source[i] == cbracket && bracket_level) {
-            /* The closing bracket is simply dropped from the input */
-            bracket_level--;
-        } else {
-            reduced[j++] = local_source[i];
         }
-    }
-    reduced[j] = '\0';
-    *p_reduced_length = j;
+        reduced[j] = '\0';
+        *p_reduced_length = j;
 
-    if (local_length != length) {
-        /* Re-instate escaped parentheses */
-        for (i = 0; i < *p_reduced_length; i++) {
-            if (reduced[i] < '\x1D') {
-                reduced[i] |= GS1_PARENS_PLACEHOLDER_MASK;
+        if (local_length != length) {
+            gs1_reinstate_escaped_parens(reduced, *p_reduced_length);
+        }
+        if (set_hrt) {
+            if (gs1parens_mode) {
+                warn_number = gs1_hrt_cpy(symbol, source, length, error_number != 0 /*no_errtxt*/);
+            } else {
+                warn_number = gs1_hrt_conv_brackets(symbol, source, length, error_number != 0 /*no_errtxt*/);
             }
         }
     }
     /* The character '\x1D' (GS) in the reduced string refers to the FNC1 character */
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* Helper to return standard GS1 check digit (GS1 General Specifications 7.9.1) */

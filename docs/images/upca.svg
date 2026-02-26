@@ -4,18 +4,18 @@
  <desc>Zint Generated Symbol</desc>
  <g id="barcode" fill="#000000">
   <rect x="0" y="0" width="452" height="313" fill="#FFFFFF"/>
-  <path d="M36 0h4v296.97h-4ZM44 0h4v296.97h-4ZM52 0h12v296.97h-12ZM68 0h8v296.97h-8ZM84 0h4v276.97h-4ZM96 0h8v276.97h-8ZM108 0h8v276.97h-8ZM128 0h4v276.97h-4ZM140 0h4v276.97h-4ZM152 0h8v276.97h-8ZM164 0h12v276.97h-12ZM180 0h8v276.97h-8ZM196 0h4v276.97h-4ZM208 0h8v276.97h-8ZM220 0h4v296.97h-4ZM228 0h4v296.97h-4ZM236 0h4v276.97h-4ZM252 0h4v276.97h-4ZM264 0h12v276.97h-12ZM284 0h4v276.97h-4ZM292 0h8v276.97h-8ZM304 0h8v276.97h-8ZM320 0h4v276.97h-4ZM336 0h4v276.97h-4ZM348 0h12v276.97h-12ZM368 0h4v276.97h-4ZM376 0h4v296.97h-4ZM396 0h4v296.97h-4ZM404 0h4v296.97h-4ZM412 0h4v296.97h-4Z"/>
+  <path d="M36 0h4v296.97h-4ZM44 0h4v296.97h-4ZM60 0h8v296.97h-8ZM72 0h4v296.97h-4ZM84 0h8v276.97h-8ZM100 0h4v276.97h-4ZM112 0h4v276.97h-4ZM124 0h8v276.97h-8ZM136 0h16v276.97h-16ZM156 0h4v276.97h-4ZM164 0h4v276.97h-4ZM180 0h8v276.97h-8ZM192 0h8v276.97h-8ZM212 0h4v276.97h-4ZM220 0h4v296.97h-4ZM228 0h4v296.97h-4ZM236 0h12v276.97h-12ZM256 0h4v276.97h-4ZM264 0h12v276.97h-12ZM284 0h4v276.97h-4ZM292 0h12v276.97h-12ZM312 0h4v276.97h-4ZM320 0h12v276.97h-12ZM340 0h4v276.97h-4ZM348 0h4v276.97h-4ZM360 0h12v276.97h-12ZM376 0h4v296.97h-4ZM388 0h4v296.97h-4ZM404 0h4v296.97h-4ZM412 0h4v296.97h-4Z"/>
   <text x="17.4" y="311.37" text-anchor="end" font-family="OCRB, monospace" font-size="28">
-   7
+   0
   </text>
   <text x="148" y="311.37" text-anchor="middle" font-family="OCRB, monospace" font-size="40">
-   25272
+   12345
   </text>
   <text x="304" y="311.37" text-anchor="middle" font-family="OCRB, monospace" font-size="40">
-   70270
+   00005
   </text>
   <text x="430.6" y="311.37" text-anchor="start" font-family="OCRB, monospace" font-size="28">
-   3
+   8
   </text>
  </g>
 </svg>

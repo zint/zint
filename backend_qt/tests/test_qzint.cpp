@@ -288,6 +288,10 @@ private slots:
         bc.setGS1NoCheck(gs1NoCheck);
         QCOMPARE(bc.gs1NoCheck(), gs1NoCheck);
 
+        bool gs1Raw = true;
+        bc.setGS1Raw(gs1Raw);
+        QCOMPARE(bc.gs1Raw(), gs1Raw);
+
         bool gs1SyntaxEngine = true;
         bc.setGS1SyntaxEngine(gs1SyntaxEngine);
         QCOMPARE(bc.gs1SyntaxEngine(), gs1SyntaxEngine);
@@ -656,6 +660,7 @@ private slots:
         QTest::addColumn<int>("option2");
         QTest::addColumn<int>("option3");
         QTest::addColumn<float>("scale");
+
         QTest::addColumn<float>("dpmm");
         QTest::addColumn<bool>("dotty");
         QTest::addColumn<float>("dotSize");
@@ -688,7 +693,9 @@ private slots:
         QTest::addColumn<int>("eci");
         QTest::addColumn<bool>("gs1Parens");
         QTest::addColumn<bool>("gs1NoCheck");
+        QTest::addColumn<bool>("gs1Raw");
         QTest::addColumn<bool>("gs1SyntaxEngine");
+
         QTest::addColumn<bool>("readerInit");
         QTest::addColumn<bool>("guardWhitespace");
         QTest::addColumn<bool>("embedVectorFont");
@@ -712,12 +719,14 @@ private slots:
         QTest::newRow("BARCODE_AUSPOST") << true << 0.0f << ""
             << BARCODE_AUSPOST << DATA_MODE // symbology-inputMode
             << "12345678" << "" // text-primary
-            << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 30.0f << -1 << 0 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 63 --binary --compliantheight -d '12345678'"
             << "zint.exe -b 63 --binary --compliantheight -d \"12345678\""
@@ -729,12 +738,14 @@ private slots:
         QTest::newRow("BARCODE_AZTEC") << false << 0.0f << ""
             << BARCODE_AZTEC << UNICODE_MODE // symbology-inputMode
             << "12345678Ж0%var%" << "" // text-primary
-            << 0.0f << 1 << 0 << ZINT_AZTEC_FULL << 4.0f << 0.0f << true << 0.9f << 1.0f // height-textGap
+            << 0.0f << 1 << 0 << ZINT_AZTEC_FULL << 4.0f // height-scale
+            << 0.0f << true << 0.9f << 1.0f // dpmm-textGap
             << 5.0f << 2 << 1 << "as\"dfa'sdf" // guardDescent-structAppID
             << "" << "" << QColor(Qt::blue) << QColor(Qt::white) << true // fgStr-cmyk
             << 0 << 0 << 2 << 3 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << false << 0 // showText-rotateAngle
-            << 7 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 7 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 92 --azfull --cmyk --eci=7 -d '12345678Ж0%var%' --dotsize=0.9 --dotty --fg=0000FF"
                 " --scale=4 --secure=1 --structapp='1,2,as\"dfa'\\''sdf' --vwhitesp=3 -w 2"
@@ -745,12 +756,14 @@ private slots:
         QTest::newRow("BARCODE_AZTEC (bgStr CMYK, fgStr CMYK)") << false << 0.0f << ""
             << BARCODE_AZTEC << UNICODE_MODE // symbology-inputMode
             << "12345678Ж0%var%" << "" // text-primary
-            << 0.0f << 1 << 0 << 0 << 4.0f << 0.0f << true << 0.9f << 1.0f // height-textGap
+            << 0.0f << 1 << 0 << 0 << 4.0f // height-scale
+            << 0.0f << true << 0.9f << 1.0f // dpmm-textGap
             << 5.0f << 2 << 1 << "as\"dfa'sdf" // guardDescent-structAppID
             << "71,0,40,44" << "0,0,0,0" << QColor(Qt::black) << QColor(Qt::white) << true // fgStr-cmyk
             << 0 << 0 << 2 << 3 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << false << 0 // showText-rotateAngle
-            << 7 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 7 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 92 --bg=0,0,0,0 --cmyk --eci=7 -d '12345678Ж0%var%' --dotsize=0.9 --dotty --fg=71,0,40,44 --scale=4"
                 " --secure=1 --structapp='1,2,as\"dfa'\\''sdf' --vwhitesp=3 -w 2"
@@ -761,12 +774,14 @@ private slots:
         QTest::newRow("BARCODE_C25INTER") << true << 0.0f << ""
             << BARCODE_C25INTER << UNICODE_MODE // symbology-inputMode
             << "12345" << "" // text-primary
-            << 0.0f << -1 << 2 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 0.0f << -1 << 2 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << SMALL_TEXT // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 3 --compliantheight -d '12345' --small --vers=2"
             << "zint.exe -b 3 --compliantheight -d \"12345\" --small --vers=2"
@@ -775,12 +790,14 @@ private slots:
         QTest::newRow("BARCODE_CHANNEL") << false << 0.0f << ""
             << BARCODE_CHANNEL << UNICODE_MODE // symbology-inputMode
             << "453678" << "" // text-primary
-            << 19.7f << -1 << 7 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 19.7f << -1 << 7 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(255, 255, 255, 0) << false // fgStr-cmyk
             << 1 << 2 << 0 << 0 << BOLD_TEXT // borderTypeIndex-fontSetting
             << true << false << true << false << false << 90 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << true // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << true // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 140 --bind --bold --border=2 -d '453678' --height=19.7 --nobackground --quietzones"
                 " --rotate=90 --verbose --vers=7"
@@ -791,12 +808,14 @@ private slots:
         QTest::newRow("BARCODE_CHANNEL (bgStr FFFFFF00)") << false << 0.0f << ""
             << BARCODE_CHANNEL << UNICODE_MODE // symbology-inputMode
             << "453678" << "" // text-primary
-            << 19.7f << -1 << 7 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 19.7f << -1 << 7 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "FFFFFF00" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 1 << 2 << 0 << 0 << BOLD_TEXT // borderTypeIndex-fontSetting
             << true << false << true << false << false << 90 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << true // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << true // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 140 --bind --bold --border=2 -d '453678' --height=19.7 --nobackground --quietzones"
                 " --rotate=90 --verbose --vers=7"
@@ -807,12 +826,14 @@ private slots:
         QTest::newRow("BARCODE_CHANNEL (bgStr 12345600)") << false << 0.0f << ""
             << BARCODE_CHANNEL << UNICODE_MODE // symbology-inputMode
             << "453678" << "" // text-primary
-            << 19.7f << -1 << 7 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 19.7f << -1 << 7 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "12345600" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 1 << 2 << 0 << 0 << BOLD_TEXT // borderTypeIndex-fontSetting
             << true << false << true << false << false << 90 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << true // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << true // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 140 --bind --bold --border=2 -d '453678' --height=19.7 --nobackground --quietzones"
                 " --rotate=90 --verbose --vers=7"
@@ -823,12 +844,14 @@ private slots:
         QTest::newRow("BARCODE_CODE128") << false << 0.0f << ""
             << BARCODE_CODE128 << (UNICODE_MODE | EXTRA_ESCAPE_MODE) // symbology-inputMode
             << "1234\\^A56" << "" // text-primary
-            << 0.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 0.0f << -1 << 0 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << false << false << true << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 20 -d '1234\\^A56' --extraesc --notext --quietzones"
             << "zint.exe -b 20 -d \"1234\\^A56\" --extraesc --notext --quietzones"
@@ -837,12 +860,14 @@ private slots:
         QTest::newRow("BARCODE_GS1_128_CC") << false << 0.0f << ""
             << BARCODE_GS1_128_CC << UNICODE_MODE // symbology-inputMode
             << "[01]12345678901231[15]121212" << "[11]901222[99]ABCDE" // text-primary
-            << 71.142f << 3 << 0 << 0 << 3.5f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 71.142f << 3 << 0 << 0 << 3.5f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << false << false << true << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 131 --compliantheight -d '[11]901222[99]ABCDE' --height=71.142 --mode=3 --notext"
                 " --primary='[01]12345678901231[15]121212' --quietzones --scale=3.5"
@@ -853,12 +878,14 @@ private slots:
         QTest::newRow("BARCODE_CODE16K") << false << 11.7f << ""
             << BARCODE_CODE16K << (UNICODE_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "12345678901234567890123456789012" << "" // text-primary
-            << 0.0f << 4 << 0 << 2 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 0.0f << 4 << 0 << 2 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 1 << 1 << 0 << 0 << SMALL_TEXT // borderTypeIndex-fontSetting
             << true << false << false << true << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 23 --compliantheight -d '12345678901234567890123456789012'"
                 " --height=11.7 --heightperrow --noquietzones --rows=4 --separator=2 --small"
@@ -869,12 +896,14 @@ private slots:
         QTest::newRow("BARCODE_CODE49") << true << 0.0f << ""
             << BARCODE_CODE49 << UNICODE_MODE // symbology-inputMode
             << "12345678901234567890" << "" // text-primary
-            << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 30.0f << -1 << 0 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 24 --compliantheight -d '12345678901234567890'"
             << "zint.exe -b 24 --compliantheight -d \"12345678901234567890\""
@@ -883,12 +912,14 @@ private slots:
         QTest::newRow("BARCODE_CODABLOCKF") << true << 0.0f << ""
             << BARCODE_CODABLOCKF << (DATA_MODE | ESCAPE_MODE) // symbology-inputMode
             << "T\\n\\xA0t\\\"" << "" // text-primary
-            << 0.0f << 2 << 5 << 3 << 3.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 0.0f << 2 << 5 << 3 << 3.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 2 << 4 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << true << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << true << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 74 --binary --border=4 --box --cols=5 --compliantheight -d 'T\\n\\xA0t\\\"' --esc --init"
                 " --rows=2 --scale=3 --separator=3"
@@ -899,12 +930,14 @@ private slots:
         QTest::newRow("BARCODE_DAFT") << false << 0.0f << ""
             << BARCODE_DAFT << UNICODE_MODE // symbology-inputMode
             << "daft" << "" // text-primary
-            << 9.2f << -1 << 251 << 0 << 1.0f << 0.0f << false << 0.7f << 1.0f // height-textGap
+            << 9.2f << -1 << 251 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(0x30, 0x31, 0x32, 0x33) << QColor(0xBF, 0xBE, 0xBD, 0xBC) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 93 --bg=BFBEBDBC -d 'daft' --fg=30313233 --height=9.2 --vers=251"
             << "zint.exe -b 93 --bg=BFBEBDBC -d \"daft\" --fg=30313233 --height=9.2 --vers=251"
@@ -913,68 +946,94 @@ private slots:
         QTest::newRow("BARCODE_DATAMATRIX (GS1)") << true << 0.0f << ""
             << BARCODE_DATAMATRIX << GS1_MODE // symbology-inputMode
             << "[20]12" << "" // text-primary
-            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f << 0.0f << false << 0.7f << 1.0f // height-textGap
+            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f // height-scale
+            << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << true << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 71 -d '[20]12' --gs1 --gssep --square"
             << "zint.exe -b 71 -d \"[20]12\" --gs1 --gssep --square"
             << "" << "" << "" << "";
 
-        QTest::newRow("BARCODE_DATAMATRIX (GS1Parens + Strict)") << true << 0.0f << ""
+        QTest::newRow("BARCODE_DATAMATRIX (GS1Parens + GS1SyntaxEngine)") << true << 0.0f << ""
             << BARCODE_DATAMATRIX << GS1_MODE // symbology-inputMode
             << "[20]12" << "" // text-primary
-            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f << 0.0f << false << 0.7f << 1.0f // height-textGap
+            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f // height-scale
+            << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << true << false << false << true << 0 // showText-rotateAngle
-            << 0 << true << false << true << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << true << false << false << true // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 71 -d '[20]12' --gs1parens --gs1strict --gssep --square"
             << "zint.exe -b 71 -d \"[20]12\" --gs1parens --gs1strict --gssep --square"
             << "" << "" << "" << "";
 
-        QTest::newRow("BARCODE_DATAMATRIX (GS1Strict)") << true << 0.0f << ""
+        QTest::newRow("BARCODE_DATAMATRIX (GS1SyntaxEngine)") << true << 0.0f << ""
             << BARCODE_DATAMATRIX << GS1_MODE // symbology-inputMode
             << "[20]12" << "" // text-primary
-            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f << 0.0f << false << 0.7f << 1.0f // height-textGap
+            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f // height-scale
+            << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << true << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << true << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << true // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 71 -d '[20]12' --gs1strict --gssep --square"
             << "zint.exe -b 71 -d \"[20]12\" --gs1strict --gssep --square"
             << "" << "" << "" << "";
 
-        QTest::newRow("BARCODE_DATAMATRIX (GS1NoCheck + Strict (ignored))") << true << 0.0f << ""
+        QTest::newRow("BARCODE_DATAMATRIX (GS1NoCheck + GS1SyntaxEngine)") << true << 0.0f << ""
             << BARCODE_DATAMATRIX << GS1_MODE // symbology-inputMode
             << "[20]12" << "" // text-primary
-            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f << 0.0f << false << 0.7f << 1.0f // height-textGap
+            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f // height-scale
+            << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << true << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << true << true << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << true << false << true // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
-            << "zint -b 71 -d '[20]12' --gs1nocheck --gssep --square"
-            << "zint.exe -b 71 -d \"[20]12\" --gs1nocheck --gssep --square"
+            << "zint -b 71 -d '[20]12' --gs1nocheck --gs1strict --gssep --square"
+            << "zint.exe -b 71 -d \"[20]12\" --gs1nocheck --gs1strict --gssep --square"
+            << "" << "" << "" << "";
+
+        QTest::newRow("BARCODE_DATAMATRIX (GS1Raw + GS1SyntaxEngine)") << true << 0.0f << ""
+            << BARCODE_DATAMATRIX << (GS1_MODE | ESCAPE_MODE) // symbology-inputMode
+            << "010952012345678810BATCH4\\G2107" << "" // text-primary
+            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f // height-scale
+            << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
+            << true << true << false << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << true << true // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 71 -d '010952012345678810BATCH4\\G2107' --esc --gs1raw --gs1strict --gssep --square"
+            << "zint.exe -b 71 -d \"010952012345678810BATCH4\\G2107\" --esc --gs1raw --gs1strict --gssep --square"
             << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_DATAMATRIX") << false << 0.0f << ""
             << BARCODE_DATAMATRIX << (DATA_MODE | ESCAPE_MODE | FAST_MODE) // symbology-inputMode
             << "ABCDEFGH\\x01I" << "" // text-primary
-            << 0.0f << -1 << 0 << DM_ISO_144 << 1.0f << 0.0f << false << 0.7f << 1.0f // height-textGap
+            << 0.0f << -1 << 0 << DM_ISO_144 << 1.0f // height-scale
+            << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 71 --binary -d 'ABCDEFGH\\x01I' --dmiso144 --esc --fast"
             << "zint.exe -b 71 --binary -d \"ABCDEFGH\\x01I\" --dmiso144 --esc --fast"
@@ -983,12 +1042,14 @@ private slots:
         QTest::newRow("BARCODE_DBAR_EXPSTK_CC") << false << 40.8f << ""
             << BARCODE_DBAR_EXPSTK_CC << (DATA_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "[91]ABCDEFGHIJKL" << "[11]901222[99]ABCDE" // text-primary
-            << 0.0f << -1 << 0 << 2 << 1.0f << 0.0f << true << 0.9f << 1.0f // height-textGap
+            << 0.0f << -1 << 0 << 2 << 1.0f // height-scale
+            << 0.0f << true << 0.9f << 1.0f // dpmm-textGap
             << 3.0f << 2 << 1 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 139 --binary --compliantheight -d '[11]901222[99]ABCDE' --height=40.8 --heightperrow"
                 " --primary='[91]ABCDEFGHIJKL' --rows=2"
@@ -999,26 +1060,30 @@ private slots:
         QTest::newRow("BARCODE_DOTCODE") << false << 1.0f << ""
             << BARCODE_DOTCODE << GS1_MODE // symbology-inputMode
             << "[20]01" << "" // text-primary
-            << 30.0f << -1 << 8 << ((0 + 1) << 8) << 1.0f << 0.0f << false << 0.7f << 1.0f // height-textGap
+            << 30.0f << -1 << 8 << ((0 + 1) // height-scale
+            << 8) << 1.0f << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
             << 0.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 115 --cols=8 -d '[20]01' --dotsize=0.7 --gs1 --mask=0"
             << "zint.exe -b 115 --cols=8 -d \"[20]01\" --dotsize=0.7 --gs1 --mask=0"
             << "" << "" << "" << "";
 
-        QTest::newRow("BARCODE_DOTCODE (GS1Strict") << false << 1.0f << ""
+        QTest::newRow("BARCODE_DOTCODE (GS1SyntaxEngine") << false << 1.0f << ""
             << BARCODE_DOTCODE << (GS1_MODE | GS1SYNTAXENGINE_MODE) // symbology-inputMode
             << "[20]01" << "" // text-primary
-            << 30.0f << -1 << 8 << ((0 + 1) << 8) << 1.0f << 0.0f << false << 0.7f << 1.0f // height-textGap
+            << 30.0f << -1 << 8 << ((0 + 1) // height-scale
+            << 8) << 1.0f << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
             << 0.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 115 --cols=8 -d '[20]01' --dotsize=0.7 --gs1strict --mask=0"
             << "zint.exe -b 115 --cols=8 -d \"[20]01\" --dotsize=0.7 --gs1strict --mask=0"
@@ -1027,12 +1092,14 @@ private slots:
         QTest::newRow("BARCODE_DPD") << true << 0.0f << ""
             << BARCODE_DPD << UNICODE_MODE // symbology-inputMode
             << "1234567890123456789012345678" << "" // text-primary
-            << 0.0f << -1 << 0 << 0 << 4.5f << 24.0f << true << 0.8f << 1.0f // height-textGap
+            << 0.0f << -1 << 0 << 0 << 4.5f // height-scale
+            << 24.0f << true << 0.8f << 1.0f // dpmm-textGap
             << 0.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.375 << 0 << 600 << 1 << 0 << 0 // xdimdp
             << "zint -b 96 --compliantheight -d '1234567890123456789012345678' --scalexdimdp=0.375,24"
             << "zint.exe -b 96 --compliantheight -d \"1234567890123456789012345678\" --scalexdimdp=0.375,24"
@@ -1042,12 +1109,14 @@ private slots:
         QTest::newRow("BARCODE_EAN13") << true << 0.0f << ""
             << BARCODE_EAN13 << UNICODE_MODE // symbology-inputMode
             << "123456789012+12" << "" // text-primary
-            << 0.0f << -1 << 8 << 0 << 1.0f << 0.0f << true << 0.8f << 1.0f // height-textGap
+            << 0.0f << -1 << 8 << 0 << 1.0f // height-scale
+            << 0.0f << true << 0.8f << 1.0f // dpmm-textGap
             << 0.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 15 --addongap=8 --compliantheight -d '123456789012+12' --guarddescent=0"
             << "zint.exe -b 15 --addongap=8 --compliantheight -d \"123456789012+12\" --guarddescent=0"
@@ -1056,12 +1125,14 @@ private slots:
         QTest::newRow("BARCODE_EANX") << true << 0.0f << ""
             << BARCODE_EANX << UNICODE_MODE // symbology-inputMode
             << "123456789012+12" << "" // text-primary
-            << 0.0f << -1 << 8 << 0 << 1.0f << 0.0f << true << 0.8f << 1.0f // height-textGap
+            << 0.0f << -1 << 8 << 0 << 1.0f // height-scale
+            << 0.0f << true << 0.8f << 1.0f // dpmm-textGap
             << 0.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 13 --addongap=8 --compliantheight -d '123456789012+12' --guarddescent=0"
             << "zint.exe -b 13 --addongap=8 --compliantheight -d \"123456789012+12\" --guarddescent=0"
@@ -1070,12 +1141,14 @@ private slots:
         QTest::newRow("BARCODE_EAN13 (guardWhitespace/embedVectorFont") << true << 0.0f << ""
             << BARCODE_EAN13 << UNICODE_MODE // symbology-inputMode
             << "123456789012+12" << "" // text-primary
-            << 0.0f << -1 << 8 << 0 << 1.0f << 0.0f << true << 0.8f << 1.0f // height-textGap
+            << 0.0f << -1 << 8 << 0 << 1.0f // height-scale
+            << 0.0f << true << 0.8f << 1.0f // dpmm-textGap
             << 0.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << true << true << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << true << true << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 15 --addongap=8 --compliantheight -d '123456789012+12' --embedfont --guarddescent=0 --guardwhitespace"
             << "zint.exe -b 15 --addongap=8 --compliantheight -d \"123456789012+12\" --embedfont --guarddescent=0 --guardwhitespace"
@@ -1084,12 +1157,14 @@ private slots:
         QTest::newRow("BARCODE_EANX (guardWhitespace/embedVectorFont") << true << 0.0f << ""
             << BARCODE_EANX << UNICODE_MODE // symbology-inputMode
             << "123456789012+12" << "" // text-primary
-            << 0.0f << -1 << 8 << 0 << 1.0f << 0.0f << true << 0.8f << 1.0f // height-textGap
+            << 0.0f << -1 << 8 << 0 << 1.0f // height-scale
+            << 0.0f << true << 0.8f << 1.0f // dpmm-textGap
             << 0.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << true << true << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << true << true << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 13 --addongap=8 --compliantheight -d '123456789012+12' --embedfont --guarddescent=0 --guardwhitespace"
             << "zint.exe -b 13 --addongap=8 --compliantheight -d \"123456789012+12\" --embedfont --guarddescent=0 --guardwhitespace"
@@ -1098,12 +1173,14 @@ private slots:
         QTest::newRow("BARCODE_GRIDMATRIX") << false << 0.0f << ""
             << BARCODE_GRIDMATRIX << UNICODE_MODE // symbology-inputMode
             << "Your Data Here!" << "" // text-primary
-            << 0.0f << 1 << 5 << 0 << 0.5f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 0.0f << 1 << 5 << 0 << 0.5f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << true << false << true << 270 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 142 -d 'Your Data Here!' --quietzones --rotate=270 --scale=0.5 --secure=1 --vers=5"
             << "zint.exe -b 142 -d \"Your Data Here!\" --quietzones --rotate=270 --scale=0.5 --secure=1 --vers=5"
@@ -1112,12 +1189,14 @@ private slots:
         QTest::newRow("BARCODE_HANXIN") << false << 0.0f << ""
             << BARCODE_HANXIN << (UNICODE_MODE | ESCAPE_MODE) // symbology-inputMode
             << "éβÿ啊\\e\"'" << "" // text-primary
-            << 30.0f << 2 << 5 << ((0 + 1) << 8) << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 30.0f << 2 << 5 << ((0 + 1) // height-scale
+            << 8) << 1.0f << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 29 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 29 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 116 --eci=29 -d 'éβÿ啊\\e\"'\\''' --esc --mask=0 --secure=2 --vers=5"
             << "zint.exe -b 116 --eci=29 -d \"éβÿ啊\\e\\\"'\" --esc --mask=0 --secure=2 --vers=5"
@@ -1126,12 +1205,14 @@ private slots:
         QTest::newRow("BARCODE_HIBC_DM") << false << 10.0f << ""
             << BARCODE_HIBC_DM << UNICODE_MODE // symbology-inputMode
             << "1234" << "" // text-primary
-            << 0.0f << -1 << 8 << DM_DMRE << 1.0f << 0.0f << false << 0.7f << 1.0f // height-textGap
+            << 0.0f << -1 << 8 << DM_DMRE << 1.0f // height-scale
+            << 0.0f << false << 0.7f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << true << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 102 -d '1234' --dmre --vers=8"
             << "zint.exe -b 102 -d \"1234\" --dmre --vers=8"
@@ -1140,12 +1221,14 @@ private slots:
         QTest::newRow("BARCODE_HIBC_PDF") << false << 0.0f << ""
             << BARCODE_HIBC_PDF << (DATA_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "TEXT" << "" // text-primary
-            << 3.5f << 3 << 4 << 10 << 10.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 3.5f << 3 << 4 << 10 << 10.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 2 << 1 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << true << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 106 --binary --cols=4 -d 'TEXT' --height=3.5 --heightperrow --quietzones"
                 " --rows=10 --scale=10 --secure=3 --structapp=1,2"
@@ -1156,12 +1239,14 @@ private slots:
         QTest::newRow("BARCODE_ITF14") << true << 0.0f << ""
             << BARCODE_ITF14 << UNICODE_MODE // symbology-inputMode
             << "9212320967145" << "" // text-primary
-            << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 30.0f << -1 << 0 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 89 --compliantheight -d '9212320967145'"
             << "zint.exe -b 89 --compliantheight -d \"9212320967145\""
@@ -1170,12 +1255,14 @@ private slots:
         QTest::newRow("BARCODE_ITF14 (border)") << true << 0.0f << ""
             << BARCODE_ITF14 << UNICODE_MODE // symbology-inputMode
             << "9212320967145" << "" // text-primary
-            << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 30.0f << -1 << 0 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 1 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 89 --border=1 --compliantheight -d '9212320967145'"
             << "zint.exe -b 89 --border=1 --compliantheight -d \"9212320967145\""
@@ -1185,12 +1272,14 @@ private slots:
             << BARCODE_MAXICODE << (UNICODE_MODE | ESCAPE_MODE) // symbology-inputMode
             << "152382802840001"
             << "1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY\\R\\E" // text-primary
-            << 0.0f << -1 << (96 + 1) << 0 << 2.5f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 0.0f << -1 << (96 + 1) << 0 // height-scale
+            << 2.5f << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << true << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 57 -d '1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY\\R\\E'"
                 " --esc --primary='152382802840001' --quietzones --scale=2.5 --scmvv=96"
@@ -1201,12 +1290,14 @@ private slots:
         QTest::newRow("BARCODE_MICROQR") << false << 0.0f << ""
             << BARCODE_MICROQR << UNICODE_MODE // symbology-inputMode
             << "1234" << "" // text-primary
-            << 30.0f << 2 << 3 << (ZINT_FULL_MULTIBYTE | (3 + 1) << 8) << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 30.0f << 2 << 3 << (ZINT_FULL_MULTIBYTE | (3 // height-scale
+            + 1) << 8) << 1.0f << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 97 -d '1234' --fullmultibyte --mask=3 --secure=2 --vers=3"
             << "zint.exe -b 97 -d \"1234\" --fullmultibyte --mask=3 --secure=2 --vers=3"
@@ -1215,28 +1306,32 @@ private slots:
         QTest::newRow("BARCODE_QRCODE") << true << 0.0f << ""
             << BARCODE_QRCODE << GS1_MODE // symbology-inputMode
             << "(01)12" << "" // text-primary
-            << 0.0f << 1 << 5 << (ZINT_FULL_MULTIBYTE | (0 + 1) << 8) << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 0.0f << 1 << 5 << (ZINT_FULL_MULTIBYTE | (0 // height-scale
+            + 1) << 8) << 1.0f << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << true << false << true << 0 // showText-rotateAngle
-            << 0 << true << true << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << true << true << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
-            << "zint -b 58 -d '(01)12' --fullmultibyte --gs1parens --gs1nocheck --mask=0 --quietzones"
+            << "zint -b 58 -d '(01)12' --fullmultibyte --gs1nocheck --gs1parens --mask=0 --quietzones"
                 " --secure=1 --vers=5"
-            << "zint.exe -b 58 -d \"(01)12\" --fullmultibyte --gs1parens --gs1nocheck --mask=0 --quietzones"
+            << "zint.exe -b 58 -d \"(01)12\" --fullmultibyte --gs1nocheck --gs1parens --mask=0 --quietzones"
                 " --secure=1 --vers=5"
             << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_RMQR") << true << 0.0f << ""
             << BARCODE_RMQR << UNICODE_MODE // symbology-inputMode
             << "テ" << "" // text-primary
-            << 30.0f << -1 << 8 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 30.0f << -1 << 8 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 180 // showText-rotateAngle
-            << 20 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 20 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 145 --eci=20 -d 'テ' --rotate=180 --vers=8"
             << "zint.exe -b 145 --eci=20 -d \"テ\" --rotate=180 --vers=8"
@@ -1245,26 +1340,30 @@ private slots:
         QTest::newRow("BARCODE_ULTRA") << false << 0.0f << ""
             << BARCODE_ULTRA << (GS1_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE) // symbology-inputMode
             << "(01)1" << "" // text-primary
-            << 0.0f << 6 << 2 << 0 << 1.0f << 0.0f << true << 0.8f << 1.0f // height-textGap
+            << 0.0f << 6 << 2 << 0 << 1.0f // height-scale
+            << 0.0f << true << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 2 << 1 << "4" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
-            << "zint -b 144 -d '(01)1' --gs1parens --gs1nocheck --secure=6 --structapp='1,2,4' --vers=2"
-            << "zint.exe -b 144 -d \"(01)1\" --gs1parens --gs1nocheck --secure=6 --structapp=\"1,2,4\" --vers=2"
+            << "zint -b 144 -d '(01)1' --gs1nocheck --gs1parens --secure=6 --structapp='1,2,4' --vers=2"
+            << "zint.exe -b 144 -d \"(01)1\" --gs1nocheck --gs1parens --secure=6 --structapp=\"1,2,4\" --vers=2"
             << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_UPCE_CC") << true << 0.0f << "out.svg"
             << BARCODE_UPCE_CC << UNICODE_MODE // symbology-inputMode
             << "12345670+1234" << "[11]901222[99]ABCDE" // text-primary
-            << 0.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f << 1.0f // height-textGap
+            << 0.0f << -1 << 0 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 6.5f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(0xEF, 0x29, 0x29) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << (BOLD_TEXT | SMALL_TEXT) // borderTypeIndex-fontSetting
             << true << false << false << true << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_FAIL_ALL << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_FAIL_ALL << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 136 --compliantheight -d '[11]901222[99]ABCDE' --fg=EF2929 --guarddescent=6.5"
                 " --noquietzones -o 'out.svg' --primary='12345670+1234' --small --werror"
@@ -1278,15 +1377,35 @@ private slots:
                 " --noquietzones -o \"out.svg\" --primary=\"12345670+1234\" --small --werror"
             << "";
 
+        QTest::newRow("BARCODE_UPCE_CC (GS1NoCheck + GS1Raw + GS1SyntaxEngine)") << true << 0.0f << "out.svg"
+            << BARCODE_UPCE_CC << UNICODE_MODE // symbology-inputMode
+            << "12345670+1234" << "1190122299ABCDE" // text-primary
+            << 0.0f << -1 << 0 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
+            << 6.5f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(0xEF, 0x29, 0x29) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << (BOLD_TEXT | SMALL_TEXT) // borderTypeIndex-fontSetting
+            << true << false << false << true << true << 0 // showText-rotateAngle
+            << 0 << false << true << true << true // eci-gs1SyntaxEngine
+            << false << false << false << WARN_FAIL_ALL << false // readerInit-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 136 --compliantheight -d '1190122299ABCDE' --fg=EF2929 --gs1nocheck --gs1raw --gs1strict --guarddescent=6.5"
+                " --noquietzones -o 'out.svg' --primary='12345670+1234' --small --werror"
+            << "zint.exe -b 136 --compliantheight -d \"1190122299ABCDE\" --fg=EF2929 --gs1nocheck --gs1raw --gs1strict --guarddescent=6.5"
+                " --noquietzones -o \"out.svg\" --primary=\"12345670+1234\" --small --werror"
+            << "" << "" << "" << "";
+
         QTest::newRow("BARCODE_VIN") << false << 2.0f << ""
             << BARCODE_VIN << UNICODE_MODE // symbology-inputMode
             << "12345678701234567" << "" // text-primary
-            << 20.0f << -1 << 1 << 0 << 1.0f << 0.0f << false << 0.8f << 1.2f // height-textGap
+            << 20.0f << -1 << 1 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.2f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << (BOLD_TEXT | SMALL_TEXT) // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 73 --bold -d '12345678701234567' --height=20 --small --textgap=1.2 --vers=1"
             << "zint.exe -b 73 --bold -d \"12345678701234567\" --height=20 --small --textgap=1.2 --vers=1"
@@ -1295,12 +1414,14 @@ private slots:
         QTest::newRow("BARCODE_VIN (notext)") << false << 2.0f << ""
             << BARCODE_VIN << UNICODE_MODE // symbology-inputMode
             << "12345678701234567" << "" // text-primary
-            << 20.0f << -1 << 1 << 0 << 1.0f << 0.0f << false << 0.8f << 1.2f // height-textGap
+            << 20.0f << -1 << 1 << 0 << 1.0f // height-scale
+            << 0.0f << false << 0.8f << 1.2f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << (BOLD_TEXT | SMALL_TEXT) // borderTypeIndex-fontSetting
             << false << false << false << false << true << 0 // showText-rotateAngle
-            << 0 << false << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 73 -d '12345678701234567' --height=20 --notext --vers=1"
             << "zint.exe -b 73 -d \"12345678701234567\" --height=20 --notext --vers=1"
@@ -1353,6 +1474,7 @@ private slots:
         QFETCH(int, eci);
         QFETCH(bool, gs1Parens);
         QFETCH(bool, gs1NoCheck);
+        QFETCH(bool, gs1Raw);
         QFETCH(bool, gs1SyntaxEngine);
         QFETCH(bool, readerInit);
         QFETCH(bool, guardWhitespace);
@@ -1418,6 +1540,7 @@ private slots:
         bc.setECIValue(eci);
         bc.setGS1Parens(gs1Parens);
         bc.setGS1NoCheck(gs1NoCheck);
+        bc.setGS1Raw(gs1Raw);
         bc.setGS1SyntaxEngine(gs1SyntaxEngine);
         bc.setReaderInit(readerInit);
         bc.setGuardWhitespace(guardWhitespace);

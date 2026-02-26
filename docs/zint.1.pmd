@@ -220,6 +220,12 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 :   Treat input as GS1 compatible data (as `--gs1`) but process parentheses `"()"` as GS1 AI delimiters, rather than
     square brackets `"[]"`. If the AI data contains opening parentheses, they must be backslashed (`"\("`).
 
+`--gs1raw`
+
+:   Treat input as GS1 compatible data (as `--gs1`), but process literally, with any required `FNC1`s represented by
+    `GS` (0x1D). AIs are not delimited by brackets (`"[]"` or `"()"`). (Similar to the GS1 Syntax Engine "Unbracketed
+    AI" entry mode except using `GS`s instead of carets, and without any initial `GS`.)
+
 `--gs1strict`
 
 :   Treat input as GS1 compatible data (as `--gs1`) and use the GS1 Syntax Engine (if available) to strictly verify

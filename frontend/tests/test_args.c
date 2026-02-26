@@ -231,6 +231,9 @@ static void arg_input_mode(char *cmd, int input_mode) {
         if (input_mode & HEIGHTPERROW_MODE) {
             sprintf(cmd + strlen(cmd), "%s--heightperrow", strlen(cmd) ? " " : "");
         }
+        if (input_mode & GS1RAW_MODE) {
+            sprintf(cmd + strlen(cmd), "%s--gs1raw", strlen(cmd) ? " " : "");
+        }
     }
 }
 
@@ -987,7 +990,7 @@ static void test_barcode_symbology(const testCtx *const p_ctx) {
 #ifdef ZINT_HAVE_GS1SE
 #define TEST_OTHER_OPTS_GS1STRICT_ERROR "Error 267: AI (00): The numeric check digit is incorrect. (00)37610425002123456|8|"
 #else
-#define TEST_OTHER_OPTS_GS1STRICT_ERROR "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'"
+#define TEST_OTHER_OPTS_GS1STRICT_ERROR "Warning 261: AI (00) data position 18: Bad checksum '8', expected '9'"
 #endif
 
 static void test_other_opts(const testCtx *const p_ctx) {
@@ -1035,43 +1038,44 @@ static void test_other_opts(const testCtx *const p_ctx) {
         /* 27*/ { BARCODE_GS1_128, "0112345678901231", -1, "", NULL, "Error 252: Data does not start with an AI", 0 },
         /* 28*/ { BARCODE_GS1_128, "0112345678901231", -1, " --gs1nocheck", NULL, "Error 252: Data does not start with an AI", 0 },
         /* 29*/ { BARCODE_GS1_128, "[00]376104250021234569", -1, "", NULL, "", 0 },
-        /* 30*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, "", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'", 0 },
+        /* 30*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, "", NULL, "Warning 261: AI (00) data position 18: Bad checksum '8', expected '9'", 0 },
         /* 31*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --gs1nocheck", NULL, "", 0 },
-        /* 32*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --werror", NULL, "Error 261: AI (00) position 18: Bad checksum '8', expected '9'", 0 },
+        /* 32*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --werror", NULL, "Error 261: AI (00) data position 18: Bad checksum '8', expected '9'", 0 },
         /* 33*/ { BARCODE_GS1_128, "[00]376104250021234569", -1, " --gs1strict", NULL, "", 0 },
         /* 34*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --gs1strict", NULL, TEST_OTHER_OPTS_GS1STRICT_ERROR, 0 },
-        /* 35*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1", "Error 155: Invalid Structured Append argument, expect \"index,count[,ID]\"", 0 },
-        /* 36*/ { BARCODE_AZTEC, "1", -1, " --structapp=", ",", "Error 155: Structured Append index too short", 0 },
-        /* 37*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1234567890,", "Error 155: Structured Append index too long", 0 },
-        /* 38*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,", "Error 155: Structured Append count too short", 0 },
-        /* 39*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,1234567890", "Error 155: Structured Append count too long", 0 },
-        /* 40*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,", "Error 155: Structured Append ID too short", 0 },
-        /* 41*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,123456789012345678901234567890123", "Error 155: Structured Append ID too long", 0 },
-        /* 42*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,12345678901234567890123456789012", "Error 701: Structured Append count '123456789' out of range (2 to 26)", 0 },
-        /* 43*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,26,12345678901234567890123456789012", "", 0 },
-        /* 44*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "A,26,12345678901234567890123456789012", "Error 155: Invalid Structured Append index (digits only)", 0 },
-        /* 45*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,A,12345678901234567890123456789012", "Error 155: Invalid Structured Append count (digits only)", 0 },
-        /* 46*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,1,12345678901234567890123456789012", "Error 155: Invalid Structured Append count '1', must be greater than or equal to 2", 0 },
-        /* 47*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "0,2,12345678901234567890123456789012", "Error 155: Structured Append index '0' out of range (1 to count '2')", 0 },
-        /* 48*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "3,2,12345678901234567890123456789012", "Error 155: Structured Append index '3' out of range (1 to count '2')", 0 },
-        /* 49*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "2,3,12345678901234567890123456789012", "", 0 },
-        /* 50*/ { BARCODE_PDF417, "1", -1, " --heightperrow", "", "", 0 },
-        /* 51*/ { -1, NULL, -1, " -v", NULL, "Zint version ", 1 },
-        /* 52*/ { -1, NULL, -1, " --version", NULL, "Zint version ", 1 },
-        /* 53*/ { -1, NULL, -1, " -h", NULL, "Encode input data in a barcode ", 1 },
-        /* 54*/ { -1, NULL, -1, " -e", NULL, "3: ISO/IEC 8859-1 ", 1 },
-        /* 55*/ { -1, NULL, -1, " -t", NULL, "1 CODE11 ", 1 },
-        /* 56*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12345678", "Error 184: scalexdimdp X-dim invalid floating point: integer part must be 7 digits maximum", 0 },
-        /* 57*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "1234567890123", "Error 184: scalexdimdp X-dim too long", 0 },
-        /* 58*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "123456.12", "Error 184: scalexdimdp X-dim invalid floating point: 7 significant digits maximum", 0 },
-        /* 59*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", ",12.34", "Error 184: scalexdimdp X-dim too short", 0 },
-        /* 60*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12.34,", "Error 184: scalexdimdp resolution too short", 0 },
-        /* 61*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12mm1", "Error 184: scalexdimdp X-dim unknown units: mm1", 0 },
-        /* 62*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "1inc", "Error 184: scalexdimdp X-dim unknown units: inc", 0 },
-        /* 63*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12.34in,123x", "Error 184: scalexdimdp resolution unknown units: x", 0 },
-        /* 64*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12,123.45678", "Error 184: scalexdimdp resolution invalid floating point: 7 significant digits maximum", 0 },
-        /* 65*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "10.1,1000", "Warning 185: scalexdimdp X-dim '10.1' out of range (greater than 10), **IGNORED**", 0 },
-        /* 66*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "10,1000.1", "Warning 186: scalexdimdp resolution '1000.1' out of range (greater than 1000), **IGNORED**", 0 },
+        /* 35*/ { BARCODE_GS1_128, "00376104250021234569", -1, " --gs1raw", NULL, "", 0 },
+        /* 36*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1", "Error 155: Invalid Structured Append argument, expect \"index,count[,ID]\"", 0 },
+        /* 37*/ { BARCODE_AZTEC, "1", -1, " --structapp=", ",", "Error 155: Structured Append index too short", 0 },
+        /* 38*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1234567890,", "Error 155: Structured Append index too long", 0 },
+        /* 39*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,", "Error 155: Structured Append count too short", 0 },
+        /* 40*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,1234567890", "Error 155: Structured Append count too long", 0 },
+        /* 41*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,", "Error 155: Structured Append ID too short", 0 },
+        /* 42*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,123456789012345678901234567890123", "Error 155: Structured Append ID too long", 0 },
+        /* 43*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,12345678901234567890123456789012", "Error 701: Structured Append count '123456789' out of range (2 to 26)", 0 },
+        /* 44*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,26,12345678901234567890123456789012", "", 0 },
+        /* 45*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "A,26,12345678901234567890123456789012", "Error 155: Invalid Structured Append index (digits only)", 0 },
+        /* 46*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,A,12345678901234567890123456789012", "Error 155: Invalid Structured Append count (digits only)", 0 },
+        /* 47*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,1,12345678901234567890123456789012", "Error 155: Invalid Structured Append count '1', must be greater than or equal to 2", 0 },
+        /* 48*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "0,2,12345678901234567890123456789012", "Error 155: Structured Append index '0' out of range (1 to count '2')", 0 },
+        /* 49*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "3,2,12345678901234567890123456789012", "Error 155: Structured Append index '3' out of range (1 to count '2')", 0 },
+        /* 50*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "2,3,12345678901234567890123456789012", "", 0 },
+        /* 51*/ { BARCODE_PDF417, "1", -1, " --heightperrow", "", "", 0 },
+        /* 52*/ { -1, NULL, -1, " -v", NULL, "Zint version ", 1 },
+        /* 53*/ { -1, NULL, -1, " --version", NULL, "Zint version ", 1 },
+        /* 54*/ { -1, NULL, -1, " -h", NULL, "Encode input data in a barcode ", 1 },
+        /* 55*/ { -1, NULL, -1, " -e", NULL, "3: ISO/IEC 8859-1 ", 1 },
+        /* 56*/ { -1, NULL, -1, " -t", NULL, "1 CODE11 ", 1 },
+        /* 57*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12345678", "Error 184: scalexdimdp X-dim invalid floating point: integer part must be 7 digits maximum", 0 },
+        /* 58*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "1234567890123", "Error 184: scalexdimdp X-dim too long", 0 },
+        /* 59*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "123456.12", "Error 184: scalexdimdp X-dim invalid floating point: 7 significant digits maximum", 0 },
+        /* 60*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", ",12.34", "Error 184: scalexdimdp X-dim too short", 0 },
+        /* 61*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12.34,", "Error 184: scalexdimdp resolution too short", 0 },
+        /* 62*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12mm1", "Error 184: scalexdimdp X-dim unknown units: mm1", 0 },
+        /* 63*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "1inc", "Error 184: scalexdimdp X-dim unknown units: inc", 0 },
+        /* 64*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12.34in,123x", "Error 184: scalexdimdp resolution unknown units: x", 0 },
+        /* 65*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12,123.45678", "Error 184: scalexdimdp resolution invalid floating point: 7 significant digits maximum", 0 },
+        /* 66*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "10.1,1000", "Warning 185: scalexdimdp X-dim '10.1' out of range (greater than 10), **IGNORED**", 0 },
+        /* 67*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "10,1000.1", "Warning 186: scalexdimdp resolution '1000.1' out of range (greater than 1000), **IGNORED**", 0 },
     };
     int data_size = ARRAY_SIZE(data);
     int i;

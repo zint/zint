@@ -104,7 +104,7 @@ static void test_large(const testCtx *const p_ctx) {
     char escaped2[1024];
     char cmp_buf[8192];
     char cmp_msg[1024];
-    char ret_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char ret_buf[8192] ZINT_TESTUTIL_SANITIZEM_INIT;
 
     /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
@@ -937,7 +937,7 @@ static void test_hibc_input(const testCtx *const p_ctx) {
 
     char escaped[1024];
     char escaped2[1024];
-    char cmp_buf[8192];
+    char cmp_buf[8192] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
     char ret_buf[8192];
 

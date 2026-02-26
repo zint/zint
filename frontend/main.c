@@ -200,7 +200,8 @@ static void usage(const int no_png, const int have_gs1syntaxengine) {
     fputs( "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
            "  --gs1                 Treat input as GS1 compatible data\n"
            "  --gs1nocheck          Do not check validity of GS1 data\n"
-           "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n", stdout);
+           "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
+           "  --gs1raw              Process as raw GS1 input (no brackets), with GS for FNC1\n", stdout);
 if (have_gs1syntaxengine) {
     fputs( "  --gs1strict           Use GS1 Syntax Engine to strictly validate GS1 data\n", stdout);
 }
@@ -1545,7 +1546,7 @@ int main(int argc, char **argv) {
             OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT,
             OPT_DIRECT, OPT_DMISO144, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FULLMULTIBYTE,
-            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/,
+            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GS1RAW, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/,
             OPT_GSSEP, OPT_GUARDDESCENT, OPT_GUARDWHITESPACE,
             OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
@@ -1595,6 +1596,7 @@ int main(int argc, char **argv) {
             {"gs1", 0, 0, OPT_GS1},
             {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
             {"gs1parens", 0, NULL, OPT_GS1PARENS},
+            {"gs1raw", 0, NULL, OPT_GS1RAW},
             {"gs1strict", 0, NULL, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/},
             {"gssep", 0, NULL, OPT_GSSEP},
             {"guarddescent", 1, NULL, OPT_GUARDDESCENT},
@@ -1814,6 +1816,10 @@ int main(int argc, char **argv) {
             case OPT_GS1PARENS:
                 my_symbol->input_mode |= GS1PARENS_MODE;
                 my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; /* Now sets GS1_MODE also */
+                break;
+            case OPT_GS1RAW:
+                my_symbol->input_mode |= GS1RAW_MODE;
+                my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE;
                 break;
             case OPT_GS1STRICT:
                 my_symbol->input_mode |= GS1SYNTAXENGINE_MODE;

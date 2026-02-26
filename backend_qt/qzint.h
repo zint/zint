@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2010-2025 Robin Stuart                                  *
+ *   Copyright (C) 2010-2026 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -208,6 +208,10 @@ public:
     bool gs1NoCheck() const; // `symbol->input_mode | GS1NOCHECK_MODE`
     void setGS1NoCheck(bool gs1NoCheck);
 
+    /* Process as raw GS1 input (no brackets/parentheses), with separator GS for FNC1 */
+    bool gs1Raw() const; // `symbol->input_mode | GS1RAW_MODE`
+    void setGS1Raw(bool gs1Raw);
+
     /* Use GS1 Syntax Engine to validate GS1 data */
     bool gs1SyntaxEngine() const; // `symbol->input_mode | GS1SYNTAXENGINE_MODE`
     void setGS1SyntaxEngine(bool gs1SyntaxEngine);
@@ -402,6 +406,7 @@ private:
     int m_eci;
     bool m_gs1parens;
     bool m_gs1nocheck;
+    bool m_gs1raw;
     bool m_gs1syntaxengine;
     bool m_reader_init;
     bool m_guard_whitespace;

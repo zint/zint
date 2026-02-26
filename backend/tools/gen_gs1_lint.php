@@ -2,7 +2,7 @@
 /* Generate GS1 verify include "backend/gs1_lint.h" for "backend/gs1.c" */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2025 <rstuart114@gmail.com>
+    Copyright (C) 2021-2026 <rstuart114@gmail.com>
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
@@ -76,8 +76,8 @@ foreach ($lines as $line) {
     }
 
     if (($hyphen = strpos($ai, '-')) !== false) {
-        if ($fixed !== '') {
-            $fixed_ais[substr($ai, 0, 2)] = true;
+        if ($fixed) {
+            $fixed_ais[substr($ai, 0, 2)] = strlen(substr($ai, 0, $hyphen));
         }
         $ai_s = (int) substr($ai, 0, $hyphen);
         $ai_e = (int) substr($ai, $hyphen + 1);
@@ -98,8 +98,8 @@ foreach ($lines as $line) {
             }
         }
     } else {
-        if ($fixed !== '') {
-            $fixed_ais[substr($ai, 0, 2)] = true;
+        if ($fixed) {
+            $fixed_ais[substr($ai, 0, 2)] = strlen($ai);
         }
         $ai = (int) $ai;
         $ais[] = $ai;
@@ -243,7 +243,7 @@ if ($print_copyright) {
 print <<<'EOD'
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -365,6 +365,7 @@ $tab$tab{$tab}char err_msg[50]) {
 
 $tab/* Assume data length failure */
 $tab*p_err_no = 2;
+$tab*p_err_posn = 1;
 
 EOD;
 
@@ -473,6 +474,237 @@ $tab}
 {$tab}/* Unknown AI */
 {$tab}*p_err_no = 1;
 {$tab}return 0;
+}
+
+EOD;
+
+print <<<EOD
+
+/* Helper to parse non-bracketed input */
+static int gs1_lint_parse_ai(const unsigned char source[], const int length, const int position,
+$tab$tab{$tab}int *p_ai, int *p_min, int *p_max) {
+${tab}int ai, ai2, ai3 = -1, ai4 = -1, min, max = 0;
+
+{$tab}*p_ai = -1;
+
+{$tab}if (position + 1 >= length || !z_isdigit(source[position]) || !z_isdigit(source[position + 1])) {
+$tab{$tab}return 0;
+{$tab}}
+{$tab}ai2 = z_to_int(source + position, 2);
+{$tab}if (position + 3 < length && z_isdigit(source[position + 2])) {
+$tab{$tab}ai3 = z_to_int(source + position, 3);
+$tab{$tab}if (position + 4 < length && z_isdigit(source[position + 3])) {
+$tab$tab{$tab}ai4 = z_to_int(source + position, 4);
+$tab{$tab}}
+{$tab}}
+
+EOD;
+
+$not_first_batch = false;
+$last_batch_e = -1;
+$big_batch = 2;
+foreach ($batches as $batch => $batch_specs) {
+    if (empty($batch_specs)) {
+        continue;
+    }
+    $batch_s = $batch * 100;
+    $batch_e = $batch_s + 100;
+    $n = $batch_s < 100 ? 2 : ($batch_s < 1000 ? 3 : 4);
+    $first_tab = $n == 2 ? "" : $tab . $tab;
+    if ($n == 2) {
+        print "\n{$first_tab}{$tab}ai = ai2;\n";
+    } else {
+        if ($n != $big_batch) {
+            if ($n == 3) {
+                print "\n{$tab}if (max == 0 && ai3 != -1) {\n";
+            } else {
+                print "{$first_tab}}\n\n{$tab}}\n\n{$tab}if (max == 0 && ai4 != -1) {\n";
+            }
+            $not_first_batch = false;
+        }
+        if ($not_first_batch) {
+            print "\n$first_tab} else if (ai" . $n. " < $batch_e) {\n{$first_tab}{$tab}ai = ai" . $n . ";\n";
+        } else {
+            print "\n{$first_tab}if (ai" . $n . " < $batch_e) {\n{$first_tab}{$tab}ai = ai" . $n . ";\n";
+            $not_first_batch = true;
+        }
+    }
+    $not_first_spec = false;
+    foreach ($batch_specs as $spec) {
+        $total_min = $spec_ais[$spec][0];
+        $total_max = $spec_ais[$spec][1];
+        $ais = $spec_ais[$spec][2];
+
+        if ($not_first_spec) {
+            $str = "$first_tab{$tab}} else if (";
+        } else {
+            $str = "$first_tab{$tab}if (";
+            $not_first_spec = true;
+        }
+        print $str;
+        $width = strlen($str);
+
+        // Count the applicable AIs
+        $ais_cnt = 0;
+        foreach ($ais as $ai) {
+            if (is_array($ai)) {
+                if ($ai[1] < $batch_s || $ai[0] >= $batch_e) {
+                    continue;
+                }
+            } else {
+                if ($ai < $batch_s || $ai >= $batch_e) {
+                    continue;
+                }
+            }
+            $ais_cnt++;
+        }
+
+        // Output
+        $not_first_ai = false;
+        foreach ($ais as $ai) {
+            if (is_array($ai)) {
+                if ($ai[1] < $batch_s || $ai[0] >= $batch_e) {
+                    continue;
+                }
+            } else {
+                if ($ai < $batch_s || $ai >= $batch_e) {
+                    continue;
+                }
+            }
+
+            $str = '';
+            if ($not_first_ai) {
+                $str .= " || ";
+            } else {
+                $not_first_ai = true;
+            }
+            if (is_array($ai)) {
+                if ($ai[0] === $last_batch_e) { // Don't need 1st element of range if excluded by previous batch
+                    $str .= "ai <= " . $ai[1];
+                } else if ($ai[1] + 1 == $batch_e) { // Don't need 2nd element of range if excluded by this batch
+                    $str .= "ai >= " . $ai[0];
+                } else {
+                    if ($ais_cnt > 1) {
+                        $str .= "(ai >= " . $ai[0] . " && ai <= " . $ai[1] . ")";
+                    } else {
+                        $str .= "ai >= " . $ai[0] . " && ai <= " . $ai[1];
+                    }
+                }
+            } else {
+                $str .= "ai == " . $ai;
+            }
+            if ($width + strlen($str) > 118) {
+                print "\n";
+                $str2 = "$first_tab$tab$tab   ";
+                print $str2;
+                $width = strlen($str2);
+            }
+            print $str;
+            $width += strlen($str);
+        }
+        list($min, $max) = $spec_ais[$spec];
+        $str = "$first_tab$tab{$tab}min = $min, max = $max;";
+        print ") {\n$str\n";
+        print <<<EOD
+
+EOD;
+    }
+    $last_batch_e = $batch_e;
+    if ($big_batch != $n) {
+        $big_batch = $n;
+    }
+print <<<EOD
+$first_tab{$tab}}
+
+EOD;
+}
+
+print <<<EOD
+$first_tab}
+$tab}
+
+{$tab}if (max == 0) {
+$tab{$tab}*p_ai = ai2; /* Use 2-digit as feedback */
+$tab{$tab}return 0;
+$tab}
+{$tab}assert(ai >= 0 && ai <= 9999);
+{$tab}assert(min >= 1);
+{$tab}assert(max >= min);
+
+{$tab}*p_ai = ai;
+{$tab}if (p_min) {
+$tab{$tab}*p_min = min;
+{$tab}}
+{$tab}if (p_max) {
+$tab{$tab}*p_max = max;
+{$tab}}
+{$tab}return 1;
+}
+
+/* Parse non-bracketed input */
+static int gs1_lint_parse_raw_caret(const unsigned char source[], const int length,
+$tab$tab{$tab}const int ai_max, int *ai_vals, int *ai_locs, int *data_locs, int *data_lens, int *p_ai_count,
+$tab$tab{$tab}int *p_err_no, int *p_err_posn) {
+{$tab}int i, j;
+{$tab}const int gs1_caret = source[0] == '^';
+{$tab}const unsigned char separator = gs1_caret ? '^' : '\\x1D';
+{$tab}int ai, max;
+{$tab}int ai_count = 0, ai_len;
+{$tab}#ifdef NDEBUG
+{$tab}(void)ai_max;
+{$tab}#endif
+
+{$tab}i = gs1_caret || source[0] == '\\x1D'; /* Allow GS at start also */
+
+{$tab}if (i >= length) {
+$tab{$tab}*p_ai_count = 0; /* For feedback */
+$tab{$tab}ai_vals[0] = -1;
+$tab{$tab}ai_locs[0] = i - 1;
+$tab{$tab}*p_err_no = 1;
+$tab{$tab}*p_err_posn = i;
+$tab{$tab}return 0;
+{$tab}}
+
+{$tab}while (i < length) {
+$tab{$tab}int data_start, data_max, on_separator;
+$tab{$tab}assert(ai_count < ai_max);
+$tab{$tab}ai_locs[ai_count] = i;
+$tab{$tab}if (!gs1_lint_parse_ai(source, length, i, &ai, NULL /*min*/, &max)) {
+$tab$tab{$tab}*p_ai_count = ai_count; /* For feedback */
+$tab$tab{$tab}ai_vals[ai_count] = ai; /* May be -1 */
+$tab$tab{$tab}*p_err_no = 1;
+$tab$tab{$tab}*p_err_posn = i + 1; /* Position 1-base */
+$tab$tab{$tab}return 0;
+$tab{$tab}}
+$tab{$tab}ai_vals[ai_count] = ai;
+$tab{$tab}ai_len = ai < 100 ? 2 : ai < 1000 ? 3 : 4;
+
+$tab{$tab}/* Following GS1 Syntax Engine tolerating superfluous FNC1s at end of AI data
+$tab{$tab}   (for both final AI and AIs with predefined length) */
+$tab{$tab}data_start = i + ai_len;
+$tab{$tab}data_max = data_start + max;
+$tab{$tab}for (j = data_start; j < length && j < data_max; j++) {
+$tab$tab{$tab}if (source[j] == separator) {
+$tab$tab$tab{$tab}break;
+$tab$tab{$tab}}
+$tab{$tab}}
+$tab{$tab}data_locs[ai_count] = data_start;
+$tab{$tab}/* Only checking that have at least one char, and haven't exceeded max */
+$tab{$tab}on_separator = j < length && source[j] == separator;
+$tab{$tab}if (j == data_start || (j + 1 == length && length > data_max && !on_separator)) {
+$tab$tab{$tab}*p_ai_count = ai_count; /* For feedback */
+$tab$tab{$tab}data_lens[ai_count] = j - data_start;
+$tab$tab{$tab}*p_err_no = 2;
+$tab$tab{$tab}*p_err_posn = i + 1; /* Position 1-base */
+$tab$tab{$tab}return 0;
+$tab{$tab}}
+$tab{$tab}data_lens[ai_count] = j - data_locs[ai_count];
+$tab{$tab}ai_count++;
+$tab{$tab}i = j + on_separator;
+{$tab}}
+
+{$tab}*p_ai_count = ai_count;
+{$tab}return 1;
 }
 
 EOD;

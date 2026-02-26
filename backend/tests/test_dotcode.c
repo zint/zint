@@ -71,7 +71,7 @@ static void test_large(const testCtx *const p_ctx) {
     char data_buf[4096];
 
     char escaped[8192];
-    char cmp_buf[50000];
+    char cmp_buf[50000] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
@@ -294,7 +294,7 @@ static void test_input(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
-    char cmp_buf[32768];
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */

@@ -248,6 +248,16 @@ square brackets \f[CR]\(dq[]\(dq\f[R].
 If the AI data contains opening parentheses, they must be backslashed
 (\f[CR]\(dq\(rs(\(dq\f[R]).
 .TP
+\f[CR]\-\-gs1raw\f[R]
+Treat input as GS1 compatible data (as \f[CR]\-\-gs1\f[R]), but process
+literally, with any required \f[CR]FNC1\f[R]s represented by
+\f[CR]GS\f[R] (0x1D).
+AIs are not delimited by brackets (\f[CR]\(dq[]\(dq\f[R] or
+\f[CR]\(dq()\(dq\f[R]).
+(Similar to the GS1 Syntax Engine \(lqUnbracketed AI\(rq entry mode
+except using \f[CR]GS\f[R]s instead of carets, and without any initial
+\f[CR]GS\f[R].)
+.TP
 \f[CR]\-\-gs1strict\f[R]
 Treat input as GS1 compatible data (as \f[CR]\-\-gs1\f[R]) and use the
 GS1 Syntax Engine (if available) to strictly verify the GS1 data,

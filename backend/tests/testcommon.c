@@ -570,6 +570,7 @@ const char *testUtilInputModeName(int input_mode) {
         { "FAST_MODE", FAST_MODE, 0x0080 },
         { "EXTRA_ESCAPE_MODE", EXTRA_ESCAPE_MODE, 0x0100 },
         { "GS1SYNTAXENGINE_MODE", GS1SYNTAXENGINE_MODE, 0x0200 },
+        { "GS1RAW_MODE", GS1RAW_MODE, 0x0400 },
     };
     const int data_size = ARRAY_SIZE(data);
     int set, i;
@@ -2296,7 +2297,7 @@ int testUtilVerifyTiffInfo(const char *filename, int debug) {
 
 /* Map Zint symbology to BWIPP routine */
 static const char *testUtilBwippName(int index, const struct zint_symbol *symbol, int option_1, int option_2,
-                    int option_3, int debug, int *linear_row_height, int *gs1_cvt) {
+                    int option_3, int debug, int *p_linear_row_height, int *p_gs1_cvt) {
     struct item {
         const char *name;
         int define;
@@ -2324,7 +2325,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "ean13", BARCODE_EANX, 13, 0, 1, 0, 0, 1 /*gs1_cvt*/, },
         { "ean13", BARCODE_EANX_CHK, 14, 0, 1, 0, 0, 1, },
         { "ean13", BARCODE_EAN13, 15, 0, 1, 0, 0, 1, },
-        { "gs1-128", BARCODE_GS1_128, 16, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
+        { "gs1-128", BARCODE_GS1_128, 16, 0, 0, 1 /*GS1CARET*/, 0, 1 /*gs1_cvt*/, },
         { "", -1, 17, 0, 0, 0, 0, 0, },
         { "rationalizedCodabar", BARCODE_CODABAR, 18, 0, 1, 0, 0, 0, },
         { "", -1, 19, 0, 0, 0, 0, 0, },
@@ -2339,7 +2340,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "flattermarken", BARCODE_FLAT, 28, 0, 0, 0, 0, 0, },
         { "databaromni", BARCODE_DBAR_OMN, 29, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
         { "databarlimited", BARCODE_DBAR_LTD, 30, 0, 0, 0, 0, 1, },
-        { "databarexpanded", BARCODE_DBAR_EXP, 31, 0, 1, 0, 1 /*linear_row_height*/, 1, },
+        { "databarexpanded", BARCODE_DBAR_EXP, 31, 0, 1, 1 /*GS1CARET*/, 1 /*linear_row_height*/, 1, },
         { "telepen", BARCODE_TELEPEN, 32, 0, 0, 0, 0, 0, },
         { "", -1, 33, 0, 0, 0, 0, 0, },
         { "upca", BARCODE_UPCA, 34, 0, 1, 0, 0, 1 /*gs1_cvt*/, },
@@ -2380,7 +2381,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "isbn", BARCODE_ISBNX, 69, 0, 1, 0, 0, 1 /*gs1_cvt*/, },
         { "royalmail", BARCODE_RM4SCC, 70, 0, 0, 0, 0, 0, },
         { "datamatrix", BARCODE_DATAMATRIX, 71, 0, 1, 1, 1, 0, },
-        { "ean14", BARCODE_EAN14, 72, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
+        { "ean14", BARCODE_EAN14, 72, 0, 0, 1 /*GS1CARET*/, 0, 1 /*gs1_cvt*/, },
         { "code39", BARCODE_VIN, 73, 0, 0, 0, 0, 0, },
         { "codablockf", BARCODE_CODABLOCKF, 74, 1, 1, 0, 10 /*linear_row_height*/, 0, },
         { "sscc18", BARCODE_NVE18, 75, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
@@ -2389,7 +2390,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", -1, 78, 0, 0, 0, 0, 0, },
         { "databarstacked", BARCODE_DBAR_STK, 79, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
         { "databarstackedomni", BARCODE_DBAR_OMNSTK, 80, 0, 0, 0, 33 /*linear_row_height*/, 1, },
-        { "databarexpandedstacked", BARCODE_DBAR_EXPSTK, 81, 0, 1, 0, 34 /*linear_row_height*/, 1, },
+        { "databarexpandedstacked", BARCODE_DBAR_EXPSTK, 81, 0, 1, 1 /*GS1CARET*/, 34 /*linear_row_height*/, 1, },
         { "planet", BARCODE_PLANET, 82, 0, 0, 0, 0, 0, },
         { "", -1, 83, 0, 0, 0, 0, 0, },
         { "micropdf417", BARCODE_MICROPDF417, 84, 0, 1, 0, 0, 0, },
@@ -2439,15 +2440,15 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "aztecrune", BARCODE_AZRUNE, 128, 0, 0, 0, 0, 0, },
         { "code32", BARCODE_CODE32, 129, 0, 0, 0, 0, 0, },
         { "ean13composite", BARCODE_EANX_CC, 130, 1, 1, 0, 72 /*linear_row_height*/, 1 /*gs1_cvt*/, },
-        { "gs1-128composite", BARCODE_GS1_128_CC, 131, 1, 0, 0, 36, 1, },
+        { "gs1-128composite", BARCODE_GS1_128_CC, 131, 1, 0, 1 /*GS1CARET*/, 36, 1, },
         { "databaromnicomposite", BARCODE_DBAR_OMN_CC, 132, 1, 0, 0, 33, 1, },
         { "databarlimitedcomposite", BARCODE_DBAR_LTD_CC, 133, 1, 0, 0, 10 /*linear_row_height*/, 1, },
-        { "databarexpandedcomposite", BARCODE_DBAR_EXP_CC, 134, 1, 1, 0, 34 /*linear_row_height*/, 1, },
+        { "databarexpandedcomposite", BARCODE_DBAR_EXP_CC, 134, 1, 1, 1 /*GS1CARET*/, 34 /*linear_row_height*/, 1, },
         { "upcacomposite", BARCODE_UPCA_CC, 135, 1, 1, 0, 72, 1, },
         { "upcecomposite", BARCODE_UPCE_CC, 136, 1, 1, 0, 72, 1, },
         { "databarstackedcomposite", BARCODE_DBAR_STK_CC, 137, 1, 0, 0, 0, 1, },
         { "databarstackedomnicomposite", BARCODE_DBAR_OMNSTK_CC, 138, 1, 0, 0, 33 /*linear_row_height*/, 1, },
-        { "databarexpandedstackedcomposite", BARCODE_DBAR_EXPSTK_CC, 139, 1, 1, 0, 34 /*linear_row_height*/, 1, },
+        { "databarexpandedstackedcomposite", BARCODE_DBAR_EXPSTK_CC, 139, 1, 1, 1 /*GS1CARET*/, 34 /*lin_r_h*/, 1, },
         { "channelcode", BARCODE_CHANNEL, 140, 0, 0, 0, 0, 0, },
         { "codeone", BARCODE_CODEONE, 141, 0, 1, 0, 0, 0, },
         { "", BARCODE_GRIDMATRIX, 142, 0, 0, 0, 0, 0, },
@@ -2462,7 +2463,9 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
     const int data_size = ARRAY_SIZE(data);
 
     const int symbology = symbol->symbology;
-    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
+    const int gs1raw_mode = !!(symbol->input_mode & GS1RAW_MODE);
+    const int gs1_caret = option_3 != -1 && !!(option_3 & ZINT_TESTUTIL_GS1CARET); /* Hack indicator */
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE || gs1raw_mode || gs1_caret;
 
     if (symbology < 0 || symbology >= data_size) {
         fprintf(stderr, "testUtilBwippName: unknown symbology (%d)\n", symbology);
@@ -2544,16 +2547,30 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         }
     }
 
-    if (linear_row_height) {
-        *linear_row_height = data[symbology].linear_row_height;
+    if (p_linear_row_height) {
+        *p_linear_row_height = data[symbology].linear_row_height;
     }
-    if (gs1_cvt) {
-        *gs1_cvt = data[symbology].gs1_cvt;
+    if (p_gs1_cvt) {
+        *p_gs1_cvt = data[symbology].gs1_cvt;
     }
     if (gs1) {
+        if (gs1raw_mode) {
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                printf("i:%d %s not BWIPP compatible, GS1RAW_MODE not supported\n",
+                        index, testUtilBarcodeName(symbology));
+            }
+            return NULL;
+        }
+        if (gs1_caret) {
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                printf("i:%d %s not BWIPP compatible, GS1 Syntax Engine caret input not supported\n",
+                        index, testUtilBarcodeName(symbology));
+            }
+            return NULL;
+        }
         if (symbology == BARCODE_DATAMATRIX) {
-            if (gs1_cvt) {
-                *gs1_cvt = 1;
+            if (p_gs1_cvt) {
+                *p_gs1_cvt = 1;
             }
             return "gs1datamatrix";
         } else if (symbology == BARCODE_AZTEC || symbology == BARCODE_CODE16K || symbology == BARCODE_ULTRA
@@ -2564,13 +2581,13 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
             }
             return NULL;
         } else if (symbology == BARCODE_QRCODE) {
-            if (gs1_cvt) {
-                *gs1_cvt = 1;
+            if (p_gs1_cvt) {
+                *p_gs1_cvt = 1;
             }
             return "gs1qrcode";
         } else if (symbology == BARCODE_DOTCODE) {
-            if (gs1_cvt) {
-                *gs1_cvt = 1;
+            if (p_gs1_cvt) {
+                *p_gs1_cvt = 1;
             }
             return "gs1dotcode";
         }
@@ -3876,8 +3893,8 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 5, },
         { "", BARCODE_C25LOGIC, 6, },
         { "", BARCODE_C25IND, 7, },
-        { "Code39", BARCODE_CODE39, 8, },
-        { "Code39", BARCODE_EXCODE39, 9, }, /* TODO: Code39 with specially encoded chars */
+        { "Code39Std", BARCODE_CODE39, 8, },
+        { "Code39", BARCODE_EXCODE39, 9, },
         { "EAN8", BARCODE_EAN8, 10, },
         { "", BARCODE_EAN_2ADDON, 11, },
         { "", BARCODE_EAN_5ADDON, 12, },
@@ -3918,9 +3935,9 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_MSI_PLESSEY, 47, },
         { "", -1, 48, },
         { "", BARCODE_FIM, 49, },
-        { "Code39", BARCODE_LOGMARS, 50, },
+        { "Code39Std", BARCODE_LOGMARS, 50, },
         { "", BARCODE_PHARMA, 51, },
-        { "Code39", BARCODE_PZN, 52, },
+        { "Code39Std", BARCODE_PZN, 52, },
         { "", BARCODE_PHARMA_TWO, 53, },
         { "", -1, 54, },
         { "PDF417", BARCODE_PDF417, 55, },
@@ -3941,7 +3958,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_RM4SCC, 70, },
         { "DataMatrix", BARCODE_DATAMATRIX, 71, },
         { "Code128", BARCODE_EAN14, 72, },
-        { "Code39", BARCODE_VIN, 73, },
+        { "Code39Std", BARCODE_VIN, 73, },
         { "CodablockF", BARCODE_CODABLOCKF, 74, },
         { "Code128", BARCODE_NVE18, 75, },
         { "", BARCODE_JAPANPOST, 76, },
@@ -3967,7 +3984,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "Code128", BARCODE_DPD, 96, },
         { "MicroQRCode", BARCODE_MICROQR, 97, },
         { "Code128", BARCODE_HIBC_128, 98, },
-        { "Code39", BARCODE_HIBC_39, 99, },
+        { "Code39Std", BARCODE_HIBC_39, 99, },
         { "", -1, 100, },
         { "", -1, 101, },
         { "DataMatrix", BARCODE_HIBC_DM, 102, },
@@ -4127,12 +4144,12 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
 
     if (symbology == BARCODE_EXCODE39) {
         if (symbol->option_2 == 1) {
-            opts = "tryCode39ExtendedMode,validateCode39CheckSum";
+            opts = "tryCode39ExtendedMode,validateOptionalChecksum";
         } else {
             opts = "tryCode39ExtendedMode";
         }
     } else if ((symbology == BARCODE_CODE39 || symbology == BARCODE_LOGMARS) && symbol->option_2 == 1) {
-        opts = "validateCode39CheckSum";
+        opts = "validateOptionalChecksum";
     }
 
     if (zxingcpp_cmp > 1 && symbol->eci == 0) {
@@ -4283,8 +4300,8 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     const int is_extra_escaped = (symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128;
     const int is_escaped = (symbol->input_mode & ESCAPE_MODE) || is_extra_escaped;
     const int is_hibc = symbology >= BARCODE_HIBC_128 && symbology <= BARCODE_HIBC_AZTEC;
-    const int have_c25checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
-    const int have_c25inter = (symbology == BARCODE_C25INTER && ((expected_len & 1) || have_c25checkdigit))
+    const int have_ccheckdigit = symbol->option_2 == 1 || symbol->option_2 == 2; /* Good for C25, CODE39, CODABAR */
+    const int have_c25inter = (symbology == BARCODE_C25INTER && ((expected_len & 1) || have_ccheckdigit))
                                 || symbology == BARCODE_ITF14 || symbology == BARCODE_DPLEIT
                                 || symbology == BARCODE_DPIDENT;
     const int is_upcean = (ZBarcode_Cap(symbology, ZINT_CAP_EANUPC) & ZINT_CAP_EANUPC) == ZINT_CAP_EANUPC;
@@ -4362,7 +4379,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         expected = escaped;
     }
     if (gs1 && symbology != BARCODE_EAN14 && symbology != BARCODE_NVE18) {
-        ret = zint_gs1_verify(symbol, ZUCP(expected), expected_len, ZUCP(reduced), &expected_len);
+        ret = zint_gs1_verify(symbol, ZUCP(expected), expected_len, ZUCP(reduced), &expected_len, 0 /*set_hrt*/);
         if (ret >= ZINT_ERROR) {
             sprintf(msg, "zint_gs1_verify %d != 0", ret);
             return 3;
@@ -4441,7 +4458,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         cmp_len -= 2;
         expected++;
         expected_len -= 2;
-        if (symbol->option_2 == 1 || symbol->option_2 == 2) {
+        if (have_ccheckdigit) {
             cmp_len--; /* Too messy to calc the check digit so ignore */
         }
     } else if (is_vin_international) {
@@ -4451,15 +4468,15 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         expected = vin;
     } else if (have_c25inter) {
         if (symbology == BARCODE_C25INTER) {
-            if ((expected_len & 1) || have_c25checkdigit) {
-                if (((expected_len & 1) && !have_c25checkdigit) || (!(expected_len & 1) && have_c25checkdigit)) {
+            if ((expected_len & 1) || have_ccheckdigit) {
+                if (((expected_len & 1) && !have_ccheckdigit) || (!(expected_len & 1) && have_ccheckdigit)) {
                     c25inter[0] = '0';
                     memcpy(c25inter + 1, expected, expected_len);
                     expected_len++;
                 } else {
                     memcpy(c25inter, expected, expected_len);
                 }
-                if (have_c25checkdigit) {
+                if (have_ccheckdigit) {
                     c25inter[expected_len] = zint_gs1_check_digit((const unsigned char *) c25inter, expected_len);
                     expected_len++;
                 }
@@ -4652,6 +4669,9 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             expected = azrune;
             expected_len = 3;
         }
+    } else if ((symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_LOGMARS)
+                && have_ccheckdigit) {
+        cmp_len--; /* Too tedious to calculate so ignore */
     }
 
     if (ret_buf) {

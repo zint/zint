@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -2897,7 +2897,7 @@ static void test_encode(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
-    char bwipp_buf[32768];
+    char bwipp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -3286,7 +3286,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
-    char bwipp_buf[32768];
+    char bwipp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -3574,7 +3574,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char bwipp_buf[32768];
+    char bwipp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */

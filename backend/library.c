@@ -1218,7 +1218,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             if (is_composite || !check_force_gs1(symbol->symbology)) {
                 unsigned char *reduced = (unsigned char *) z_alloca(local_segs[0].length + 1);
                 error_number = zint_gs1_verify(symbol, local_segs[0].source, local_segs[0].length, reduced,
-                                                &local_segs[0].length);
+                                                &local_segs[0].length, 0 /*set_hrt*/);
                 if (error_number) {
 #ifdef ZINT_HAVE_GS1SE
                     if (is_composite && !(symbol->input_mode & GS1SYNTAXENGINE_MODE)) {
@@ -1387,7 +1387,7 @@ static int txt_hex_plot(struct zint_symbol *symbol) {
     }
 
     if (!zint_fm_close(fmp, symbol)) {
-        return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 792, "Failure on closing TXT output file (%1$d: %2$s)",
+        return ZEXT z_errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 796, "Failure on closing TXT output file (%1$d: %2$s)",
                                 fmp->err, strerror(fmp->err));
     }
 

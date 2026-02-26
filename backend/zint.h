@@ -326,6 +326,7 @@ extern "C" {
 #define EXTRA_ESCAPE_MODE       0x0100  /* Process special symbology-specific escape sequences as well as others */
                                         /* Note: currently Code 128 only */
 #define GS1SYNTAXENGINE_MODE    0x0200  /* Use the GS1 Syntax Engine (if available) to strictly validate GS1 input */
+#define GS1RAW_MODE             0x0400  /* Process GS1 data literally (no AI delimiters), parsing GSs as FNC1s */
 
 /* Aztec Code specific options (`symbol->option_3`) */
 #define ZINT_AZTEC_FULL         128     /* Only consider Full versions on automatic symbol size selection */

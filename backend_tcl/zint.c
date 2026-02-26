@@ -189,6 +189,8 @@
 2026-02-20 GL
 - Added -azfull switch.
 - Fiddled with some help capitalization.
+2026-02-25 GL
+- Added -gs1raw switch.
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -580,10 +582,11 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --gs1 replaced by -format */
     "   -gs1nocheck bool: for gs1, do not check validity of data (allows non-standard symbols)\n"
     "   -gs1parens bool: for gs1, AIs enclosed in parentheses instead of square brackets\n"
+    "   -gs1raw bool: for gs1, raw GS1 input (no square brackets or parentheses), with GS for FNC1\n"
 #ifdef ZINT_HAVE_GS1SE
     "   -gs1strict bool: use GS1 Syntax Engine to strictly validate GS1 data\n"
 #else
-    "   -gs1strict 0: GS1 syntax engine not compiled in, may not be activated.\n"
+    "   -gs1strict 0: GS1 syntax engine not compiled in, may not be activated\n"
 #endif
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Data Matrix only)\n"
     "   -guarddescent double: height of guard bar descent in modules (EAN/UPC only)\n"
@@ -910,8 +913,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-barcode", "-bg", "-bind", "-bindtop", "-bold", "-border", "-box",
             "-cols", "-compliantheight", "-dmiso144", "-dmre", "-dotsize", "-dotty",
             "-eci", "-esc", "-extraesc", "-fast", "-fg", "-format", "-fullmultibyte",
-            "-gs1nocheck", "-gs1parens",
-            "-gs1strict",
+            "-gs1nocheck", "-gs1parens", "-gs1raw", "-gs1strict",
             "-gssep", "-guarddescent",
             "-guardwhitespace", "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
@@ -925,8 +927,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             iBarcode, iBG, iBind, iBindTop, iBold, iBorder, iBox,
             iCols, iCompliantHeight, iDMISO144, iDMRE, iDotSize, iDotty,
             iECI, iEsc, iExtraEsc, iFast, iFG, iFormat, iFullMultiByte,
-            iGS1NoCheck, iGS1Parens,
-            iGS1Strict,
+            iGS1NoCheck, iGS1Parens, iGS1Raw, iGS1Strict,
             iGSSep, iGuardDescent,
             iGuardWhitespace, iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
@@ -964,6 +965,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iFast:
         case iGS1NoCheck:
         case iGS1Parens:
+        case iGS1Raw:
         case iGS1Strict:
         case iGSSep:
         case iGuardWhitespace:
@@ -1175,6 +1177,14 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; /* Now sets GS1_MODE also */
             } else {
                 my_symbol->input_mode &= ~GS1PARENS_MODE;
+            }
+            break;
+        case iGS1Raw:
+            if (intValue) {
+                my_symbol->input_mode |= GS1RAW_MODE;
+                my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE;
+            } else {
+                my_symbol->input_mode &= ~GS1RAW_MODE;
             }
             break;
         case iGS1Strict:

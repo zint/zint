@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -48,6 +48,17 @@ extern "C" {
 #define ZINT_DEBUG_TEST_PERFORMANCE     256
 #define ZINT_DEBUG_TEST_ZXINGCPP        512
 #define ZINT_DEBUG_TEST_BWIPP_ZXINGCPP  1024
+
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positives */
+#define ZINT_TESTUTIL_SANITIZEM_INIT     = {0}
+#define ZINT_TESTUTIL_SANITIZEM_INIT_2D  = {{0}}
+#else
+#define ZINT_TESTUTIL_SANITIZEM_INIT
+#define ZINT_TESTUTIL_SANITIZEM_INIT_2D
+#endif
+
+/* Hack `option_3` flag to indicate GS1 Syntax Engine caret input */
+#define ZINT_TESTUTIL_GS1CARET  (1 << 24)
 
 #include <errno.h>
 #include <stdio.h>

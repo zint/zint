@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -648,7 +648,7 @@ static void test_2d_encode(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
-    char cmp_buf[32768];
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
     /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */

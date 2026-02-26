@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-02-05)
+Version 2.16.0.9 (dev) not released yet (2026-02-26)
 ====================================================
 
 **Incompatible changes**
@@ -7,6 +7,8 @@ Version 2.16.0.9 (dev) not released yet (2026-02-05)
   (may cause symbol size change, and generation failure if specified)
 - Improved Aztec encodation algorithm (may cause symbol size change)
 - New Qt Backend method `save_as_memfile()` to save file to memory
+- New Qt Backend methods `gs1Raw()` and `setGS1Raw()` for new `GS1RAW_MODE`
+  option for processing GS1 input
 
 Changes
 -------
@@ -21,6 +23,9 @@ Changes
   "--fast" (input_mode |= FAST_MODE)
 - AZTEC: add new option "--azfull" (option_3 = ZINT_AZTEC_FULL) to only
   consider Full symbols (not Compact ones) on automatic sizing
+- GS1: new `GS1RAW_MODE` (CLI "--gs1raw") and GS1 Syntax Engine "Unbracketed AI
+  element strings" (caret) options for specifying GS1 input (ticket #350, props
+  Mario Verbruggen)
 
 Bugs
 ----
@@ -34,6 +39,8 @@ Bugs
 - AZTEC: fix ECC to be at least advertised percentages (ticket #347, props
   Francois Grieu)
 - CODE32/PZN: fix not restoring `option_2` (props axxel)
+- DBAR_EXP_CC/DBAR_EXPSTK_CC: fix separator over finder patterns when linear
+  part is greater than 4 codeblocks
 
 
 Version 2.16.0 (2025-12-19)
