@@ -1,7 +1,7 @@
 zint (2.6.0) stable; urgency=medium
 
   * Update to Qt5
-  * Ouput to EMF and TIF
+  * Output to EMF and TIF
   
  -- Robin Stuart <rstuart114@gmail.com>  Fri, 12 May 2017 09:00:00 +0000
 
@@ -11,7 +11,7 @@ zint (2.5.1) UNRELEASED; urgency=medium
   * Include support for Han Xin (Chinese Sensible) code.
   * Reinstate Codablock-F support.
   * Automated ECI pre-processing.
-  * Ouput to BMP, GIF and PCX.
+  * Output to BMP, GIF and PCX.
   * Huge code review and numerous bugfixes
   * DMRE support and DataMatrix bugfixes 
 

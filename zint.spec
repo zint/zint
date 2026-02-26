@@ -153,7 +153,7 @@ rm -rf $RPM_BUILD_ROOT
 * Thu Feb 15 2018 Robin Stuart <rstuart114@gmail.com> - 2.6.3
 - Version -> 2.6.3
 
-* Sun Oct 22 2017 Robin Stuat <rstuart114@gmail.com> - 2.6.2
+* Sun Oct 22 2017 Robin Stuart <rstuart114@gmail.com> - 2.6.2
 - Version -> 2.6.2
 
 * Sun Aug 27 2017 Robin Stuart <rstuart114@gmail.com> - 2.6.1

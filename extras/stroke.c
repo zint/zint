@@ -7,7 +7,7 @@
  * 
  * The same code can also be used to resolve PDF417 symbols with the
  * StrokeScribe 417 font and linear symbols with the StrokeScribe 1D
- * font, all of which are available from the same souce.
+ * font, all of which are available from the same source.
  * 
  * This code can be compiled with:
  * 

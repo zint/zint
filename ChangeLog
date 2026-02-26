@@ -19,7 +19,7 @@ Changes
   add `ZINT_TEST`-only "--test" option to do various internal tests
 - GS1SE: exclude GS1_128 from requisite AIs check as may be spread across more
   than one barcode (ticket #348, props Harald Oehlmann and Terry Burton)
-- AZTEC: add almost optimal encoding algorithm, previous algoritm available via
+- AZTEC: add improved encoding algorithm, previous algorithm available via
   "--fast" (input_mode |= FAST_MODE)
 - AZTEC: add new option "--azfull" (option_3 = ZINT_AZTEC_FULL) to only
   consider Full symbols (not Compact ones) on automatic sizing
@@ -233,7 +233,7 @@ Bugs
 - library: need to check for valid UTF-8 after de-escaping
 - MAXICODE: maintain current set between segments
 - MSYS2: fix stdout output on Windows under MSYS2 (mailing list, props Frank)
-- DATAMATRIX: fix mis-encodation by only doing special end-of-data processing
+- DATAMATRIX: fix misencodation by only doing special end-of-data processing
   on last segment
 
 
@@ -649,9 +649,9 @@ Bugs
 - raster.c: fix possible blank rows appearing in CODE16K, CODE49, PHARMA_TWO,
   PDF417 & CODABLOCKF due to height/scale rounding, props codemonkey82 (#204)
 - library.c: check for stacking symbols >= 200
-- DATAMATRIX: fix mis-encoding of non-encodables in X12 and EDIFACT modes,
+- DATAMATRIX: fix misencoding of non-encodables in X12 and EDIFACT modes,
   props Alex Geller
-- DATAMATRIX: fix mis-encoding of FNC1/GS in EDIFACT in GS1 mode
+- DATAMATRIX: fix misencoding of FNC1/GS in EDIFACT in GS1 mode
 - Allow for dot overspill in height of vertical box sides (dotty mode)
 - HANXIN: fix gate-posts on codeword limits
 - GUI: cater for HiDPI display, props bitaround (#257)
@@ -1170,7 +1170,7 @@ Unicode handling into backend and added input_mode option, added size options
 to Data Matrix ECC200, added NULL character handling for Codablock-F, Code 128,
 Code 16k, Extended Code 39, Code 93, Telepen, Maxicode, Data Matrix ECC200 ECC
 200, PDF417 and MicroPDF417. Added GS1 support for Code 16k, Codablock-F and
-Aztec Code. Added scale and direct to stdout options. Rebult Data Matrix ECC200
+Aztec Code. Added scale and direct to stdout options. Rebuilt Data Matrix ECC200
 ECC 200 encoding algorithms to support NULL encoding and GS1 data encoding.
 
 

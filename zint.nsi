@@ -58,7 +58,7 @@ Var ICONS_GROUP
 ; Welcome page
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "gpl-3.0.txt"
-; Mixed mode instalation page
+; Mixed mode installation page
 !insertmacro MULTIUSER_PAGE_INSTALLMODE
 ; Components page
 ; !insertmacro MUI_PAGE_COMPONENTS

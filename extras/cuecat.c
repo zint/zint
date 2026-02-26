@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
     
     strcat(pattern, C128Table[106]); // Stop
     
-    /* Start ouputting SVG file */
+    /* Start outputting SVG file */
     print_head(cat_number);
     print_cue();
     print_data(pattern);

@@ -4764,7 +4764,7 @@ Zint can generate Compact Aztec Code (sometimes called Small Aztec Code) as well
 as 'full-range' Aztec Code symbols and by default will automatically select
 symbol type and size dependent on the length of the data to be encoded. Error
 correction codewords will normally be generated to fill at least 23% of the
-symbol. Two options, mutally exclusive, are available to change this behaviour:
+symbol. Two options, mutually exclusive, are available to change this behaviour:
 
 1) The size of the symbol can be specified using the `--vers` option (API
 `option_2`) to a value between 1 and 36 according to the following table. The

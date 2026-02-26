@@ -15,7 +15,7 @@ SCALE_ULTRA=2
 SCALE_UPCEAN=0.5
 
 # Depending on platform and versions of installed components, may need to adjust the scales
-# Multipying by 4 now seems necessary on Ubuntu 22.04 with pandoc 2.19
+# Multiplying by 4 now seems necessary on Ubuntu 22.04 with pandoc 2.19
 scales=( SCALE_LINEAR SCALE_2D SCALE_2D_BIGGER SCALE_TRACK SCALE_DOTTY SCALE_ULTRA SCALE_UPCEAN )
 for scale in "${scales[@]}" ; do
     eval $scale=$(echo "${!scale} * 4" | bc)

@@ -1,0 +1,77 @@
+# vim: set ts=4 sw=4 et :
+[files]
+extend-exclude = [
+    "backend_tcl/tclconfig/install-sh",
+    "backend_tcl/configure",
+    "backend_tcl/win/rules.vc",
+    "backend_tcl/tclconfig/tcl.m4",
+    "docs/manual.html",
+    "docs/pandoc-lua-crossrefs",
+    "docs/zint_org_uk.py",
+    "frontend/isotest.sh",
+    "frontend_qt/*.ui",
+    "win32/zint_dll_vc6/zint_dll_vc6.dsp",
+    "win32/zint_cmdline_vc6/zint_cmdline_vc6.dsp",
+]
+
+[default.extend-identifiers]
+015PN4 = "015PN4"
+7041BA = "7041BA"
+7041FO = "7041FO"
+7041HPE = "7041HPE"
+1234567890ABL = "1234567890ABL"
+AIMD = "AIMD"
+AIMD013 = "AIMD013"
+AIMD014 = "AIMD014"
+ABL = "ABL"
+ACI = "ACI"
+alog = "alog"
+alog_ = "alog_"
+alog_0x13 = "alog_0x13"
+alog_0x25 = "alog_0x25"
+alog_0x43 = "alog_0x43"
+alog_0x89 = "alog_0x89"
+alog_0x11d = "alog_0x11d"
+alog_0x12d = "alog_0x12d"
+alog_0x163 = "alog_0x163"
+BA = "BA"
+Ba = "Ba"
+ba = "ba"
+byt = "byt"
+BYT = "BYT"
+BYTE = "BYTE"
+BYTEs = "BYTEs"
+CAF = "CAF"
+combins = "combins"
+dbar_combins = "dbar_combins"
+E0BA81 = "E0BA81"
+E4BA8D = "E4BA8D"
+fnd_dir = "fnd_dir"
+FO = "FO"
+Fo = "Fo"
+GTIN = "GTIN"
+GTINs = "GTINs"
+HPE = "HPE"
+IS_UE__F = "IS_UE__F"
+JOD = "JOD"
+KarTrak = "KarTrak"
+LSO = "LSO"
+NAM = "NAM"
+ND = "ND"
+nd = "nd"
+noet = "noet"
+optin = "optin"
+PDF_BYT = "PDF_BYT"
+PN = "PN"
+PNTable = "PNTable"
+Produkt = "Produkt"
+shs = "shs"
+SOM = "SOM"
+SUR = "SUR"
+somes = "somes"
+THA = "THA"
+thi = "thi"
+thi0 = "thi0"
+thi1 = "thi1"
+TTO = "TTO"
+wnet = "wnet"

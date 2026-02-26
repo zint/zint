@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1091,7 +1091,7 @@ static void test_utf8_to_eci_sjis(const testCtx *const p_ctx) {
         /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}\177", 95, 0, 95 + 1 }, /* Backslash goes to 2 byte */
         /*  2*/ { "~", -1, ZINT_ERROR_INVALID_DATA, -1 }, /* No mapping for tilde */
         /*  3*/ { "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, /* No mapping for U+0080 */
-        /*  4*/ { "\302\241", -1, ZINT_ERROR_INVALID_DATA, -1 }, /* No mapping for U+00A1 Inverted exclaimation mark */
+        /*  4*/ { "\302\241", -1, ZINT_ERROR_INVALID_DATA, -1 }, /* No mapping for U+00A1 Inverted exclamation mark */
         /*  5*/ { "\302\245", -1, 0, 1 }, /* U+00A5 Yen goes to backslash */
         /*  6*/ { "\302\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, /* No mapping for U+00BF Inverted question mark */
         /*  7*/ { "\303\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, /* No mapping for U+00C0 À */

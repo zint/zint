@@ -2,7 +2,7 @@
 /* Update Zint version number in various files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2026 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
@@ -56,7 +56,7 @@ $rc_str2 = "$major.$minor.$release.$build";
 
 $year = date("Y");
 
-/* Ouput error message and exit */
+/* Output error message and exit */
 function err_exit($line_no, $msg) {
     global $basename;
 

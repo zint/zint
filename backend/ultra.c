@@ -1,7 +1,7 @@
 /*  ultra.c - Ultracode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -456,7 +456,7 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
     int *subcw = (int *) z_alloca(sizeof(int) * (length + 3) * 2);
 
     if (current_mode == ULT_EIGHTBIT_MODE) {
-        /* Check for permissable URL C43 macro sequences, otherwise encode directly */
+        /* Check for permissible URL C43 macro sequences, otherwise encode directly */
         fragno = ult_find_fragment(source, length, sublocn);
 
         if (fragno == 2 || fragno == 3) {
