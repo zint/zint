@@ -84,31 +84,19 @@ static const short AztecMapCore[15][15] = {
     {     0,     0, 20029, 20028, 20027, 20026, 20025,     0, 20024, 20023, 20022, 20021, 20020,     0,     0, },
 };
 
-/* From Table 2 */
-static const char AztecSymbolChar[128] = {
-     0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13,  0, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 15, 16, 17, 18, 19,
-     1,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,  0, 18,  0, 20,
-     2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 21, 22, 23, 24, 25, 26,
-    20,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
-    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 27, 21, 28, 22, 23,
-    24,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
-    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 29, 25, 30, 26, 27
-};
-
 /* Modes */
-#define AZ_U  1
-#define AZ_L  2
-#define AZ_M  3
-#define AZ_P  4
-#define AZ_D  5
-#define AZ_B  6 /* 5 or 11-bit Byte (ideally would be separate modes, but not done due to performance hit) */
+#define AZ_U  0
+#define AZ_L  1
+#define AZ_M  2
+#define AZ_P  3
+#define AZ_D  4
 
 /* Pseudo-modes */
-#define AZ_X  7 /* Used to indicate chars belonging to more than one mode */
-#define AZ_E  8 /* Used to signal no next mode */
+#define AZ_B  5 /* Byte */
+#define AZ_X  6 /* Indicates chars belonging to more than one mode */
+#define AZ_E  7 /* Signals no next mode */
 
-#define AZ_NUM_MODES 6
+#define AZ_NUM_MODES 5
 
 #define AZ_MASK(m)  ((m) & 0x0F)
 
@@ -126,22 +114,22 @@ static const char AztecSymbolChar[128] = {
 #define AZ_D_US (AZ_D | AZ_US)
 
 static const char AztecModes[128] = {
-    AZ_B, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_X, AZ_B, AZ_B,
-    AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M,
-    AZ_X, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_X, AZ_P, AZ_X, AZ_P,
-    AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P,
-    AZ_M, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U,
-    AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_P, AZ_M, AZ_P, AZ_M, AZ_M,
-    AZ_M, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L,
-    AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_P, AZ_M, AZ_P, AZ_M, AZ_M
+    AZ_B, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, AZ_X, AZ_B, AZ_B, /*0-15*/
+    AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_B, AZ_M, AZ_M, AZ_M, AZ_M, AZ_M, /*16-31*/
+    AZ_X, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_X, AZ_P, AZ_X, AZ_P, /*32-47*/
+    AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_D, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, AZ_P, /*48-63*/
+    AZ_M, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, /*64-79*/
+    AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_U, AZ_P, AZ_M, AZ_P, AZ_M, AZ_M, /*80-95*/
+    AZ_M, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, /*96-111*/
+    AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_L, AZ_P, AZ_M, AZ_P, AZ_M, AZ_M  /*112-127*/
 };
 
 /* Testable flags */
-#define AZ_U_F  0x01
-#define AZ_L_F  0x02
-#define AZ_M_F  0x04
-#define AZ_P_F  0x08
-#define AZ_D_F  0x10
+#define AZ_U_F  0x01    /* 1 << AZ_U */
+#define AZ_L_F  0x02    /* 1 << AZ_L */
+#define AZ_M_F  0x04    /* 1 << AZ_M */
+#define AZ_P_F  0x08    /* 1 << AZ_P */
+#define AZ_D_F  0x10    /* 1 << AZ_D */
 
 /* Flag version of `AztecModes[]` */
 static const char AztecFlags[128] = {
@@ -177,6 +165,86 @@ static const char AztecFlags[128] = {
                               AZ_L_F,          AZ_L_F,          AZ_L_F,          AZ_L_F, /* 116-119*/
                               AZ_L_F,          AZ_L_F,          AZ_L_F,          AZ_P_F, /* 120-123*/
                               AZ_M_F,          AZ_P_F,          AZ_M_F,          AZ_M_F, /* 124-127*/
+};
+
+/* The number of bits latch takes (AZ_B column used in FAST_MODE only) */
+static const char AztecLatchNum[5][6] = {
+    /*      U   L   M   P   D   B */
+    /*U*/ { 0,  5,  5, 10,  5,  5 },
+    /*L*/ { 9,  0,  5, 10,  5,  5 },
+    /*M*/ { 5,  5,  0,  5, 10,  5 },
+    /*P*/ { 5, 10, 10,  0, 10, 10 },
+    /*D*/ { 4,  9,  9, 14,  0,  9 },
+};
+
+/* Bit pattern to latch (AZ_B column used in FAST_MODE only) */
+static const short AztecLatch[5][6] = {
+    /*                   U               L               M                            P               D               B */
+    /*U*/ {              0,             28,             29,              (29 << 5) + 30,             30,             31 },
+    /*L*/ { (30 << 4) + 14,              0,             29,              (29 << 5) + 30,             30,             31 },
+    /*M*/ {             29,             28,              0,                          30, (29 << 5) + 30,             31 },
+    /*P*/ {             31, (31 << 5) + 28, (31 << 5) + 29,                           0, (31 << 5) + 30, (31 << 5) + 31 },
+    /*D*/ {             14, (14 << 5) + 28, (14 << 5) + 29, (14 << 10) + (29 << 5) + 30,              0, (14 << 5) + 31 },
+};
+
+/* From Table 2 */
+static const char AztecChar[5][128] = {
+    { /* AZ_U */
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*0-15*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*16-31*/
+        1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*32-47*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*48-63*/
+        0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, /*64-79*/
+       17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,  0,  0,  0,  0,  0, /*80-95*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*96-111*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0  /*112-127*/
+    }, { /* AZ_L */
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*0-15*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*16-31*/
+        1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*32-47*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*48-63*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*64-79*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*80-95*/
+        0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, /*96-111*/
+       17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,  0,  0,  0,  0,  0  /*112-127*/
+    }, { /* AZ_M */
+        0,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,  0,  0, /*0-15*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 15, 16, 17, 18, 19, /*16-31*/
+        1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*32-47*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*48-63*/
+       20,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*64-79*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 21,  0, 22, 23, /*80-95*/
+       24,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*96-111*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 25,  0, 26, 27  /*112-127*/
+    }, { /* AZ_P with [abcd] mapped to doubles */
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0, /*0-15*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*16-31*/
+        0,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, /*32-47*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 21, 22, 23, 24, 25, 26, /*48-63*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*64-79*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 27,  0, 28,  0,  0, /*80-95*/
+        0,  2,  3,  4,  5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*96-111*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 29,  0, 30,  0,  0  /*112-127*/
+    }, { /* AZ_D */
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*0-15*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*16-31*/
+        1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 12,  0, 13,  0, /*32-47*/
+        2,  3,  4,  5,  6,  7,  8,  9, 10, 11,  0,  0,  0,  0,  0,  0, /*48-63*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*64-79*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*80-95*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, /*96-111*/
+        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0  /*112-127*/
+    }
+};
+
+/* A map showing the available shift codes (B/S not shown) */
+static const signed char AztecShift[5][5] = {
+    /*       U   L   M   P   D */
+    /*U*/ { -1, -1, -1,  0, -1 },
+    /*L*/ { 28, -1, -1,  0, -1 },
+    /*M*/ { -1, -1, -1,  0, -1 },
+    /*P*/ { -1, -1, -1, -1, -1 },
+    /*D*/ { 15, -1, -1,  0, -1 },
 };
 
 /* Codewords per symbol */

@@ -1,7 +1,7 @@
 /* dmatrix.c Handles Data Matrix ECC 200 symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     developed from and including some functions from:
         IEC16022 bar code generation
@@ -580,6 +580,8 @@ static int dm_edi_buffer_xfer(int process_buffer[8], int process_p, unsigned cha
     return process_p;
 }
 
+#define DM_DMRE_SQUARE_MASK 0x65 /* 101 */
+
 /* Get index of symbol size in codewords array `dm_matrixbytes`, as specified or
    else smallest containing `minimum` codewords */
 static int dm_get_symbolsize(struct zint_symbol *symbol, const int minimum) {
@@ -593,10 +595,10 @@ static int dm_get_symbolsize(struct zint_symbol *symbol, const int minimum) {
     }
     for (i = minimum >= 62 ? 23 : 0; minimum > dm_matrixbytes[i]; i++);
 
-    if ((symbol->option_3 & 0x7F) == DM_DMRE) {
+    if ((symbol->option_3 & DM_DMRE_SQUARE_MASK) == DM_DMRE) {
         return i;
     }
-    if ((symbol->option_3 & 0x7F) == DM_SQUARE) {
+    if ((symbol->option_3 & DM_DMRE_SQUARE_MASK) == DM_SQUARE) {
         /* Skip rectangular symbols in square only mode */
         for (; dm_matrixH[i] != dm_matrixW[i]; i++);
         return i;
@@ -992,6 +994,8 @@ static int dm_define_modes(struct zint_symbol *symbol, char modes[], const unsig
     if (!edges) {
         return 0;
     }
+    assert((length + 1) * DM_NUM_MODES < USHRT_MAX); /* Guaranteed by input length limit */
+
     dm_addEdges(symbol, source, length, last_seg, edges, 0, NULL, gs1);
 
     DM_TRACE_Edges("DEBUG Initial situation\n", source, length, edges, 0);

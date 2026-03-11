@@ -3709,12 +3709,13 @@ void MainWindow::automatic_info_set()
                 }
                 txt->setText(QSL("ECC %1").arg(eccStr));
                 if (get_rad_val("radAztecSize")) {
-                    set_cmb_index(QSL("cmbAztecSize"), m_aztecSizeIndex);
+                    set_cmb_index(QSL("cmbAztecSize"),
+                                    m_aztecSizeIndex == -1 ? z >= 1 && z <= 36 ? z - 1 : 0 : m_aztecSizeIndex);
                 } else if (z >= 1 && z <= 36) {
                     set_cmb_index(QSL("cmbAztecSize"), z - 1);
                 }
                 if (get_rad_val("radAztecECC")) {
-                    set_cmb_index(QSL("cmbAztecECC"), m_aztecECCIndex);
+                    set_cmb_index(QSL("cmbAztecECC"), m_aztecECCIndex == -1 ? 1 /*>=23%+3*/ : m_aztecECCIndex);
                 } else {
                     static int ecc_percents[] = { 10, 23, 36, 50 };
                     for (int i = ARRAY_SIZE(ecc_percents) - 1; i >= 0; i--) {

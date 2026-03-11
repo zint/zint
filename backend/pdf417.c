@@ -1,7 +1,7 @@
 /* pdf417.c - Handles PDF417 stacked symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
     Bug Fixes thanks to KL Chin <klchin@users.sourceforge.net>
 
@@ -932,6 +932,8 @@ static int pdf_define_modes(short liste[3][PDF_MAX_LEN], int *p_indexliste, cons
     if (!edges) {
         return 0;
     }
+    assert((length + 1) * PDF_NUM_MODES < USHRT_MAX); /* Guaranteed by input length limit */
+
     pdf_addEdges(source, length, lastmode, edges, 0, NULL);
 
     PDF_TRACE_Edges("DEBUG Initial situation\n", source, length, edges, 0);

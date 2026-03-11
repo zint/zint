@@ -334,7 +334,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.16.0.9</p>
-<p class="date">February 2026</p>
+<p class="date">March 2026</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -2601,13 +2601,12 @@ Modes and ECI</a> below.</p>
 <p>GS1 data can be encoded in a number of symbologies - see <a
 href="#gs1-data-entry-and-options">4.11.3 GS1 Data Entry and
 Options</a>.</p>
-<p>Health Industry Barcode (HIBC) data may also be encoded in the
-symbologies Aztec Code, Codablock-F, Code 128, Code 39, Data Matrix,
-MicroPDF417, PDF417 and QR Code. Within this mode, the leading
-<code>'+'</code> and the check character are automatically added by
-Zint, conforming to HIBC Labeler Identification Code (HIBC LIC). For
-HIBC Provider Applications Standard (HIBC PAS), preface the data with a
-slash <code>'/'</code>.</p>
+<p>Health Industry Barcode (HIBC) data may be encoded in the symbologies
+Aztec Code, Codablock-F, Code 128, Code 39, Data Matrix, MicroPDF417,
+PDF417 and QR Code. Within this mode, the leading <code>'+'</code> and
+the check character are automatically added by Zint, conforming to HIBC
+Labeler Identification Code (HIBC LIC). For HIBC Provider Applications
+Standard (HIBC PAS), preface the data with a slash <code>'/'</code>.</p>
 <p>The <code>--binary</code> option encodes the input data as given.
 Automatic code page translation to an ECI page is disabled, and no
 validation of the data’s encoding takes place. This may be used for raw
@@ -4240,9 +4239,9 @@ as per-row rather than as overall height.</td>
 <tr>
 <td style="text-align: left;"><code>FAST_MODE</code></td>
 <td style="text-align: left;">Use faster if less optimal encodation or
-other shortcuts if available (affects <code>DATAMATRIX</code>,
-<code>MICROPDF417</code>, <code>PDF417</code>, <code>QRCODE</code> and
-<code>UPNQR</code> only).</td>
+other shortcuts if available (affects <code>AZTEC</code>,
+<code>DATAMATRIX</code>, <code>MICROPDF417</code>, <code>PDF417</code>,
+<code>QRCODE</code> and <code>UPNQR</code> only).</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>EXTRA_ESCAPE_MODE</code></td>
@@ -4297,8 +4296,8 @@ in section <a href="#adjusting-height">4.4 Adjusting Height</a>. The
 <code>height</code> member should be set to the desired per-row value on
 input (it will be set to the overall height on output).</p>
 <p><code>FAST_MODE</code> causes a less optimal encodation scheme to be
-used for Data Matrix, MicroPDF417 and PDF417. For QR Code and UPNQR, it
-limits Zint’s automatic mask selection - see <a
+used for Aztec Code, Data Matrix, MicroPDF417 and PDF417. For QR Code
+and UPNQR, it limits Zint’s automatic mask selection - see <a
 href="#qr-code-iso-18004">6.6.3 QR Code (ISO 18004)</a> for details.</p>
 <h2 id="multiple-segments-1">5.12 Multiple Segments</h2>
 <p>For input data requiring multiple ECIs, the following functions may
@@ -5890,8 +5889,9 @@ or 3 for CC-A, CC-B or CC-C respectively.</p>
 into a small space. The size of the 2D component and the amount of error
 correction is determined by the amount of data to be encoded and the
 type of linear component which is being used. CC-A can encode up to 56
-numeric digits or an alphanumeric string of shorter length. To select
-CC-A use <code>--mode=1</code> (API <code>option_1 = 1</code>).</p>
+numeric digits (including AIs) or an alphanumeric string of shorter
+length (e.g. if all capitals, at most 30, excluding AI). To select CC-A
+use <code>--mode=1</code> (API <code>option_1 = 1</code>).</p>
 <figure>
 <img src="images/ean13_cc_a.svg" class="upcean"
 alt="zint -b EAN13_CC --compliantheight -d &quot;[99]1234-abcd&quot; --mode=1 --primary=331234567890" />
@@ -9946,9 +9946,10 @@ of any AI (except when the last) <strong>apart</strong> from those whose
 11, 12, 13, 15, 16, 17, 20, 31, 32, 33, 34, 35, 36 and 41, as specified
 in GS1 General Specifications 26.0 Table 7-6 “Element strings with
 predefined length using GS1 Application Identifiers”. Note that this
-applies even to AIs with fixed lengths, so e.g. the data for AI 3940
-must have a terminating <code>FNC1</code> (except when the last AI).<a
-href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+applies even to AIs with fixed lengths, so e.g. the data for AI 3940,
+which has a fixed length of 4, must have a terminating <code>FNC1</code>
+(except when the last AI).<a href="#fnref11" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
 <li id="fn12"><p>BARCODE_MEMORY_FILE textual formats EPS and SVG will
 have Unix newlines (LF) on both Windows and Unix, i.e. not CR+LF on
 Windows.<a href="#fnref12" class="footnote-back"

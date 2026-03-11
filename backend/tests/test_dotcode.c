@@ -52,7 +52,7 @@ static void test_large(const testCtx *const p_ctx) {
         /*  3*/ { 200, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '203' is too large (maximum 200)", 1, 1, "" }, /* Width > 200 also */
         /*  4*/ { 200, 'A', 1470, 0, "", 1, 1, "" },
         /*  5*/ { 200, 'A', 1471, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)", 1, 1, "" },
-        /*  6*/ { 200, '\240', 1225, 0, "", 1, 899, "" },
+        /*  6*/ { 200, '\240', 1225, 0, "", 0, 899, "BWIPP limit now 4000 (== 1000 with caret escaping) TODO: suggest change to BWIPP" },
         /*  7*/ { 200, '\240', 1226, ZINT_ERROR_INVALID_OPTION, "Error 735: Resulting symbol height '201' is too large (maximum 200)", 1, 899, "" },
         /*  8*/ { 200, '0', 1, 0, "", 1, 1, "" }, /* Padding codewords 35 - probably max */
         /*  9*/ { 200, '0', 2, 0, "", 1, 1, "" }, /* Padding codewords 35 */

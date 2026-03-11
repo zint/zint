@@ -77,14 +77,9 @@ static int az_count_chr(const unsigned char source[], const int length, const in
 static char az_get_next_mode(const char modes[], const int length, int i) {
     const char current_mode = AZ_MASK(modes[i]);
 
-    do {
-        i++;
-    } while (i < length && AZ_MASK(modes[i]) == current_mode);
+    for (i++; i < length && AZ_MASK(modes[i]) == current_mode; i++);
 
-    if (i >= length) {
-        return AZ_E;
-    }
-    return AZ_MASK(modes[i]);
+    return i < length ? AZ_MASK(modes[i]) : AZ_E;
 }
 
 #define AZ_DOUBLE_PUNCT_NO_LEN_CHECK(s, i) \
@@ -101,13 +96,9 @@ static int az_reduce(char *modes, unsigned char *source, const int length) {
         modes[j] = modes[i];
         if ((modes[i] == AZ_P || (modes[i] & AZ_PS)) && AZ_DOUBLE_PUNCT_NO_LEN_CHECK(source, i)) {
             if (source[i] == '\r') {
-                source[j] = 'a';
-            } else if (source[i] == '.') {
-                source[j] = 'b';
-            } else if (source[i] == ',') {
-                source[j] = 'c';
+                source[j] = 'a'; /* "\r\n" */
             } else {
-                source[j] = 'd';
+                source[j] = 'b' + 7 - ((source[i] & 0x0F) >> 1); /* ". " -> 'b', ", " -> 'c', ": " -> 'd' */
             }
             i += 2;
         } else {
@@ -125,8 +116,8 @@ static int az_reduce(char *modes, unsigned char *source, const int length) {
 
 /* Return mapped mode */
 static char az_mode_char(const char mode) {
-	/* Same order as AZ_U, AZ_L etc */
-	static const char mode_chars[] = { '?', 'U', 'L', 'M', 'P', 'D', 'B', 'X', 'E' };
+    /* Same order as AZ_U, AZ_L etc */
+    static const char mode_chars[] = { 'U', 'L', 'M', 'P', 'D', 'B', 'X', 'E' };
     char ch;
 
     assert(ARRAY_SIZE(mode_chars) == AZ_E + 1);
@@ -167,7 +158,7 @@ static int az_text_modes(char modes[], unsigned char source[], int length, const
         if (!z_isascii(source[i]) || !AztecFlags[source[i]]) {
             modes[i] = AZ_B;
         } else if (gs1 && source[i] == '\x1D') {
-            modes[i] = AZ_P; /* For FLG(n) & FLG(0) = FNC1 */
+            modes[i] = AZ_P; /* For FLG(0) = FNC1 */
         } else {
             modes[i] = AztecModes[source[i]];
         }
@@ -208,9 +199,7 @@ static int az_text_modes(char modes[], unsigned char source[], int length, const
                 }
 
             } else if (current_mode == AZ_D) {
-                if (next_mode != AZ_D && count <= 4) {
-                    memset(modes + i, AZ_D, 2 * count);
-                } else if (next_mode == AZ_D && count <= 7) {
+                if ((next_mode != AZ_D && count <= 4) || (next_mode == AZ_D && count <= 7)) {
                     memset(modes + i, AZ_D, 2 * count);
                 }
             }
@@ -249,13 +238,9 @@ static int az_text_modes(char modes[], unsigned char source[], int length, const
             count = az_count_chr(source, reduced_length, i, '\r');
             next_mode = az_get_next_mode(modes, reduced_length, i);
 
-            if (current_mode == AZ_U && (next_mode == AZ_U || next_mode == AZ_B) && count == 1) {
-                modes[i] = AZ_P;
-
-            } else if (current_mode == AZ_L && (next_mode == AZ_L || next_mode == AZ_B) && count == 1) {
-                modes[i] = AZ_P;
-
-            } else if (current_mode == AZ_P || next_mode == AZ_P) {
+            if ((current_mode == AZ_U && (next_mode == AZ_U || next_mode == AZ_B) && count == 1)
+                    || (current_mode == AZ_L && (next_mode == AZ_L || next_mode == AZ_B) && count == 1)
+                    || current_mode == AZ_P || next_mode == AZ_P) {
                 modes[i] = AZ_P;
             }
 
@@ -292,10 +277,8 @@ static int az_text_modes(char modes[], unsigned char source[], int length, const
                 }
 
             } else if (current_mode == AZ_M) {
-                if ((next_mode == AZ_E || next_mode == AZ_U || next_mode == AZ_L || next_mode == AZ_M)
-                        && count <= 4) {
-                    memset(modes + i, AZ_P, count);
-                } else if (next_mode == AZ_B && count <= 2) {
+                if (((next_mode == AZ_E || next_mode == AZ_U || next_mode == AZ_L || next_mode == AZ_M) && count <= 4)
+                        || (next_mode == AZ_B && count <= 2)) {
                     memset(modes + i, AZ_P, count);
                 }
 
@@ -314,44 +297,29 @@ static int az_text_modes(char modes[], unsigned char source[], int length, const
             next_mode = az_get_next_mode(modes, reduced_length, i);
 
             if (current_mode == AZ_U) {
-                if (next_mode == AZ_E && count <= 5) {
-                    memset(modes + i, AZ_U, count);
-                } else if ((next_mode == AZ_U || next_mode == AZ_L || next_mode == AZ_M || next_mode == AZ_P
-                            || next_mode == AZ_B) && count <= 9) {
+                if ((next_mode == AZ_E && count <= 5) || (next_mode != AZ_D && count <= 9)) {
                     memset(modes + i, AZ_U, count);
                 }
 
             } else if (current_mode == AZ_L) {
-                if (next_mode == AZ_E && count <= 5) {
+                if ((next_mode == AZ_E && count <= 5)
+                        || (next_mode == AZ_L && count <= 14)
+                        || ((next_mode == AZ_M || next_mode == AZ_P || next_mode == AZ_B) && count <= 9)) {
                     memset(modes + i, AZ_L, count);
 
                 } else if (next_mode == AZ_U && count == 1) {
                     modes[i] = AZ_L;
-
-                } else if (next_mode == AZ_L && count <= 14) {
-                    memset(modes + i, AZ_L, count);
-
-                } else if ((next_mode == AZ_M || next_mode == AZ_P || next_mode == AZ_B) && count <= 9) {
-                    memset(modes + i, AZ_L, count);
                 }
 
             } else if (current_mode == AZ_M) {
-                if ((next_mode == AZ_E || next_mode == AZ_U) && count <= 9) {
-                    memset(modes + i, AZ_M, count);
-
-                } else if ((next_mode == AZ_L || next_mode == AZ_B) && count <= 14) {
-                    memset(modes + i, AZ_M, count);
-
-                } else if ((next_mode == AZ_M || next_mode == AZ_P) && count <= 19) {
+                if (((next_mode == AZ_E || next_mode == AZ_U) && count <= 9)
+                        || ((next_mode == AZ_L || next_mode == AZ_B) && count <= 14)
+                        || ((next_mode == AZ_M || next_mode == AZ_P) && count <= 19)) {
                     memset(modes + i, AZ_M, count);
                 }
 
             } else if (current_mode == AZ_P) {
-                if (next_mode == AZ_E && count <= 5) {
-                    memset(modes + i, AZ_U, count);
-
-                } else if ((next_mode == AZ_U || next_mode == AZ_L || next_mode == AZ_M || next_mode == AZ_P
-                            || next_mode == AZ_B) && count <= 9) {
+                if ((next_mode == AZ_E && count <= 5) || (next_mode != AZ_D && count <= 9)) {
                     memset(modes + i, AZ_U, count);
                 }
             }
@@ -396,10 +364,8 @@ static int az_text_modes(char modes[], unsigned char source[], int length, const
                 } else if (current_mode == AZ_M && next_mode == AZ_M && count <= 2) {
                     memset(modes + i, AZ_M_PS, count);
 
-                } else if (current_mode == AZ_D && next_mode != AZ_D && count <= 3) {
-                    memset(modes + i, AZ_D_PS, count);
-
-                } else if (current_mode == AZ_D && next_mode == AZ_D && count <= 6) {
+                } else if (current_mode == AZ_D
+                            && ((next_mode != AZ_D && count <= 3) || (next_mode == AZ_D && count <= 6))) {
                     memset(modes + i, AZ_D_PS, count);
                 }
 
@@ -432,7 +398,7 @@ static int az_text_modes(char modes[], unsigned char source[], int length, const
 }
 
 /* Cheapo to check if input all of one type of Byte-only, Upper, Lower or Digit, returning AZ_B, AZ_U, AZ_L or AZ_D
-   resp., or 0 if not */
+   resp., or -1 if not */
 static char az_all_byte_only_or_uld(const unsigned char source[], const int length) {
     int i;
     int byte_only, upper, lower, digit;
@@ -441,7 +407,7 @@ static char az_all_byte_only_or_uld(const unsigned char source[], const int leng
         byte_only += !z_isascii(source[i]) || !AztecFlags[source[i]];
     }
     if (byte_only) {
-        return byte_only == length ? AZ_B : 0;
+        return byte_only == length ? AZ_B : -1;
     }
     for (i = 0, upper = 0, lower = 0, digit = 0; i < length; i++) {
         upper += !!(AztecFlags[source[i]] & AZ_U_F);
@@ -449,11 +415,10 @@ static char az_all_byte_only_or_uld(const unsigned char source[], const int leng
         /* Dot, comma & space only non-digit AZ_D_F, exclude in case they're AZ_P doubles */
         digit += z_isdigit(source[i]);
     }
-    return upper == length ? AZ_U : lower == length ? AZ_L : digit == length ? AZ_D : 0;
+    return upper == length ? AZ_U : lower == length ? AZ_L : digit == length ? AZ_D : -1;
 }
 
-/* Count number of initial consecutive punct chars (with no special treatment of multi-mode chars, unlike
-   following `az_count_punct()`), and assuming not GS1_MODE */
+/* Count number of initial consecutive punct chars, assuming not GS1_MODE */
 static int az_count_initial_puncts(const unsigned char source[], const int length) {
     int i;
 
@@ -467,409 +432,642 @@ static int az_count_initial_puncts(const unsigned char source[], const int lengt
     return i;
 }
 
-/* Count number of consecutive punct chars, treating multi-modes CR (without LF), dot and comma singularly */
-static int az_count_punct(const unsigned char source[], const int length, const int position, const int gs1,
-            int *begins_double) {
-    const unsigned ch = source[position];
+/* Optimized encoding stuff - see `az_binary_string()` */
 
-    assert(z_isascii(ch));
+struct az_token {
+    short value;
+    short count; /* If negative, bit count of simple (not binary shift) token, else byte count */
+};
 
-    *begins_double = AZ_DOUBLE_PUNCT(source, length, position);
+struct az_token_list {
+    struct az_token *tokens;
+    unsigned short used;
+    unsigned short size; /* Capacity */
+};
 
-    if (!*begins_double && (ch == '\r' || ch == '.' || ch == ',')) {
-        return 1;
+/* Represents all information about a sequence necessary to generate the current output */
+struct az_state {
+    /* The list of tokens output. If in B/S mode, this does *not* yet include the token for those bytes */
+    struct az_token_list tokens;
+    short mode; /* The current mode of the encoding, or the mode to return to if in B/S mode */
+    short byteCount; /* If non-zero, the number of most recent bytes that should be output in B/S mode */
+    unsigned short bitCount; /* The total number of bits generated (including B/S) */
+};
+
+struct az_state_list {
+    struct az_state* states;
+    unsigned short used;
+    unsigned short size;
+};
+
+#define AZ_MIN_STATES_SIZE 4
+#define AZ_MIN_TOKENS_SIZE 32
+
+/* Initialize a state list */
+static int az_state_list_init(struct az_state_list *list, const unsigned short initial_size) {
+    const unsigned short size = initial_size < AZ_MIN_STATES_SIZE ? AZ_MIN_STATES_SIZE : initial_size;
+
+    if (!(list->states = (struct az_state *) malloc(sizeof(struct az_state) * size))) {
+        list->used = list->size = 0;
+        return 0;
     }
-    if ((gs1 && ch == '\x1D') || (AztecFlags[ch] & AZ_P_F)) {
-        int i;
-        if (gs1) {
-            for (i = position + 1 + *begins_double; i < length && z_isascii(source[i]); i++) {
-                if (AZ_DOUBLE_PUNCT(source, length, i)) {
-                    i++;
-                } else if (source[i] != '\x1D' && (!(AztecFlags[source[i]] & AZ_P_F)
-                                                    || source[i] == '\r' || source[i] == '.' || source[i] == ',')) {
-                    break;
-                }
+    list->size = size;
+    list->used = 0;
+    return 1;
+}
+
+/* Copy a state `src` to `dst` */
+static int az_state_cpy(const struct az_state *src, struct az_state *dst) {
+    const unsigned short size = src->tokens.size < AZ_MIN_TOKENS_SIZE ? AZ_MIN_TOKENS_SIZE : src->tokens.size;
+
+    *dst = *src;
+    if (!(dst->tokens.tokens = (struct az_token *) malloc(sizeof(struct az_token) * size))) {
+        return 0;
+    }
+    if (src->tokens.used) {
+        memcpy(dst->tokens.tokens, src->tokens.tokens, sizeof(struct az_token) * src->tokens.used);
+    }
+    dst->tokens.size = size;
+    return 1;
+}
+
+/* Free `state`, i.e. free its token list */
+static void az_state_free(struct az_state *state) {
+    if (state->tokens.tokens) {
+        free(state->tokens.tokens);
+        state->tokens.tokens = NULL;
+    }
+}
+
+/* Check that there's enough room for `extra` more tokens in `state` */
+static int az_tokens_add_chk(struct az_state *state, const int extra) {
+    assert(extra < AZ_MIN_TOKENS_SIZE);
+    if (!state->tokens.tokens) {
+        const unsigned short size = AZ_MIN_TOKENS_SIZE;
+        if (!(state->tokens.tokens = (struct az_token *) malloc(sizeof(struct az_token) * size))) {
+            return 0;
+        }
+        state->tokens.size = size;
+        state->tokens.used = 0;
+    } else if (state->tokens.used + extra >= state->tokens.size) {
+        struct az_token *tokens;
+        const unsigned short size = state->tokens.size * 2;
+        if (size <= state->tokens.size /* Overflow */
+                || !(tokens = (struct az_token *) realloc(state->tokens.tokens, sizeof(struct az_token) * size))) {
+            return 0;
+        }
+        assert(size > state->tokens.used + extra);
+        state->tokens.tokens = tokens;
+        state->tokens.size = size;
+    }
+    return 1;
+}
+
+/* Check have enough room to add a state to state list `list` */
+static int az_state_list_add_chk(struct az_state_list *list) {
+    if (list->used == list->size) {
+        struct az_state *states;
+        const unsigned short size = list->size * 2;
+        if (size <= list->size /* Overflow */
+                || !(states = (struct az_state *) realloc(list->states, sizeof(struct az_state) * size))) {
+            return 0;
+        }
+        list->states = states;
+        list->size = size;
+    }
+    return 1;
+}
+
+/* Free all states (including their tokens) of state list `list` */
+static void az_state_list_free(struct az_state_list *list) {
+    int i;
+    if (list->states) {
+        for (i = 0; i < list->used; i++) {
+            if (list->states[i].tokens.tokens) {
+                free(list->states[i].tokens.tokens);
             }
-            return i - position;
-        } else {
-            for (i = position + 1 + *begins_double; i < length && z_isascii(source[i]); i++) {
-                if (AZ_DOUBLE_PUNCT(source, length, i)) {
-                    i++;
-                } else if (!(AztecFlags[source[i]] & AZ_P_F)
-                            || source[i] == '\r' || source[i] == '.' || source[i] == ',') {
-                    break;
-                }
-            }
-            return i - position;
+        }
+        free(list->states);
+        list->states = NULL;
+    }
+    list->used = list->size = 0;
+}
+
+#define AZ_FNC1_VAL 32          /* Pseudo-value for FNC1 - converted to 0 on setting token value */
+
+/* Shorthand to add a token to state `s` */
+#define AZ_ADD_TOKEN(s, v, c) \
+    (s)->tokens.tokens[(s)->tokens.used].value = (v); \
+    (s)->tokens.tokens[(s)->tokens.used++].count = (c)
+
+/* Add a new state to `list` from `state`, with a latch if modes differ, and then a char, or 2 if `value2` set */
+static int az_LatchMaybeAndAppend(const struct az_state *state, const int from, const int mode, const int value,
+            const int value2, struct az_state_list *list) {
+    int latchModeBitCount = mode == AZ_D ? 4 : 5;
+    int val = value;
+    int bitCount = state->bitCount;
+    struct az_state *new_state;
+
+    if (!az_state_list_add_chk(list)) {
+        return 0;
+    }
+    new_state = list->states + list->used++;
+    if (!az_state_cpy(state, new_state) || !az_tokens_add_chk(new_state, 4 /*extra*/)) {
+        return 0;
+    }
+    /* End B/S if any */
+    if (state->byteCount != 0) {
+        AZ_ADD_TOKEN(new_state, from - state->byteCount, state->byteCount);
+        new_state->byteCount = 0;
+    }
+
+    /* Latch if necessary */
+    if (mode != state->mode) {
+        AZ_ADD_TOKEN(new_state, AztecLatch[state->mode][mode], -AztecLatchNum[state->mode][mode]);
+        bitCount += AztecLatchNum[state->mode][mode];
+    }
+    if (val == AZ_FNC1_VAL) { /* FNC1 */
+        latchModeBitCount += 3;
+        val = 0;
+    }
+    AZ_ADD_TOKEN(new_state, val, -latchModeBitCount);
+    bitCount += latchModeBitCount;
+    if (value2 != -1) {
+        latchModeBitCount = mode == AZ_D ? 4 : 5;
+        val = value2;
+        if (val == AZ_FNC1_VAL) { /* FNC1 */
+            latchModeBitCount += 3;
+            val = 0;
+        }
+        AZ_ADD_TOKEN(new_state, val, -latchModeBitCount);
+        bitCount += latchModeBitCount;
+    }
+    new_state->mode = mode;
+    new_state->bitCount = bitCount;
+    return 1;
+}
+
+/* Add a new state to `list` from `state`, with a temporary shift to a different mode to output a single value */
+static int az_ShiftAndAppend(const struct az_state *state, const int from, const int mode, const int value,
+            struct az_state_list *list) {
+    const int thisModeBitCount = state->mode == AZ_D ? 4 : 5;
+    int bitCount = 5;
+    int val = value;
+    struct az_state *new_state;
+
+    assert(state->mode != mode);
+
+    if (!az_state_list_add_chk(list)) {
+        return 0;
+    }
+    new_state = list->states + list->used++;
+    if (!az_state_cpy(state, new_state) || !az_tokens_add_chk(new_state, 3 /*extra*/)) {
+        return 0;
+    }
+    /* End B/S if any */
+    if (state->byteCount != 0) {
+        AZ_ADD_TOKEN(new_state, from - state->byteCount, state->byteCount);
+        new_state->byteCount = 0;
+    }
+
+    /* Shifts exist only to AZ_U and AZ_P, both with tokens size 5 */
+    AZ_ADD_TOKEN(new_state, AztecShift[state->mode][mode], -thisModeBitCount);
+    if (val == AZ_FNC1_VAL) { /* FNC1 */
+        val = 0;
+        bitCount += 3;
+    }
+    AZ_ADD_TOKEN(new_state, val, -bitCount);
+    new_state->mode = state->mode;
+    new_state->bitCount = state->bitCount + thisModeBitCount + bitCount;
+    return 1;
+}
+
+/* Add a new state to `list` from `state`, with a latch to AZ_D and shift to AZ_P or AZ_U encoding `value`
+   - may save a bit due to AZ_D's 4-bit shift */
+static int az_DigitLatchShiftAndAppend(const struct az_state *state, const int from, const int shiftMode,
+            const int value, struct az_state_list *list) {
+    const int bitCount = state->bitCount + AztecLatchNum[state->mode][AZ_D] + 4 /*P/S or U/S*/;
+    int val = value;
+    int valBitCount = 5;
+    struct az_state *new_state;
+
+    assert(state->mode != AZ_D);
+    assert(shiftMode == AZ_P || shiftMode == AZ_U);
+    assert(state->mode != AZ_U || shiftMode != AZ_U);
+
+    if (!az_state_list_add_chk(list)) {
+        return 0;
+    }
+    new_state = list->states + list->used++;
+    if (!az_state_cpy(state, new_state) || !az_tokens_add_chk(new_state, 4 /*extra*/)) {
+        return 0;
+    }
+    /* End B/S if any */
+    if (state->byteCount != 0) {
+        AZ_ADD_TOKEN(new_state, from - state->byteCount, state->byteCount);
+        new_state->byteCount = 0;
+    }
+
+    /* Latch to AZ_D */
+    AZ_ADD_TOKEN(new_state, AztecLatch[state->mode][AZ_D], -AztecLatchNum[state->mode][AZ_D]);
+    /* P/S or U/S */
+    AZ_ADD_TOKEN(new_state, AztecShift[AZ_D][shiftMode], -4);
+    if (val == AZ_FNC1_VAL) { /* FNC1 */
+        valBitCount += 3;
+        val = 0;
+    }
+    AZ_ADD_TOKEN(new_state, val, -valBitCount);
+    new_state->mode = AZ_D;
+    new_state->bitCount = bitCount + valBitCount;
+    return 1;
+}
+
+/* Add a new state to `list` from `state`, but with an additional char in B/S mode, or 2 if `from2` set */
+static int az_AddByteShiftChar(const struct az_state *state, const int from, const int from2,
+            struct az_state_list *list) {
+    int mode = state->mode;
+    int bitCount = state->bitCount;
+    const int deltaBitCount = state->byteCount == 0 || state->byteCount == 31 ? 18 : state->byteCount == 62 ? 9 : 8;
+    struct az_state *new_state;
+
+    if (!az_state_list_add_chk(list)) {
+        return 0;
+    }
+    new_state = list->states + list->used++;
+    if (!az_state_cpy(state, new_state) || !az_tokens_add_chk(new_state, 3 /*extra*/)) {
+        return 0;
+    }
+
+    if (state->mode == AZ_P || state->mode == AZ_D) {
+        assert(state->byteCount == 0);
+        AZ_ADD_TOKEN(new_state, AztecLatch[mode][AZ_U], -AztecLatchNum[mode][AZ_U]);
+        bitCount += AztecLatchNum[mode][AZ_U];
+        mode = AZ_U;
+    }
+    new_state->mode = mode;
+    new_state->byteCount = state->byteCount + 1;
+    new_state->bitCount = bitCount + deltaBitCount;
+    if (new_state->byteCount == 2047 + 31) {
+        /* The string is as long as it's allowed to be - end it */
+        AZ_ADD_TOKEN(new_state, from + 1 - new_state->byteCount, new_state->byteCount);
+        new_state->byteCount = 0;
+    }
+    if (from2 != -1) {
+        const int deltaBitCount2 = new_state->byteCount == 0 || new_state->byteCount == 31
+                                    ? 18 : new_state->byteCount == 62 ? 9 : 8;
+        new_state->byteCount++;
+        new_state->bitCount += deltaBitCount2;
+        if (new_state->byteCount == 2047 + 31) {
+            /* The string is as long as it's allowed to be - end it */
+            AZ_ADD_TOKEN(new_state, from2 + 1 - new_state->byteCount, new_state->byteCount);
+            new_state->byteCount = 0;
         }
     }
+    return 1;
+}
 
+/* Set the state `ret_state` identical to `state`, but no longer in B/S mode */
+static int az_EndByteShift(const struct az_state *state, struct az_state *ret_state, const int from) {
+
+    if (!az_state_cpy(state, ret_state)) {
+        return 0;
+    }
+    if (state->byteCount == 0) {
+        return 1;
+    }
+    if (!az_tokens_add_chk(ret_state, 1 /*extra*/)) {
+        return 0;
+    }
+    AZ_ADD_TOKEN(ret_state, from - state->byteCount, state->byteCount);
+    ret_state->byteCount = 0;
+    return 1;
+}
+
+/* Helper for `az_IsBetterThanOrEqualTo()` to return bit-cost of B/S */
+static int az_CalculateByteShiftCost(const struct az_state *state) {
+    if (state->byteCount > 0) {
+        if (state->byteCount > 31) {
+            return 20 + (state->byteCount > 62); /* Two B/S's or one B/S with extended length */
+        }
+        return 10; /* One B/S */
+    }
     return 0;
 }
 
-/* Count number of consecutive Upper chars, treating multi-mode space singularly */
-static int az_count_upper(const unsigned char source[], const int length, const int position) {
-    int i;
+/* Return 1 if `state` is better (or equal) to be in than `other` state under all possible circumstances */
+static int az_IsBetterThanOrEqualTo(const struct az_state *state, const struct az_state *other) {
+    int newModeBitCount = state->bitCount + AztecLatchNum[state->mode][other->mode];
 
-    if (source[position] == ' ') {
-        return 1;
-    }
-    for (i = position; i < length && source[i] != ' ' && z_isascii(source[i]) && (AztecFlags[source[i]] & AZ_U_F);
-            i++);
-
-    return i - position;
-}
-
-/* Count number of consecutive Lower chars, treating multi-mode space singularly */
-static int az_count_lower(const unsigned char source[], const int length, const int position) {
-    int i;
-
-    if (source[position] == ' ') {
-        return 1;
-    }
-    for (i = position; i < length && source[i] != ' ' && z_isascii(source[i]) && (AztecFlags[source[i]] & AZ_L_F);
-            i++);
-
-    return i - position;
-}
-
-/* Count number of consecutive Mixed chars, treating multi-mode CR singularly */
-static int az_count_mixed(const unsigned char source[], const int length, const int position, const int gs1) {
-    int i;
-
-    if (source[position] == '\r') {
-        return 1;
-    }
-    for (i = position; i < length && z_isascii(source[i]) && (AztecFlags[source[i]] & AZ_M_F)
-                        && (!gs1 || source[i] != '\x1D') && source[i] != '\r'; i++);
-
-    return i - position;
-}
-
-/* Count number of consecutive Digit chars, treating multi-modes dot, comma and space singularly */
-static int az_count_digit(const unsigned char source[], const int length, const int position) {
-    int i;
-
-    if (source[position] == '.' || source[position] == ',' || source[position] == ' ') {
-        return 1;
-    }
-    for (i = position; i < length && z_isdigit(source[i]); i++); /* Dot, comma & space only non-digit AZ_D_F */
-
-    return i - position;
-}
-
-/* Count number of consecutive Byte-only chars */
-static int az_count_byte_only(const unsigned char source[], const int length, const int position) {
-    int i;
-
-    for (i = position; i < length && (!z_isascii(source[i]) || !AztecFlags[source[i]]); i++);
-
-    return i - position;
-}
-
-/* Bit-size of encoding punct chars */
-static int az_punct_size(const unsigned char source[], const int len, const int gs1) {
-    int i;
-    int cnt_doubles = 0;
-
-    if (gs1) {
-        int cnt_fnc1s = 0;
-        for (i = 0; i + 1 < len; i++) {
-            cnt_doubles += AZ_DOUBLE_PUNCT_NO_LEN_CHECK(source, i);
-            cnt_fnc1s += source[i] == '\x1D';
+    if (other->byteCount > 0) {
+        if (state->byteCount < other->byteCount) {
+            /* Add additional B/S encoding cost of other, if any */
+            newModeBitCount += az_CalculateByteShiftCost(other) - az_CalculateByteShiftCost(state);
+        } else if (state->byteCount > other->byteCount) {
+            /* Maximum possible additional cost (`state` ends up exceeding the 31 byte boundary
+               and `other` state can stay beneath it) */
+            newModeBitCount += 10;
         }
-        cnt_fnc1s += source[i] == '\x1D';
-        return 5 * (len - cnt_doubles - cnt_fnc1s) + (cnt_fnc1s << 3);
     }
-    for (i = 0; i + 1 < len; i++) {
-        cnt_doubles += AZ_DOUBLE_PUNCT_NO_LEN_CHECK(source, i);
-    }
-    return 5 * (len - cnt_doubles);
+    return newModeBitCount <= other->bitCount;
 }
-
-struct az_edge {
-    unsigned char mode;
-    unsigned char startMode; /* For Byte edges */
-    unsigned short from; /* Position in input data, 0-based */
-    unsigned short len;
-    unsigned short size; /* Cumulative number of bits */
-    unsigned short bytes; /* Byte count for AZ_X */
-    unsigned short previous; /* Index into edges array */
-};
-
-/* Note 1st row of edges not used so valid previous cannot point there, i.e. won't be zero */
-#define AZ_PREVIOUS(edges, edge) \
-    ((edge)->previous ? (edges) + (edge)->previous : NULL)
 
 #if 0
-#include "aztec_trace.h"
+#define AZ_DEBUG_LIST
+#endif
+#ifndef AZ_DEBUG_LIST
+static void az_dump_list(const struct az_state_list *list, const char *prefix) {
+    (void)list, (void)prefix;
+}
 #else
-#define AZ_TRACE_Edges(px, s, l, im, p, v)
-#define AZ_TRACE_AddEdge(s, l, es, p, v, e) do { (void)(s); (void)(l); } while (0)
-#define AZ_TRACE_NotAddEdge(s, l, es, p, v, ij, e) do { (void)(s); (void)(l); } while (0)
+static void az_dump_list(const struct az_state_list *list, const char *prefix) {
+    static char spaces[50 + 1] = "                                                  ";
+    const int pl = (int) strlen(prefix);
+    int i;
+    fprintf(stderr, "%sSize %d\n", prefix, (int) list->used);
+    for (i = 0; i < list->used; i++) {
+        const struct az_state *state = list->states + i;
+        fprintf(stderr, "%.*s %d: mode %d, Size(tokens) %d\n", pl, spaces, (int) i, state->mode,
+                (int) state->tokens.used);
+    }
+}
 #endif
 
-/* Initialize a new edge. */
-static void az_new_Edge(const struct az_edge *edges, const char mode, const unsigned char *source, const int from,
-            const int len, const int gs1, const int initial_mode, const struct az_edge *previous,
-            struct az_edge *edge) {
+/* Iterate through states, removing those that are sub-optimal */
+static void az_SimplifyStates(struct az_state_list *list) {
+    int i, j;
+    const int rmap_size = (list->used + 7) >> 3;
+    unsigned char *rmap = (unsigned char *) z_alloca(rmap_size); /* Map of entries removed */
+    const struct az_state *new_state, *old_state;
 
-    /* Bit-size of switching modes from row to col */
-    static const unsigned int switch_sizes[AZ_NUM_MODES - 1][AZ_NUM_MODES] = {
-        /*          U      L      M          P      D          B */
-        /*U*/ {     0,     5,     5,     5 + 5,     5,     5 + 5, },
-        /*L*/ { 5 + 4,     0,     5,     5 + 5,     5,     5 + 5, },
-        /*M*/ {     5,     5,     0,         5, 5 + 5,     5 + 5, },
-        /*P*/ {     5, 5 + 5, 5 + 5,         0, 5 + 5, 5 + 5 + 5, },
-        /*D*/ {     4, 4 + 5, 4 + 5, 4 + 5 + 5,     0, 4 + 5 + 5, },
-        /*B - not used*/
-    };
-    const int mask_mode = AZ_MASK(mode);
-    int previousMode;
-    int previousStartMode;
+    memset(rmap, 0, rmap_size);
 
-    assert(len > 0);
+    az_dump_list(list, " SS in  ");
 
-    edge->mode = mode;
-    edge->from = from;
-    edge->len = len;
-    if (previous) {
-        edge->size = previous->size;
-        edge->previous = previous - edges;
-        previousMode = AZ_MASK(previous->mode);
-        previousStartMode = previous->startMode;
-    } else {
-        edge->size = 0;
-        edge->previous = 0;
-        previousMode = AZ_MASK(initial_mode);
-        previousStartMode = previousMode;
-    }
-
-    switch (mask_mode) {
-        case AZ_U:
-        case AZ_L:
-        case AZ_M:
-            if (mode & AZ_PS) {
-                assert(len <= 2);
-                edge->size += 5 /*P/S*/ + az_punct_size(source + from, len, gs1);
-            } else if (mode & AZ_US) {
-                assert(len == 1);
-                assert(mask_mode == AZ_L);
-                edge->size += 5 /*U/S*/ + 5;
-            } else {
-                edge->size += 5 * len;
-            }
-            edge->size += switch_sizes[(previousMode == AZ_B ? previousStartMode : previousMode) - 1][mask_mode - 1];
-            edge->startMode = mask_mode;
-            break;
-        case AZ_P:
-            assert(mask_mode == mode);
-            edge->size += az_punct_size(source + from, len, gs1);
-            edge->size += switch_sizes[(previousMode == AZ_B ? previousStartMode : previousMode) - 1][mask_mode - 1];
-            edge->startMode = AZ_U;
-            break;
-        case AZ_D:
-            if (mode & AZ_PS) {
-                assert(len <= 2);
-                edge->size += 4 /*P/S*/ + az_punct_size(source + from, len, gs1);
-            } else if (mode & AZ_US) {
-                assert(len == 1);
-                edge->size += 4 /*U/S*/ + 5;
-            } else {
-                edge->size += 4 * len;
-            }
-            edge->size += switch_sizes[(previousMode == AZ_B ? previousStartMode : previousMode) - 1][mask_mode - 1];
-            edge->startMode = AZ_U;
-            break;
-        case AZ_B:
-            assert(mask_mode == mode);
-            if (previousMode != mask_mode) {
-                edge->size += switch_sizes[previousMode - 1][mask_mode - 1];
-                if (len > 31) {
-                    edge->size += 11;
-                }
-                edge->bytes = len;
-            } else {
-                if (len + previous->bytes > 31) {
-                    if (previous->bytes <= 31) {
-                        /* Note this may be sub-optimal as not taken into account when previous edge added */
-                        edge->size += 11;
+    for (i = 0; i < list->used; i++) {
+        if (!(rmap[i >> 3] & (1 << (i & 0x7)))) {
+            new_state = list->states + i;
+            for (j = i + 1; j < list->used; j++) {
+                if (!(rmap[j >> 3] & (1 << (j & 0x7)))) {
+                    old_state = list->states + j;
+                    if (az_IsBetterThanOrEqualTo(old_state, new_state)) {
+                        rmap[i >> 3] |= 1 << (i & 0x7);
+                        break;
+                    }
+                    if (az_IsBetterThanOrEqualTo(new_state, old_state)) {
+                        rmap[j >> 3] |= 1 << (j & 0x7);
                     }
                 }
-                edge->bytes = len + previous->bytes;
-            }
-            edge->size += len << 3;
-            edge->startMode = previousStartMode;
-            break;
-    }
-    assert(edge->startMode && AZ_MASK(edge->startMode) == edge->startMode && edge->startMode != AZ_B);
-}
-
-/* Add an edge for a mode at a vertex if no existing edge or if more optimal than existing edge */
-static void az_addEdge(const unsigned char *source, const int length, struct az_edge *edges, const char mode,
-            const int from, const int len, const int gs1, const int initial_mode, const struct az_edge *previous) {
-    struct az_edge edge;
-    const int vertexIndex = from + len;
-    const int v_ij = vertexIndex * AZ_NUM_MODES + AZ_MASK(mode) - 1;
-
-    az_new_Edge(edges, mode, source, from, len, gs1, initial_mode, previous, &edge);
-
-    if (edges[v_ij].mode == 0 || edges[v_ij].size > edge.size) {
-        AZ_TRACE_AddEdge(source, length, edges, previous, vertexIndex, &edge);
-        edges[v_ij] = edge;
-    } else {
-        AZ_TRACE_NotAddEdge(source, length, edges, previous, vertexIndex, v_ij, &edge);
-    }
-}
-
-/* Add edges for the various modes at a vertex */
-static void az_addEdges(const unsigned char source[], const int length, const int gs1, const int initial_mode,
-            struct az_edge *edges, const int from, const struct az_edge *previous) {
-    const unsigned char ch = source[from];
-    int len;
-
-    if (z_isascii(ch) && AztecFlags[ch]) {
-        int begins_double;
-
-        if ((len = az_count_punct(source, length, from, gs1, &begins_double))) {
-            az_addEdge(source, length, edges, AZ_P, from, len, gs1, initial_mode, previous);
-
-            az_addEdge(source, length, edges, AZ_U_PS, from, 1 + begins_double, gs1, initial_mode, previous);
-            az_addEdge(source, length, edges, AZ_L_PS, from, 1 + begins_double, gs1, initial_mode, previous);
-            if (ch != '\r') {
-                az_addEdge(source, length, edges, AZ_M_PS, from, 1 + begins_double, gs1, initial_mode, previous);
-            }
-            if (ch != '.' && ch != ',') {
-                az_addEdge(source, length, edges, AZ_D_PS, from, 1 + begins_double, gs1, initial_mode, previous);
             }
         }
-        if ((len = az_count_upper(source, length, from))) {
-            az_addEdge(source, length, edges, AZ_U, from, len, gs1, initial_mode, previous);
-        }
-        if ((len = az_count_lower(source, length, from))) {
-            az_addEdge(source, length, edges, AZ_L, from, len, gs1, initial_mode, previous);
-        }
-        if ((len = az_count_mixed(source, length, from, gs1))) {
-            az_addEdge(source, length, edges, AZ_M, from, len, gs1, initial_mode, previous);
-        }
-        if ((len = az_count_digit(source, length, from))) {
-            az_addEdge(source, length, edges, AZ_D, from, len, gs1, initial_mode, previous);
-        }
-
-        if (z_isupper(ch)) { /* Space only non-upper AZ_U_F */
-            az_addEdge(source, length, edges, AZ_L_US, from, 1, gs1, initial_mode, previous);
-            az_addEdge(source, length, edges, AZ_D_US, from, 1, gs1, initial_mode, previous);
+    }
+    for (i = list->used - 1; i >= 0; i--) {
+        if (rmap[i >> 3] & (1 << (i & 0x7))) {
+            const int k = i + 1;
+            /* Remove consecutive entries in one go */
+            for (j = i - 1; j >= 0 && (rmap[j >> 3] & (1 << (j & 0x7))); j--) {
+                az_state_free(list->states + j + 1);
+            }
+            az_state_free(list->states + j + 1);
+            if (k < list->used) {
+                memmove(list->states + j + 1, list->states + k, sizeof(struct az_state) * (list->used - k));
+            }
+            list->used -= i - j;
+            i = j + 1;
         }
     }
 
-    if (!gs1 || ch != '\x1D') {
-        if (ch == '\r' || ch == ' ' || ch == '.' || ch == ',') { /* Multi-mode chars */
-            len = 1;
-        } else {
-            len = 1 + az_count_byte_only(source, length, from + 1);
-        }
-        az_addEdge(source, length, edges, AZ_B, from, len, gs1, initial_mode, previous);
-    }
+    az_dump_list(list, " SS out ");
 }
 
-/* Default, close to optimal encoding, using Dijkstra-based algorithm adapted from Data Matrix one by Alex Geller.
-   Note that a bitstream that is encoded to be shortest based on mode choices may not be so after bit-stuffing */
-static int az_define_modes(char modes[], unsigned char source[], const int length, const int gs1,
-            const char initial_mode, const int debug_print) {
-    int i, j, v_i;
-    int minimalJ, minimalSize;
-    struct az_edge *edge;
-    int mode_end, mode_len;
-    int reduced_length;
-    struct az_edge *edges;
-
-    if ((length + 1) * AZ_NUM_MODES > USHRT_MAX
-            || !(edges = (struct az_edge *) calloc((length + 1) * AZ_NUM_MODES, sizeof(struct az_edge)))) {
+/* Return a set of states for a Punct double - see `az_UpdateStateForChar()` below */
+static int az_UpdateStateForPair(const struct az_state *state, const int from, const int pairCode,
+            struct az_state_list *ret_list) {
+    /* Possibility 1: latch to AZ_P, and then append this code */
+    if (!az_LatchMaybeAndAppend(state, from, AZ_P, pairCode, -1 /*value2*/, ret_list)) {
         return 0;
     }
-    az_addEdges(source, length, gs1, initial_mode, edges, 0, NULL);
+    if (state->mode != AZ_P) {
+        /* Possibility 2: shift to AZ_P, and then append this code.
+           Every state except AZ_P (handled above) can shift */
+        if (!az_ShiftAndAppend(state, from, AZ_P, pairCode, ret_list)) {
+            return 0;
+        }
+    }
+    if (pairCode == 3 || pairCode == 4) {
+        /* Both characters are in AZ_D. Sometimes better to just add two digits */
+        if (!az_LatchMaybeAndAppend(state, from, AZ_D, 16 - pairCode /*'.' or ','*/, 1 /*space*/, ret_list)) {
+            return 0;
+        }
+    }
+    if (state->byteCount > 0) {
+        /* It only makes sense to do the characters as binary if already in B/S mode */
+        if (!az_AddByteShiftChar(state, from, from + 1, ret_list)) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
-    AZ_TRACE_Edges("DEBUG Initial situation\n", source, length, initial_mode, edges, 0);
-
-    assert(length > 0); /* Suppress clang-tidy clang-analyzer-security.ArrayBound warning */
-
-    for (i = 1; i < length; i++) {
-        v_i = i * AZ_NUM_MODES;
-        for (j = 0; j < AZ_NUM_MODES; j++) {
-            if (edges[v_i + j].mode) {
-                az_addEdges(source, length, gs1, initial_mode, edges, i, edges + v_i + j);
+/* Return a set of states that represent the possible ways of updating this state for the next character.
+   The resulting set of states are added to `ret_list` */
+static int az_UpdateStateForChar(const struct az_state *state, const unsigned char *source, const int from,
+            const int gs1, struct az_state_list *ret_list) {
+    unsigned char ch = source[from];
+    const int fnc1 = gs1 && ch == '\x1D';
+    const int charInCurrentTable = (fnc1 && state->mode == AZ_P)
+                                    || (z_isascii(ch) && (AztecFlags[ch] & (1 << state->mode)));
+    if (z_isascii(ch)) {
+        int mode;
+        for (mode = 0; mode < AZ_NUM_MODES; mode++) {
+            const int charInModeTable = (fnc1 && mode == AZ_P) || (AztecFlags[ch] & (1 << mode));
+            if (charInModeTable) {
+                /* Try generating the char by latching to its mode */
+                if (!charInCurrentTable || mode == state->mode || (mode == AZ_D && !fnc1)) {
+                    /* If the char is in the current table, we don't want to latch to any other mode except possibly
+                       digit (which uses only 4 bits). Any other latch would be equally successful *after* this char,
+                       and so wouldn't save any bits */
+                    const int latchChar = fnc1 ? AZ_FNC1_VAL : AztecChar[mode][ch];
+                    if (!az_LatchMaybeAndAppend(state, from, mode, latchChar, -1 /*value2*/, ret_list)) {
+                        return 0;
+                    }
+                }
+                /* Try generating the char by switching to its mode */
+                if (!charInCurrentTable && AztecShift[state->mode][mode] >= 0) {
+                    /* It never makes sense to temporarily shift to another mode if the char exists in the current
+                       mode. That can never save bits */
+                    const int shiftChar = fnc1 ? AZ_FNC1_VAL : AztecChar[mode][ch];
+                    if (!az_ShiftAndAppend(state, from, mode, shiftChar, ret_list)) {
+                        return 0;
+                    }
+                }
             }
         }
-        AZ_TRACE_Edges("DEBUG situation after adding edges to vertices at position %d\n", source, length,
-                        initial_mode, edges, i);
-    }
-
-    AZ_TRACE_Edges("DEBUG Final situation\n", source, length, initial_mode, edges, length);
-
-    #if 0
-    {
-        const int fw = length * AZ_NUM_MODES > 100 ? 3 : 2;
-        fputs("Dump of edges:\n", stdout);
-        for (i = 0; i < length + 1; i++) {
-            v_i = i * AZ_NUM_MODES;
-            for (j = 0; j < AZ_NUM_MODES; j++) {
-                fprintf(stdout, " %*d(%02X,%*d,%*d,%*d)",
-                        fw, v_i + j, edges[v_i + j].mode, fw, edges[v_i + j].len, fw, edges[v_i + j].size,
-                        fw, edges[v_i + j].previous);
+        /* It may be better to latch to AZ_D early if have shift (saves 1 bit) */
+        if (state->mode != AZ_D && !charInCurrentTable && !(AztecFlags[ch] & AZ_D_F)
+                && (fnc1 || (AztecFlags[ch] & (AZ_U_F | AZ_P_F)))) {
+            const int shiftMode = AztecFlags[ch] & AZ_U_F ? AZ_U : AZ_P;
+            const int shiftChar = fnc1 ? AZ_FNC1_VAL : AztecChar[shiftMode][ch];
+            if (!az_DigitLatchShiftAndAppend(state, from, shiftMode, shiftChar, ret_list)) {
+                return 0;
             }
-            fputc('\n', stdout);
         }
-        fputc('\n', stdout);
     }
-    #endif
+    if (!fnc1 && (state->byteCount > 0 || !charInCurrentTable)) {
+        /* It's never worthwhile to go into B/S mode if not already in B/S mode, and the char exists in current mode.
+           That can never save bits over just outputting the char in the current mode */
+        if (!az_AddByteShiftChar(state, from, -1 /*from2*/, ret_list)) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
-    v_i = length * AZ_NUM_MODES;
-    minimalJ = -1;
-    minimalSize = INT_MAX;
-    for (j = 0; j < AZ_NUM_MODES; j++) {
-        edge = edges + v_i + j;
-        if (edge->mode) {
-            if (debug_print) {
-                printf("edges[%d][%d][0] size %d\n", length, j, edge->size);
+/* Update a set of states for a Punct double - see `az_UpdateStateListForChar()` below */
+static int az_UpdateStateListForPair(struct az_state_list *list, const int from, const int pairCode) {
+    int i;
+    struct az_state_list s_ret_list;
+    struct az_state_list *ret_list = &s_ret_list;
+    if (!az_state_list_init(ret_list, list->size)) {
+        return 0;
+    }
+    for (i = 0; i < list->used; i++) {
+        if (!az_UpdateStateForPair(list->states + i, from, pairCode, ret_list)) {
+            az_state_list_free(ret_list);
+            return 0;
+        }
+    }
+    az_SimplifyStates(ret_list);
+
+    az_state_list_free(list);
+    list->states = ret_list->states;
+    list->size = ret_list->size;
+    list->used = ret_list->used;
+
+    return 1;
+}
+
+/* Update a set of states for a new character by updating each state for the new character, merging the results,
+   and then removing the non-optimal states */
+static int az_UpdateStateListForChar(struct az_state_list *list, const unsigned char *source, const int from,
+            const int gs1) {
+    int i;
+    struct az_state_list s_ret_list;
+    struct az_state_list *ret_list = &s_ret_list;
+    if (!az_state_list_init(ret_list, list->size)) {
+        return 0;
+    }
+    for (i = 0; i < list->used; i++) {
+        if (!az_UpdateStateForChar(list->states + i, source, from, gs1, ret_list)) {
+            az_state_list_free(ret_list);
+            return 0;
+        }
+    }
+    if (ret_list->used > 1) {
+        az_SimplifyStates(ret_list);
+    }
+
+    az_state_list_free(list);
+    list->states = ret_list->states;
+    list->size = ret_list->size;
+    list->used = ret_list->used;
+
+    return 1;
+}
+
+/* Default, optimized encodation algorithm by Frank Yellin and Rustam Abdullaev, adapted from ZXing via zxing-cpp's
+   `HighLevelEncoder::Encode()` & slightly improved */
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Note that a bitstream that is encoded to be shortest based on mode choices may not be so after bit-stuffing */
+static int az_binary_string(unsigned char source[], const int length, int bp,
+            char binary_string[AZTEC_MAP_POSN_MAX + 1], const int gs1, const char initial_mode,
+            char *p_current_mode) {
+    struct az_state_list s_state_list;
+    struct az_state_list *list = &s_state_list;
+    struct az_state stateEnd;
+    int minStateIdx = -1;
+    int minBitCount = INT_MAX;
+    int i;
+#ifndef NDEBUG
+    const int entry_bp = bp;
+#endif
+
+    if (!az_state_list_init(list, length)) {
+        return 0;
+    }
+    memset(list->states, 0, sizeof(struct az_state));
+    list->states[list->used++].mode = initial_mode;
+
+    for (i = 0; i < length; i++) {
+#ifdef AZ_DEBUG_LIST
+        fprintf(stderr, "index %d\n", (int) i);
+#endif
+        if (AZ_DOUBLE_PUNCT(source, length, i)) {
+            /* "\r\n" -> 2, ". " -> 3, ", " -> 4, ": " -> 5 */
+            const int pairCode = source[i] == '\r' ? 2 : 3 + 7 - ((source[i] & 0x0F) >> 1);
+            if (!az_UpdateStateListForPair(list, i, pairCode)) {
+                az_state_list_free(list);
+                return 0;
             }
-            if (edge->size < minimalSize) {
-                minimalSize = edge->size;
-                minimalJ = j;
-                if (debug_print) printf(" set minimalJ %d\n", minimalJ);
-            }
+            i++;
         } else {
-            if (debug_print) printf("edges[%d][%d][0] NULL\n", length, j);
-        }
-    }
-    assert(minimalJ >= 0);
-
-    edge = edges + v_i + minimalJ;
-    mode_len = 0;
-    mode_end = length;
-    while (edge) {
-        const char current_mode = edge->mode;
-        mode_len += edge->len;
-        edge = AZ_PREVIOUS(edges, edge);
-        if (!edge || edge->mode != current_mode) {
-            for (i = mode_end - mode_len; i < mode_end; i++) {
-                modes[i] = current_mode;
+            if (!az_UpdateStateListForChar(list, source, i, gs1)) {
+                az_state_list_free(list);
+                return 0;
             }
-            mode_end = mode_end - mode_len;
-            mode_len = 0;
         }
     }
+    az_dump_list(list, "End ");
 
-    reduced_length = az_reduce(modes, source, length);
-
-    if (debug_print) {
-        printf("  Modes (%d):\n", reduced_length);
-        az_print_modes(modes, reduced_length);
+    for (i = 0; i < list->used; i++) {
+        if (list->states[i].bitCount < minBitCount) {
+            minStateIdx = i;
+            minBitCount = list->states[i].bitCount;
+        }
     }
-    assert(mode_end == 0);
+    assert(minStateIdx >= 0);
 
-    free(edges);
+    if (!az_EndByteShift(list->states + minStateIdx, &stateEnd, length)) {
+        az_state_free(&stateEnd);
+        az_state_list_free(list);
+        return 0;
+    }
 
-    return reduced_length;
+    if (stateEnd.bitCount > AZTEC_BIN_CAPACITY) {
+        az_state_free(&stateEnd);
+        az_state_list_free(list);
+        return stateEnd.bitCount;
+    }
+
+    for (i = 0; i < stateEnd.tokens.used; i++) {
+        const struct az_token *token = stateEnd.tokens.tokens + i;
+        const int count = token->count;
+        if (count < 0) {
+            bp = z_bin_append_posn(token->value, -count, binary_string, bp);
+        } else {
+            int j;
+            for (j = 0; j < count; j++) {
+                if (j == 0 || (j == 31 && count <= 62)) {
+                    bp = z_bin_append_posn(31, 5, binary_string, bp); /* B/S */
+                    if (count > 62) {
+                        bp = z_bin_append_posn(count - 31, 16, binary_string, bp);
+                    } else if (j == 0) {
+                        bp = z_bin_append_posn(count <= 31 ? count : 31, 5, binary_string, bp);
+                    } else {
+                        bp = z_bin_append_posn(count - 31, 5, binary_string, bp);
+                    }
+                }
+                bp = z_bin_append_posn(source[token->value + j], 8, binary_string, bp);
+            }
+        }
+    }
+    assert(bp - entry_bp == stateEnd.bitCount);
+
+    *p_current_mode = stateEnd.mode;
+
+    az_state_free(&stateEnd);
+    az_state_list_free(list);
+
+    return bp;
 }
 
 /* Calculate the binary size */
@@ -877,11 +1075,16 @@ static int az_text_size(const char *modes, const unsigned char *source, int leng
             const int eci, const char initial_mode, const int eci_latch, int *byte_counts) {
     int i;
     int byte_i = 0;
-    char current_mode;
+    char current_mode = initial_mode;
     int size = 0;
 
     if (set_gs1 && gs1) {
-        size += 5 + 5 + 3;
+        if (eci == 0) {
+            current_mode = AZ_D;
+            size += 5 + 4 + 5 + 3;
+        } else {
+            size += 5 + 5 + 3;
+        }
     }
     if (eci != 0) {
         if (initial_mode != AZ_P) {
@@ -893,57 +1096,26 @@ static int az_text_size(const char *modes, const unsigned char *source, int leng
                     size += 5;
                 }
                 size += 5;
+                current_mode = AZ_P;
             } else {
                 size += initial_mode == AZ_D ? 4 : 5;
             }
         }
         size += 5 + 3 + 4 + 4 * ((eci > 9) + (eci > 99) + (eci > 999) + (eci > 9999) + (eci > 99999));
     }
-    current_mode = eci_latch ? AZ_P : initial_mode;
     for (i = 0; i < length; i++) {
-        int current_mode_set = 0;
         if (modes[i] != current_mode) {
             /* Change mode */
-            const char mask_mode = AZ_MASK(modes[i]);
+            const int mask_mode = AZ_MASK(modes[i]);
             if (mask_mode != current_mode) {
-                size += 4 + (current_mode != AZ_D);
-            }
-            if (current_mode == AZ_U) {
-                if (mask_mode == AZ_P) {
-                    size += 5;
-                }
-            } else if (current_mode == AZ_L) {
-                if (mask_mode == AZ_P) {
-                    size += 5;
-                } else if (mask_mode == AZ_U) {
-                    size += 4;
-                }
-            } else if (current_mode == AZ_M) {
-                if (mask_mode == AZ_D) {
-                    size += 5;
-                }
-            } else if (current_mode == AZ_P) {
-                if (mask_mode != AZ_U) {
-                    size += 5;
-                    if (mask_mode == AZ_B) {
-                        current_mode = AZ_U;
-                        current_mode_set = 1;
-                    }
-                }
-            } else if (current_mode == AZ_D) {
-                if (mask_mode == AZ_L || mask_mode == AZ_M) {
-                    size += 5;
-                } else if (mask_mode == AZ_P) {
-                    size += 5 + 5;
-                } else if (mask_mode == AZ_B) {
-                    size += 5;
+                size += AztecLatchNum[(int) current_mode][mask_mode];
+                if (mask_mode != AZ_B) {
+                    current_mode = mask_mode;
+                } else if (current_mode == AZ_P || current_mode == AZ_D) {
                     current_mode = AZ_U;
-                    current_mode_set = 1;
                 }
             }
-            if (modes[i] & AZ_PS) {
-                size += 4 + (mask_mode != AZ_D);
-            } else if (modes[i] & AZ_US) {
+            if (modes[i] & (AZ_PS | AZ_US)) {
                 size += 4 + (mask_mode != AZ_D);
             }
 
@@ -955,7 +1127,7 @@ static int az_text_size(const char *modes, const unsigned char *source, int leng
                 if (count > 2047 + 2078) { /* Can't be more than 19968 / 8 = 2496 */
                     return 0;
                 }
-                byte_counts[byte_i++] = count;
+                byte_counts[byte_i++] = (short) count;
 
                 if (count > 2047) { /* Max 11-bit number */
                     big_batch = count > 2078 ? 2078 : count;
@@ -968,11 +1140,17 @@ static int az_text_size(const char *modes, const unsigned char *source, int leng
                     if (big_batch) {
                         size += 5;
                     }
-                    if (count > 31) {
+                    if (count > 62) {
                         assert(count <= 2078);
                         /* Put 00000 followed by 11-bit number of bytes less 31 */
                         size += 16;
                     } else {
+                        if (count > 31) {
+                            /* 2 5-bit B/Ss beats 1 11-bit */
+                            size += 10 + (31 << 3);
+                            count -= 31;
+                            i += 31;
+                        }
                         /* Put 5-bit number of bytes */
                         size += 5;
                     }
@@ -982,21 +1160,17 @@ static int az_text_size(const char *modes, const unsigned char *source, int leng
                 i--;
                 continue;
             }
-
-            if (current_mode != mask_mode && !current_mode_set) {
-                current_mode = mask_mode;
-            }
         }
 
-        if (modes[i] == AZ_U || (modes[i] & AZ_US) || modes[i] == AZ_L || modes[i] == AZ_M) {
-            size += 5;
-        } else if (modes[i] == AZ_P || (modes[i] & AZ_PS)) {
+        if (modes[i] == AZ_P || (modes[i] & AZ_PS)) {
             size += 5;
             if (gs1 && source[i] == '\x1D') {
                 size += 3;
             }
-        } else if (modes[i] == AZ_D) {
+        } else if (modes[i] == AZ_D && !(modes[i] & AZ_US)) {
             size += 4;
+        } else {
+            size += 5;
         }
     }
 
@@ -1006,51 +1180,46 @@ static int az_text_size(const char *modes, const unsigned char *source, int leng
 /* Determine encoding modes and encode */
 static int az_text_process(unsigned char *source, int length, int bp, char *binary_string, const int gs1,
             const int gs1_bp, const int eci, const int fast_encode, char *p_current_mode, int *data_length,
-            const int debug_print) {
+            const int debug) {
     int i, j;
-    char current_mode;
-    int reduced_length;
+    int reduced_length = 0; /* Suppress gcc-14 warning -Wmaybe-uninitialized */
     char *modes = (char *) z_alloca(length + 1);
     int *byte_counts = (int *) z_alloca(sizeof(int) * length); /* Cache of Byte-run counts */
     int byte_i = 0;
-    int size;
+    int size = 0;
     int eci_latch = 0;
-    const char initial_mode = p_current_mode ? *p_current_mode : AZ_U;
+    char current_mode = p_current_mode ? *p_current_mode : AZ_U;
+    const char initial_mode = current_mode;
     const int set_gs1 = bp == gs1_bp;
-    const int all_byte_only_or_uld = az_all_byte_only_or_uld(source, length);
-#ifndef NDEBUG
     const int initial_bp = bp;
+    const int all_byte_only_or_uld = az_all_byte_only_or_uld(source, length); /* -1 if not */
+    const int debug_print = debug & ZINT_DEBUG_PRINT;
+#ifdef ZINT_TEST
+    const int debug_skip_all = debug & 2048; /* ZINT_DEBUG_TEST_AZTEC_SKIP_ALL - skip using `all_byte_only_or_uld` */
+#else
+    const int debug_skip_all = 0;
 #endif
-
-    /* See if it's worthwhile latching to AZ_P when have ECI */
-    if (!all_byte_only_or_uld && eci && initial_mode != AZ_P && az_count_initial_puncts(source, length)
-            > 2 + (initial_mode == AZ_D)) {
-        assert(!gs1);
-        eci_latch = 1;
-    }
-
-    if (all_byte_only_or_uld) {
-        memset(modes, all_byte_only_or_uld, length);
-        reduced_length = length;
-    } else if (fast_encode) {
-        reduced_length = az_text_modes(modes, source, length, gs1, eci_latch ? AZ_P : initial_mode, debug_print);
-    } else {
-        reduced_length = az_define_modes(modes, source, length, gs1, eci_latch ? AZ_P : initial_mode, debug_print);
-    }
-
-    size = az_text_size(modes, source, reduced_length, gs1, set_gs1, eci, initial_mode, eci_latch, byte_counts);
-    if (size == 0 || bp + size > AZTEC_BIN_CAPACITY) {
-        return 0;
-    }
 
     if (set_gs1 && gs1) {
         assert(initial_mode == AZ_U);
-        bp = z_bin_append_posn(0, 5, binary_string, bp); /* P/S */
-        bp = z_bin_append_posn(0, 5, binary_string, bp); /* FLG(n) */
-        bp = z_bin_append_posn(0, 3, binary_string, bp); /* FLG(0) */
+        if (eci == 0) {
+            /* Latch to D/L to save a bit */
+            current_mode = AZ_D;
+            bp = z_bin_append_posn(30, 5, binary_string, bp); /* D/L */
+            bp = z_bin_append_posn(0, 4 + 5 + 3, binary_string, bp); /* P/S FLG(0) = FNC1 */
+        } else {
+            bp = z_bin_append_posn(0, 5 + 5 + 3, binary_string, bp); /* P/S FLG(0) = FNC1 */
+        }
+    /* See if it's worthwhile latching to AZ_P when have ECI */
+    } else if ((debug_skip_all || all_byte_only_or_uld == -1) && eci && initial_mode != AZ_P
+            && az_count_initial_puncts(source, length) > 2 + (initial_mode == AZ_D)) {
+        assert(!gs1);
+        eci_latch = 1;
+        current_mode = AZ_P;
     }
 
     if (eci != 0) {
+        const int flg = 1 + (eci > 9) + (eci > 99) + (eci > 999) + (eci > 9999) + (eci > 99999);
         if (initial_mode != AZ_P) {
             if (eci_latch) {
                 if (initial_mode != AZ_M) {
@@ -1064,224 +1233,134 @@ static int az_text_process(unsigned char *source, int length, int bp, char *bina
                 bp = z_bin_append_posn(0, initial_mode == AZ_D ? 4 : 5, binary_string, bp); /* P/S */
             }
         }
-        bp = z_bin_append_posn(0, 5, binary_string, bp); /* FLG(n) */
-        if (eci <= 9) {
-            bp = z_bin_append_posn(1, 3, binary_string, bp); /* FLG(1) */
+        bp = z_bin_append_posn(flg, 5 + 3, binary_string, bp); /* FLG(n) */
+        if (flg == 1) {
             bp = z_bin_append_posn(2 + eci, 4, binary_string, bp);
-        } else if (eci <= 99) {
-            bp = z_bin_append_posn(2, 3, binary_string, bp); /* FLG(2) */
-            bp = z_bin_append_posn(2 + (eci / 10), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + (eci % 10), 4, binary_string, bp);
-        } else if (eci <= 999) {
-            bp = z_bin_append_posn(3, 3, binary_string, bp); /* FLG(3) */
-            bp = z_bin_append_posn(2 + (eci / 100), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 100) / 10), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + (eci % 10), 4, binary_string, bp);
-        } else if (eci <= 9999) {
-            bp = z_bin_append_posn(4, 3, binary_string, bp); /* FLG(4) */
-            bp = z_bin_append_posn(2 + (eci / 1000), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 1000) / 100), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 100) / 10), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + (eci % 10), 4, binary_string, bp);
-        } else if (eci <= 99999) {
-            bp = z_bin_append_posn(5, 3, binary_string, bp); /* FLG(5) */
-            bp = z_bin_append_posn(2 + (eci / 10000), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 10000) / 1000), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 1000) / 100), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 100) / 10), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + (eci % 10), 4, binary_string, bp);
+        } else if (flg == 2) {
+            bp = z_bin_append_posn(((2 + eci / 10) << 4) + 2 + eci % 10, 8, binary_string, bp);
+        } else if (flg == 3) {
+            bp = z_bin_append_posn(2 + eci / 100, 4, binary_string, bp);
+            bp = z_bin_append_posn(((2 + eci % 100 / 10) << 4) + 2 + eci % 10, 8, binary_string, bp);
+        } else if (flg == 4) {
+            bp = z_bin_append_posn(((2 + eci / 1000) << 4) + 2 + eci % 1000 / 100, 8, binary_string, bp);
+            bp = z_bin_append_posn(((2 + eci % 100 / 10) << 4) + 2 + eci % 10, 8, binary_string, bp);
+        } else if (flg == 5) {
+            bp = z_bin_append_posn(2 + eci / 10000, 4, binary_string, bp);
+            bp = z_bin_append_posn(((2 + eci % 10000 / 1000) << 4) + 2 + eci % 1000 / 100, 8, binary_string, bp);
+            bp = z_bin_append_posn(((2 + eci % 100 / 10) << 4) + 2 + eci % 10, 8, binary_string, bp);
         } else {
-            bp = z_bin_append_posn(6, 3, binary_string, bp); /* FLG(6) */
-            bp = z_bin_append_posn(2 + (eci / 100000), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 100000) / 10000), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 10000) / 1000), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 1000) / 100), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + ((eci % 100) / 10), 4, binary_string, bp);
-            bp = z_bin_append_posn(2 + (eci % 10), 4, binary_string, bp);
+            bp = z_bin_append_posn(((2 + eci / 100000) << 4) + 2 + eci % 100000 / 10000, 8, binary_string, bp);
+            bp = z_bin_append_posn(((2 + eci % 10000 / 1000) << 4) + 2 + eci % 1000 / 100, 8, binary_string, bp);
+            bp = z_bin_append_posn(((2 + eci % 100 / 10) << 4) + 2 + eci % 10, 8, binary_string, bp);
         }
     }
 
-    current_mode = eci_latch ? AZ_P : initial_mode;
-    for (i = 0; i < reduced_length; i++) {
-        int current_mode_set = 0;
-        if (modes[i] != current_mode) {
-            /* Change mode */
-            const char mask_mode = AZ_MASK(modes[i]);
-            if (current_mode == AZ_U) {
-                if (mask_mode == AZ_L) {
-                    bp = z_bin_append_posn(28, 5, binary_string, bp); /* L/L */
-                } else if (mask_mode == AZ_M) {
-                    bp = z_bin_append_posn(29, 5, binary_string, bp); /* M/L */
-                } else if (mask_mode == AZ_P) {
-                    bp = z_bin_append_posn(29, 5, binary_string, bp); /* M/L */
-                    bp = z_bin_append_posn(30, 5, binary_string, bp); /* P/L */
-                } else if (mask_mode == AZ_D) {
-                    bp = z_bin_append_posn(30, 5, binary_string, bp); /* D/L */
-                } else if (mask_mode == AZ_B) {
-                    bp = z_bin_append_posn(31, 5, binary_string, bp); /* B/S */
-                }
-            } else if (current_mode == AZ_L) {
-                if (mask_mode == AZ_U) {
-                    bp = z_bin_append_posn(30, 5, binary_string, bp); /* D/L */
-                    bp = z_bin_append_posn(14, 4, binary_string, bp); /* U/L */
-                } else if (mask_mode == AZ_M) {
-                    bp = z_bin_append_posn(29, 5, binary_string, bp); /* M/L */
-                } else if (mask_mode == AZ_P) {
-                    bp = z_bin_append_posn(29, 5, binary_string, bp); /* M/L */
-                    bp = z_bin_append_posn(30, 5, binary_string, bp); /* P/L */
-                } else if (mask_mode == AZ_D) {
-                    bp = z_bin_append_posn(30, 5, binary_string, bp); /* D/L */
-                } else if (mask_mode == AZ_B) {
-                    bp = z_bin_append_posn(31, 5, binary_string, bp); /* B/S */
-                }
-            } else if (current_mode == AZ_M) {
-                if (mask_mode == AZ_U) {
-                    bp = z_bin_append_posn(29, 5, binary_string, bp); /* U/L */
-                } else if (mask_mode == AZ_L) {
-                    bp = z_bin_append_posn(28, 5, binary_string, bp); /* L/L */
-                } else if (mask_mode == AZ_P) {
-                    bp = z_bin_append_posn(30, 5, binary_string, bp); /* P/L */
-                } else if (mask_mode == AZ_D) {
-                    bp = z_bin_append_posn(29, 5, binary_string, bp); /* U/L */
-                    bp = z_bin_append_posn(30, 5, binary_string, bp); /* D/L */
-                } else if (mask_mode == AZ_B) {
-                    bp = z_bin_append_posn(31, 5, binary_string, bp); /* B/S */
-                }
-            } else if (current_mode == AZ_P) {
-                if (mask_mode != current_mode) {
-                    bp = z_bin_append_posn(31, 5, binary_string, bp); /* U/L */
-                    if (mask_mode == AZ_L) {
-                        bp = z_bin_append_posn(28, 5, binary_string, bp); /* L/L */
-                    } else if (mask_mode == AZ_M) {
-                        bp = z_bin_append_posn(29, 5, binary_string, bp); /* M/L */
-                    } else if (mask_mode == AZ_D) {
-                        bp = z_bin_append_posn(30, 5, binary_string, bp); /* D/L */
-                    } else if (mask_mode == AZ_B) {
-                        current_mode = AZ_U;
-                        current_mode_set = 1;
-                        bp = z_bin_append_posn(31, 5, binary_string, bp); /* B/S */
-                    }
-                }
-            } else if (current_mode == AZ_D) {
-                if (mask_mode != current_mode) {
-                    bp = z_bin_append_posn(14, 4, binary_string, bp); /* U/L */
-                    if (mask_mode == AZ_L) {
-                        bp = z_bin_append_posn(28, 5, binary_string, bp); /* L/L */
-                    } else if (mask_mode == AZ_M) {
-                        bp = z_bin_append_posn(29, 5, binary_string, bp); /* M/L */
-                    } else if (mask_mode == AZ_P) {
-                        bp = z_bin_append_posn(29, 5, binary_string, bp); /* M/L */
-                        bp = z_bin_append_posn(30, 5, binary_string, bp); /* P/L */
-                    } else if (mask_mode == AZ_B) {
-                        current_mode = AZ_U;
-                        current_mode_set = 1;
-                        bp = z_bin_append_posn(31, 5, binary_string, bp); /* B/S */
-                    }
-                }
-            }
-            if (modes[i] & AZ_PS) {
-                assert(mask_mode != AZ_P);
-                bp = z_bin_append_posn(0, 4 + (mask_mode != AZ_D), binary_string, bp); /* P/S */
-            } else if (modes[i] & AZ_US) {
-                assert(mask_mode == AZ_L || mask_mode == AZ_D);
-                if (mask_mode == AZ_L) {
-                    bp = z_bin_append_posn(28, 5, binary_string, bp); /* U/S */
-                } else {
-                    bp = z_bin_append_posn(15, 4, binary_string, bp); /* U/S */
-                }
-            }
+    if (!debug_skip_all && all_byte_only_or_uld != -1) {
+        memset(modes, all_byte_only_or_uld, length);
+        reduced_length = length;
+    } else if (fast_encode) {
+        reduced_length = az_text_modes(modes, source, length, gs1, current_mode, debug_print);
+    } else {
+        bp = az_binary_string(source, length, bp, binary_string, gs1, current_mode, &current_mode);
+        if (bp == 0 || bp > AZTEC_BIN_CAPACITY) {
+            return bp == 0 ? ZINT_ERROR_MEMORY : ZINT_ERROR_TOO_LONG;
+        }
+        assert(bp > initial_bp);
+        size = bp - initial_bp;
+    }
 
-            /* Byte mode - process full block here */
-            if (modes[i] == AZ_B) {
-                int big_batch = 0;
-                int count = byte_counts[byte_i++];
-
-                assert(count <= 2047 + 2078); /* Can't be more than 19968 / 8 = 2496 */
-
-                if (count > 2047) { /* Max 11-bit number */
-                    big_batch = count > 2078 ? 2078 : count;
-                    /* Put 00000 followed by 11-bit number of bytes less 31 */
-                    bp = z_bin_append_posn(big_batch - 31, 16, binary_string, bp);
-                    for (j = 0; j < big_batch; j++) {
-                        bp = z_bin_append_posn(source[i++], 8, binary_string, bp);
-                    }
-                    count -= big_batch;
-                }
-                if (count) {
-                    if (big_batch) {
-                        bp = z_bin_append_posn(31, 5, binary_string, bp); /* B/S */
-                    }
-                    if (count > 31) {
-                        assert(count <= 2078);
-                        /* Put 00000 followed by 11-bit number of bytes less 31 */
-                        bp = z_bin_append_posn(count - 31, 16, binary_string, bp);
-                    } else {
-                        /* Put 5-bit number of bytes */
-                        bp = z_bin_append_posn(count, 5, binary_string, bp);
-                    }
-                    for (j = 0; j < count; j++) {
-                        bp = z_bin_append_posn(source[i++], 8, binary_string, bp);
-                    }
-                }
-                i--;
-                continue;
-            }
-
-            if (current_mode != mask_mode && !current_mode_set) {
-                current_mode = mask_mode;
-            }
+    if (!size) {
+        size = az_text_size(modes, source, reduced_length, gs1, set_gs1, eci, initial_mode, eci_latch, byte_counts);
+        if (size == 0 || bp + size > AZTEC_BIN_CAPACITY) {
+            return ZINT_ERROR_TOO_LONG;
         }
 
-        if (modes[i] == AZ_U || (modes[i] & AZ_US)) {
-            if (source[i] == ' ') {
-                bp = z_bin_append_posn(1, 5, binary_string, bp); /* SP */
-            } else {
-                bp = z_bin_append_posn(AztecSymbolChar[source[i]], 5, binary_string, bp);
+        for (i = 0; i < reduced_length; i++) {
+            int current_mode_set = 0;
+            if (modes[i] != current_mode) {
+                /* Change mode */
+                const int mask_mode = AZ_MASK(modes[i]);
+                if (current_mode != mask_mode) {
+                    assert(current_mode != AZ_B); /* Suppress clang-tidy-22 clang-analyzer-security.ArrayBound */
+                    bp = z_bin_append_posn(AztecLatch[(int) current_mode][mask_mode],
+                                            AztecLatchNum[(int) current_mode][mask_mode], binary_string, bp);
+                    if (mask_mode == AZ_B && (current_mode == AZ_P || current_mode == AZ_D)) {
+                        current_mode = AZ_U;
+                        current_mode_set = 1;
+                    }
+                }
+                if (modes[i] & AZ_PS) {
+                    assert(mask_mode != AZ_P);
+                    bp = z_bin_append_posn(0, 4 + (mask_mode != AZ_D), binary_string, bp); /* P/S */
+                } else if (modes[i] & AZ_US) {
+                    assert(mask_mode == AZ_L || mask_mode == AZ_D);
+                    if (mask_mode == AZ_L) {
+                        bp = z_bin_append_posn(28, 5, binary_string, bp); /* U/S */
+                    } else {
+                        bp = z_bin_append_posn(15, 4, binary_string, bp); /* U/S */
+                    }
+                }
+
+                /* Byte mode - process full block here */
+                if (modes[i] == AZ_B) {
+                    int big_batch = 0;
+                    int count = byte_counts[byte_i++];
+
+                    assert(count <= 2047 + 2078); /* Can't be more than 19968 / 8 = 2496 */
+
+                    if (count > 2047) { /* Max 11-bit number */
+                        big_batch = count > 2078 ? 2078 : count;
+                        /* Put 00000 followed by 11-bit number of bytes less 31 */
+                        bp = z_bin_append_posn(big_batch - 31, 16, binary_string, bp);
+                        for (j = 0; j < big_batch; j++) {
+                            bp = z_bin_append_posn(source[i++], 8, binary_string, bp);
+                        }
+                        count -= big_batch;
+                    }
+                    if (count) {
+                        if (big_batch) {
+                            bp = z_bin_append_posn(31, 5, binary_string, bp); /* B/S */
+                        }
+                        if (count > 62) {
+                            assert(count <= 2078);
+                            /* Put 00000 followed by 11-bit number of bytes less 31 */
+                            bp = z_bin_append_posn(count - 31, 16, binary_string, bp);
+                        } else {
+                            if (count > 31) {
+                                /* 2 5-bit B/Ss beats 1 11-bit */
+                                bp = z_bin_append_posn(31, 5, binary_string, bp); /* 5-bit byte count */
+                                for (j = 0; j < 31; j++) {
+                                    bp = z_bin_append_posn(source[i++], 8, binary_string, bp);
+                                }
+                                bp = z_bin_append_posn(31, 5, binary_string, bp); /* B/S */
+                                count -= 31;
+                            }
+                            /* Put 5-bit number of bytes */
+                            bp = z_bin_append_posn(count, 5, binary_string, bp);
+                        }
+                        for (j = 0; j < count; j++) {
+                            bp = z_bin_append_posn(source[i++], 8, binary_string, bp);
+                        }
+                    }
+                    i--;
+                    continue;
+                }
+
+                if (current_mode != mask_mode && !current_mode_set) {
+                    current_mode = mask_mode;
+                }
             }
-        } else if (modes[i] == AZ_L) {
-            if (source[i] == ' ') {
-                bp = z_bin_append_posn(1, 5, binary_string, bp); /* SP */
+
+            if (modes[i] == AZ_P || (modes[i] & AZ_PS)) {
+                if (gs1 && source[i] == '\x1D') {
+                    bp = z_bin_append_posn(0, 5 + 3, binary_string, bp); /* FLG(0) = FNC1 */
+                } else {
+                    bp = z_bin_append_posn(AztecChar[AZ_P][source[i]], 5, binary_string, bp);
+                }
             } else {
-                bp = z_bin_append_posn(AztecSymbolChar[source[i]], 5, binary_string, bp);
-            }
-        } else if (modes[i] == AZ_M) {
-            if (source[i] == ' ') {
-                bp = z_bin_append_posn(1, 5, binary_string, bp); /* SP */
-            } else if (source[i] == '\r') {
-                bp = z_bin_append_posn(14, 5, binary_string, bp); /* CR */
-            } else {
-                bp = z_bin_append_posn(AztecSymbolChar[source[i]], 5, binary_string, bp);
-            }
-        } else if (modes[i] == AZ_P || (modes[i] & AZ_PS)) {
-            if (gs1 && source[i] == '\x1D') {
-                bp = z_bin_append_posn(0, 5, binary_string, bp); /* FLG(n) */
-                bp = z_bin_append_posn(0, 3, binary_string, bp); /* FLG(0) = FNC1 */
-            } else if (source[i] == '\r') {
-                bp = z_bin_append_posn(1, 5, binary_string, bp); /* CR */
-            } else if (source[i] == 'a') {
-                bp = z_bin_append_posn(2, 5, binary_string, bp); /* CR LF */
-            } else if (source[i] == 'b') {
-                bp = z_bin_append_posn(3, 5, binary_string, bp); /* . SP */
-            } else if (source[i] == 'c') {
-                bp = z_bin_append_posn(4, 5, binary_string, bp); /* , SP */
-            } else if (source[i] == 'd') {
-                bp = z_bin_append_posn(5, 5, binary_string, bp); /* : SP */
-            } else if (source[i] == ',') {
-                bp = z_bin_append_posn(17, 5, binary_string, bp); /* Comma */
-            } else if (source[i] == '.') {
-                bp = z_bin_append_posn(19, 5, binary_string, bp); /* Full stop */
-            } else {
-                bp = z_bin_append_posn(AztecSymbolChar[source[i]], 5, binary_string, bp);
-            }
-        } else if (modes[i] == AZ_D) {
-            if (source[i] == ' ') {
-                bp = z_bin_append_posn(1, 4, binary_string, bp); /* SP */
-            } else if (source[i] == ',') {
-                bp = z_bin_append_posn(12, 4, binary_string, bp); /* Comma */
-            } else if (source[i] == '.') {
-                bp = z_bin_append_posn(13, 4, binary_string, bp); /* Full stop */
-            } else {
-                bp = z_bin_append_posn(AztecSymbolChar[source[i]], 4, binary_string, bp);
+                const int char_mode = (modes[i] & AZ_US) ? AZ_U : modes[i];
+                assert(char_mode != AZ_B); /* Suppress clang-tidy-22 clang-analyzer-security.ArrayBound */
+                bp = z_bin_append_posn(AztecChar[char_mode][source[i]], 4 + (modes[i] != AZ_D), binary_string, bp);
             }
         }
     }
@@ -1297,12 +1376,12 @@ static int az_text_process(unsigned char *source, int length, int bp, char *bina
 
     assert(size == bp - initial_bp);
 
-    return 1;
+    return 0;
 }
 
 /* Call `az_text_process()` for each segment */
 static int az_text_process_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count, int bp,
-            char binary_string[], const int gs1, const int gs1_bp, int *data_length, const int debug_print) {
+            char binary_string[], const int gs1, const int gs1_bp, int *data_length) {
     int i;
     char current_mode = AZ_U;
     const int fast_encode = symbol->input_mode & FAST_MODE;
@@ -1311,9 +1390,10 @@ static int az_text_process_segs(struct zint_symbol *symbol, struct zint_seg segs
     const int content_segs = !gs1 && (symbol->output_options & BARCODE_CONTENT_SEGS);
 
     for (i = 0; i < seg_count; i++) {
-        if (!az_text_process(segs[i].source, segs[i].length, bp, binary_string, gs1, gs1_bp, segs[i].eci, fast_encode,
-                &current_mode, &bp, debug_print)) {
-            return ZINT_ERROR_TOO_LONG; /* `az_text_process()` only fails with too long */
+        int error_number;
+        if ((error_number = az_text_process(segs[i].source, segs[i].length, bp, binary_string, gs1, gs1_bp,
+                segs[i].eci, fast_encode, &current_mode, &bp, symbol->debug))) {
+            return error_number;
         }
         if (content_segs && segs[i].eci) {
             z_ct_set_seg_eci(symbol, i, segs[i].eci);
@@ -1510,6 +1590,10 @@ INTERNAL int zint_aztec(struct zint_symbol *symbol, struct zint_seg segs[], cons
     float ecc_ratio;
     int dim;
 
+    if ((i = z_segs_length(segs, seg_count)) > 4981) { /* Max is 4981 digits */
+        return z_errtxtf(ZINT_ERROR_TOO_LONG, symbol, 803, "Input length %d too long (maximum 4981)", i);
+    }
+
     if (gs1 && reader_init) {
         return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 501, "Cannot use Reader Initialisation in GS1 mode");
     }
@@ -1555,19 +1639,19 @@ INTERNAL int zint_aztec(struct zint_symbol *symbol, struct zint_seg segs[], cons
         }
 
         (void) az_text_process(sa_src, sa_len, bp, binary_string, 0 /*gs1*/, 0 /*gs1_bp*/, 0 /*eci*/,
-                                0 /*fast_encode*/, NULL /*p_current_mode*/, &bp, debug_print);
+                                0 /*fast_encode*/, NULL /*p_current_mode*/, &bp, symbol->debug);
         /* Will be in U/L due to uppercase A-Z index/count indicators at end */
         gs1_bp = bp; /* Initial FNC1 (FLG0) position */
     }
 
-    if ((error_number = az_text_process_segs(symbol, segs, seg_count, bp, binary_string, gs1, gs1_bp, &data_length,
-                                                debug_print))) {
+    if ((error_number = az_text_process_segs(symbol, segs, seg_count, bp, binary_string, gs1, gs1_bp,
+                                            &data_length))) {
         assert(error_number == ZINT_ERROR_TOO_LONG || error_number == ZINT_ERROR_MEMORY);
         if (error_number == ZINT_ERROR_TOO_LONG) {
             return z_errtxt(error_number, symbol, 502,
                             "Input too long, requires too many codewords (maximum " AZ_BIN_CAP_CWDS_S ")");
         }
-        return error_number;
+        return z_errtxt(error_number, symbol, 804, "Insufficient memory for optimized encodation");
     }
     assert(data_length > 0); /* Suppress clang-tidy warning: clang-analyzer-core.UndefinedBinaryOperatorResult */
 

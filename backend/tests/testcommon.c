@@ -4118,9 +4118,9 @@ static const char *testUtilZXingCPPCharSet(int eci) {
 /* Run "zxingcppdecoder", returning result in `buffer` */
 int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, const int length, const char *bits,
             const int zxingcpp_cmp, char *buffer, const int buffer_size, int *p_cmp_len) {
-    static const char cmd_fmt[] = "zxingcppdecoder -textonly -format %s -width %d -bits '%s'";
-    static const char opts_cmd_fmt[] = "zxingcppdecoder -textonly -format %s -opts '%s' -width %d -bits '%s'";
-    static const char cs_cmd_fmt[] = "zxingcppdecoder -textonly -format %s -charset %s -width %d -bits '%s'";
+    static const char cmd_fmt[] = "zxingcppdecoder -textonly -format %s -width %d -bits %s";
+    static const char opts_cmd_fmt[] = "zxingcppdecoder -textonly -format %s -opts '%s' -width %d -bits %s";
+    static const char cs_cmd_fmt[] = "zxingcppdecoder -textonly -format %s -charset %s -width %d -bits %s";
 
     const int bits_len = (int) strlen(bits);
     const int width = symbol->width;

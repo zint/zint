@@ -48,6 +48,7 @@ extern "C" {
 #define ZINT_DEBUG_TEST_PERFORMANCE     256
 #define ZINT_DEBUG_TEST_ZXINGCPP        512
 #define ZINT_DEBUG_TEST_BWIPP_ZXINGCPP  1024
+#define ZINT_DEBUG_TEST_AZTEC_SKIP_ALL  2048
 
 #ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positives */
 #define ZINT_TESTUTIL_SANITIZEM_INIT     = {0}

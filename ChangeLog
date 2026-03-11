@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-02-26)
+Version 2.16.0.9 (dev) not released yet (2026-03-11)
 ====================================================
 
 **Incompatible changes**
@@ -19,8 +19,9 @@ Changes
   add `ZINT_TEST`-only "--test" option to do various internal tests
 - GS1SE: exclude GS1_128 from requisite AIs check as may be spread across more
   than one barcode (ticket #348, props Harald Oehlmann and Terry Burton)
-- AZTEC: add improved encoding algorithm, previous algorithm available via
-  "--fast" (input_mode |= FAST_MODE)
+- AZTEC: add improved encoding algorithm adapted from ZXing, props Frank Yellin
+  and Rustam Abdullaev; previous algorithm available via "--fast" (input_mode
+  |= FAST_MODE)
 - AZTEC: add new option "--azfull" (option_3 = ZINT_AZTEC_FULL) to only
   consider Full symbols (not Compact ones) on automatic sizing
 - GS1: new `GS1RAW_MODE` (CLI "--gs1raw") and GS1 Syntax Engine "Unbracketed AI
