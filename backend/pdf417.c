@@ -144,10 +144,11 @@ static const char pdf_asciiy[127] = {
 };
 
 /* Automatic sizing table */
-
+/* Number of non-EC CWs from ISO/IEC 24728:2006 Table 1, arranged in ascending order (1st 28),
+   and matching variant (2nd 28) */
 static const char pdf_MicroAutosize[56] = {
-    4, 6, 7, 8, 10, 12, 13, 14, 16, 18, 19, 20, 24, 29, 30, 33, 34, 37, 39, 46, 54, 58, 70, 72, 82, 90, 108, 126,
-    1, 14, 2, 7, 3, 25, 8, 16, 5, 17, 9, 6, 10, 11, 28, 12, 19, 13, 29, 20, 30, 21, 22, 31, 23, 32, 33, 34
+    4,  6, 7, 8, 10, 12, 13, 14, 16, 18, 19, 20, 24, 29, 30, 33, 34, 37, 39, 46, 54, 58, 70, 72, 82, 90, 108, 126,
+    1, 14, 2, 7,  3, 25,  8, 16,  5, 17,  9,  6, 10, 11, 28, 12, 19, 13, 29, 20, 30, 21, 22, 31, 23, 32,  33,  34
 };
 
 /* ISO/IEC 15438:2015 5.1.1 c) 3) Max possible number of characters at error correction level 0
@@ -507,7 +508,6 @@ static void pdf_textprocess(short *chainemc, int *p_mclength, const unsigned cha
         }
     }
 
-    /* 663 */
     *p_curtable = curtable;
     pdf_textprocess_end(chainemc, p_mclength, is_last_seg, chainet, wnet, p_curtable, p_tex_padded);
 }

@@ -30,7 +30,7 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-/* The functions "getBit", "init928" and "encode928" are copyright BSI and are
+/* The functions "getBit", "init928" and "encode928" are Copyright (C) 2006 BSI and are
    released with permission under the following terms:
 
    "Copyright subsists in all BSI publications. BSI also holds the copyright, in the

@@ -1,8 +1,7 @@
 /* pdf417.h - PDF417 tables and coefficients declarations */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
-    Portions Copyright (C) 2004 Grandzebu
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -40,25 +39,27 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* PDF417 error correction coefficients from Grand Zebu */
+/* PDF417 error correction coefficients from ISO/IEC 15438:2015 Annex F */
 INTERNAL_DATA_EXTERN const unsigned short zint_pdf_coefrs[1022];
 
-INTERNAL_DATA_EXTERN const unsigned short zint_pdf_bitpattern[2787];
+/* Encoding/decoding table of PDF417 symbol character bar-space sequences from ISO/IEC 15438:2015 Annex A */
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_bitpattern[2787]; /* 2787 = 929 * 3 */
+
+/* Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 15438:2015 Tables 10, 11 and 12 */
+INTERNAL_DATA_EXTERN const char zint_pdf_RAPTable[136]; /* 34 * 4 */
+
+/* Left and Right Row Address Pattern from ISO/IEC 15438:2015 Table 2 */
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_rap_side[52];
+
+/* Centre Row Address Pattern from ISO/IEC 15438:2015 Table 2 */
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_rap_centre[52];
 
 /* MicroPDF417 coefficients from ISO/IEC 24728:2006 Annex F */
 INTERNAL_DATA_EXTERN const unsigned short zint_pdf_Microcoeffs[344];
 
-/* rows, columns, error codewords, k-offset of valid MicroPDF417 sizes from ISO/IEC 24728:2006 */
-INTERNAL_DATA_EXTERN const unsigned short zint_pdf_MicroVariants[136];
-
-/* following is Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 24728:2006 tables 10, 11 and 12 */
-INTERNAL_DATA_EXTERN const char zint_pdf_RAPTable[136];
-
-/* Left and Right Row Address Pattern from Table 2 */
-INTERNAL_DATA_EXTERN const unsigned short zint_pdf_rap_side[52];
-
-/* Centre Row Address Pattern from Table 2 */
-INTERNAL_DATA_EXTERN const unsigned short zint_pdf_rap_centre[52];
+/* Number of Data Columns (1st 34), Number of Rows (2nd 34), Number of EC CWs (3rd 34) from ISO/IEC 24728:2006 Table 1
+   and k-offsets (4th 34) into `zint_pdf_Microcoeffs[]` above */
+INTERNAL_DATA_EXTERN const unsigned short zint_pdf_MicroVariants[136]; /* 34 * 4 */
 
 INTERNAL void zint_pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], int start,
                 const int length, const int lastmode);

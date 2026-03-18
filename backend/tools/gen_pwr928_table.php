@@ -2,11 +2,11 @@
 /* Generate mod 928 powers table for `encode928()` in "composite.c" */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2026 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-/* The functions "getBit", "init928" and "encode928" are copyright BSI and are
+/* The functions "getBit", "init928" and "encode928" are Copyright (C) 2006 BSI and are
    released with permission under the following terms:
 
    "Copyright subsists in all BSI publications. BSI also holds the copyright, in the

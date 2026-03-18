@@ -17,6 +17,8 @@ Copyright:
     Copyright (C) 2014-2026 Harald Oehlmann <oehhar@users.sourceforge.net>
     Copyright (C) Cliff Hones 2004
     Copyright (c) 2004 Adrian Kennard, Andrews & Arnold Ltd
+    Copyright (c) 2015, Harald Kuhr
+    Copyright (C) 2024-2025 Antoine Merino <antoine.merino.dev@gmail.com>
     Copyright (c) 2006 Stefan Schmidt <stefan@datenfreihafen.org>
     Copyright (C) 2016 Zoe Stuart
     Copyright (C) 2006-2009 United States Postal Service
@@ -70,18 +72,48 @@ License: BSD-3-Clause and Unicode-3.0
 
 Files:
     backend/channel.c
-    backend/composite.c
+Copyright:
+    Copyright (C) 2017-2026 Robin Stuart <rstuart114@gmail.com>
+    Copyright © AIM 1997
+    Copyright (c) 2004-2026 Terry Burton
+License: BSD-3-Clause and MIT and AIM
+   It is the intent and understanding of AIM [t]hat the symbology presented in this
+   specification is entirely in the public domain and free of all use restrictions,
+   licenses and fees. AIM USA, its member companies, or individual officers
+   assume no liability for the use of this document.
+
+Files:
     backend/common.c
     backend/gridmtx.c
     backend/hanxin.c
     backend/qr.*
 Copyright:
     Copyright (C) 2017-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright (c) AIM 1997
     Copyright (c) 2004-2026 Terry Burton
     Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
     Copyright (c) Project Nayuki
 License: BSD-3-Clause and MIT
+
+Files:
+    backend/composite.c
+    backend/rss.c
+    backend/tools/gen_pwr928_table.php
+Copyright:
+    Copyright (C) 2017-2026 Robin Stuart <rstuart114@gmail.com>
+    Copyright (c) 2004-2026 Terry Burton
+    Copyright (C) 2006 BSI
+License: BSD-3-Clause and MIT and BSI
+ Copyright subsists in all BSI publications. BSI also holds the copyright, in the
+ UK, of the international standardisation bodies. Except as
+ permitted under the Copyright, Designs and Patents Act 1988 no extract may be
+ reproduced, stored in a retrieval system or transmitted in any form or by any
+ means - electronic, photocopying, recording or otherwise - without prior written
+ permission from BSI.
+ .
+ This does not preclude the free use, in the course of implementing the standard,
+ of necessary details such as symbols, and size, type or grade designations. If these
+ details are to be used for any other purpose than implementation then the prior
+ written permission of BSI must be obtained.
 
 Files:
     backend/pcx.c
@@ -112,6 +144,13 @@ Copyright:
     Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
     Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
 License: LGPL-2.0-or-later
+
+Files:
+    backend/tests/fuzz/Dockerfile
+    backend/tests/fuzz/build.sh
+Copyright:
+    Copyright 2024 Google LLC
+License: Apache-2.0
 
 Files:
     frontend/main.c
@@ -388,18 +427,6 @@ License: ISC
  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  PERFORMANCE OF THIS SOFTWARE.
 
-License: MIT
- Permission is hereby granted, free of charge, to any person obtaining
- a copy of this software and associated documentation files (the
- "Software"), to deal in the Software without restriction, including
- without limitation the rights to use, copy, modify, merge, publish,
- distribute, sublicense, and/or sell copies of the Software, and to
- permit persons to whom the Software is furnished to do so, subject to
- the following conditions:
- ․
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
-
 License: LGPL-2.0-or-later
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU Library General Public License as published
@@ -427,6 +454,18 @@ License: LGPL-2.1-or-later
  ․
  On Debian systems, the complete text of the GNU Library General Public
  License Version 2 can be found in "/usr/share/common-licenses/LGPL-2.1".
+
+License: MIT
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
+ the following conditions:
+ ․
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
 
 License: Unicode-3.0
  NOTICE TO USER: Carefully read the following legal agreement. BY DOWNLOADING,
