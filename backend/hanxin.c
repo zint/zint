@@ -1,7 +1,7 @@
 /*  hanxin.c - Han Xin Code */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -353,6 +353,7 @@ static int hx_in_fourbyte(const unsigned int ddata[], const int length, const in
 
 /* Calculate optimized encoding modes. Adapted from Project Nayuki */
 /* Copyright (c) Project Nayuki. (MIT License) See qr.c for detailed notice */
+/* SPDX-License-Identifier: MIT */
 static void hx_define_modes(char *modes, const unsigned int ddata[], const int length, const int debug_print) {
     /* Must be in same order as HX_N etc */
     static const char mode_types[] = { 'n', 't', 'b', '1', '2', 'd', 'f', '\0' };

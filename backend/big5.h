@@ -30,6 +30,7 @@
     SUCH DAMAGE.
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
+/* SPDX-License-Identifier: Unicode-3.0 */
 
 #ifndef Z_BIG5_H
 #define Z_BIG5_H

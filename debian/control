@@ -1,42 +1,119 @@
 Source: zint
-Section: libs
+Section: graphics
 Priority: optional
 Maintainer: Robin Stuart <rstuart114@gmail.com>
-Build-Depends: debhelper (>= 9), cmake, libpng12-dev, libqt4-dev
-Standards-Version: 3.9.1
-Homepage: http://www.zint.org.uk/
+Build-Depends: debhelper-compat (= 12)
+    ,cmake
+    ,libpng-dev
+    ,libqt5svg5-dev
+    ,qtbase5-dev
+    ,qttools5-dev
+Standards-Version: 4.6.2
+Homepage: https://www.zint.org.uk/
+Rules-Requires-Root: no
 
 Package: zint
-Section: libs
 Architecture: any
-Description: A library for encoding data in barcode symbols.
-   Zint is an Open Source barcode encoding and image generating library.
-   It currently features support for over 50 symbologies including
- QR Code, Data Matrix, Aztec Code, Code 128, UPC/EAN, HIBC, GS1 DataBar and many others.
-   Also included are Unicode translation for symbologies which support Latin-1 and Kanji character sets,
- full GS1 data support including verification and automated insertion of FNC1 characters and
- support for encoding binary data including NULL (ASCII 0) characters.
-
-Package: zint-devel
-Section: libdevel
-Architecture: any
-Depends: zint (= ${binary:Version})
-Description: Zint development files
-   This package contains development files for the Zint barcode encoding
- library.
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: command line utility for encoding data in barcode symbols
+ Zint is a barcode generator library. It features support for over 50
+ symbologies, including Australian Post, Aztec Code & Runes, BC412,
+ Channel, Codabar, Codablock F, Code 11, Code 128, Code 16K, Code 2 of
+ 5 (IATA, Interleaved, Data Logic, ITF-14, Deutsche Post Leitcode &
+ Identcode), Code 32 (Italian Pharmacode), Code 39 & Code 39 Extended,
+ Code 49, Code 93, Code One, DAFT, Data Matrix (incl. DMRE), DotCode,
+ DPD, Dutch Post KIX, EAN, FIM, Flattermarken, Grid Matrix, GS1 DataBar
+ (incl. stacked & GS1 Composite symbols), GS1-128, Han Xin, HIBC, ISBN,
+ Japan Post, Korea Post, LOGMARS, MaxiCode, NVE-18 (SSCC-18), PDF417 &
+ MicroPDF417, Pharmacode, PLANET, POSTNET, Plessey (MSI & UK), PZN, QR
+ Code, Micro QR & rMQR, Royal Mail RM4SCC & Mailmark, Telepen,
+ Ultracode, UPC-A, UPC-E, UPNQR, UPU S10, USPS Intelligent Mail and
+ VIN.
+ .
+ Also included are Unicode translation for all ECI character sets, full
+ GS1 data support including verification and automated insertion of
+ FNC1 characters and support for encoding binary data. Output can be
+ saved as BMP, EMF, EPS, GIF, PCX, PNG, SVG and TIFF.
+ .
+ This package contains Zint Barcode Generator (command line utility).
 
 Package: zint-qt
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Zint Barcode Studio, a Qt frontend to zint
+ Zint is a barcode generator library. It features support for over 50
+ symbologies, including Australian Post, Aztec Code & Runes, BC412,
+ Channel, Codabar, Codablock F, Code 11, Code 128, Code 16K, Code 2 of
+ 5 (IATA, Interleaved, Data Logic, ITF-14, Deutsche Post Leitcode &
+ Identcode), Code 32 (Italian Pharmacode), Code 39 & Code 39 Extended,
+ Code 49, Code 93, Code One, DAFT, Data Matrix (incl. DMRE), DotCode,
+ DPD, Dutch Post KIX, EAN, FIM, Flattermarken, Grid Matrix, GS1 DataBar
+ (incl. stacked & GS1 Composite symbols), GS1-128, Han Xin, HIBC, ISBN,
+ Japan Post, Korea Post, LOGMARS, MaxiCode, NVE-18 (SSCC-18), PDF417 &
+ MicroPDF417, Pharmacode, PLANET, POSTNET, Plessey (MSI & UK), PZN, QR
+ Code, Micro QR & rMQR, Royal Mail RM4SCC & Mailmark, Telepen,
+ Ultracode, UPC-A, UPC-E, UPNQR, UPU S10, USPS Intelligent Mail and
+ VIN.
+ .
+ Also included are Unicode translation for all ECI character sets, full
+ GS1 data support including verification and automated insertion of
+ FNC1 characters and support for encoding binary data. Output can be
+ saved as BMP, EMF, EPS, GIF, PCX, PNG, SVG and TIFF.
+ .
+ This package contains Zint Barcode Studio, a Qt frontend for the Zint
+ barcode generator library.
+
+Package: libzint2.16
 Section: libs
 Architecture: any
-Depends: zint (= ${binary:Version})
-Description: Zint Barcode Studio.
-   This package contains Zint Barcode Studio, a QT frontend for the Zint
- barcode encoding library.
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: library for encoding data in barcode symbols
+ Zint is a barcode generator library. It features support for over 50
+ symbologies, including Australian Post, Aztec Code & Runes, BC412,
+ Channel, Codabar, Codablock F, Code 11, Code 128, Code 16K, Code 2 of
+ 5 (IATA, Interleaved, Data Logic, ITF-14, Deutsche Post Leitcode &
+ Identcode), Code 32 (Italian Pharmacode), Code 39 & Code 39 Extended,
+ Code 49, Code 93, Code One, DAFT, Data Matrix (incl. DMRE), DotCode,
+ DPD, Dutch Post KIX, EAN, FIM, Flattermarken, Grid Matrix, GS1 DataBar
+ (incl. stacked & GS1 Composite symbols), GS1-128, Han Xin, HIBC, ISBN,
+ Japan Post, Korea Post, LOGMARS, MaxiCode, NVE-18 (SSCC-18), PDF417 &
+ MicroPDF417, Pharmacode, PLANET, POSTNET, Plessey (MSI & UK), PZN, QR
+ Code, Micro QR & rMQR, Royal Mail RM4SCC & Mailmark, Telepen,
+ Ultracode, UPC-A, UPC-E, UPNQR, UPU S10, USPS Intelligent Mail and
+ VIN.
+ .
+ Also included are Unicode translation for all ECI character sets, full
+ GS1 data support including verification and automated insertion of
+ FNC1 characters and support for encoding binary data. Output can be
+ saved as BMP, EMF, EPS, GIF, PCX, PNG, SVG and TIFF.
+ .
+ This package provides the Zint barcode generator library.
 
-Package: zint-qt-devel
+Package: libzint-dev
 Section: libdevel
 Architecture: any
-Depends: zint (= ${binary:Version}), zint-qt (= ${source:Version}), libqt4-dev
-Description: QZint development files.
-   This package contains development files for the Qt wrapper over the Zint
- library.
+Depends: libzint2.16 (= ${binary:Version}), ${misc:Depends}
+Multi-Arch: same
+Description: Zint development files
+ Zint is a barcode generator library. It features support for over 50
+ symbologies, including Australian Post, Aztec Code & Runes, BC412,
+ Channel, Codabar, Codablock F, Code 11, Code 128, Code 16K, Code 2 of
+ 5 (IATA, Interleaved, Data Logic, ITF-14, Deutsche Post Leitcode &
+ Identcode), Code 32 (Italian Pharmacode), Code 39 & Code 39 Extended,
+ Code 49, Code 93, Code One, DAFT, Data Matrix (incl. DMRE), DotCode,
+ DPD, Dutch Post KIX, EAN, FIM, Flattermarken, Grid Matrix, GS1 DataBar
+ (incl. stacked & GS1 Composite symbols), GS1-128, Han Xin, HIBC, ISBN,
+ Japan Post, Korea Post, LOGMARS, MaxiCode, NVE-18 (SSCC-18), PDF417 &
+ MicroPDF417, Pharmacode, PLANET, POSTNET, Plessey (MSI & UK), PZN, QR
+ Code, Micro QR & rMQR, Royal Mail RM4SCC & Mailmark, Telepen,
+ Ultracode, UPC-A, UPC-E, UPNQR, UPU S10, USPS Intelligent Mail and
+ VIN.
+ .
+ Also included are Unicode translation for all ECI character sets, full
+ GS1 data support including verification and automated insertion of
+ FNC1 characters and support for encoding binary data. Output can be
+ saved as BMP, EMF, EPS, GIF, PCX, PNG, SVG and TIFF.
+ .
+ This package contains development files for the Zint barcode generator
+ library and for the Qt wrapper over the Zint library.

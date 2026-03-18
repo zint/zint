@@ -52,7 +52,12 @@ target_link_libraries(${PROJECT_NAME} QZint
                         Qt${QT_VERSION_MAJOR}::UiTools Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Svg
                         Qt${QT_VERSION_MAJOR}::Core)
 
-get_property(libdir GLOBAL PROPERTY ZINT_LIBDIR)
-set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${libdir}")
+if(APPLE AND NOT CMAKE_INSTALL_RPATH)
+    get_property(libdir GLOBAL PROPERTY ZINT_LIBDIR)
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${libdir}")
+endif()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION "${CMAKE_INSTALL_BINDIR}" RUNTIME)
+if(UNIX)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../docs/zint-qt.1" DESTINATION "${CMAKE_INSTALL_MANDIR}/man1" COMPONENT doc)
+endif()

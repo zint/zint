@@ -1,9 +1,9 @@
-Contents
---------
-
-2025-01-21
+2026-03-18
 
 Here is a guide to which bit of source code does what.
+
+library.c:
+    API entry points
 
 2of5.c:
 	Code 2 of 5 Standard (Matrix)
@@ -40,7 +40,7 @@ codabar.c:
 	Codabar
 
 codablock.c:
-	Codablock-F
+	Codablock F
 
 code11.c:
 	Code 11

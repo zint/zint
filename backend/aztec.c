@@ -96,9 +96,9 @@ static int az_reduce(char *modes, unsigned char *source, const int length) {
         modes[j] = modes[i];
         if ((modes[i] == AZ_P || (modes[i] & AZ_PS)) && AZ_DOUBLE_PUNCT_NO_LEN_CHECK(source, i)) {
             if (source[i] == '\r') {
-                source[j] = 'a'; /* "\r\n" */
+                source[j] = 'a'; /* (CR LF) */
             } else {
-                source[j] = 'b' + 7 - ((source[i] & 0x0F) >> 1); /* ". " -> 'b', ", " -> 'c', ": " -> 'd' */
+                source[j] = 'b' + 7 - ((source[i] & 0x0F) >> 1); /* (. SP) -> 'b', (, SP) -> 'c', (: SP) -> 'd' */
             }
             i += 2;
         } else {
@@ -124,7 +124,7 @@ static char az_mode_char(const char mode) {
 
     if (mode & AZ_US) {
         assert(AZ_MASK(mode) == AZ_L || AZ_MASK(mode) == AZ_D);
-        return AZ_MASK(mode) == AZ_L ? 'r' : 't';
+        return AZ_MASK(mode) == AZ_L ? 'K' : 'C';
     }
     assert(AZ_MASK(mode) < ARRAY_SIZE(mode_chars));
 
@@ -164,7 +164,7 @@ static int az_text_modes(char modes[], unsigned char source[], int length, const
         }
     }
 
-    /* Deal first with letter combinations which can be combined to one codeword
+    /* Deal first with letter combinations which can be combined to one codeword.
        Combinations are (CR LF) (. SP) (, SP) (: SP) in Punct mode */
     current_mode = initial_mode;
     for (i = 0; i + 1 < length; i++) {
@@ -182,26 +182,14 @@ static int az_text_modes(char modes[], unsigned char source[], int length, const
             count = az_count_doubles(source, length, i);
             next_mode = az_get_next_mode(modes, length, i);
 
-            if (current_mode == AZ_U) {
-                if (next_mode == AZ_D && count <= 5) {
+            if (next_mode == AZ_D) {
+                if ((current_mode == AZ_U && count <= 5) || (current_mode == AZ_L && count <= 4)
+                        || (current_mode == AZ_M && count == 1) || (current_mode == AZ_D && count <= 7)) {
                     memset(modes + i, AZ_D, 2 * count);
                 }
 
-            } else if (current_mode == AZ_L) {
-                if (next_mode == AZ_D && count <= 4) {
-                    memset(modes + i, AZ_D, 2 * count);
-                }
-
-            } else if (current_mode == AZ_M) {
-                if (next_mode == AZ_D && count == 1) {
-                    modes[i] = AZ_D;
-                    modes[i + 1] = AZ_D;
-                }
-
-            } else if (current_mode == AZ_D) {
-                if ((next_mode != AZ_D && count <= 4) || (next_mode == AZ_D && count <= 7)) {
-                    memset(modes + i, AZ_D, 2 * count);
-                }
+            } else if (current_mode == AZ_D && count <= 4) {
+                memset(modes + i, AZ_D, 2 * count);
             }
 
             /* Default is Punct mode */
@@ -976,6 +964,8 @@ static int az_UpdateStateListForChar(struct az_state_list *list, const unsigned 
 
 /* Default, optimized encodation algorithm by Frank Yellin and Rustam Abdullaev, adapted from ZXing via zxing-cpp's
    `HighLevelEncoder::Encode()` & slightly improved */
+/* Copyright 2013 ZXing authors */ /* ZXing */
+/* Copyright 2016 Huy Cuong Nguyen */ /* zxing-cpp */
 /* SPDX-License-Identifier: Apache-2.0 */
 /* Note that a bitstream that is encoded to be shortest based on mode choices may not be so after bit-stuffing */
 static int az_binary_string(unsigned char source[], const int length, int bp,
@@ -1002,7 +992,7 @@ static int az_binary_string(unsigned char source[], const int length, int bp,
         fprintf(stderr, "index %d\n", (int) i);
 #endif
         if (AZ_DOUBLE_PUNCT(source, length, i)) {
-            /* "\r\n" -> 2, ". " -> 3, ", " -> 4, ": " -> 5 */
+            /* (CR LF) -> 2, (. SP) -> 3, (, SP) -> 4, (: SP) -> 5 */
             const int pairCode = source[i] == '\r' ? 2 : 3 + 7 - ((source[i] & 0x0F) >> 1);
             if (!az_UpdateStateListForPair(list, i, pairCode)) {
                 az_state_list_free(list);

@@ -16,7 +16,7 @@ BC412 (SEMI T1-95)                      Han Xin (Chinese Sensible) Code
 Brazilian Postal Code (CEPNet)          ISBN
 Channel Code                            ITF-14
 Codabar                                 Japanese Postal Barcode
-Codablock-F (and HIBC)                  Korean Postal Barcode
+Codablock F (and HIBC)                  Korean Postal Barcode
 Code 11                                 LOGMARS
 Code 128 (and GS1-128 and HIBC)         MaxiCode
 Code 16K                                MicroPDF417 (and HIBC)
@@ -63,7 +63,7 @@ Please see "ChangeLog" in the project root directory.
 
 LICENSE
 -------
-Zint, libzint and Zint Barcode Studio are Copyright © 2025 Robin Stuart. All
+Zint, libzint and Zint Barcode Studio are Copyright © 2026 Robin Stuart. All
 historical versions are distributed under the GNU General Public License
 version 3 or later. Versions 2.5 and later are released under a dual license:
 the encoding library is released under the BSD (3 clause) license whereas the

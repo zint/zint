@@ -106,7 +106,7 @@ static void types(void) {
           "28 FLAT        Flattermarken           104 HIBC_QR        HIBC QR Code\n"
           "29 DBAR_OMN    GS1 DataBar Omni        106 HIBC_PDF       HIBC PDF417\n"
           "30 DBAR_LTD    GS1 DataBar Limited     108 HIBC_MICPDF    HIBC MicroPDF417\n"
-          "31 DBAR_EXP    GS1 DataBar Expanded    110 HIBC_BLOCKF    HIBC Codablock-F\n", stdout);
+          "31 DBAR_EXP    GS1 DataBar Expanded    110 HIBC_BLOCKF    HIBC Codablock F\n", stdout);
     fputs("32 TELEPEN     Telepen Alpha           112 HIBC_AZTEC     HIBC Aztec Code\n"
           "34 UPCA        UPC-A                   115 DOTCODE        DotCode\n"
           "35 UPCA_CHK    UPC-A + Check Digit     116 HANXIN         Han Xin Code\n"
@@ -134,7 +134,7 @@ static void types(void) {
           "71 DATAMATRIX  Data Matrix             147 DXFILMEDGE     DX Film Edge Barcode\n", stdout);
     fputs("72 EAN14       EAN-14 (GS1-128 based)  148 EAN8_CC        Composite EAN-8\n"
           "73 VIN         Vehicle Information No. 149 EAN13_CC       Composite EAN-13\n"
-          "74 CODABLOCKF  Codablock-F\n", stdout);
+          "74 CODABLOCKF  Codablock F\n", stdout);
 }
 
 /* Output version information */
@@ -224,7 +224,7 @@ if (have_gs1syntaxengine) {
            "  --quietzones          Add compliant quiet zones\n"
            "  -r, --reverse         Reverse colours (white on black)\n"
            "  --rotate=INTEGER      Rotate symbol by INTEGER (0, 90, 180, 270) degrees\n"
-           "  --rows=INTEGER        Set number of rows (Codablock-F/PDF417)\n", stdout);
+           "  --rows=INTEGER        Set number of rows (Codablock F/PDF417)\n", stdout);
     fputs( "  --scale=NUMBER        Adjust size of X-dimension\n"
            "  --scalexdimdp=X[,R]   Adjust size to X-dimension X at resolution R\n"
            "  --scmvv=INTEGER       Prefix SCM with \"[)>\\R01\\Gvv\" (vv is INTEGER) (MaxiCode)\n"
@@ -236,11 +236,12 @@ if (have_gs1syntaxengine) {
            "  --structapp=I,C[,ID]  Set Structured Append info (I index, C count)\n"
            "  -t, --types           Display table of barcode types\n", stdout);
     fputs( "  --textgap=NUMBER      Adjust gap between barcode and HRT in multiples of X-dim\n"
+           "  --verbose             Output debug info to stdout\n"
            "  --vers=INTEGER        Set symbol version (size, check digits, other options)\n"
            "  -v, --version         Display Zint version\n"
-           "  --vwhitesp=INTEGER    Set height of vertical whitespace in multiples of X-dim\n"
-           "  -w, --whitesp=INTEGER Set width of horizontal whitespace in multiples of X-dim\n", stdout);
-    fputs( "  --werror              Convert all warnings into errors\n", stdout);
+           "  --vwhitesp=INTEGER    Set height of vertical whitespace in multiples of X-dim\n", stdout);
+    fputs( "  -w, --whitesp=INTEGER Set width of horizontal whitespace in multiples of X-dim\n"
+           "  --werror              Convert all warnings into errors\n", stdout);
 }
 
 /* Display supported ECI codes */
@@ -1255,6 +1256,7 @@ static void win_free_args(void) {
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
+/* SPDX-License-Identifier: LGPL-2.1-or-later */
 static WCHAR **win_CommandLineToArgvW(const WCHAR *cmdline, int *numargs) {
     int qcount, bcount;
     const WCHAR *s;
@@ -1640,7 +1642,7 @@ int main(int argc, char **argv) {
 #endif
             {"textgap", 1, NULL, OPT_TEXTGAP},
             {"types", 0, NULL, 't'},
-            {"verbose", 0, NULL, OPT_VERBOSE}, /* Currently undocumented, output some debug info */
+            {"verbose", 0, NULL, OPT_VERBOSE},
             {"vers", 1, NULL, OPT_VERS},
             {"version", 0, NULL, 'v'},
             {"vwhitesp", 1, NULL, OPT_VWHITESP},

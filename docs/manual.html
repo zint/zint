@@ -504,6 +504,7 @@ id="toc-utf-8-to-eci-convenience-functions">5.17 UTF-8 to ECI
 convenience functions</a></li>
 <li><a href="#zint-version" id="toc-zint-version">5.18 Zint
 Version</a></li>
+<li><a href="#debug-info" id="toc-debug-info">5.19 Debug Info</a></li>
 </ul></li>
 <li><a href="#types-of-symbology" id="toc-types-of-symbology">6. Types
 of Symbology</a>
@@ -631,8 +632,8 @@ Stacked Symbologies</a>
 <ul>
 <li><a href="#basic-symbol-stacking"
 id="toc-basic-symbol-stacking">6.2.1 Basic Symbol Stacking</a></li>
-<li><a href="#codablock-f" id="toc-codablock-f">6.2.2
-Codablock-F</a></li>
+<li><a href="#codablock-f" id="toc-codablock-f">6.2.2 Codablock
+F</a></li>
 <li><a href="#code-16k-en-12323" id="toc-code-16k-en-12323">6.2.3 Code
 16K (EN 12323)</a></li>
 <li><a href="#pdf417-iso-15438" id="toc-pdf417-iso-15438">6.2.4 PDF417
@@ -1866,7 +1867,7 @@ DataBar Truncated)</td>
 <tr>
 <td style="text-align: left;">74</td>
 <td style="text-align: left;"><code>BARCODE_CODABLOCKF</code></td>
-<td style="text-align: left;">Codablock-F</td>
+<td style="text-align: left;">Codablock F</td>
 </tr>
 <tr>
 <td style="text-align: left;">75</td>
@@ -1986,7 +1987,7 @@ DataBar Truncated)</td>
 <tr>
 <td style="text-align: left;">110</td>
 <td style="text-align: left;"><code>BARCODE_HIBC_BLOCKF</code></td>
-<td style="text-align: left;">HIBC Codablock-F</td>
+<td style="text-align: left;">HIBC Codablock F</td>
 </tr>
 <tr>
 <td style="text-align: left;">112</td>
@@ -2154,7 +2155,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb25-1"><a href=
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Warning</span> 247: Height not compliant with standards</span></code></pre></div>
 <p>Another switch is <code>--heightperrow</code>, which can be useful
 for symbologies that have a variable number of linear rows, namely
-Codablock-F, Code 16K, Code 49, GS1 DataBar Expanded Stacked,
+Codablock F, Code 16K, Code 49, GS1 DataBar Expanded Stacked,
 MicroPDF417 and PDF417, as it changes the treatment of the height value
 from overall height to per-row height, allowing you to specify a
 consistent height for each linear row without having to know how many
@@ -2193,7 +2194,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb29-1"><a href=
 zones compliant with the symbology’s specification. This is in addition
 to any whitespace specified with the <code>--whitesp</code> or
 <code>--vwhitesp</code> switches.</p>
-<p>Note that Codablock-F, Code 16K, Code 49, ITF-14, EAN-13, EAN-8,
+<p>Note that Codablock F, Code 16K, Code 49, ITF-14, EAN-13, EAN-8,
 EAN/UPC add-ons, ISBN, UPC-A and UPC-E have compliant quiet zones added
 by default. This can be disabled with the option
 <code>--noquietzones</code>.</p>
@@ -2231,7 +2232,7 @@ alt="zint -b QRCODE --border=1 --box -d &quot;This Text&quot; --quietzones" />
 <figcaption><span class="figure-label">Figure 16:</span>
 <code>zint -b QRCODE --border=1 --box -d "This Text" --quietzones</code></figcaption>
 </figure>
-<p>Codablock-F, Code 16K and Code 49 always have boundary bars, and
+<p>Codablock F, Code 16K and Code 49 always have boundary bars, and
 default to particular horizontal whitespace values. Special
 considerations apply to ITF-14 and DPD - see <a href="#itf-14">6.1.2.6
 ITF-14</a> and <a href="#dpd-code">6.1.10.7 DPD Code</a> for those
@@ -2506,7 +2507,7 @@ Sets</caption>
 <td>None</td>
 </tr>
 <tr>
-<td style="text-align: left;">Codablock-F</td>
+<td style="text-align: left;">Codablock F</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
@@ -2602,7 +2603,7 @@ Modes and ECI</a> below.</p>
 href="#gs1-data-entry-and-options">4.11.3 GS1 Data Entry and
 Options</a>.</p>
 <p>Health Industry Barcode (HIBC) data may be encoded in the symbologies
-Aztec Code, Codablock-F, Code 128, Code 39, Data Matrix, MicroPDF417,
+Aztec Code, Codablock F, Code 128, Code 39, Data Matrix, MicroPDF417,
 PDF417 and QR Code. Within this mode, the leading <code>'+'</code> and
 the check character are automatically added by Zint, conforming to HIBC
 Labeler Identification Code (HIBC LIC). For HIBC Provider Applications
@@ -3298,6 +3299,8 @@ hexadecimal values if asked to output to a text file
 (<code>"*.txt"</code>) or if given the option
 <code>--filetype=txt</code> or the option <code>--dump</code>. This can
 be used for test and diagnostic purposes.</p>
+<p>Also there’s the <code>--verbose</code> option which will output
+debug information to <code>stdout</code>.</p>
 <p>Additional options are available which are specific to certain
 symbologies. These may, for example, control the amount of error
 correction data or the size of the symbol. These options are discussed
@@ -4411,7 +4414,7 @@ For instance:</p>
 <span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="op">(</span>ZBarcode_BarcodeName<span class="op">(</span>BARCODE_PDF417<span class="op">,</span> name<span class="op">)</span> <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%s\n</span><span class="st">&quot;</span><span class="op">,</span> name<span class="op">);</span></span>
 <span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>will print <code>BARCODE_PDF417</code>.</p>
+<p>will print “BARCODE_PDF417”.</p>
 <h2 id="checking-symbology-capabilities">5.15 Checking Symbology
 Capabilities</h2>
 <p>It can be useful for frontend programs to know the capabilities of a
@@ -4607,6 +4610,11 @@ available, else zero.</p>
 <div class="sourceCode" id="cb93"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> ZBarcode_Version<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span></code></pre></div>
 <p>The version parts are separated by hundreds. For instance, version
 <code>"2.9.1"</code> is returned as <code>"20901"</code>.</p>
+<h2 id="debug-info">5.19 Debug Info</h2>
+<p>Debugging information can be output to <code>stdout</code> by setting
+the <code>debug</code> member to <code>ZINT_DEBUG_PRINT</code>
+(<code>1</code>). Other values are used internally by the test suite and
+shouldn’t be set.</p>
 <h1 id="types-of-symbology">6. Types of Symbology</h1>
 <h2 id="one-dimensional-symbols">6.1 One-Dimensional Symbols</h2>
 <p>One-dimensional or linear symbols are what most people associate with
@@ -5581,7 +5589,7 @@ alt="zint --notext --bind --separator=2 -d &quot;This&quot; -d &quot;That&quot;"
 <p>A more sophisticated method is to use some type of line indexing
 which indicates to the barcode reader which order the stacked symbols
 should be read in. This is demonstrated by the symbologies below.</p>
-<h3 id="codablock-f">6.2.2 Codablock-F</h3>
+<h3 id="codablock-f">6.2.2 Codablock F</h3>
 <p>This is a stacked symbology based on Code 128 which can encode
 Latin-1 data up to a maximum length of 2726 symbol characters, meaning
 for instance up to 2726 all ASCII characters, or 5452 all numeric, or up
@@ -5592,12 +5600,12 @@ alt="zint -b CODABLOCKF -d &quot;CODABLOCK F Symbology&quot; --rows=3" />
 <figcaption><span class="figure-label">Figure 84:</span>
 <code>zint -b CODABLOCKF -d "CODABLOCK F Symbology" --rows=3</code></figcaption>
 </figure>
-<p>The width of the Codablock-F symbol can be set using the
+<p>The width of the Codablock F symbol can be set using the
 <code>--cols</code> option (API <code>option_2</code>), to a value
 between 9 and 67. The height (number of rows) can be set using the
 <code>--rows</code> option (API <code>option_1</code>), with a maximum
-of 44. Zint does not currently support encoding of GS1 data in
-Codablock-F symbols.</p>
+of 44. Zint does not currently support encoding of GS1 data in Codablock
+F symbols.</p>
 <p>A separate symbology ID (<code>BARCODE_HIBC_BLOCKF</code>) can be
 used to encode Health Industry Barcode (HIBC) data which adds a leading
 <code>'+'</code> character and a modulo-49 check digit to the encoded
@@ -8543,7 +8551,7 @@ Silicon Wafers (BC412) (1996)</li>
 Code</li>
 <li>BS EN 798:1996 Bar coding - Symbology specifications -
 ‘Codabar’</li>
-<li>AIM Europe ISS-X-24 - Uniform Symbology Specification Codablock-F
+<li>AIM Europe ISS-X-24 - Uniform Symbology Specification Codablock F
 (1995)</li>
 <li>ISO/IEC 15417:2007 Information technology - Automatic identification
 and data capture techniques - Code 128 bar code symbology
@@ -9217,7 +9225,7 @@ the <code>--border</code> option.</p>
 <dt><code>--cols=INTEGER</code></dt>
 <dd>
 <p>Set the number of data columns in the symbol to <em>INTEGER</em>.
-Affects Codablock-F, DotCode, GS1 DataBar Expanded Stacked
+Affects Codablock F, DotCode, GS1 DataBar Expanded Stacked
 (DBAR_EXPSTK), MicroPDF417 and PDF417 symbols.</p>
 </dd>
 <dt><code>--compliantheight</code></dt>
@@ -9413,7 +9421,7 @@ floating-point.</p>
 </dd>
 <dt><code>--heightperrow</code></dt>
 <dd>
-<p>Treat height as per-row. Affects Codablock-F, Code 16K, Code 49, GS1
+<p>Treat height as per-row. Affects Codablock F, Code 16K, Code 49, GS1
 DataBar Expanded Stacked (DBAR_EXPSTK), MicroPDF417 and PDF417.</p>
 </dd>
 <dt><code>-i</code>, <code>--input=FILE</code></dt>
@@ -9502,7 +9510,7 @@ can be 0, 90, 270 or 360.</p>
 </dd>
 <dt><code>--rows=INTEGER</code></dt>
 <dd>
-<p>Set the number of rows for Codablock-F or PDF417 to <em>INTEGER</em>.
+<p>Set the number of rows for Codablock F or PDF417 to <em>INTEGER</em>.
 It will also set the minimum number of rows for Code 16K or Code 49, and
 the maximum number of rows for GS1 DataBar Expanded Stacked
 (DBAR_EXPSTK).</p>
@@ -9593,6 +9601,10 @@ names can be used with <code>-b</code> | <code>--barcode</code>.</p>
 <p>Adjust the gap between the barcode and the Human Readable Text (HRT).
 <em>NUMBER</em> is in X-dimensions, and may be floating-point. Maximum
 is 10 and minimum is -5. The default is 1.</p>
+</dd>
+<dt><code>--verbose</code></dt>
+<dd>
+<p>Output debug information to stdout.</p>
 </dd>
 <dt><code>--vers=INTEGER</code></dt>
 <dd>
@@ -9967,10 +9979,10 @@ role="doc-backlink">↩︎</a></p></li>
 default for DPD - see <a href="#dpd-code">6.1.10.7 DPD Code</a>.<a
 href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn16"><p>The <code>BARCODE_BIND</code> flag is always set for
-Codablock-F, Code 16K and Code 49. Special considerations apply to
+Codablock F, Code 16K and Code 49. Special considerations apply to
 ITF-14 - see <a href="#itf-14">6.1.2.6 ITF-14</a>.<a href="#fnref16"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>Codablock-F, Code 16K, Code 49, EAN-13, EAN-8, EAN/UPC
+<li id="fn17"><p>Codablock F, Code 16K, Code 49, EAN-13, EAN-8, EAN/UPC
 add-ons, ISBN, ITF-14, UPC-A and UPC-E have compliant quiet zones added
 by default.<a href="#fnref17" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>

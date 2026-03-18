@@ -1,7 +1,7 @@
 /* pdf417_tabs.h - PDF417 tables and coefficients */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
 
     Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,6 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-/* this file contains the character table, the pre-calculated coefficients and the
-   codeword patterns taken from lines 416 to 454 of pdf417.frm */
-
 /* See "pdf417.h" for declarations */
 
 #ifndef Z_PDF417_TABS_H
@@ -43,31 +40,32 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* PDF417 error correction coefficients from Grand Zebu */
+/* PDF417 error correction coefficients from ISO/IEC 15438:2015 Annex F, Tables F.1 to F.9
+   k is no. of EC codewords */
 INTERNAL_DATA const unsigned short zint_pdf_coefrs[1022] = {
-    /* k = 2 */
+    /* Table F.1, k = 2 */
      27, 917,
 
-    /* k = 4 */
+    /* Table F.2, k = 4 */
     522, 568, 723, 809,
 
-    /* k = 8 */
+    /* Table F.3, k = 8 */
     237, 308, 436, 284, 646, 653, 428, 379,
 
-    /* k = 16 */
+    /* Table F.4, k = 16 */
     274, 562, 232, 755, 599, 524, 801, 132, 295, 116, 442, 428, 295,  42, 176,  65,
 
-    /* k = 32 */
+    /* Table F.5, k = 32 */
     361, 575, 922, 525, 176, 586, 640, 321, 536, 742, 677, 742, 687, 284, 193, 517,
     273, 494, 263, 147, 593, 800, 571, 320, 803, 133, 231, 390, 685, 330,  63, 410,
 
-    /* k = 64 */
+    /* Table F.6, k = 64 */
     539, 422,   6,  93, 862, 771, 453, 106, 610, 287, 107, 505, 733, 877, 381, 612,
     723, 476, 462, 172, 430, 609, 858, 822, 543, 376, 511, 400, 672, 762, 283, 184,
     440,  35, 519,  31, 460, 594, 225, 535, 517, 352, 605, 158, 651, 201, 488, 502,
     648, 733, 717,  83, 404,  97, 280, 771, 840, 629,   4, 381, 843, 623, 264, 543,
 
-    /* k = 128 */
+    /* Table F.7, k = 128 */
     521, 310, 864, 547, 858, 580, 296, 379,  53, 779, 897, 444, 400, 925, 749, 415,
     822,  93, 217, 208, 928, 244, 583, 620, 246, 148, 447, 631, 292, 908, 490, 704,
     516, 258, 457, 907, 594, 723, 674, 292, 272,  96, 684, 432, 686, 606, 860, 569,
@@ -77,7 +75,7 @@ INTERNAL_DATA const unsigned short zint_pdf_coefrs[1022] = {
     157, 374, 242, 726, 600, 269, 375, 898, 845, 454, 354, 130, 814, 587, 804,  34,
     211, 330, 539, 297, 827, 865,  37, 517, 834, 315, 550,  86, 801,   4, 108, 539,
 
-    /* k = 256 */
+    /* Table F.8, k = 256 */
     524, 894,  75, 766, 882, 857,  74, 204,  82, 586, 708, 250, 905, 786, 138, 720,
     858, 194, 311, 913, 275, 190, 375, 850, 438, 733, 194, 280, 201, 280, 828, 757,
     710, 814, 919,  89,  68, 569,  11, 204, 796, 605, 540, 913, 801, 700, 799, 137,
@@ -95,7 +93,7 @@ INTERNAL_DATA const unsigned short zint_pdf_coefrs[1022] = {
     609, 829, 189,  20, 167,  29, 872, 449,  83, 402,  41, 656, 505, 579, 481, 173,
     404, 251, 688,  95, 497, 555, 642, 543, 307, 159, 924, 558, 648,  55, 497,  10,
 
-    /* k = 512 */
+    /* Table F.9, k = 512 */
     352,  77, 373, 504,  35, 599, 428, 207, 409, 574, 118, 498, 285, 380, 350, 492,
     197, 265, 920, 155, 914, 299, 229, 643, 294, 871, 306,  88,  87, 193, 352, 781,
     846,  75, 327, 520, 435, 543, 203, 666, 249, 346, 781, 621, 640, 268, 794, 534,
@@ -130,7 +128,11 @@ INTERNAL_DATA const unsigned short zint_pdf_coefrs[1022] = {
      63, 310, 863, 251, 366, 304, 282, 738, 675, 410, 389, 244,  31, 121, 303, 263
 };
 
-INTERNAL_DATA const unsigned short zint_pdf_bitpattern[2787] = {
+/* Encoding/decoding table of PDF417 symbol character bar-space sequences from ISO/IEC 15438:2015 Annex A
+   e.g. 1st entry   B  SBSBSB  S
+                    3  111113  6
+                    11101010111000000 = 1110 1010 1110 0000 with last space implied = 0xEAE0 */
+INTERNAL_DATA const unsigned short zint_pdf_bitpattern[2787] = { /* 2787 = 929 * 3 */
     0xEAE0, 0xF578, 0xFABE, 0xEA70, 0xF53C, 0xFA9F, 0xD460, 0xEA38, 0xD430, 0xA820,
     0xD418, 0xA810, 0xD6E0, 0xEB78, 0xF5BE, 0xD670, 0xEB3C, 0xF59F, 0xAC60, 0xD638,
     0xAC30, 0xAEE0, 0xD778, 0xEBBE, 0xAE70, 0xD73C, 0xEB9F, 0xAE38, 0xD71E, 0xAF78,
@@ -412,7 +414,8 @@ INTERNAL_DATA const unsigned short zint_pdf_bitpattern[2787] = {
     0xC3EA, 0xC3E9, 0x83CA, 0x87DA, 0x83C9, 0x87D9, 0xE3F5
 };
 
-/* MicroPDF417 coefficients from ISO/IEC 24728:2006 Annex F */
+/* MicroPDF417 coefficients from ISO/IEC 24728:2006 Annex F
+   Note from Table 1 minimum no. of EC codewords (k) is 7, so don't need the entries for 3 to 6 */
 INTERNAL_DATA const unsigned short zint_pdf_Microcoeffs[344] = {
     /* k = 7 */
      76, 925, 537, 597, 784, 691, 437,
@@ -486,7 +489,7 @@ INTERNAL_DATA const unsigned short zint_pdf_MicroVariants[136] = { /*34*4*/
 };
 /* rows, columns, error codewords, k-offset */
 
-/* following is Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 24728:2006 tables 10, 11 and 12 */
+/* Following is Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 24728:2006 Tables 10, 11 and 12 */
 INTERNAL_DATA const char zint_pdf_RAPTable[136] = { /*34*4*/
      1,  8, 36, 19,  9, 25, 1,  1,  8, 36, 19,  9, 27,  1,  7, 15,  25,  37,   1,   1,  21,  15,   1, 47,  1,  7, 15,  25,  37,   1,   1,  21,  15,   1,
      0,  0,  0,  0,  0,  0, 0,  0,  0,  0,  0,  0,  0,  1,  7, 15,  25,  37,  17,   9,  29,  31,  25, 19,  1,  7, 15,  25,  37,  17,   9,  29,  31,  25,

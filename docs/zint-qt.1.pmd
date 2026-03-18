@@ -1,0 +1,55 @@
+% ZINT-QT(1) Version 2.16.0.9
+%
+% March 2026
+
+[//]: # ( vim: set ts=4 sw=4 et : )
+
+# NAME
+
+`zint-qt` - Zint Barcode Studio, a Qt frontend to the Zint Barcode Generator
+
+# SYNOPSIS
+
+| `zint-qt` [`--verbose`]
+
+# DESCRIPTION
+
+zint-qt encodes input data in a barcode which can then be saved to an image file or to the clipboard.
+
+Input data is UTF-8, unless the "Binary Mode" checkbox is checked.
+
+Output may be in one of these formats: Windows Bitmap (`BMP`), Enhanced Metafile Format (`EMF`), Encapsulated
+PostScript (`EPS`), Graphics Interchange Format (`GIF`), ZSoft Paintbrush (`PCX`), Portable Network Format (`PNG`),
+Scalable Vector Graphic (`SVG`), or Tagged Image File Format (`TIF`).
+
+# OPTIONS
+
+`--verbose`
+
+:   Output debug information to stdout.
+
+# EXIT STATUS
+
+`0`
+
+# BUGS
+
+Please send bug reports to https://sourceforge.net/p/zint/tickets/.
+
+# SEE ALSO
+
+Documentation for `zint-qt` (and the API `libzint` and the CLI `zint`) is available from
+
+        https://zint.org.uk/manual/
+
+and at
+
+        https://sourceforge.net/p/zint/docs/manual.txt
+
+# COPYRIGHT
+
+Copyright © 2026 Robin Stuart. Released under GNU GPL 3.0 or later.
+
+# AUTHOR
+
+Robin Stuart <robin@zint.org.uk>

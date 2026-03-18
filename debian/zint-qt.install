@@ -1,2 +1,4 @@
-usr/lib/libQZint.so.*
 usr/bin/zint-qt
+usr/share/man/man1/zint-qt.1
+*.desktop         /usr/share/applications
+zint-qt.png       /usr/share/pixmaps

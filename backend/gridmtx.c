@@ -1,7 +1,7 @@
 /*  gridmtx.c - Grid Matrix */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -127,6 +127,7 @@ static int gm_in_numeral(const unsigned int ddata[], const int length, const int
 
 /* Calculate optimized encoding modes. Adapted from Project Nayuki */
 /* Copyright (c) Project Nayuki. (MIT License) See qr.c for detailed notice */
+/* SPDX-License-Identifier: MIT */
 static void gm_define_modes(char *modes, const unsigned int ddata[], const int length, const int debug_print) {
     /* Must be in same order as GM_H etc */
     static const char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE, '\0' };

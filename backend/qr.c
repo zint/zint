@@ -230,6 +230,7 @@ static void qr_define_modes(char modes[], const unsigned int ddata[], const int 
      * - The above copyright notice and this permission notice shall be included in
      *   all copies or substantial portions of the Software.
      */
+    /* SPDX-License-Identifier: MIT */
     unsigned int state[11] = {
         0 /*N*/, 0 /*A*/, 0 /*B*/, 0 /*K*/, /* Head/switch costs */
         0 /*version*/,

@@ -2,7 +2,7 @@
 /* Generate ECI multibyte tables from unicode.org mapping files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2022-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2026 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
@@ -12,7 +12,7 @@
  *
  * NOTE: backend/tools/data/GB18030.TXT will have to be downloaded first from the tarball
  *       https://haible.de/bruno/charsets/conversion-tables/GB18030.tar.bz2
- *       using the version jdk-1.4.2/GB18030.TXT
+ *       using the version libiconv-1.11/GB18030.TXT
  *
  * NOTE: tools/data/GB2312.TXT will have to be downloaded first from the tarball
  *       https://haible.de/bruno/charsets/conversion-tables/GB2312.tar.bz2
@@ -48,6 +48,7 @@ $copyright_text = <<<'EOD'
     SUCH DAMAGE.
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
+/* SPDX-License-Identifier: Unicode-3.0 */
 
 EOD;
 
@@ -573,7 +574,7 @@ file_put_contents($out_dirname . '/gbk.h', implode("\n", $out) . "\n");
 
 $out = array();
 
-out_header($out, 'gb18030', 'GB 18030-2005', 'jdk-1.4.2/GB18030.TXT', 2016,
+out_header($out, 'gb18030', 'GB 18030-2005', 'libiconv-1.11/GB18030.TXT', 2016,
             '(see https://haible.de/bruno/charsets/conversion-tables/GB18030.tar.bz2)');
 
 $file = $data_dirname . '/' . 'GB18030.TXT';

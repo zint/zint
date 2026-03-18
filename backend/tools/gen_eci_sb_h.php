@@ -2,7 +2,7 @@
 /* Generate ECI single-byte tables & routines from unicode.org mapping files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2022-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2026 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
@@ -26,7 +26,7 @@ $head = <<<'EOD'
     "https://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP125*.TXT" */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -54,6 +54,7 @@ $head = <<<'EOD'
     SUCH DAMAGE.
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
+/* SPDX-License-Identifier: Unicode-3.0 */
 
 #ifndef Z_ECI_SB_H
 #define Z_ECI_SB_H

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -45,7 +45,7 @@
 INTERNAL int zint_test_u_gb18030_int(const unsigned int u, unsigned int *dest1, unsigned int *dest2);
 
 /* As control convert to GB 18030 using table generated from GB18030.TXT plus simple processing.
-   The version of GB18030.TXT is jdk-1.4.2/GB18030.TXT taken from
+   The version of GB18030.TXT is libiconv-1.11/GB18030.TXT taken from
    https://haible.de/bruno/charsets/conversion-tables/GB18030.html
    The generated file backend/tests/test_gb18030_tab.h does not include U+10000..10FFFF codepoints to save space.
    See also backend/tests/tools/data/GB18030.TXT.README and backend/tests/tools/gen_test_tab.php.

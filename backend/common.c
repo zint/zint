@@ -697,6 +697,7 @@ INTERNAL unsigned int z_decode_utf8(unsigned int *state, unsigned int *codep, co
 
         See https://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
      */
+    /* SPDX-License-Identifier: Apache-2.0 */
 
     static const unsigned char utf8d[] = {
         /* The first part of the table maps bytes to character classes that

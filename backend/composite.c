@@ -1,7 +1,7 @@
 /* composite.c - Handles GS1 Composite Symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -809,6 +809,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
                 /* So still need FNC1 character but can't do single FNC1 in numeric mode, so insert alphanumeric latch
                    "0000" and alphanumeric FNC1 "01111" (this implementation detail taken from BWIPP
                    https://github.com/bwipp/postscriptbarcode Copyright (c) 2004-2019 Terry Burton) */
+                /* SPDX-License-Identifier: MIT */
                 bp = z_bin_append_posn(15, 9, binary_string, bp); /* "000001111" */
                 /* Note an alphanumeric FNC1 is also a numeric latch, so now in numeric mode */
             }

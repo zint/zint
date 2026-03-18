@@ -127,7 +127,7 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("Brazilian Postal Code (CEPNet)"), BARCODE_CEPNET },
     { QSL("Channel Code"), BARCODE_CHANNEL },
     { QSL("Codabar (EN 798)"), BARCODE_CODABAR },
-    { QSL("Codablock-F (and HIBC)"), BARCODE_CODABLOCKF },
+    { QSL("Codablock F (and HIBC)"), BARCODE_CODABLOCKF },
     { QSL("Code 11"), BARCODE_CODE11 },
     { QSL("Code 128 (ISO 15417) (and GS1-128 and HIBC)"), BARCODE_CODE128 },
     { QSL("Code 16K (EN 12323)"), BARCODE_CODE16K },
@@ -236,7 +236,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
           m_btnHeightPerRowDisable(nullptr), m_btnHeightPerRowDefault(nullptr),
           m_scaleWindow(nullptr)
 {
-    // Undocumented command line debug flag
+    // Command line debug flag
     m_bc.bc.setDebug(QCoreApplication::arguments().contains(QSL("--verbose")));
 
     QCoreApplication::setOrganizationName(QSL("zint"));
@@ -817,7 +817,7 @@ void MainWindow::about()
             "<p>A free barcode generator</p>"
             "<p>Instruction manual is available at the project homepage:<br>"
             "<a href=\"https://www.zint.org.uk\">https://www.zint.org.uk</a>.</p>"
-            "<p>Copyright &copy; 2006-2025 Robin Stuart and others.<br>"
+            "<p>Copyright &copy; 2006-2026 Robin Stuart and others.<br>"
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"
             "<p>Qt version %2. Qt settings:<br>%3</p>"
@@ -1960,7 +1960,7 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         load_sub_settings(settings, symbology);
-        tabMain->insertTab(1, m_optionWidget, tr("Codablock&-F"));
+        tabMain->insertTab(1, m_optionWidget, tr("Cod&ablock F"));
         btype->setItemText(0, tr("Default (bind)"));
         connect(get_widget(QSL("cmbCbfWidth")), SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
         connect(get_widget(QSL("cmbCbfHeight")), SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));

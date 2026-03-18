@@ -1,11 +1,12 @@
 % README.linux 2026-01-01
 % Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
 % Fedora Linux 43 (Workstation Edition)
+% vim: set ts=4 sw=4 et :
 
 1. Prerequisites for building zint
 ==================================
 
-Prerequisites are git, cmake, make, gcc and gcc-c++, e.g. Ubuntu/Debian
+Prerequisites are git, cmake, make, cc and c++, e.g. Ubuntu/Debian
 
     sudo apt install git cmake build-essential
 

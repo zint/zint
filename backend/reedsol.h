@@ -4,7 +4,7 @@
 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -51,8 +51,8 @@ typedef struct {
 } rs_t;
 
 typedef struct {
-    unsigned int *logt; /* These are malloced */
-    unsigned int *alog;
+    unsigned short *logt; /* These are malloced */
+    unsigned short *alog;
     unsigned short rspoly[4096]; /* Generated poly, 12-bit max - needs to be enlarged if > 12-bit used */
     unsigned int log_rspoly[4096]; /* Logs of poly */
     int nsym; /* Degree of poly */

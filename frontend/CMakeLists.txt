@@ -24,8 +24,10 @@ if(NOT HAVE_GETOPT_LONG_ONLY)
     target_link_libraries(${PROJECT_NAME} zint_bundled_getopt)
 endif()
 
-get_property(libdir GLOBAL PROPERTY ZINT_LIBDIR)
-set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${libdir}")
+if(APPLE AND NOT CMAKE_INSTALL_RPATH)
+    get_property(libdir GLOBAL PROPERTY ZINT_LIBDIR)
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${libdir}")
+endif()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION "${CMAKE_INSTALL_BINDIR}" RUNTIME)
 if(UNIX)

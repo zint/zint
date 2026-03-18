@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -34,7 +34,7 @@
 
 INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 
-/* For overview when debugging: ./test_tiff -f pixel_plot -d 5 */
+/* For overview when debugging: ./test_tif -f pixel_plot -d 5 */
 static void test_pixel_plot(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 

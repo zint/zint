@@ -1036,7 +1036,7 @@ static void test_non_forced(const testCtx *const p_ctx) {
         /* 32*/ { BARCODE_AZTEC, GS1_MODE | GS1NOCHECK_MODE, -1, "[02]12345678901231[10]()[37]12345678[00]123456789012345675", 0, "" },
         /* 33*/ { BARCODE_AZTEC, GS1_MODE | GS1NOCHECK_MODE, -1, "^021234567890123110()^3712345678^00123456789012345675", 0, "" },
         /* 34*/ { BARCODE_AZTEC, GS1_MODE | GS1NOCHECK_MODE | GS1RAW_MODE, -1, "021234567890123110()\0353712345678\03500123456789012345675", 0, "" },
-        /* 35*/ { BARCODE_CODABLOCKF, GS1_MODE, -1, "[01]12345678901231", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode" }, /* Codablock-F does not support GS1 */
+        /* 35*/ { BARCODE_CODABLOCKF, GS1_MODE, -1, "[01]12345678901231", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode" }, /* Codablock F does not support GS1 */
         /* 36*/ { BARCODE_CODABLOCKF, GS1_MODE | GS1NOCHECK_MODE, -1, "[01]12345678901231", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode" },
         /* 37*/ { BARCODE_CODABLOCKF, GS1_MODE, -1, "1234", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode" },
         /* 38*/ { BARCODE_CODEONE, GS1_MODE, -1, "[01]12345678901231", 0, "" },

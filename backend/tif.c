@@ -38,7 +38,6 @@
 #include "filemem.h"
 #include "output.h"
 #include "tif.h"
-#include "tif_lzw.h"
 
 /* PhotometricInterpretation */
 #define TIF_PMI_WHITEISZERO     0
@@ -51,13 +50,13 @@
 #define TIF_NO_COMPRESSION      1
 #define TIF_LZW                 5
 
-static void to_color_map(const unsigned char rgb[4], tiff_color_t *color_map_entry) {
+static void tif_to_color_map(const unsigned char rgb[4], tiff_color_t *color_map_entry) {
     color_map_entry->red = (rgb[0] << 8) | rgb[0];
     color_map_entry->green = (rgb[1] << 8) | rgb[1];
     color_map_entry->blue = (rgb[2] << 8) | rgb[2];
 }
 
-static void to_cmyk(const char *colour, unsigned char *cmyk) {
+static void tif_to_cmyk(const char *colour, unsigned char *cmyk) {
     int cyan, magenta, yellow, black;
     unsigned char alpha;
 
@@ -67,6 +66,134 @@ static void to_cmyk(const char *colour, unsigned char *cmyk) {
     cmyk[2] = (unsigned char) roundf(yellow * 0xFF / 100.0f);
     cmyk[3] = (unsigned char) roundf(black * 0xFF / 100.0f);
     cmyk[4] = alpha;
+}
+
+/* LZW stuff - see `tif_lzw_compress()` below */
+
+#define TIF_LZW_CLEAR_CODE      256
+#define TIF_LZW_EOI_CODE        257 /* EndOfInformation */
+#define TIF_LZW_MIN_BITS        9
+#define TIF_LZW_MAX_BITS        12
+#define TIF_LZW_TABLE_SIZE      4096 /* (1 << TIF_LZW_MAX_BITS) */
+
+/* Write `code` to output `fmp` in 8-bit batches, returning updated `bytes_put` */
+static int tif_lzw_putCode(struct filemem *fmp, const int code, const int bitsPerCode, int *p_bits, int bytes_put) {
+    int bits = *p_bits & 0x0FFF; /* Actual bits in buffer */
+    int num_bits = (*p_bits >> 16) & 0x0FFF; /* No. of bits in buffer */
+
+    bits = (bits << bitsPerCode) | code;
+
+    for (num_bits += bitsPerCode; num_bits >= 8; num_bits -= 8) {
+        zint_fm_putc((bits >> (num_bits - 8)) & 0xFF, fmp);
+        bytes_put++;
+    }
+
+    bits &= (1 << num_bits) - 1;
+
+    *p_bits = (num_bits << 16) | bits;
+
+    return bytes_put;
+}
+
+/* LZW compression adapted from TwelveMonkeys ImageIO's `LZWEncoder::encode()`, returns no. of bytes written */
+/* Copyright (c) 2015, Harald Kuhr */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/* Tree algorithm from "LZW Compression Used to Encode/Decode a GIF File", Bob Montgomery, 1988, see
+   https://gingko.homeip.net/docs/file_formats/lzwgif.html#bob
+   "manuscript in public domain" according to "Encyclopedia of Graphics File Formats" (2nd edition, 1996)
+   by James D. Murray and William vanRyper, Chapter 9 "Data Compression", p.178
+*/
+static int tif_lzw_compress(struct filemem *fmp, const unsigned char *bp, const unsigned int blen) {
+    short suffixes[TIF_LZW_TABLE_SIZE] = {0}; /* "shade[]" in Montgomery diagram */
+    /* A child is made up of a parent (or prefix) code plus a suffix byte
+       and siblings are strings with a common parent (or prefix) and different suffix bytes */
+    short children[TIF_LZW_TABLE_SIZE] = {0}; /* "child[]" in Montgomery diagram */
+    short siblings[TIF_LZW_TABLE_SIZE] = {0}; /* "sib[]" in Montgomery diagram */
+
+    int parent;
+    int bitsPerCode = TIF_LZW_MIN_BITS; /* "codesize" in Montgomery diagram, goes from 9 to 12 */
+    int nextValidCode = TIF_LZW_EOI_CODE + 1; /* "nvc" - next available slot in `suffixes` */
+    int maxCode = (1 << bitsPerCode) - 1; /* If `nextValidCode` hits this, `bitsPerCode` will have to be adjusted */
+
+    int bits = 0; /* Buffer for partial codes, top 16-bits no. of bits, bottom the bits */
+    int bytes_put = 0; /* No. of bytes output */
+
+    const unsigned char *const be = bp + blen;
+
+    assert(blen != 0);
+
+    /* Init */
+    bytes_put = tif_lzw_putCode(fmp, TIF_LZW_CLEAR_CODE & maxCode, bitsPerCode, &bits, bytes_put);
+    parent = *bp++; /* Parent is 1st code */
+
+    while (bp < be) {
+        const int value = *bp++; /* "color" in Montgomery diagram */
+        int child = children[parent];
+
+        /* Does parent have a child? */
+        if (child) {
+            /* Is child right value? */
+            if (suffixes[child] == value) {
+                parent = child; /* Make new parent */
+            } else {
+                int sibling = child; /* Makes loop easier */
+                /* Try siblings */
+                for (;;) {
+                    /* Does sibling have a sibling? */
+                    if (siblings[sibling]) {
+                        sibling = siblings[sibling];
+                        /* Is sibling right value? */
+                        if (suffixes[sibling] == value) {
+                            parent = sibling; /* Make new parent */
+                            break;
+                        }
+                    } else {
+                        /* Create one */
+                        siblings[sibling] = (short) nextValidCode;
+                        goto update_child; /* Hack to avoid having func with large no. of args */
+                    }
+                }
+            }
+        /* Parent does not have a child */
+        } else {
+            /* Create one */
+            children[parent] = (short) nextValidCode;
+update_child:
+            suffixes[nextValidCode] = (short) value;
+            bytes_put = tif_lzw_putCode(fmp, parent & maxCode, bitsPerCode, &bits, bytes_put); /* Put the code */
+            parent = value;
+            if (++nextValidCode > maxCode) {
+                /* Adjust `bitsPerCode` (code size) if required */
+                if (bitsPerCode == TIF_LZW_MAX_BITS) {
+                    /* Signal reset by writing Clear code */
+                    bytes_put = tif_lzw_putCode(fmp, TIF_LZW_CLEAR_CODE & maxCode, bitsPerCode, &bits, bytes_put);
+
+                    /* Reset tables */
+                    memset(children, 0, sizeof(short) * TIF_LZW_TABLE_SIZE);
+                    memset(siblings, 0, sizeof(short) * TIF_LZW_TABLE_SIZE);
+                    bitsPerCode = TIF_LZW_MIN_BITS;
+                    nextValidCode = TIF_LZW_EOI_CODE + 1;
+                } else {
+                    /* Increase code size */
+                    bitsPerCode++;
+                }
+                maxCode = (1 << bitsPerCode) - 1;
+            }
+        }
+    }
+
+    /* Write EOI when we are done */
+    bytes_put = tif_lzw_putCode(fmp, parent & maxCode, bitsPerCode, &bits, bytes_put);
+    bytes_put = tif_lzw_putCode(fmp, TIF_LZW_EOI_CODE & maxCode, bitsPerCode, &bits, bytes_put);
+
+    /* Flush partial codes */
+    if (bits) {
+        const int num_bits = (bits >> 16) & 0x0FFF;
+        zint_fm_putc((bits << (8 - num_bits)) & 0xFF, fmp); /* Zero pad */
+        bytes_put++;
+    }
+
+    return bytes_put;
 }
 
 /* TIFF Revision 6.0 https://www.adobe.io/content/dam/udp/en/open/standards/tiff/TIFF6.pdf */
@@ -94,7 +221,6 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
     struct filemem *const fmp = &fm;
     const unsigned char *pb;
     int compression = TIF_NO_COMPRESSION;
-    tif_lzw_state lzw_state;
     long file_pos;
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
     uint32_t *strip_offset;
@@ -134,9 +260,9 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
                 palette[i][4] = fg[3];
             }
             map['0'] = 8;
-            to_cmyk(symbol->bgcolour, palette[8]);
+            tif_to_cmyk(symbol->bgcolour, palette[8]);
             map['1'] = 9;
-            to_cmyk(symbol->fgcolour, palette[9]);
+            tif_to_cmyk(symbol->fgcolour, palette[9]);
 
             pmi = TIF_PMI_SEPARATED;
             bits_per_sample = 8;
@@ -171,7 +297,7 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
             if (fg[3] == 0xff && bg[3] == 0xff) { /* If no alpha */
                 pmi = TIF_PMI_PALETTE_COLOR;
                 for (i = 0; i < 10; i++) {
-                    to_color_map(palette[i], &color_map[i]);
+                    tif_to_color_map(palette[i], &color_map[i]);
                 }
                 bits_per_sample = 4;
                 samples_per_pixel = 1;
@@ -188,9 +314,9 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
     } else { /* fg/bg only */
         if (symbol->output_options & CMYK_COLOUR) {
             map['0'] = 0;
-            to_cmyk(symbol->bgcolour, palette[0]);
+            tif_to_cmyk(symbol->bgcolour, palette[0]);
             map['1'] = 1;
-            to_cmyk(symbol->fgcolour, palette[1]);
+            tif_to_cmyk(symbol->fgcolour, palette[1]);
 
             pmi = TIF_PMI_SEPARATED;
             bits_per_sample = 8;
@@ -227,7 +353,7 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
 
             pmi = TIF_PMI_PALETTE_COLOR;
             for (i = 0; i < 2; i++) {
-                to_color_map(palette[i], &color_map[i]);
+                tif_to_color_map(palette[i], &color_map[i]);
             }
             if (fg[3] == 0xff && bg[3] == 0xff) { /* If no alpha */
                 bits_per_sample = 4;
@@ -316,7 +442,6 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
     }
     if (!output_to_stdout) {
         compression = TIF_LZW;
-        tif_lzw_init(&lzw_state);
     }
 
     /* Header */
@@ -370,13 +495,13 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
         if (strip_row == rows_per_strip || (strip == strip_count - 1 && strip_row == rows_last_strip)) {
             /* End of strip */
             if (compression == TIF_LZW) {
+                #ifndef NDEBUG
                 file_pos = zint_fm_tell(fmp);
-                if (!tif_lzw_encode(&lzw_state, fmp, strip_buf, bytes_put)) { /* Only fails if can't malloc */
-                    tif_lzw_cleanup(&lzw_state);
-                    (void) zint_fm_close(fmp, symbol);
-                    return z_errtxt(ZINT_ERROR_MEMORY, symbol, 673, "Insufficient memory for TIF LZW hash table");
-                }
-                bytes_put = (unsigned int) (zint_fm_tell(fmp) - file_pos);
+                #endif
+                bytes_put = tif_lzw_compress(fmp, strip_buf, bytes_put);
+                #ifndef NDEBUG
+                assert(bytes_put == (unsigned int) (zint_fm_tell(fmp) - file_pos));
+                #endif
                 if (bytes_put != strip_bytes[strip]) {
                     const int diff = bytes_put - strip_bytes[strip];
                     strip_bytes[strip] = bytes_put;
@@ -402,8 +527,6 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
     }
 
     if (compression == TIF_LZW) {
-        tif_lzw_cleanup(&lzw_state);
-
         file_pos = zint_fm_tell(fmp);
         zint_fm_seek(fmp, 4, SEEK_SET);
         free_memory = file_pos;

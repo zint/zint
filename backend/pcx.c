@@ -1,7 +1,7 @@
 /* pcx.c - Handles output to ZSoft PCX file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -126,6 +126,7 @@ INTERNAL int zint_pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char
 
             /* Based on ImageMagick/coders/pcx.c PCXWritePixels()
              * Copyright 1999-2020 ImageMagick Studio LLC */
+            /* SPDX-License-Identifier: ImageMagick */
             previous = rle_row[0];
             run_count = 1;
             for (column = 1; column < bytes_per_line; column++) { /* Note going up to bytes_per_line */

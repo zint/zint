@@ -1,3 +1,12 @@
 #!/usr/bin/make -f
+# vim: set ts=4 sw=4 noet :
+
 %:
-	dh $@
+	dh $@ --buildsystem=cmake
+
+# https://bugs-devel.debian.org/cgi-bin/bugreport.cgi?bug=1016936
+override_dh_dwz:
+
+# This is just to avoid a "no dependency information" error if have local non-package lib builds
+override_dh_shlibdeps:
+	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info

@@ -212,7 +212,7 @@ extern "C" {
 #define BARCODE_DATAMATRIX      71  /* Data Matrix (ECC200) */
 #define BARCODE_EAN14           72  /* EAN-14 */
 #define BARCODE_VIN             73  /* Vehicle Identification Number */
-#define BARCODE_CODABLOCKF      74  /* Codablock-F */
+#define BARCODE_CODABLOCKF      74  /* Codablock F */
 #define BARCODE_NVE18           75  /* NVE-18 (SSCC-18) */
 #define BARCODE_JAPANPOST       76  /* Japanese Postal Code */
 #define BARCODE_KOREAPOST       77  /* Korea Post */
@@ -244,7 +244,7 @@ extern "C" {
 #define BARCODE_HIBC_QR         104 /* HIBC QR Code */
 #define BARCODE_HIBC_PDF        106 /* HIBC PDF417 */
 #define BARCODE_HIBC_MICPDF     108 /* HIBC MicroPDF417 */
-#define BARCODE_HIBC_BLOCKF     110 /* HIBC Codablock-F */
+#define BARCODE_HIBC_BLOCKF     110 /* HIBC Codablock F */
 #define BARCODE_HIBC_AZTEC      112 /* HIBC Aztec Code */
 
     /* Tbarcode 10 codes */

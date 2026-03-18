@@ -1,19 +1,29 @@
-zint (2.6.0) stable; urgency=medium
+zint (2.16.0.9-1) unstable; urgency=low
+
+  * Updated using https://salsa.debian.org/debian/zint as template, props
+    Dmitry Smirnov <onlyjob@debian.org>
+  * Ticket #147, props John Crisp
+  * TODO: enable building with the GS1 Syntax Engine
+  * TODO: "libzint2.16.symbols" file?
+
+ -- Robin Stuart <rstuart114@gmail.com>  Wed, 18 Mar 2026 13:00:00 +0000
+
+zint (2.6.0-1) stable; urgency=medium
 
   * Update to Qt5
   * Output to EMF and TIF
-  
+
  -- Robin Stuart <rstuart114@gmail.com>  Fri, 12 May 2017 09:00:00 +0000
 
 zint (2.5.1) UNRELEASED; urgency=medium
 
   * Include support for DotCode
   * Include support for Han Xin (Chinese Sensible) code.
-  * Reinstate Codablock-F support.
+  * Reinstate Codablock F support.
   * Automated ECI pre-processing.
   * Output to BMP, GIF and PCX.
   * Huge code review and numerous bugfixes
-  * DMRE support and DataMatrix bugfixes 
+  * DMRE support and DataMatrix bugfixes
 
  -- Robin Stuart <rstuart114@gmail.com>  Fri, 13 Jan 2017 20:33:54 +0000
 
@@ -21,7 +31,7 @@ zint (2.4.1) unstable; urgency=low
 
   * Update and review of files required by Debian including changelog.
 
- -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 09:26:00 +0000 
+ -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 09:26:00 +0000
 
 zint (2.4) unstable; urgency=low
 
@@ -32,7 +42,7 @@ zint (2.4) unstable; urgency=low
   * Reinstated escape character input.
   * Simplification of Barcode Studio.
 
- -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 05:00:00 +0000 
+ -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 05:00:00 +0000
 
 zint (2.3.2) unstable; urgency=low
 
@@ -43,18 +53,18 @@ zint (2.3.2) unstable; urgency=low
   * Also minor bugfixes for ISBN and Aztec Code, and added some small
     features like a --square option in the CLI.
 
- -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 04:00:00 +0000 
+ -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 04:00:00 +0000
 
 zint (2.3.1) unstable; urgency=low
 
-  * Removed Codablock-F.
+  * Removed Codablock F.
   * Redesigned scale function so that human readable text and Maxicode
     symbols can be scaled consistently.
   * Corrected encoding bugs with Code 128/Code 16k and Data Matrix ECC
     050.
   * Added --notext option to CLI.
 
- -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 03:00:00 +0000 
+ -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 03:00:00 +0000
 
 zint (2.3) unstable; urgency=low
 
@@ -68,7 +78,7 @@ zint (2.3) unstable; urgency=low
   * Advanced Barcode Studio version number to match library version
     number.
 
- -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 02:00:00 +0000 
+ -- Robin Stuart <robin@zint.org.uk>  Sat, 02 Oct 2010 02:00:00 +0000
 
 zint (2.2.2) unstable; urgency=low
 
@@ -86,8 +96,8 @@ zint (2.2.1-1) unstable; urgency=low
 
 zint (2.2.1) unstable; urgency=low
 
-  * bug fixes. Affected symbologies are Data Matrix, 
-    USPS One Code, Aztec Code, PDF417, MicroPDF and Composite symbols. 
+  * bug fixes. Affected symbologies are Data Matrix,
+    USPS One Code, Aztec Code, PDF417, MicroPDF and Composite symbols.
     If you use any of these then please update.
 
  -- BogDan Vatra <bogdan@licentia.eu>  Fri, 07 Aug 2009 15:04:12 +0300

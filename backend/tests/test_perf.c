@@ -51,15 +51,23 @@ struct perf_item {
 };
 
 static void test_perf(const testCtx *const p_ctx, const int default_iterations, const struct perf_item *data,
-                const int data_size) {
-    int debug = p_ctx->debug;
+                const int data_size, const char *const outfile) {
+    int debug = p_ctx->debug & 0xFFFF;
+    /* Hack (use "-d $((256 + (flg << 16)))") to select whether to time (`ZBarcode_Create()` always timed):
+             1. `ZBarcode_Encode()`
+             2. `ZBarcode_Buffer()`
+             4. `ZBarcode_Buffer()` with `OUT_BUFFER_INTERMEDIATE`
+             8. `ZBarcode_Print()`
+            16. `ZBarcode_Print()` with `BARCODE_MEMORY_FILE`
+       with 0 meaning all */
+    int flg = (p_ctx->debug >> 16) & 0xFF;
 
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
     clock_t start;
-    clock_t total_create = 0, total_encode = 0, total_buffer = 0, total_buf_inter = 0, total_print = 0;
-    clock_t diff_create, diff_encode, diff_buffer, diff_buf_inter, diff_print;
+    clock_t total_create = 0, total_encode = 0, total_buffer = 0, total_buf_inter = 0, total_print = 0, total_memfile = 0;
+    clock_t diff_create, diff_encode, diff_buffer, diff_buf_inter, diff_print, diff_memfile;
     int comment_max = 0;
 
     const int iterations = p_ctx->arg ? p_ctx->arg : default_iterations; /* Use "-a N" to set iterations */
@@ -83,9 +91,10 @@ static void test_perf(const testCtx *const p_ctx, const int default_iterations, 
 
         if (testContinue(p_ctx, i)) continue;
 
-        diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
+        diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0, diff_memfile = 0;
 
         for (j = 0; j < iterations; j++) {
+            int have_encoded = 0;
             start = clock();
             symbol = ZBarcode_Create();
             diff_create += clock() - start;
@@ -113,55 +122,104 @@ static void test_perf(const testCtx *const p_ctx, const int default_iterations, 
                                         data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
                                         text, -1, debug);
 
-            start = clock();
-            ret = ZBarcode_Encode(symbol, TCU(text), length);
-            diff_encode += clock() - start;
-            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
-                        i, ret, data[i].ret, symbol->errtxt);
+            if (!flg || (flg & 1)) {
+                start = clock();
+                ret = ZBarcode_Encode(symbol, TCU(text), length);
+                diff_encode += clock() - start;
+                assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                            i, ret, data[i].ret, symbol->errtxt);
+                have_encoded = 1;
+            }
+
+            if (!flg || (flg & 2)) {
+                if (!have_encoded) {
+                    ret = ZBarcode_Encode(symbol, TCU(text), length);
+                    assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                                i, ret, data[i].ret, symbol->errtxt);
+                    have_encoded = 1;
+                }
+                start = clock();
+                ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
+                diff_buffer += clock() - start;
+                assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+            }
+
+            if (!flg || (flg & 4)) {
+                if (!have_encoded) {
+                    ret = ZBarcode_Encode(symbol, TCU(text), length);
+                    assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                                i, ret, data[i].ret, symbol->errtxt);
+                    have_encoded = 1;
+                }
+                symbol->output_options |= OUT_BUFFER_INTERMEDIATE;
+                start = clock();
+                ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
+                diff_buf_inter += clock() - start;
+                assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n",
+                            i, ret, symbol->errtxt);
+                symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; /* Undo */
+            }
+
+            if (!flg || (flg & 8)) {
+                if (!have_encoded) {
+                    ret = ZBarcode_Encode(symbol, TCU(text), length);
+                    assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                                i, ret, data[i].ret, symbol->errtxt);
+                    have_encoded = 1;
+                }
+                if (outfile && strlen(outfile) < 256) {
+                    strcpy(symbol->outfile, outfile);
+                }
+                start = clock();
+                ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
+                diff_print += clock() - start;
+                assert_zero(ret, "i:%d ZBarcode_Print ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+                assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
+            }
+
+            if (!flg || (flg & 16)) {
+                if (!have_encoded) {
+                    ret = ZBarcode_Encode(symbol, TCU(text), length);
+                    assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                                i, ret, data[i].ret, symbol->errtxt);
+                    /*have_encoded = 1;*/
+                }
+                symbol->output_options |= BARCODE_MEMORY_FILE;
+                if (outfile && strlen(outfile) < 256) {
+                    strcpy(symbol->outfile, outfile);
+                }
+                start = clock();
+                ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
+                diff_memfile += clock() - start;
+                assert_zero(ret, "i:%d ZBarcode_Print BARCODE_MEMORY_FILE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+                symbol->output_options &= ~BARCODE_MEMORY_FILE; /* Undo */
+            }
 
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
                         i, symbol->rows, data[i].expected_rows, data[i].data);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
                         i, symbol->width, data[i].expected_width, data[i].data);
 
-            start = clock();
-            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
-            diff_buffer += clock() - start;
-            assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-
-            symbol->output_options |= OUT_BUFFER_INTERMEDIATE;
-            start = clock();
-            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
-            diff_buf_inter += clock() - start;
-            assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n",
-                        i, ret, symbol->errtxt);
-            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; /* Undo */
-
-            start = clock();
-            ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
-            diff_print += clock() - start;
-            assert_zero(ret, "i:%d ZBarcode_Print ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-            assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
-
             ZBarcode_Delete(symbol);
         }
 
-        printf("     %*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n",
+        printf("     %*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, memfile % 8gms, create % 8gms\n",
                 comment_max, data[i].comment,
                 TEST_PERF_TIME(diff_encode), TEST_PERF_TIME(diff_buffer), TEST_PERF_TIME(diff_buf_inter),
-                TEST_PERF_TIME(diff_print), TEST_PERF_TIME(diff_create));
+                TEST_PERF_TIME(diff_print), TEST_PERF_TIME(diff_memfile), TEST_PERF_TIME(diff_create));
 
         total_create += diff_create;
         total_encode += diff_encode;
         total_buffer += diff_buffer;
         total_buf_inter += diff_buf_inter;
         total_print += diff_print;
+        total_memfile += diff_memfile;
     }
     if (p_ctx->index == -1) {
-        printf("     %*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n",
+        printf("     %*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, memfile % 8gms, create % 8gms\n",
                 comment_max, "totals",
                 TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter),
-                TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
+                TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_memfile), TEST_PERF_TIME(total_create));
     }
 
     testFinish();
@@ -178,7 +236,7 @@ static void test_2of5(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 5 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_aztec(const testCtx *const p_ctx) {
@@ -235,7 +293,7 @@ static void test_aztec(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 1 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_aztec_fast(const testCtx *const p_ctx) {
@@ -292,7 +350,7 @@ static void test_aztec_fast(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 1 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_code11(const testCtx *const p_ctx) {
@@ -304,7 +362,7 @@ static void test_code11(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 5 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_code128(const testCtx *const p_ctx) {
@@ -317,7 +375,7 @@ static void test_code128(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 5 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_composite(const testCtx *const p_ctx) {
@@ -344,7 +402,7 @@ static void test_composite(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 1 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_dmatrix(const testCtx *const p_ctx) {
@@ -424,7 +482,7 @@ static void test_dmatrix(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 5 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_dotcode(const testCtx *const p_ctx) {
@@ -442,7 +500,7 @@ static void test_dotcode(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 1 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_gridmtx(const testCtx *const p_ctx) {
@@ -467,7 +525,7 @@ static void test_gridmtx(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 1 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_hanxin(const testCtx *const p_ctx) {
@@ -509,7 +567,7 @@ static void test_hanxin(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 1 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_maxicode(const testCtx *const p_ctx) {
@@ -532,7 +590,7 @@ static void test_maxicode(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 10 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_pdf417(const testCtx *const p_ctx) {
@@ -582,7 +640,57 @@ static void test_pdf417(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 5 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
+}
+
+static void test_pdf417_fast(const testCtx *const p_ctx) {
+
+    static const struct perf_item data[] = {
+        /*  0*/ { BARCODE_PDF417, FAST_MODE, -1, -1, -1, "1234567890", "", 0, 7, 103, "10 numerics" },
+        /*  1*/ { BARCODE_PDF417, FAST_MODE, -1, -1, -1,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM"
+                    "NOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJK"
+                    "LMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFG"
+                    "HIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567"
+                    "890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcde"
+                    "fghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO",
+                    "", 0, 43, 290, "960 chars, text/numeric" },
+        /*  2*/ { BARCODE_PDF417, DATA_MODE, -1, -1, -1,
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
+                    "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240",
+                    "", 0, 51, 358, "960 chars, byte" },
+        /*  3*/ { BARCODE_PDF417, FAST_MODE, -1, -1, -1,
+                    "BP2D+1.00+0005+FLE ESC BV+1.00+3.60*BX2D+1.00+0001+Casual shoes & apparel+90044030118100801265*D_2D+1.02+31351440315981+C910332+02032018+KXXXX CXXXX+UNIT 4 HXXX"
+                    "XXXXX BUSINESS PARK++ST  ALBANS+ST  ALBANS++AL2 3TA+0001+000001+001+00000000+00++N+N+N+0000++++++N+++N*DS2D+1.01+0001+0001+90044030118100801265+++++07852389322+"
+                    "+E*F_2D+1.00+0005*",
+                    "", 0, 26, 222, "338 chars, text/numeric/byte" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    const int default_iterations = 5 * 1000;
+
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_plessey(const testCtx *const p_ctx) {
@@ -596,7 +704,7 @@ static void test_plessey(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 5 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_postal(const testCtx *const p_ctx) {
@@ -609,7 +717,7 @@ static void test_postal(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 10 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_qr(const testCtx *const p_ctx) {
@@ -662,7 +770,7 @@ static void test_qr(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 5 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_qr_fast(const testCtx *const p_ctx) {
@@ -715,7 +823,7 @@ static void test_qr_fast(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 5 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_microqr(const testCtx *const p_ctx) {
@@ -729,7 +837,7 @@ static void test_microqr(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 5 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
 }
 
 static void test_upcean(const testCtx *const p_ctx) {
@@ -749,7 +857,29 @@ static void test_upcean(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 10 * 1000;
 
-    test_perf(p_ctx, default_iterations, data, data_size);
+    test_perf(p_ctx, default_iterations, data, data_size, NULL /*outfile*/);
+}
+
+static void test_gif(const testCtx *const p_ctx) {
+
+    static const struct perf_item data[] = {
+        /*  0*/ { BARCODE_CODE128, -1, -1, -1, -1, "123456ABCD", "", 0, 1, 123, "CODE128 10" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    const int default_iterations = 10 * 1000;
+
+    test_perf(p_ctx, default_iterations, data, data_size, "out.gif");
+}
+
+static void test_tif(const testCtx *const p_ctx) {
+
+    static const struct perf_item data[] = {
+        /*  0*/ { BARCODE_CODE128, -1, -1, -1, -1, "123456ABCD", "", 0, 1, 123, "CODE128 10" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    const int default_iterations = 10 * 1000;
+
+    test_perf(p_ctx, default_iterations, data, data_size, "out.tif");
 }
 
 int main(int argc, char *argv[]) {
@@ -767,12 +897,16 @@ int main(int argc, char *argv[]) {
         { "test_hanxin", test_hanxin },
         { "test_maxicode", test_maxicode },
         { "test_pdf417", test_pdf417 },
+        { "test_pdf417_fast", test_pdf417_fast },
         { "test_plessey", test_plessey },
         { "test_postal", test_postal },
         { "test_qr", test_qr },
         { "test_qr_fast", test_qr_fast },
         { "test_microqr", test_microqr },
         { "test_upcean", test_upcean },
+
+        { "test_gif", test_gif },
+        { "test_tif", test_tif },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

@@ -32,7 +32,7 @@
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
  */
 /* Due to above: */
-/* SPDX-License-Identifier: LGPL-2.1+ */
+/* SPDX-License-Identifier: LGPL-2.0-or-later */
 
 #ifdef _WIN32
 #include <windows.h>

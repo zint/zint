@@ -8,8 +8,8 @@
         Adrian Kennard, Andrews & Arnold Ltd
         with help from Cliff Hones on the RS coding
 
-        (c) 2004 Adrian Kennard, Andrews & Arnold Ltd
-        (c) 2006 Stefan Schmidt <stefan@datenfreihafen.org>
+        Copyright (c) 2004 Adrian Kennard, Andrews & Arnold Ltd
+        Copyright (c) 2006 Stefan Schmidt <stefan@datenfreihafen.org>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions

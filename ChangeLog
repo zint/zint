@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-03-11)
+Version 2.16.0.9 (dev) not released yet (2026-03-18)
 ====================================================
 
 **Incompatible changes**
@@ -212,7 +212,7 @@ Changes
   outside digit to be 4X/2X instead of 5X/3X away from main symbol so as not to
   touch add-on TODO: revisit when standard clarified
 - manual: make explicit that AI "(00)" and "(01)" prefixes added by Zint are
-  HRT-only; clarify Codablock-F length maximum & add examples
+  HRT-only; clarify Codablock F length maximum & add examples
 - add DXFILMEDGE (MR #159, props Antoine Mérino)
 
 Bugs
@@ -1062,7 +1062,7 @@ by brunt@SF
 Version 2.5 2016-11-13
 ======================
 Support for DotCode and Han Xin code. ECI code processing. Output to BMP, GIF
-and PCX. Added bold and small text options. Reintroduction of Codablock-F.
+and PCX. Added bold and small text options. Reintroduction of Codablock F.
 Many minor fixes and improvements.
 
 
@@ -1096,7 +1096,7 @@ minor bugfixes for ISBN and Aztec Code, and added some small features like a
 
 Version 2.3.1 2010-04-07
 ========================
-Removed Codablock-F. Redesigned scale function so that human readable
+Removed Codablock F. Redesigned scale function so that human readable
 text and Maxicode symbols can be scaled consistently. Corrected encoding bugs
 with Code 128/Code 16k and Data Matrix ECC200 ECC 050. Added --notext option to
 CLI.
@@ -1155,7 +1155,7 @@ Version 2.1.2 2009-03-01
 ========================
 Added SVG output option. Improved Japanese character support including
 Unicode > Shift-JIS capability. Bugfixes for Data Matrix ECC200 (missing
-characters at end of string) and Codablock-F (K1/K2 check digit and row
+characters at end of string) and Codablock F (K1/K2 check digit and row
 indicators above row 6).
 
 
@@ -1168,9 +1168,9 @@ Version 2.1 2009-01-31
 ======================
 Reinstated Korea Post barcodes, harmonised bind and box options, moved
 Unicode handling into backend and added input_mode option, added size options
-to Data Matrix ECC200, added NULL character handling for Codablock-F, Code 128,
+to Data Matrix ECC200, added NULL character handling for Codablock F, Code 128,
 Code 16k, Extended Code 39, Code 93, Telepen, Maxicode, Data Matrix ECC200 ECC
-200, PDF417 and MicroPDF417. Added GS1 support for Code 16k, Codablock-F and
+200, PDF417 and MicroPDF417. Added GS1 support for Code 16k, Codablock F and
 Aztec Code. Added scale and direct to stdout options. Rebuilt Data Matrix ECC200
 ECC 200 encoding algorithms to support NULL encoding and GS1 data encoding.
 
@@ -1185,13 +1185,13 @@ information.
 Version 2.0 beta r2 2008-10-19
 ==============================
 Many corrections and bugfixes. (Code 11, Code 128, EAN-128,
-Aztec Code, Codablock-F, Code 16k, POSTNET, PLANET, NVE-18, PZN, Data Matrix
+Aztec Code, Codablock F, Code 16k, POSTNET, PLANET, NVE-18, PZN, Data Matrix
 ECC200, Maxicode and QR Code)
 
 
 Version 2.0 beta 2008-09-29
 ===========================
-Added support for Aztec Code, Codablock-F, Code 32, EAN-14 and DAFT
+Added support for Aztec Code, Codablock F, Code 32, EAN-14 and DAFT
 Code. Rearranged symbology numbers to match Tbarcode v8. Corrected a never
 ending loop bug in EAN-128.
 

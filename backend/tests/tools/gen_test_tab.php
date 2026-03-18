@@ -2,7 +2,7 @@
 /* Generate lookup table from unicode.org mapping file (SHIFTJIS.TXT by default). */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
 */
 /* To create backend/tests/test_sjis_tab.h (from the project root directory):
  *
@@ -18,7 +18,7 @@
  *
  * To create backend/tests/test_gb18030_tab.h (note that backend/tests/tools/data/GB18030.TXT
  * will have to be downloaded first from https://haible.de/bruno/charsets/conversion-tables/GB18030.html
- * using the version jdk-1.4.2/GB18030.TXT):
+ * using the version libiconv-1.11/GB18030.TXT):
  *
  *   php backend/tests/tools/gen_test_tab.php -f GB18030.TXT -s gb18030_tab
  *

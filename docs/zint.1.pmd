@@ -2,6 +2,8 @@
 %
 % March 2026
 
+[//]: # ( vim: set ts=4 sw=4 et : )
+
 # NAME
 
 `zint` - encode data as a barcode image
@@ -93,7 +95,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--cols=INTEGER`
 
-:   Set the number of data columns in the symbol to *INTEGER*. Affects Codablock-F, DotCode, GS1 DataBar Expanded
+:   Set the number of data columns in the symbol to *INTEGER*. Affects Codablock F, DotCode, GS1 DataBar Expanded
     Stacked (DBAR_EXPSTK), MicroPDF417 and PDF417 symbols.
 
 `--compliantheight`
@@ -250,7 +252,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--heightperrow`
 
-:   Treat height as per-row. Affects Codablock-F, Code 16K, Code 49, GS1 DataBar Expanded Stacked (DBAR_EXPSTK),
+:   Treat height as per-row. Affects Codablock F, Code 16K, Code 49, GS1 DataBar Expanded Stacked (DBAR_EXPSTK),
     MicroPDF417 and PDF417.
 
 `-i`, `--input=FILE`
@@ -332,7 +334,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--rows=INTEGER`
 
-:   Set the number of rows for Codablock-F or PDF417 to *INTEGER*. It will also set the minimum number of rows for
+:   Set the number of rows for Codablock F or PDF417 to *INTEGER*. It will also set the minimum number of rows for
     Code 16K or Code 49, and the maximum number of rows for GS1 DataBar Expanded Stacked (DBAR_EXPSTK).
 
 `--scale=NUMBER`
@@ -408,6 +410,10 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 :   Adjust the gap between the barcode and the Human Readable Text (HRT). *NUMBER* is in X-dimensions, and may be
     floating-point. Maximum is 10 and minimum is -5. The default is 1.
+
+`--verbose`
+
+:   Output debug information to stdout.
 
 `--vers=INTEGER`
 

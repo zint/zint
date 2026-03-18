@@ -1,0 +1,4 @@
+usr/include
+usr/lib/*/*.so
+usr/lib/*/cmake/zint/*.cmake		usr/share/zint/
+cmake/modules/FindZint.cmake		usr/share/apps/cmake/modules/

@@ -1,7 +1,8 @@
-% docs/README 2026-03-11
+% docs/README 2026-03-17
 
 For generation of "docs/manual.html", "docs/manual.pdf" and "docs/manual.txt" from "manual.pmd"
-and man page "docs/zint.1" from "docs/zint.1.pmd" using pandoc >= 3.8.2.
+and man pages "docs/zint.1" from "docs/zint.1.pmd" and "docs/zint-qt.1" from "docs/zint-qt.1.pmd"
+using pandoc >= 3.8.2.
 
 On Ubuntu/Debian (tested on Ubuntu 22.04 and Ubuntu 24.04)
 

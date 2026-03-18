@@ -1,8 +1,8 @@
 -- libzint - the open source barcode library
--- Copyright (C) 2025 Robin Stuart <rstuart114@gmail.com>
+-- Copyright (C) 2025-2026 Robin Stuart <rstuart114@gmail.com>
 
 -- Hacked from https://github.com/rnwst/pandoc-lua-crossrefs
--- © 2025 R. N. West. Released under the GPL version 2 or greater.
+-- Copyright © 2025 R. N. West. Released under the GPL version 2 or greater.
 -- SPDX-License-Identifier: GPL-2.0-or-later
 
 PANDOC_VERSION:must_be_at_least '3.8.2'

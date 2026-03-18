@@ -103,7 +103,7 @@ Use the CMYK colour space when outputting to Encapsulated PostScript
 .TP
 \f[CR]\-\-cols=INTEGER\f[R]
 Set the number of data columns in the symbol to \f[I]INTEGER\f[R].
-Affects Codablock\-F, DotCode, GS1 DataBar Expanded Stacked
+Affects Codablock F, DotCode, GS1 DataBar Expanded Stacked
 (DBAR_EXPSTK), MicroPDF417 and PDF417 symbols.
 .TP
 \f[CR]\-\-compliantheight\f[R]
@@ -283,7 +283,7 @@ Set the height of the symbol in X\-dimensions.
 .TP
 \f[CR]\-\-heightperrow\f[R]
 Treat height as per\-row.
-Affects Codablock\-F, Code 16K, Code 49, GS1 DataBar Expanded Stacked
+Affects Codablock F, Code 16K, Code 49, GS1 DataBar Expanded Stacked
 (DBAR_EXPSTK), MicroPDF417 and PDF417.
 .TP
 \f[CR]\-i\f[R], \f[CR]\-\-input=FILE\f[R]
@@ -374,7 +374,7 @@ Rotate the symbol by \f[I]INTEGER\f[R] degrees, where \f[I]INTEGER\f[R]
 can be 0, 90, 270 or 360.
 .TP
 \f[CR]\-\-rows=INTEGER\f[R]
-Set the number of rows for Codablock\-F or PDF417 to \f[I]INTEGER\f[R].
+Set the number of rows for Codablock F or PDF417 to \f[I]INTEGER\f[R].
 It will also set the minimum number of rows for Code 16K or Code 49, and
 the maximum number of rows for GS1 DataBar Expanded Stacked
 (DBAR_EXPSTK).
@@ -476,6 +476,9 @@ Adjust the gap between the barcode and the Human Readable Text (HRT).
 \f[I]NUMBER\f[R] is in X\-dimensions, and may be floating\-point.
 Maximum is 10 and minimum is \-5.
 The default is 1.
+.TP
+\f[CR]\-\-verbose\f[R]
+Output debug information to stdout.
 .TP
 \f[CR]\-\-vers=INTEGER\f[R]
 Set the symbol version (size, check digits, other options) to

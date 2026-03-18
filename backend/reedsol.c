@@ -1,10 +1,10 @@
 /*
     This is a simple Reed-Solomon encoder
-    (C) Cliff Hones 2004
+    Copyright (C) Cliff Hones 2004
 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -251,17 +251,17 @@ INTERNAL void zint_rs_encode_uint(const rs_t *rs, const int datalen, const unsig
 /* `logmod` (field characteristic) will be 2**bitlength - 1, eg 1023 for bitlength 10, 4095 for bitlength 12 */
 INTERNAL int zint_rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly, const int logmod) {
     int b, p, v;
-    unsigned int *logt, *alog;
+    unsigned short *logt, *alog;
 
     b = logmod + 1;
 
     rs_uint->logt = NULL;
     rs_uint->alog = NULL;
 
-    if (!(logt = (unsigned int *) calloc(b, sizeof(unsigned int)))) {
+    if (!(logt = (unsigned short *) calloc(b, sizeof(unsigned short)))) {
         return 0;
     }
-    if (!(alog = (unsigned int *) calloc(b * 2, sizeof(unsigned int)))) {
+    if (!(alog = (unsigned short *) calloc(b * 2, sizeof(unsigned short)))) {
         free(logt);
         return 0;
     }
@@ -282,8 +282,8 @@ INTERNAL int zint_rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_p
 
 INTERNAL void zint_rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int index) {
     int i, k;
-    const unsigned int *const logt = rs_uint->logt;
-    const unsigned int *const alog = rs_uint->alog;
+    const unsigned short *const logt = rs_uint->logt;
+    const unsigned short *const alog = rs_uint->alog;
     unsigned short *rspoly = rs_uint->rspoly;
     unsigned int *log_rspoly = rs_uint->log_rspoly;
 
@@ -315,8 +315,8 @@ INTERNAL void zint_rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int ind
 INTERNAL void zint_rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const unsigned int *data,
                 unsigned int *res) {
     int i, k;
-    const unsigned int *const logt = rs_uint->logt;
-    const unsigned int *const alog = rs_uint->alog;
+    const unsigned short *const logt = rs_uint->logt;
+    const unsigned short *const alog = rs_uint->alog;
     const unsigned short *const rspoly = rs_uint->rspoly;
     const unsigned int *const log_rspoly = rs_uint->log_rspoly;
     const int nsym = rs_uint->nsym;

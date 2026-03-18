@@ -1,0 +1,58 @@
+% README.deb 2026-03-18
+% Tested on Ubuntu 24.04 LTS
+% vim: set ts=4 sw=4 et :
+
+The "debian" directory is included to enable creating a local Debian dpkg ".deb" file.
+
+(The official Debian package is at https://salsa.debian.org/debian/zint)
+
+Prerequisites are being on a Debian-based Linux system and the usual stuff for building zint (see "README.linux").
+
+To create a local package, first clone the latest source:
+
+    git clone https://git.code.sf.net/p/zint/code zint
+
+Then create an archive:
+
+    cd zint
+    git archive -o /tmp/zint.tar.gz HEAD
+    cd ..
+
+Create a new directory (it doesn't matter where):
+
+    mkdir zint-deb
+
+Then untar the source archive into a sub-directory of the new directory:
+
+    cd zint-deb
+    mkdir zint-2.16.0.9-src
+    cd zint-2.16.0.9-src
+    tar xf /tmp/zint.tar.gz
+    cd ..
+    tar cvzf zint_2.16.0.9.orig.tar.gz zint-2.16.0.9-src
+
+Note the very specific naming of the tarball and the use of an underscore: "zint_<ver>.orig.tar.gz".
+
+Then run dpkg-buildpackage in the source sub-directory:
+
+    cd zint-2.16.0.9-src
+    dpkg-buildpackage -us -uc
+    cd ..
+
+If this works, there should be four ".deb" files (amongst other stuff) in the zint-deb directory, namely:
+
+libzint2.16_2.16.0.9-1_<arch>.deb
+libzint-dev_2.16.0.9-1_<arch>.deb
+zint_2.16.0.9-1_<arch>.deb
+zint-qt_2.16.0.9-1_<arch>.deb
+
+where "<arch>" is e.g. "amd64" on an Intel system.
+
+The ".deb" files can then be installed on "<arch>" systems, starting with the "libzint" ones first, e.g.
+
+    sudo dpkg -i libzint2.16_2.16.0.9-1_amd64.deb
+
+You may be prompted by dpkg to add other packages first.
+
+Note that the GS1 Syntax Engine is not yet supported by the included "debian" directory (nor by the official
+Debian package for that matter), which is an issue.

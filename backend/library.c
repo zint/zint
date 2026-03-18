@@ -457,7 +457,7 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
 
     if (symbol->debug & ZINT_DEBUG_PRINT) printf("HIBC processed source: %s\n", to_process);
 
-    /* Code 128, Code 39 & Codablock-F set `content_segs` themselves, but the others don't, so do it now */
+    /* Code 128, Code 39 & Codablock F set `content_segs` themselves, but the others don't, so do it now */
     assert(!symbol->content_segs); /* HIBC symbologies don't satisfy `supports_non_iso8859_1()` */
     if (content_segs && symbol->symbology != BARCODE_HIBC_128 && symbol->symbology != BARCODE_HIBC_39
                     && symbol->symbology != BARCODE_HIBC_BLOCKF) {

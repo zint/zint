@@ -1,2 +1,2 @@
-usr/lib/libzint.so.*
 usr/bin/zint
+usr/share/man/man1/zint.1

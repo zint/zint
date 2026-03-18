@@ -1758,7 +1758,7 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
     } else if (gs1raw_mode && !is_digital_link) {
         if (symbol->symbology == BARCODE_GS1_128 || symbol->symbology == BARCODE_DBAR_EXP
                 || symbol->symbology == BARCODE_DBAR_EXPSTK || z_is_fixed_ratio(symbol->symbology)
-                || symbol->symbology == BARCODE_CODABLOCKF) { /* Codablock-F will be GS1-enabled in the future */
+                || symbol->symbology == BARCODE_CODABLOCKF) { /* Codablock F will be GS1-enabled in the future */
             /* Prefix caret */
             local_source_buf[0] = '^';
             if (source[0] == '\x1D') { /* Allow initial GS */
