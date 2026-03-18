@@ -666,7 +666,7 @@ $tab{$tab}return 0;
 {$tab}}
 
 {$tab}while (i < length) {
-$tab{$tab}int data_start, data_max, on_separator;
+$tab{$tab}int data_start, data_max, on_separator, is_predefined_len;
 $tab{$tab}assert(ai_count < ai_max);
 $tab{$tab}ai_locs[ai_count] = i;
 $tab{$tab}if (!gs1_lint_parse_ai(source, length, i, &ai, NULL /*min*/, &max)) {
@@ -678,6 +678,7 @@ $tab$tab{$tab}return 0;
 $tab{$tab}}
 $tab{$tab}ai_vals[ai_count] = ai;
 $tab{$tab}ai_len = ai < 100 ? 2 : ai < 1000 ? 3 : 4;
+$tab{$tab}is_predefined_len = gs1_predefined_len(source + ai_locs[ai_count]);
 
 $tab{$tab}/* Following GS1 Syntax Engine tolerating superfluous FNC1s at end of AI data
 $tab{$tab}   (for both final AI and AIs with predefined length) */
@@ -689,9 +690,10 @@ $tab$tab$tab{$tab}break;
 $tab$tab{$tab}}
 $tab{$tab}}
 $tab{$tab}data_locs[ai_count] = data_start;
-$tab{$tab}/* Only checking that have at least one char, and haven't exceeded max */
+$tab{$tab}/* Only checking that have at least one char, haven't exceeded max, and have separator if not predefined */
 $tab{$tab}on_separator = j < length && source[j] == separator;
-$tab{$tab}if (j == data_start || (j + 1 == length && length > data_max && !on_separator)) {
+$tab{$tab}if (j == data_start || (j + 1 == length && length > data_max && !on_separator)
+$tab{$tab}{$tab}{$tab}|| (j + 1 < length && !on_separator && !is_predefined_len)) {
 $tab$tab{$tab}*p_ai_count = ai_count; /* For feedback */
 $tab$tab{$tab}data_lens[ai_count] = j - data_start;
 $tab$tab{$tab}*p_err_no = 2;

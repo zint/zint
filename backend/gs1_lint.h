@@ -1414,7 +1414,7 @@ static int gs1_lint_parse_raw_caret(const unsigned char source[], const int leng
     }
 
     while (i < length) {
-        int data_start, data_max, on_separator;
+        int data_start, data_max, on_separator, is_predefined_len;
         assert(ai_count < ai_max);
         ai_locs[ai_count] = i;
         if (!gs1_lint_parse_ai(source, length, i, &ai, NULL /*min*/, &max)) {
@@ -1426,6 +1426,7 @@ static int gs1_lint_parse_raw_caret(const unsigned char source[], const int leng
         }
         ai_vals[ai_count] = ai;
         ai_len = ai < 100 ? 2 : ai < 1000 ? 3 : 4;
+        is_predefined_len = gs1_predefined_len(source + ai_locs[ai_count]);
 
         /* Following GS1 Syntax Engine tolerating superfluous FNC1s at end of AI data
            (for both final AI and AIs with predefined length) */
@@ -1437,9 +1438,10 @@ static int gs1_lint_parse_raw_caret(const unsigned char source[], const int leng
             }
         }
         data_locs[ai_count] = data_start;
-        /* Only checking that have at least one char, and haven't exceeded max */
+        /* Only checking that have at least one char, haven't exceeded max, and have separator if not predefined */
         on_separator = j < length && source[j] == separator;
-        if (j == data_start || (j + 1 == length && length > data_max && !on_separator)) {
+        if (j == data_start || (j + 1 == length && length > data_max && !on_separator)
+                || (j + 1 < length && !on_separator && !is_predefined_len)) {
             *p_ai_count = ai_count; /* For feedback */
             data_lens[ai_count] = j - data_start;
             *p_err_no = 2;
