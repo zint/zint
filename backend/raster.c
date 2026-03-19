@@ -1,7 +1,7 @@
 /* raster.c - Handles output to raster files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -290,6 +290,10 @@ static void draw_bar_line(unsigned char *pixelbuf, const int xpos, const int xle
             const int image_width, const int fill) {
     unsigned char *pb = pixelbuf + ((size_t) image_width * ypos) + xpos;
 
+    assert(xpos >= 0);
+    assert(xlen >= 0);
+    assert(ypos >= 0);
+
     memset(pb, fill, xlen);
 }
 
@@ -300,6 +304,10 @@ static void copy_bar_line(unsigned char *pixelbuf, const int xpos, const int xle
     const int ye = ypos + ylen > image_height ? image_height : ypos + ylen; /* Defensive, should never happen */
     unsigned char *pb = pixelbuf + ((size_t) image_width * ypos) + xpos;
 
+    assert(xpos >= 0);
+    assert(xlen >= 0);
+    assert(ypos >= 0);
+    assert(ylen >= 0);
     assert(ypos + ylen <= image_height); /* Trigger assert if "should never happen" happens */
 
     for (y = ypos + 1; y < ye; y++) {
@@ -314,6 +322,10 @@ static void draw_bar(unsigned char *pixelbuf, const int xpos, const int xlen, co
     const int ye = ypos + ylen > image_height ? image_height : ypos + ylen; /* Defensive, should never happen */
     unsigned char *pb = pixelbuf + ((size_t) image_width * ypos) + xpos;
 
+    assert(xpos >= 0);
+    assert(xlen >= 0);
+    assert(ypos >= 0);
+    assert(ylen >= 0);
     assert(ypos + ylen <= image_height); /* Trigger assert if "should never happen" happens */
 
     for (y = ypos; y < ye; y++, pb += image_width) {
@@ -1354,11 +1366,15 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
             sep_height = symbol->option_3;
         }
         sep_height_si = (int) (sep_height * si);
+        if (sep_height_si > row_heights_si[0] * 2) { /* Ticket 353, props Simon Resch */
+            sep_height_si = row_heights_si[0] * 2;
+        }
         sep_yoffset_si = yoffset_si + row_heights_si[0] - sep_height_si / 2;
         if (is_codablockf) {
             /* Avoid 11-module start and 13-module stop chars */
             sep_xoffset_si += 11 * si;
             sep_width_si -= (11 + 13) * si;
+            assert(sep_width_si >= 0);
         }
         for (r = 1; r < symbol->rows; r++) {
             draw_bar(pixelbuf, sep_xoffset_si, sep_width_si, sep_yoffset_si, sep_height_si, image_width, image_height,

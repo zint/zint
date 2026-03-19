@@ -1123,7 +1123,7 @@ static void test_upcean_hrt(const testCtx *const p_ctx) {
                     i, testUtilBarcodeName(data[i].symbology), symbol->vector->height,
                     data[i].expected_vector_height);
 
-        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
             testUtilVectorPrint(symbol);
         }
 
@@ -1165,6 +1165,7 @@ static void test_row_separator(const testCtx *const p_ctx) {
         int border_width;
         int option_1;
         int option_3;
+        float height;
         const char *data;
         int ret;
 
@@ -1177,15 +1178,18 @@ static void test_row_separator(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, -1, -1, -1, "A", 0, 20, 2, 101, 42, 21, 2 },
-        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, 0, "A", 0, 20, 2, 101, 42, 21, 2 }, /* Same as default */
-        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, 1, "A", 0, 20, 2, 101, 42, 21, 2 }, /* Same as default */
-        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, 2, "A", 0, 20, 2, 101, 42, 20, 4 },
-        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, 3, "A", 0, 20, 2, 101, 42, 19, 6 },
-        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, 4, "A", 0, 20, 2, 101, 42, 18, 8 },
-        /*  6*/ { BARCODE_CODABLOCKF, -1, -1, 5, "A", 0, 20, 2, 101, 42, 21, 2 }, /* > 4 ignored, same as default */
-        /*  7*/ { BARCODE_CODABLOCKF, -1, 1, -1, "A", 0, 5, 1, 46, 20, 0, 2 }, /* CODE128 top separator */
-        /*  8*/ { BARCODE_CODABLOCKF, 0, -1, -1, "A", 0, 20, 2, 101, 42, 21, 2 }, /* Border width zero, same as default */
+        /*  0*/ { BARCODE_CODABLOCKF, -1, -1, -1, 0, "A", 0, 20, 2, 101, 42, 21, 2 },
+        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, 0, 0, "A", 0, 20, 2, 101, 42, 21, 2 }, /* Same as default */
+        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, 1, 0, "A", 0, 20, 2, 101, 42, 21, 2 }, /* Same as default */
+        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, 2, 0, "A", 0, 20, 2, 101, 42, 20, 4 },
+        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, 3, 0, "A", 0, 20, 2, 101, 42, 19, 6 },
+        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, 4, 0, "A", 0, 20, 2, 101, 42, 18, 8 },
+        /*  6*/ { BARCODE_CODABLOCKF, -1, -1, 5, 0, "A", 0, 20, 2, 101, 42, 21, 2 }, /* > 4 ignored, same as default */
+        /*  7*/ { BARCODE_CODABLOCKF, -1, 1, -1, 0, "A", 0, 5, 1, 46, 20, 0, 2 }, /* CODE128 top separator */
+        /*  8*/ { BARCODE_CODABLOCKF, 0, -1, -1, 0, "A", 0, 20, 2, 101, 42, 21, 2 }, /* Border width zero, same as default */
+        /*  9*/ { BARCODE_CODABLOCKF, -1, -1, 4, 2, "A", 0, 2, 2, 101, 42, 0, 8 }, /* Ticket #353, props Simon Resch */
+        /* 10*/ { BARCODE_CODABLOCKF, -1, -1, 4, 1.5, "A", 0, 1.5, 2, 101, 42, 0, 8 },
+        /* 11*/ { BARCODE_CODABLOCKF, -1, -1, 4, 1, "A", 0, 1, 2, 101, 42, 0, 8 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1206,6 +1210,9 @@ static void test_row_separator(const testCtx *const p_ctx) {
         if (data[i].border_width != -1) {
             symbol->border_width = data[i].border_width;
         }
+        if (data[i].height) {
+            symbol->height = data[i].height;
+        }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
@@ -1213,6 +1220,10 @@ static void test_row_separator(const testCtx *const p_ctx) {
         ret = ZBarcode_Buffer_Vector(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != 0\n", i, data[i].symbology, ret);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
+
+        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
+            testUtilVectorPrint(symbol);
+        }
 
         assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %.9g != %.9g\n", i, data[i].symbology, symbol->height, data[i].expected_height);
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
@@ -1286,7 +1297,7 @@ static void test_stacking(const testCtx *const p_ctx) {
         assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
 
         if (data[i].expected_separator_y != -1) {
-            if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+            if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
                 testUtilVectorPrint(symbol);
             }
 
@@ -1424,7 +1435,7 @@ static void test_output_options(const testCtx *const p_ctx) {
         if (ret < ZINT_ERROR) {
             assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-            if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+            if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
                 testUtilVectorPrint(symbol);
             }
 
@@ -1558,7 +1569,7 @@ static void test_upcean_whitespace_width(const testCtx *const p_ctx) {
         assert_zero(ret, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != 0\n", i, data[i].symbology, ret);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
             testUtilVectorPrint(symbol);
         }
 
@@ -1656,7 +1667,7 @@ static void test_scale(const testCtx *const p_ctx) {
         assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret_vector, symbol->errtxt);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
             testUtilVectorPrint(symbol);
         }
 

@@ -742,6 +742,7 @@ static void test_row_separator(const testCtx *const p_ctx) {
         int border_width;
         int option_1;
         int option_3;
+        float height;
         const char *data;
         int ret;
 
@@ -756,15 +757,18 @@ static void test_row_separator(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, -1, -1, -1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 },
-        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, 0, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, /* Same as default */
-        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, 1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, /* Same as default */
-        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, 2, "A", 0, 20, 2, 101, 242, 44, 20, 42, 4 },
-        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, 3, "A", 0, 20, 2, 101, 242, 44, 19, 42, 6 },
-        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, 4, "A", 0, 20, 2, 101, 242, 44, 18, 42, 8 },
-        /*  6*/ { BARCODE_CODABLOCKF, -1, -1, 5, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, /* > 4 ignored, same as default */
-        /*  7*/ { BARCODE_CODABLOCKF, -1, 1, -1, "A", 0, 5, 1, 46, 132, 14, 0, 20 + 2, 2 }, /* CODE128 top separator, add 2 to skip over end of start char; note no longer includes HRT */
-        /*  8*/ { BARCODE_CODABLOCKF, 0, -1, -1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, /* Border width zero, same as default */
+        /*  0*/ { BARCODE_CODABLOCKF, -1, -1, -1, 0, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 },
+        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, 0, 0, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, /* Same as default */
+        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, 1, 0, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, /* Same as default */
+        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, 2, 0, "A", 0, 20, 2, 101, 242, 44, 20, 42, 4 },
+        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, 3, 0, "A", 0, 20, 2, 101, 242, 44, 19, 42, 6 },
+        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, 4, 0, "A", 0, 20, 2, 101, 242, 44, 18, 42, 8 },
+        /*  6*/ { BARCODE_CODABLOCKF, -1, -1, 5, 0, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, /* > 4 ignored, same as default */
+        /*  7*/ { BARCODE_CODABLOCKF, -1, 1, -1, 0, "A", 0, 5, 1, 46, 132, 14, 0, 20 + 2, 2 }, /* CODE128 top separator, add 2 to skip over end of start char; note no longer includes HRT */
+        /*  8*/ { BARCODE_CODABLOCKF, 0, -1, -1, 0, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, /* Border width zero, same as default */
+        /*  9*/ { BARCODE_CODABLOCKF, -1, -1, 4, 2, "A", 0, 2, 2, 101, 242, 8, 0, 42, 8 }, /* Ticket #353, props Simon Resch */
+        /* 10*/ { BARCODE_CODABLOCKF, -1, -1, 4, 1.5, "A", 0, 2, 2, 101, 242, 8, 0, 42, 8 }, /* Height gets rounded up as not integral  */
+        /* 11*/ { BARCODE_CODABLOCKF, -1, -1, 4, 1, "A", 0, 1, 2, 101, 242, 6, 0, 42, 6 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -784,6 +788,9 @@ static void test_row_separator(const testCtx *const p_ctx) {
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
         if (data[i].border_width != -1) {
             symbol->border_width = data[i].border_width;
+        }
+        if (data[i].height) {
+            symbol->height = data[i].height;
         }
 
         ret = ZBarcode_Encode_and_Buffer(symbol, (unsigned char *) data[i].data, length, 0);
@@ -805,15 +812,17 @@ static void test_row_separator(const testCtx *const p_ctx) {
             assert_nonzero(separator_bits_set, "i:%d (%s) separator_bits_set (%d, %d) zero\n", i, testUtilBarcodeName(data[i].symbology), j, data[i].expected_separator_col);
         }
 
-        if (symbol->rows > 1) {
-            j = data[i].expected_separator_row - 1;
-            separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col + 2); /* Need to add 2 to skip to 1st blank of start row character */
-            assert_zero(separator_bits_set, "i:%d (%s) separator_bits_set (%d, %d) before non-zero\n", i, testUtilBarcodeName(data[i].symbology), j, data[i].expected_separator_col);
-        }
+        if (data[i].expected_separator_row > 0) {
+            if (symbol->rows > 1) {
+                j = data[i].expected_separator_row - 1;
+                separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col + 2); /* Need to add 2 to skip to 1st blank of start row character */
+                assert_zero(separator_bits_set, "i:%d (%s) separator_bits_set (%d, %d) before non-zero\n", i, testUtilBarcodeName(data[i].symbology), j, data[i].expected_separator_col);
+            }
 
-        j = data[i].expected_separator_row + data[i].expected_separator_height;
-        separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col + 2); /* Need to add 2 to skip to 1st blank of start row character */
-        assert_zero(separator_bits_set, "i:%d (%s) separator_bits_set (%d, %d) after non-zero\n", i, testUtilBarcodeName(data[i].symbology), j, data[i].expected_separator_col);
+            j = data[i].expected_separator_row + data[i].expected_separator_height;
+            separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col + 2); /* Need to add 2 to skip to 1st blank of start row character */
+            assert_zero(separator_bits_set, "i:%d (%s) separator_bits_set (%d, %d) after non-zero\n", i, testUtilBarcodeName(data[i].symbology), j, data[i].expected_separator_col);
+        }
 
         ZBarcode_Delete(symbol);
     }

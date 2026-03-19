@@ -1,7 +1,7 @@
 /*  vector.c - Creates vector image objects */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2018-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2018-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <assert.h>
+
 #include "common.h"
 #include "output.h"
 #include "zfiletypes.h"
@@ -41,6 +43,11 @@ INTERNAL int zint_emf_plot(struct zint_symbol *symbol, int rotate_angle);
 static int vector_add_rect(struct zint_symbol *symbol, const float x, const float y, const float width,
             const float height, struct zint_vector_rect **last_rect) {
     struct zint_vector_rect *rect;
+
+    assert(x >= 0.0f);
+    assert(y >= 0.0f);
+    assert(width >= 0.0f);
+    assert(height >= 0.0f);
 
     if (!(rect = (struct zint_vector_rect *) malloc(sizeof(struct zint_vector_rect)))) {
         /* NOTE: clang-tidy-20 gets confused about return value of function returning a function unfortunately,
@@ -73,6 +80,10 @@ static int vector_add_hexagon(struct zint_symbol *symbol, const float x, const f
             const float diameter, struct zint_vector_hexagon **last_hexagon) {
     struct zint_vector_hexagon *hexagon;
 
+    assert(x >= 0.0f);
+    assert(y >= 0.0f);
+    assert(diameter >= 0.0f);
+
     if (!(hexagon = (struct zint_vector_hexagon *) malloc(sizeof(struct zint_vector_hexagon)))) {
         return z_errtxt(0, symbol, 692, "Insufficient memory for vector hexagon");
     }
@@ -98,6 +109,11 @@ static int vector_add_hexagon(struct zint_symbol *symbol, const float x, const f
 static int vector_add_circle(struct zint_symbol *symbol, const float x, const float y, const float diameter,
             const float width, const int colour, struct zint_vector_circle **last_circle) {
     struct zint_vector_circle *circle;
+
+    assert(x >= 0.0f);
+    assert(y >= 0.0f);
+    assert(diameter >= 0.0f);
+    assert(width >= 0.0f);
 
     if (!(circle = (struct zint_vector_circle *) malloc(sizeof(struct zint_vector_circle)))) {
         return z_errtxt(0, symbol, 693, "Insufficient memory for vector circle");
@@ -126,6 +142,10 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
             const float x, const float y, const float fsize, const float width, const int halign,
             struct zint_vector_string **last_string) {
     struct zint_vector_string *string;
+
+    assert(x >= -0.5f); /* May be slightly negative due to fudging */
+    assert(y >= 0.0f);
+    assert(width >= 0.0f);
 
     if (!(string = (struct zint_vector_string *) malloc(sizeof(struct zint_vector_string)))) {
         return z_errtxt(0, symbol, 694, "Insufficient memory for vector string");
@@ -934,6 +954,7 @@ INTERNAL int zint_plot_vector(struct zint_symbol *symbol, int rotate_angle, int 
             /* Avoid 11-module start and 13-module stop chars */
             sep_xoffset += 11;
             sep_width -= 11 + 13;
+            assert(sep_width >= 0.0f);
         }
         /* Adjust original rectangles so don't overlap with separator(s) (important for RGBA) */
         for (r = 0; r < symbol->rows; r++) {
@@ -952,7 +973,7 @@ INTERNAL int zint_plot_vector(struct zint_symbol *symbol, int rotate_angle, int 
                 } else {
                     rect->height -= sep_half_height;
                 }
-                if (rect->height < 0) {
+                if (rect->height < 0.0f) {
                     rect->height = 0.0f;
                     /* TODO: warn? */
                 }
@@ -960,7 +981,8 @@ INTERNAL int zint_plot_vector(struct zint_symbol *symbol, int rotate_angle, int 
         }
         for (r = 1; r < symbol->rows; r++) {
             const float row_height = symbol->row_height[r - 1] ? symbol->row_height[r - 1] : large_bar_height;
-            if (!vector_add_rect(symbol, sep_xoffset, (r * row_height) + sep_yoffset, sep_width, sep_height,
+            const float y = (r * row_height) + sep_yoffset;
+            if (!vector_add_rect(symbol, sep_xoffset, y < 0.0f ? 0.0f : y, sep_width, sep_height,
                     &last_rect)) return ZINT_ERROR_MEMORY;
         }
     }
