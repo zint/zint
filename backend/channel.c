@@ -75,7 +75,7 @@ static int channel_copy_precalc(channel_precalc *const precalc, int B[8], int S[
     return precalc->value;
 }
 
-/* CHNCHR is adapted from ANSI/AIM BC12-1998 Annex D Figure D5 and is Copyright (c) AIM 1997 */
+/* CHNCHR is adapted from ANSI/AIM BC12-1998 Annex D Figure D5 and is Copyright © AIM 1997 */
 
 /* It is used here on the understanding that it forms part of the specification
    for Channel Code and therefore its use is permitted under the following terms

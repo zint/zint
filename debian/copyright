@@ -77,10 +77,6 @@ Copyright:
     Copyright © AIM 1997
     Copyright (c) 2004-2026 Terry Burton
 License: BSD-3-Clause and MIT and AIM
-   It is the intent and understanding of AIM [t]hat the symbology presented in this
-   specification is entirely in the public domain and free of all use restrictions,
-   licenses and fees. AIM USA, its member companies, or individual officers
-   assume no liability for the use of this document.
 
 Files:
     backend/common.c
@@ -103,17 +99,6 @@ Copyright:
     Copyright (c) 2004-2026 Terry Burton
     Copyright (C) 2006 BSI
 License: BSD-3-Clause and MIT and BSI
- Copyright subsists in all BSI publications. BSI also holds the copyright, in the
- UK, of the international standardisation bodies. Except as
- permitted under the Copyright, Designs and Patents Act 1988 no extract may be
- reproduced, stored in a retrieval system or transmitted in any form or by any
- means - electronic, photocopying, recording or otherwise - without prior written
- permission from BSI.
- .
- This does not preclude the free use, in the course of implementing the standard,
- of necessary details such as symbols, and size, type or grade designations. If these
- details are to be used for any other purpose than implementation then the prior
- written permission of BSI must be obtained.
 
 Files:
     backend/pcx.c
@@ -140,10 +125,13 @@ License: GPL-2.0-or-later
 
 Files:
     backend/tests/testcommon.*
+    backend/tests/CMakeLists.txt
+    cmake/zint_add_test.cmake
+    frontend/tests/CMakeLists.txt
 Copyright:
     Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
     Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
-License: LGPL-2.0-or-later
+License: BSD-3-Clause and LGPL-2.0-or-later
 
 Files:
     backend/tests/fuzz/Dockerfile
@@ -151,6 +139,32 @@ Files:
 Copyright:
     Copyright 2024 Google LLC
 License: Apache-2.0
+
+Files:
+    backend_tcl/Makefile.in
+    backend_tcl/tclconfig/tcl.m4
+    backend_tcl/win/nmakehlp.c
+    backend_tcl/win/rules.vc
+Copyright:
+    Copyright (c) 2002-2005 ActiveState Corporation.
+    Copyright (c) 1999-2000 Ajuba Solutions.
+    Copyright (c) 2001-2003 David Gravereaux.
+    Copyright (c) 2017      Ashok P. Nadkarni
+    Copyright (c) 1999 Scriptics Corporation.
+    Copyright (c) 2003-2008 Patrick Thoyts
+License: BSD-3-Clause
+
+Files:
+    backend_tcl/configure
+Copyright:
+    Copyright (C) 2003 Free Software Foundation, Inc.
+License: GPL-2.0-or-later
+
+Files:
+    backend_tcl/tclconfig/install-sh
+Copyright:
+    Copyright (C) 1994 X Consortium
+License: X11
 
 Files:
     frontend/main.c
@@ -188,6 +202,16 @@ Files: debian/*
 Copyright:
     2013-2025 Dmitry Smirnov <onlyjob@debian.org>
 License: GPL-3.0-or-later
+
+License: AIM
+ It is the intent and understanding of AIM that the symbology presented in this
+ specification is entirely in the public domain and free of all use restrictions,
+ licenses and fees. AIM USA, its member companies, or individual officers
+ assume no liability for the use of this document.
+ .
+ All rights reserved. No part of this publication may be reproduced in any form, in
+ an electronic retrieval system or otherwise, without the prior written permission
+ of the publisher.
 
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -246,6 +270,19 @@ License: GPL-2.0-or-later
  ․
  On Debian systems, the complete text of the GNU General Public
  License Version 2 can be found in "/usr/share/common-licenses/GPL-2".
+
+License: BSI
+ Copyright subsists in all BSI publications. BSI also holds the copyright, in the
+ UK, of the international standardisation bodies. Except as
+ permitted under the Copyright, Designs and Patents Act 1988 no extract may be
+ reproduced, stored in a retrieval system or transmitted in any form or by any
+ means - electronic, photocopying, recording or otherwise - without prior written
+ permission from BSI.
+ .
+ This does not preclude the free use, in the course of implementing the standard,
+ of necessary details such as symbols, and size, type or grade designations. If these
+ details are to be used for any other purpose than implementation then the prior
+ written permission of BSI must be obtained.
 
 License: GPL-3.0-or-later
  This program is free software: you can redistribute it and/or modify
@@ -499,3 +536,26 @@ License: Unicode-3.0
  used in advertising or otherwise to promote the sale, use or other dealings in
  these Data Files or Software without prior written authorization of the
  copyright holder.
+
+License: X11
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the "Software"),
+ to deal in the Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following conditions:
+ ․
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ ․
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ DEALINGS IN THE SOFTWARE.
+ ․
+ Except as contained in this notice, the name(s) of the above copyright
+ holders shall not be used in advertising or otherwise to promote the sale,
+ use or other dealings in this Software without prior written authorization.
