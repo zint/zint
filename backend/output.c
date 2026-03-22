@@ -710,7 +710,8 @@ INTERNAL void zint_out_set_whitespace_offsets(const struct zint_symbol *symbol, 
 
     *p_xoffset = symbol->whitespace_width + qz_left;
     *p_roffset = symbol->whitespace_width + qz_right;
-    if (symbol->output_options & BARCODE_BOX) {
+    /* BARCODE_BIND_TOP trumps BARCODE_BOX */
+    if (!(symbol->output_options & BARCODE_BIND_TOP) && (symbol->output_options & BARCODE_BOX)) {
         *p_xoffset += symbol->border_width;
         *p_roffset += symbol->border_width;
     }

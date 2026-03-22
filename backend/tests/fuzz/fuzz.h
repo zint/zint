@@ -42,14 +42,13 @@
 #define ZARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 
 #define INPUT_MODE_MASK     (ESCAPE_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE | HEIGHTPERROW_MODE | FAST_MODE \
-                                | EXTRA_ESCAPE_MODE)
+                                | EXTRA_ESCAPE_MODE | GS1SYNTAXENGINE_MODE | GS1RAW_MODE)
 
-#ifdef Z_FUZZ_SET_OUTPUT_OPTIONS
 #define OUTPUT_OPTIONS_MASK (BARCODE_BIND_TOP | BARCODE_BIND | BARCODE_BOX | BARCODE_STDOUT | READER_INIT \
                                 | SMALL_TEXT | BOLD_TEXT | CMYK_COLOUR | BARCODE_DOTTY_MODE | GS1_GS_SEPARATOR \
                                 | OUT_BUFFER_INTERMEDIATE | BARCODE_QUIET_ZONES | BARCODE_NO_QUIET_ZONES \
-                                | COMPLIANT_HEIGHT | EANUPC_GUARD_WHITESPACE | EMBED_VECTOR_FONT)
-#endif
+                                | COMPLIANT_HEIGHT | EANUPC_GUARD_WHITESPACE | EMBED_VECTOR_FONT \
+                                | BARCODE_CONTENT_SEGS) /* BARCODE_MEMORY_FILE always set */
 
 /* Based on `z_not_sane()` flags in "backend/common.h") */
 #define IS_CTL_F    (0x00000001)            /* ASCII control (incl. DEL) */
@@ -161,160 +160,160 @@ static int not_sane(const unsigned int flg, const unsigned char source[], const 
 
 struct settings_item {
     const int idx, symbology, sane_flag;
-    const int option_1_min, option_1_max, option_2_min, option_2_max, option_3, len_min, len_max;
+    const int option_1_min, option_1_max, option_2_min, option_2_max, option_3_min, option_3_max, len_min, len_max;
 };
 
 static const struct settings_item settings[] = {
-    {   0, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {   1, BARCODE_CODE11,       SODIUM_MNS_F,           0,  -1,           0,   2,           0,             1,  140 },
-    {   2, BARCODE_C25STANDARD,        NEON_F,           0,  -1,           0,   2,           0,             1,  112 },
-    {   3, BARCODE_C25INTER,           NEON_F,           0,  -1,           0,   2,           0,             1,  125 },
-    {   4, BARCODE_C25IATA,            NEON_F,           0,  -1,           0,   2,           0,             1,   80 },
-    {   5, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {   6, BARCODE_C25LOGIC,           NEON_F,           0,  -1,           0,   2,           0,             1,  113 },
-    {   7, BARCODE_C25IND,             NEON_F,           0,  -1,           0,   2,           0,             1,   79 },
-    {   8, BARCODE_CODE39,           SILVER_F,           0,  -1,           0,   2,           0,             1,   86 },
-    {   9, BARCODE_EXCODE39,         SILVER_F,           0,  -1,           0,   2,           0,             1,   86 },
-    {  10, BARCODE_EAN8,         SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   14 },
-    {  11, BARCODE_EAN_2ADDON,         NEON_F,           0,  -1,           0,  -1,           0,             1,    2 },
-    {  12, BARCODE_EAN_5ADDON,         NEON_F,           0,  -1,           0,  -1,           0,             1,    5 },
-    {  13, BARCODE_EANX,         SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   19 },
-    {  14, BARCODE_EANX_CHK,     SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   19 },
-    {  15, BARCODE_EAN13,        SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   19 },
-    {  16, BARCODE_GS1_128,       ASCII_PRT_F,           0,  -1,           0,  -1,           0,             3,  198 },
-    {  17, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  18, BARCODE_CODABAR,         CALCIUM_F,           0,  -1,           0,   2,           0,             3,  103 },
-    {  19, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  20, BARCODE_CODE128,                 0,           0,  -1,           0,  -1,           0,             1,  198 },
-    {  21, BARCODE_DPLEIT,             NEON_F,           0,  -1,           0,  -1,           0,             1,   13 },
-    {  22, BARCODE_DPIDENT,            NEON_F,           0,  -1,           0,  -1,           0,             1,   11 },
-    {  23, BARCODE_CODE16K,                 0,          -1,  16,           0,  -1,           0,             1,  154 },
-    {  24, BARCODE_CODE49,            ASCII_F,           2,   8,           0,  -1,           0,             1,   81 },
-    {  25, BARCODE_CODE93,            ASCII_F,           0,  -1,           0,   1,           0,             1,  123 },
-    {  26, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  27, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  28, BARCODE_FLAT,               NEON_F,           0,  -1,           0,  -1,           0,             1,  128 },
-    {  29, BARCODE_DBAR_OMN,           NEON_F,           0,  -1,           0,  -1,           0,             1,   14 },
-    {  30, BARCODE_DBAR_LTD,           NEON_F,           0,  -1,           0,  -1,           0,             1,   14 },
-    {  31, BARCODE_DBAR_EXP,      ASCII_PRT_F,           0,  -1,           0,  -1,           0,             3,   74 },
-    {  32, BARCODE_TELEPEN,           ASCII_F,           0,  -1,           0,  -1,           0,             1,   69 },
-    {  33, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  34, BARCODE_UPCA,         SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   18 },
-    {  35, BARCODE_UPCA_CHK,     SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   18 },
-    {  36, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  37, BARCODE_UPCE,         SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   14 },
-    {  38, BARCODE_UPCE_CHK,     SODIUM_PLS_F,           0,  -1,           0,  -1,           0,             1,   14 },
-    {  39, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  40, BARCODE_POSTNET,            NEON_F,           0,  -1,           0,  -1,           0,             1,   38 },
-    {  41, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  42, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  43, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  44, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  45, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  46, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  47, BARCODE_MSI_PLESSEY,        NEON_F,           0,  -1,           0,  16,           0,             1,   92 },
-    {  48, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  49, BARCODE_FIM,                 FIM_F,           0,  -1,           0,  -1,           0,             1,    1 },
-    {  50, BARCODE_LOGMARS,          SILVER_F,           0,  -1,           0,   2,           0,             1,   30 },
-    {  51, BARCODE_PHARMA,             NEON_F,           0,  -1,           0,  -1,           0,             1,    6 },
-    {  52, BARCODE_PZN,                NEON_F,           0,  -1,           0,   1,           0,             1,    8 },
-    {  53, BARCODE_PHARMA_TWO,         NEON_F,           0,  -1,           0,  -1,           0,             1,    8 },
-    {  54, BARCODE_CEPNET,             NEON_F,           0,  -1,           0,  -1,           0,             8,    8 },
-    {  55, BARCODE_PDF417,                  0,          -1,   8,           0,  30,           0,             1, 2710 },
-    {  56, BARCODE_PDF417COMP,              0,          -1,   8,           0,  30,           0,             1, 2710 },
-    {  57, BARCODE_MAXICODE,                0,          -1,   6,           0, 100,           0,             1,  138 },
-    {  58, BARCODE_QRCODE,                  0,          -1,   4,           0,  40, ZINT_FULL_MULTIBYTE,     1, 7089 },
-    {  59, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  60, BARCODE_CODE128AB,               0,           0,  -1,           0,  -1,           0,             1,   99 },
-    {  61, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  62, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  63, BARCODE_AUSPOST,           GDSET_F,           0,  -1,           0,  -1,           0,             8,   23 },
-    {  64, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  65, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  66, BARCODE_AUSREPLY,          GDSET_F,           0,  -1,           0,  -1,           0,             1,    8 },
-    {  67, BARCODE_AUSROUTE,          GDSET_F,           0,  -1,           0,  -1,           0,             1,    8 },
-    {  68, BARCODE_AUSREDIRECT,       GDSET_F,           0,  -1,           0,  -1,           0,             1,    8 },
-    {  69, BARCODE_ISBNX,  ISBNX_ADDON_SANE_F,           0,  -1,           0,  -1,           0,             9,   19 },
-    {  70, BARCODE_RM4SCC,            KRSET_F,           0,  -1,           0,  -1,           0,             1,   50 },
-    {  71, BARCODE_DATAMATRIX,              0,           0,  -1,           0,  48, DM_SQUARE | DM_ISO_144,  1, 3550 },
-    {  72, BARCODE_EAN14,              NEON_F,           0,  -1,           0,  -1,           0,             1,   13 },
-    {  73, BARCODE_VIN,             ARSENIC_F,           0,  -1,           0,  -1,           0,            17,   17 },
-    {  74, BARCODE_CODABLOCKF,              0,          -1,  44,          -1,  67,           0,             1, 2725 },
-    {  75, BARCODE_NVE18,              NEON_F,           0,  -1,           0,  -1,           0,             1,   17 },
-    {  76, BARCODE_JAPANPOST,    SHKASUTSET_F,           0,  -1,           0,  -1,           0,             1,   20 },
-    {  77, BARCODE_KOREAPOST,          NEON_F,           0,  -1,           0,  -1,           0,             1,    6 },
-    {  78, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  79, BARCODE_DBAR_STK,           NEON_F,           0,  -1,           0,  -1,           0,             1,   14 },
-    {  80, BARCODE_DBAR_OMNSTK,        NEON_F,           0,  -1,           0,  -1,           0,             1,   14 },
-    {  81, BARCODE_DBAR_EXPSTK,   ASCII_PRT_F,           0,  -1,           0,  11,           0,             1,   74 },
-    {  82, BARCODE_PLANET,             NEON_F,           0,  -1,           0,  -1,           0,             1,   38 },
-    {  83, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  84, BARCODE_MICROPDF417,             0,           0,  -1,           0,  30,           0,             1,  366 },
-    {  85, BARCODE_USPS_IMAIL,   SODIUM_MNS_F,           0,  -1,           0,  -1,           0,             1,   32 },
-    {  86, BARCODE_PLESSEY,            SSET_F,           0,  -1,           0,  -1,           0,             1,   67 },
-    {  87, BARCODE_TELEPEN_NUM,    SODIUM_X_F,           0,  -1,           0,  -1,           0,             1,  136 },
-    {  88, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  89, BARCODE_ITF14,              NEON_F,           0,  -1,           0,  -1,           0,             1,   13 },
-    {  90, BARCODE_KIX,               KRSET_F,           0,  -1,           0,  -1,           0,             1,   18 },
-    {  91, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  92, BARCODE_AZTEC,                   0,          -1,   4,           0,  36,           0,             1, 4483 },
-    {  93, BARCODE_DAFT,               DAFT_F,           0,  -1,          50, 900,           0,             1,  576 },
-    {  94, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  95, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    {  96, BARCODE_DPD,               KRSET_F,           0,  -1,           0,  -1,           0,            27,   28 },
-    {  97, BARCODE_MICROQR,                 0,          -1,   4,           0,   4,           0,             1,   35 },
-    {  98, BARCODE_HIBC_128,         SILVER_F,           0,  -1,           0,  -1,           0,             1,  110 },
-    {  99, BARCODE_HIBC_39,          SILVER_F,           0,  -1,           0,   2,           0,             1,   70 },
-    { 100, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 101, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 102, BARCODE_HIBC_DM,          SILVER_F,           0,  -1,           0,  48, DM_SQUARE | DM_ISO_144,  1,  110 },
-    { 103, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 104, BARCODE_HIBC_QR,          SILVER_F,          -1,   4,           0,  40, ZINT_FULL_MULTIBYTE,     1,  110 },
-    { 105, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 106, BARCODE_HIBC_PDF,         SILVER_F,          -1,   8,           0,  30,           0,             1,  110 },
-    { 107, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 108, BARCODE_HIBC_MICPDF,      SILVER_F,           0,  -1,           0,  30,           0,             1,  110 },
-    { 109, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 110, BARCODE_HIBC_BLOCKF,      SILVER_F,          -1,  44,          -1,  67,           0,             1,  110 },
-    { 111, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 112, BARCODE_HIBC_AZTEC,       SILVER_F,          -1,   4,           0,  36,           0,             1,  110 },
-    { 113, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 114, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 115, BARCODE_DOTCODE,                 0,           0,  -1,           0, 200,           0,             1,  900 },
-    { 116, BARCODE_HANXIN,                  0,          -1,   5,           0,  84, ZINT_FULL_MULTIBYTE,     1, 7827 },
-    { 117, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 118, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 119, BARCODE_MAILMARK_2D,    RUBIDIUM_F,           0,  -1,           0,  30, DM_SQUARE | DM_ISO_144, 28,   90 },
-    { 120, BARCODE_UPU_S10,           KRSET_F,           0,  -1,           0,  -1,           0,            12,   13 },
-    { 121, BARCODE_MAILMARK_4S,    RUBIDIUM_F,           0,  -1,           0,  -1,           0,            14,   26 },
-    { 122, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 123, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 124, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 125, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 126, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 127, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0,  -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,     /*len*/ 0,   -1 },
-    { 128, BARCODE_AZRUNE,             NEON_F,           0,  -1,           0,  -1,           0,             1,    3 },
-    { 129, BARCODE_CODE32,             NEON_F,           0,  -1,           0,  -1,           0,             1,    8 },
-    { 130, BARCODE_EANX_CC,      SODIUM_PLS_F,           0,   2,           0,  -1,           0,             1,  338 },
-    { 131, BARCODE_GS1_128_CC,    ASCII_PRT_F,           0,   3,           0,  -1,           0,             1, 2361 },
-    { 132, BARCODE_DBAR_OMN_CC,        NEON_F,           0,   2,           0,  -1,           0,             1,  338 },
-    { 133, BARCODE_DBAR_LTD_CC,        NEON_F,           0,   2,           0,  -1,           0,             1,  338 },
-    { 134, BARCODE_DBAR_EXP_CC,   ASCII_PRT_F,           0,   2,           0,  -1,           0,             1,  338 },
-    { 135, BARCODE_UPCA_CC,      SODIUM_PLS_F,           0,   2,           0,  -1,           0,             1,  338 },
-    { 136, BARCODE_UPCE_CC,      SODIUM_PLS_F,           0,   2,           0,  -1,           0,             1,  338 },
-    { 137, BARCODE_DBAR_STK_CC,        NEON_F,           0,   2,           0,  -1,           0,             1,  338 },
-    { 138, BARCODE_DBAR_OMNSTK_CC,     NEON_F,           0,   2,           0,  -1,           0,             1,  338 },
-    { 139, BARCODE_DBAR_EXPSTK_CC, ASCII_PRT_F,          0,   2,           0,  11,           0,             1,  338 },
-    { 140, BARCODE_CHANNEL,            NEON_F,           0,  -1,           3,   8,           0,             1,    7 },
-    { 141, BARCODE_CODEONE,                 0,           0,  -1,           0,  10,           0,             1, 3550 },
-    { 142, BARCODE_GRIDMATRIX,              0,           0,   5,           0,  13, ZINT_FULL_MULTIBYTE,     1, 1751 },
-    { 143, BARCODE_UPNQR,                   0,           0,  -1,           0,  -1, ZINT_FULL_MULTIBYTE,     1,  411 },
-    { 144, BARCODE_ULTRA,                   0,          -1,   5,           0,   2, ULTRA_COMPRESSION,       1,  504 },
-    { 145, BARCODE_RMQR,                    0,          -1,   4,           0,  38,           0,             1,  361 },
-    { 146, BARCODE_BC412,           ARSENIC_F,           0,  -1,           0,  -1,           0,             7,   18 },
-    { 147, BARCODE_DXFILMEDGE,       SILVER_F,           0,  -1,           0,  -1,           0,             1,   10 },
-    { 148, BARCODE_EAN8_CC,      SODIUM_PLS_F,           0,   2,           0,  -1,           0,             1,  335 },
-    { 149, BARCODE_EAN13_CC,     SODIUM_PLS_F,           0,   2,           0,  -1,           0,             1,  338 },
+    {   0, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {   1, BARCODE_CODE11,       SODIUM_MNS_F,           0, -1,           0,   2,           0,  -1,         1,  140 },
+    {   2, BARCODE_C25STANDARD,        NEON_F,           0, -1,           0,   2,           0,  -1,         1,  112 },
+    {   3, BARCODE_C25INTER,           NEON_F,           0, -1,           0,   2,           0,  -1,         1,  125 },
+    {   4, BARCODE_C25IATA,            NEON_F,           0, -1,           0,   2,           0,  -1,         1,   80 },
+    {   5, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {   6, BARCODE_C25LOGIC,           NEON_F,           0, -1,           0,   2,           0,  -1,         1,  113 },
+    {   7, BARCODE_C25IND,             NEON_F,           0, -1,           0,   2,           0,  -1,         1,   79 },
+    {   8, BARCODE_CODE39,           SILVER_F,           0, -1,           0,   2,           0,  -1,         1,   86 },
+    {   9, BARCODE_EXCODE39,         SILVER_F,           0, -1,           0,   2,           0,  -1,         1,   86 },
+    {  10, BARCODE_EAN8,         SODIUM_PLS_F,           0, -1,           0,  -1,           0,  -1,         1,   14 },
+    {  11, BARCODE_EAN_2ADDON,         NEON_F,           0, -1,           0,  -1,           0,  -1,         1,    2 },
+    {  12, BARCODE_EAN_5ADDON,         NEON_F,           0, -1,           0,  -1,           0,  -1,         1,    5 },
+    {  13, BARCODE_EANX,         SODIUM_PLS_F,           0, -1,           0,  -1,           0,  -1,         1,   19 },
+    {  14, BARCODE_EANX_CHK,     SODIUM_PLS_F,           0, -1,           0,  -1,           0,  -1,         1,   19 },
+    {  15, BARCODE_EAN13,        SODIUM_PLS_F,           0, -1,           0,  -1,           0,  -1,         1,   19 },
+    {  16, BARCODE_GS1_128,       ASCII_PRT_F,           0, -1,           0,  -1,           0,  -1,         3,  198 },
+    {  17, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  18, BARCODE_CODABAR,         CALCIUM_F,           0, -1,           0,   2,           0,  -1,         3,  103 },
+    {  19, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  20, BARCODE_CODE128,                 0,           0, -1,           0,  -1,           0,  -1,         1,  198 },
+    {  21, BARCODE_DPLEIT,             NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   13 },
+    {  22, BARCODE_DPIDENT,            NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   11 },
+    {  23, BARCODE_CODE16K,                 0,          -1, 16,           0,  -1,           0,   4,         1,  154 },
+    {  24, BARCODE_CODE49,            ASCII_F,           2,  8,           0,  -1,           1,   4,         1,   81 },
+    {  25, BARCODE_CODE93,            ASCII_F,           0, -1,           0,   1,           0,  -1,         1,  123 },
+    {  26, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  27, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  28, BARCODE_FLAT,               NEON_F,           0, -1,           0,  -1,           0,  -1,         1,  128 },
+    {  29, BARCODE_DBAR_OMN,           NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   14 },
+    {  30, BARCODE_DBAR_LTD,           NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   14 },
+    {  31, BARCODE_DBAR_EXP,      ASCII_PRT_F,           0, -1,           0,  -1,           0,  -1,         3,   74 },
+    {  32, BARCODE_TELEPEN,           ASCII_F,           0, -1,           0,  -1,           0,  -1,         1,   69 },
+    {  33, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  34, BARCODE_UPCA,         SODIUM_PLS_F,           0, -1,           0,  -1,           0,  -1,         1,   18 },
+    {  35, BARCODE_UPCA_CHK,     SODIUM_PLS_F,           0, -1,           0,  -1,           0,  -1,         1,   18 },
+    {  36, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  37, BARCODE_UPCE,         SODIUM_PLS_F,           0, -1,           0,  -1,           0,  -1,         1,   14 },
+    {  38, BARCODE_UPCE_CHK,     SODIUM_PLS_F,           0, -1,           0,  -1,           0,  -1,         1,   14 },
+    {  39, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  40, BARCODE_POSTNET,            NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   38 },
+    {  41, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  42, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  43, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  44, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  45, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  46, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  47, BARCODE_MSI_PLESSEY,        NEON_F,           0, -1,           0,  16,           0,  -1,         1,   92 },
+    {  48, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  49, BARCODE_FIM,                 FIM_F,           0, -1,           0,  -1,           0,  -1,         1,    1 },
+    {  50, BARCODE_LOGMARS,          SILVER_F,           0, -1,           0,   2,           0,  -1,         1,   30 },
+    {  51, BARCODE_PHARMA,             NEON_F,           0, -1,           0,  -1,           0,  -1,         1,    6 },
+    {  52, BARCODE_PZN,                NEON_F,           0, -1,           0,   1,           0,  -1,         1,    8 },
+    {  53, BARCODE_PHARMA_TWO,         NEON_F,           0, -1,           0,  -1,           0,  -1,         1,    8 },
+    {  54, BARCODE_CEPNET,             NEON_F,           0, -1,           0,  -1,           0,  -1,         8,    8 },
+    {  55, BARCODE_PDF417,                  0,          -1,  8,           0,  30,           1,   4,         1, 2710 },
+    {  56, BARCODE_PDF417COMP,              0,          -1,  8,           0,  30,           4,   4,         1, 2710 },
+    {  57, BARCODE_MAXICODE,                0,          -1,  6,           0, 100,           0,  -1,         1,  138 },
+    {  58, BARCODE_QRCODE,                  0,          -1,  4,           0,  40,         200, 200,         1, 7089 },
+    {  59, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  60, BARCODE_CODE128AB,               0,           0, -1,           0,  -1,           0,  -1,         1,   99 },
+    {  61, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  62, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  63, BARCODE_AUSPOST,           GDSET_F,           0, -1,           0,  -1,           0,  -1,         8,   23 },
+    {  64, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  65, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  66, BARCODE_AUSREPLY,          GDSET_F,           0, -1,           0,  -1,           0,  -1,         1,    8 },
+    {  67, BARCODE_AUSROUTE,          GDSET_F,           0, -1,           0,  -1,           0,  -1,         1,    8 },
+    {  68, BARCODE_AUSREDIRECT,       GDSET_F,           0, -1,           0,  -1,           0,  -1,         1,    8 },
+    {  69, BARCODE_ISBNX,  ISBNX_ADDON_SANE_F,           0, -1,           0,  -1,           0,  -1,         9,   19 },
+    {  70, BARCODE_RM4SCC,            KRSET_F,           0, -1,           0,  -1,           0,  -1,         1,   50 },
+    {  71, BARCODE_DATAMATRIX,              0,           0, -1,           0,  48,         128, 128,         1, 3550 },
+    {  72, BARCODE_EAN14,              NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   13 },
+    {  73, BARCODE_VIN,             ARSENIC_F,           0, -1,           0,  -1,           0,  -1,        17,   17 },
+    {  74, BARCODE_CODABLOCKF,              0,          -1, 44,          -1,  67,           4,   4,         1, 2725 },
+    {  75, BARCODE_NVE18,              NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   17 },
+    {  76, BARCODE_JAPANPOST,    SHKASUTSET_F,           0, -1,           0,  -1,           0,  -1,         1,   20 },
+    {  77, BARCODE_KOREAPOST,          NEON_F,           0, -1,           0,  -1,           0,  -1,         1,    6 },
+    {  78, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  79, BARCODE_DBAR_STK,           NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   14 },
+    {  80, BARCODE_DBAR_OMNSTK,        NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   14 },
+    {  81, BARCODE_DBAR_EXPSTK,   ASCII_PRT_F,           0, -1,           0,  11,           0,  -1,         1,   74 },
+    {  82, BARCODE_PLANET,             NEON_F,           0, -1,           0,  -1,           0,  -1,         1,   38 },
+    {  83, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  84, BARCODE_MICROPDF417,             0,           0, -1,           0,  30,           4,   4,         1,  366 },
+    {  85, BARCODE_USPS_IMAIL,   SODIUM_MNS_F,           0, -1,           0,  -1,           0,  -1,         1,   32 },
+    {  86, BARCODE_PLESSEY,            SSET_F,           0, -1,           0,  -1,           0,  -1,         1,   67 },
+    {  87, BARCODE_TELEPEN_NUM,    SODIUM_X_F,           0, -1,           0,  -1,           0,  -1,         1,  136 },
+    {  88, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  89, BARCODE_ITF14,              NEON_F,           0, -1,           0,  -1,           0,   4,         1,   13 },
+    {  90, BARCODE_KIX,               KRSET_F,           0, -1,           0,  -1,           0,  -1,         1,   18 },
+    {  91, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  92, BARCODE_AZTEC,                   0,          -1,  4,           0,  36,         128, 128,         1, 4483 },
+    {  93, BARCODE_DAFT,               DAFT_F,           0, -1,          50, 900,           0,  -1,         1,  576 },
+    {  94, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  95, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    {  96, BARCODE_DPD,               KRSET_F,           0, -1,           0,  -1,           0,   4,        27,   28 },
+    {  97, BARCODE_MICROQR,                 0,          -1,  4,           0,   4,           0,  -1,         1,   35 },
+    {  98, BARCODE_HIBC_128,         SILVER_F,           0, -1,           0,  -1,           0,  -1,         1,  110 },
+    {  99, BARCODE_HIBC_39,          SILVER_F,           0, -1,           0,   2,           0,  -1,         1,   70 },
+    { 100, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 101, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 102, BARCODE_HIBC_DM,          SILVER_F,           0, -1,           0,  48,         100, 101,         1,  110 },
+    { 103, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 104, BARCODE_HIBC_QR,          SILVER_F,          -1,  4,           0,  40,         200, 200,         1,  110 },
+    { 105, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 106, BARCODE_HIBC_PDF,         SILVER_F,          -1,  8,           0,  30,           0,  -1,         1,  110 },
+    { 107, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 108, BARCODE_HIBC_MICPDF,      SILVER_F,           0, -1,           0,  30,           0,  -1,         1,  110 },
+    { 109, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 110, BARCODE_HIBC_BLOCKF,      SILVER_F,          -1, 44,          -1,  67,           0,  -1,         1,  110 },
+    { 111, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 112, BARCODE_HIBC_AZTEC,       SILVER_F,          -1,  4,           0,  36,         128, 128,         1,  110 },
+    { 113, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 114, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 115, BARCODE_DOTCODE,                 0,           0, -1,           0, 200,           0,  -1,         1,  900 },
+    { 116, BARCODE_HANXIN,                  0,          -1,  5,           0,  84,         200, 200,         1, 7827 },
+    { 117, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 118, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 119, BARCODE_MAILMARK_2D,    RUBIDIUM_F,           0, -1,           0,  30,         100, 101,        28,   90 },
+    { 120, BARCODE_UPU_S10,           KRSET_F,           0, -1,           0,  -1,           0,  -1,        12,   13 },
+    { 121, BARCODE_MAILMARK_4S,    RUBIDIUM_F,           0, -1,           0,  -1,           0,  -1,        14,   26 },
+    { 122, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 123, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 124, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 125, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 126, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 127, /*symbology*/ -1,  /*sane_flag*/ 0, /*opt_1*/ 0, -1, /*opt_2*/ 0,  -1, /*opt_3*/ 0,  -1, /*len*/ 0,   -1 },
+    { 128, BARCODE_AZRUNE,             NEON_F,           0, -1,           0,  -1,           0,  -1,         1,    3 },
+    { 129, BARCODE_CODE32,             NEON_F,           0, -1,           0,  -1,           0,  -1,         1,    8 },
+    { 130, BARCODE_EANX_CC,      SODIUM_PLS_F,           0,  2,           0,  -1,           0,  -1,         1,  338 },
+    { 131, BARCODE_GS1_128_CC,    ASCII_PRT_F,           0,  3,           0,  -1,           0,  -1,         1, 2361 },
+    { 132, BARCODE_DBAR_OMN_CC,        NEON_F,           0,  2,           0,  -1,           0,  -1,         1,  338 },
+    { 133, BARCODE_DBAR_LTD_CC,        NEON_F,           0,  2,           0,  -1,           0,  -1,         1,  338 },
+    { 134, BARCODE_DBAR_EXP_CC,   ASCII_PRT_F,           0,  2,           0,  -1,           0,  -1,         1,  338 },
+    { 135, BARCODE_UPCA_CC,      SODIUM_PLS_F,           0,  2,           0,  -1,           0,  -1,         1,  338 },
+    { 136, BARCODE_UPCE_CC,      SODIUM_PLS_F,           0,  2,           0,  -1,           0,  -1,         1,  338 },
+    { 137, BARCODE_DBAR_STK_CC,        NEON_F,           0,  2,           0,  -1,           0,  -1,         1,  338 },
+    { 138, BARCODE_DBAR_OMNSTK_CC,     NEON_F,           0,  2,           0,  -1,           0,  -1,         1,  338 },
+    { 139, BARCODE_DBAR_EXPSTK_CC, ASCII_PRT_F,          0,  2,           0,  11,           0,  -1,         1,  338 },
+    { 140, BARCODE_CHANNEL,            NEON_F,           0, -1,           3,   8,           0,  -1,         1,    7 },
+    { 141, BARCODE_CODEONE,                 0,           0, -1,           0,  10,           0,  -1,         1, 3550 },
+    { 142, BARCODE_GRIDMATRIX,              0,           0,  5,           0,  13,         200, 200,         1, 1751 },
+    { 143, BARCODE_UPNQR,                   0,           0, -1,           0,  -1,         200, 200,         1,  411 },
+    { 144, BARCODE_ULTRA,                   0,          -1,  5,           0,   2,         128, 128,         1,  504 },
+    { 145, BARCODE_RMQR,                    0,          -1,  4,           0,  38,           0,  -1,         1,  361 },
+    { 146, BARCODE_BC412,           ARSENIC_F,           0, -1,           0,  -1,           0,  -1,         7,   18 },
+    { 147, BARCODE_DXFILMEDGE,       SILVER_F,           0, -1,           0,  -1,           0,  -1,         1,   10 },
+    { 148, BARCODE_EAN8_CC,      SODIUM_PLS_F,           0,  2,           0,  -1,           0,  -1,         1,  335 },
+    { 149, BARCODE_EAN13_CC,     SODIUM_PLS_F,           0,  2,           0,  -1,           0,  -1,         1,  338 },
 };
 
 /* Make sure value `v` is between `min` and `max` */
@@ -383,18 +382,29 @@ static int set_symbol(struct zint_symbol *symbol, const int idx, const int chk_s
         }
     }
     /* `option_3` */
-    if (length > si->len_min && si->option_3) {
-        if (*input++ & 1) { /* Odd/even */
-            symbol->option_3 = si->option_3;
+    if (length > si->len_min && (si->option_3_min <= si->option_3_max)) {
+        if (si->option_3_min + 1 == si->option_3_max) { /* Only one in it? */
+            symbol->option_3 = (*input++ & 1) ? si->option_3_min : si->option_3_max; /* Odd/even */
+        } else {
+            symbol->option_3 = clamp(*input++, si->option_3_min, si->option_3_max);
         }
         length--;
     }
-#ifdef Z_FUZZ_SET_OUTPUT_OPTIONS
+    /* `height` */
+    if (length > si->len_min && !(ZBarcode_Cap(symbol->symbology, ZINT_CAP_FIXED_RATIO) & ZINT_CAP_FIXED_RATIO)) {
+        symbol->height = *input++;
+        length--;
+    }
+    /* `border_width` */
+    if (length > si->len_min) {
+        symbol->border_width = *input++;
+        length--;
+    }
+    /* `output_options` */
     if (length > si->len_min) {
         symbol->output_options = *input++ & OUTPUT_OPTIONS_MASK;
         length--;
     }
-#endif
 
     if (length > si->len_max) {
         return 0;
@@ -413,6 +423,55 @@ static int set_symbol(struct zint_symbol *symbol, const int idx, const int chk_s
 
     return length;
 }
+
+/* Boilerplate for stand-alone testing of "fuzz_data" and "fuzz_gs1" to take single corpus file when
+   `Z_FUZZ_MAIN` defined */
+#define Z_FUZZ_MAIN_READ_ARGV_1(idx, buf) \
+int main(int argc, char *argv[]) { \
+    unsigned char data[16384]; \
+    size_t size = 0; \
+    struct zint_symbol *symbol; \
+    int idx; \
+    unsigned char *buf; \
+    { \
+        long fsize; \
+        size_t n; \
+        FILE *fp; \
+        if (argc != 2) { \
+            fprintf(stderr, "usage: <corpus-filename>\n"); \
+            return -1; \
+        } \
+        if (!(fp = fopen(argv[1], "rb"))) { \
+            fprintf(stderr, "failed to open input file \"%s\" (%d, %s)\n", argv[1], errno, strerror(errno)); \
+            return -1; \
+        } \
+        if (fseek(fp, 0, SEEK_END) != 0 \
+                || (fsize = ftell(fp)) <= 0 || fsize == LONG_MAX \
+                || fseek(fp, 0, SEEK_SET) != 0) { \
+            fprintf(stderr, "failed to seek input file \"%s\" (%d, %s)\n", argv[1], errno, strerror(errno)); \
+            return -1; \
+        } \
+        if (fsize > (long) sizeof(data)) { \
+            fprintf(stderr, "Input file \"%s\" too big, file size %d, buffer max %d\n", argv[1], \
+                    (int) fsize, (int) sizeof(data)); \
+            return -1; \
+        } \
+        do { \
+            n = fread(data + size, 1, fsize - size, fp); \
+            if (ferror(fp)) { \
+                fprintf(stderr, "Input file \"%s\" read error (%d: %s)", argv[1], errno, strerror(errno)); \
+                (void) fclose(fp); \
+                return -1; \
+            } \
+            size += n; \
+        } while (!feof(fp) && n > 0 && (long) size < fsize); \
+        (void) fclose(fp); \
+        if ((long) size != fsize) { \
+            fprintf(stderr, "Failed to fully read input file \"%s\" read %d, file size %d\n", \
+                    argv[1], (int) size, (int) fsize); \
+            return -1; \
+        } \
+    }
 
 /* vim: set ts=4 sw=4 et : */
 #endif /* Z_FUZZ_H */

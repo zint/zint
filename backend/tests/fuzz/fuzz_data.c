@@ -1,7 +1,7 @@
 /*  fuzz_data.c - fuzzer for libzint (DATA_MODE, all symbologies except GS1_128, DBAR_EXP/STK & composites) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2024-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,13 +36,24 @@ extern "C" {
 
 #if 0
 #define Z_FUZZ_DEBUG                 /* Set `symbol->debug` flag */
-#define Z_FUZZ_SET_OUTPUT_OPTIONS    /* Set `symbol->output_options` */
 #endif
 #include "fuzz.h"
 
+#if Z_FUZZ_MAIN
+/* For testing that a corpus file reproduces a bug:
+   cc -g -O0 -DZ_FUZZ_MAIN fuzz_data.c -o fuzz_data -lzint -fsanitize=address
+   ./fuzz_data <corpus-file>
+*/
+#include <errno.h>
+#include <limits.h>
+Z_FUZZ_MAIN_READ_ARGV_1(idx, buf)
+#else
 int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
     struct zint_symbol *symbol;
     int idx;
+    unsigned char *buf; /* Dummy, used by "fuzz_gs1.c" */
+#endif
+    (void)buf;
 
     /* Ignore empty or very large input */
     if (size < 1 || size > 10000) {
@@ -70,8 +81,9 @@ int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
         if (!length) {
             continue;
         }
+        symbol->output_options |= BARCODE_MEMORY_FILE;
 
-        ret = ZBarcode_Encode(symbol, input, length);
+        ret = ZBarcode_Encode_and_Print(symbol, input, length, 0 /*rotate_angle*/);
         assert(ret != ZINT_ERROR_ENCODING_PROBLEM);
     }
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -260,9 +260,9 @@ static void test_set_whitespace_offsets(const testCtx *const p_ctx) {
         /*  5*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP, 0, 0, 1.0f, /*expected*/ 2.0f, 4.0f, 2.0f, 3.0f, 0.0f },
         /*  6*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP | BARCODE_BIND, 0, 0, 1.0f, /*expected*/ 2.0f, 4.0f, 2.0f, 3.0f, 0.0f }, /* BIND_TOP wins */
         /*  7*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BOX, 0, 0, 1.0f, /*expected*/ 3.0f, 4.0f, 3.0f, 4.0f, 0.0f },
-        /*  8*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP | BARCODE_BOX, 0, 0, 1.0f, /*expected*/ 3.0f, 4.0f, 3.0f, 3.0f, 0.0f }, /* BIND_TOP wins */
+        /*  8*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP | BARCODE_BOX, 0, 0, 1.0f, /*expected*/ 2.0f, 4.0f, 2.0f, 3.0f, 0.0f }, /* BIND_TOP wins */
         /*  9*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BOX | BARCODE_BIND, 0, 0, 1.0f, /*expected*/ 3.0f, 4.0f, 3.0f, 4.0f, 0.0f }, /* BIND_BOX wins */
-        /* 10*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP | BARCODE_BOX | BARCODE_BIND, 0, 0, 1.0f, /*expected*/ 3.0f, 4.0f, 3.0f, 3.0f, 0.0f }, /* BIND_TOP wins */
+        /* 10*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP | BARCODE_BOX | BARCODE_BIND, 0, 0, 1.0f, /*expected*/ 2.0f, 4.0f, 2.0f, 3.0f, 0.0f }, /* BIND_TOP wins */
         /* 11*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BOX | BARCODE_QUIET_ZONES, 0, 0, 1.0f, /*expected*/ 13.0f, 4.0f, 13.0f, 4.0f, 10.0f },
     };
     const int data_size = ARRAY_SIZE(data);

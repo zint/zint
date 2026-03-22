@@ -727,7 +727,8 @@ static void draw_bind_box(const struct zint_symbol *symbol, unsigned char *pixel
                             DEFAULT_INK);
             }
         }
-        if (symbol->output_options & BARCODE_BOX) {
+        /* BARCODE_BIND_TOP trumps BARCODE_BOX */
+        if (!(symbol->output_options & BARCODE_BIND_TOP) && (symbol->output_options & BARCODE_BOX)) {
             /* Vertical side bars */
             const int xbox_right = image_width - bwidth_si;
             int box_top = yoffset_si;

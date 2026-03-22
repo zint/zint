@@ -17,5 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make cmake
 RUN git clone --depth 1 https://git.code.sf.net/p/zint/code zint
+#ADD ./zint.tar.gz zint
 WORKDIR zint
 COPY build.sh $SRC/

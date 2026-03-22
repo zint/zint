@@ -1389,16 +1389,24 @@ static void test_output_options(const testCtx *const p_ctx) {
         /* 44*/ { BARCODE_MAXICODE, 6, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 84, 77.733398, 1, 0, 67.7334 },
         /* 45*/ { BARCODE_MAXICODE, 6, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 84, 77.733398, 0, 94, 10 },
         /* 46*/ { BARCODE_MAXICODE, 6, -1, 5, BARCODE_BOX, "A123", 0, 165, 33, 30, 104, 77.733398, 1, 94, 10 },
-        /* 47*/ { BARCODE_MAXICODE, -1, -1, -1, BARCODE_DOTTY_MODE, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
-        /* 48*/ { BARCODE_ITF14, -1, -1, -1, -1, "123", 0, 50, 1, 135, 330, 136.28, 1, 320, 10 },
-        /* 49*/ { BARCODE_ITF14, -1, -1, 0, -1, "123", 0, 50, 1, 135, 330, 136.28, 1, 320, 10 },
-        /* 50*/ { BARCODE_ITF14, -1, -1, 0, BARCODE_BOX, "123", 0, 50, 1, 135, 310, 116.28, 0, 300, 0 }, /* No zero-width/height rectangles */
-        /* 51*/ { BARCODE_CODABLOCKF, -1, -1, -1, -1, "A123", 0, 20, 2, 101, 242, 44, 1, 20, 42 },
-        /* 52*/ { BARCODE_CODABLOCKF, -1, -1, -1, BARCODE_BIND_TOP, "A123", 0, 20, 2, 101, 242, 42, 0, 20, 42 },
-        /* 53*/ { BARCODE_CODE16K, -1, -1, -1, -1, "A123", 0, 20, 2, 70, 162, 44, 1, 0, 42 },
-        /* 54*/ { BARCODE_CODE16K, -1, -1, -1, BARCODE_BIND_TOP, "A123", 0, 20, 2, 70, 162, 42, 0, 0, 42 },
-        /* 55*/ { BARCODE_CODE49, -1, -1, -1, -1, "A123", 0, 20, 2, 70, 162, 44, 1, 0, 42 },
-        /* 56*/ { BARCODE_CODE49, -1, -1, -1, BARCODE_BIND_TOP, "A123", 0, 20, 2, 70, 162, 42, 0, 0, 42 },
+        /* 47*/ { BARCODE_MAXICODE, -1, -1, 30, BARCODE_BIND, "A123", 0, 165, 33, 30, 60, 177.733398, 1, 0, 0 },
+        /* 48*/ { BARCODE_MAXICODE, -1, -1, 30, BARCODE_BIND, "A123", 0, 165, 33, 30, 60, 177.733398, 1, 0, 117.733398 },
+        /* 49*/ { BARCODE_MAXICODE, -1, -1, 30, BARCODE_BIND_TOP, "A123", 0, 165, 33, 30, 60, 117.733398, 1, 0, 0 },
+        /* 50*/ { BARCODE_MAXICODE, -1, -1, 30, BARCODE_BIND_TOP, "A123", 0, 165, 33, 30, 60, 117.733398, 0, 0, 117.733398 },
+        /* 51*/ { BARCODE_MAXICODE, -1, -1, 30, BARCODE_BIND_TOP | BARCODE_BIND, "A123", 0, 165, 33, 30, 60, 117.733398, 1, 0, 0 }, /* BIND_TOP trumps BIND */
+        /* 52*/ { BARCODE_MAXICODE, -1, -1, 30, BARCODE_BIND_TOP | BARCODE_BIND, "A123", 0, 165, 33, 30, 60, 117.733398, 0, 0, 117.733398 },
+        /* 53*/ { BARCODE_MAXICODE, -1, -1, 30, BARCODE_BIND_TOP | BARCODE_BOX, "A123", 0, 165, 33, 30, 60, 117.733398, 1, 0, 0 }, /* BIND_TOP trumps BOX */
+        /* 54*/ { BARCODE_MAXICODE, -1, -1, 30, BARCODE_BIND_TOP | BARCODE_BOX, "A123", 0, 165, 33, 30, 60, 117.733398, 0, 0, 117.733398 },
+        /* 55*/ { BARCODE_MAXICODE, -1, -1, -1, BARCODE_DOTTY_MODE, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
+        /* 56*/ { BARCODE_ITF14, -1, -1, -1, -1, "123", 0, 50, 1, 135, 330, 136.28, 1, 320, 10 },
+        /* 57*/ { BARCODE_ITF14, -1, -1, 0, -1, "123", 0, 50, 1, 135, 330, 136.28, 1, 320, 10 },
+        /* 58*/ { BARCODE_ITF14, -1, -1, 0, BARCODE_BOX, "123", 0, 50, 1, 135, 310, 116.28, 0, 300, 0 }, /* No zero-width/height rectangles */
+        /* 59*/ { BARCODE_CODABLOCKF, -1, -1, -1, -1, "A123", 0, 20, 2, 101, 242, 44, 1, 20, 42 },
+        /* 60*/ { BARCODE_CODABLOCKF, -1, -1, -1, BARCODE_BIND_TOP, "A123", 0, 20, 2, 101, 242, 42, 0, 20, 42 },
+        /* 61*/ { BARCODE_CODE16K, -1, -1, -1, -1, "A123", 0, 20, 2, 70, 162, 44, 1, 0, 42 },
+        /* 62*/ { BARCODE_CODE16K, -1, -1, -1, BARCODE_BIND_TOP, "A123", 0, 20, 2, 70, 162, 42, 0, 0, 42 },
+        /* 63*/ { BARCODE_CODE49, -1, -1, -1, -1, "A123", 0, 20, 2, 70, 162, 44, 1, 0, 42 },
+        /* 64*/ { BARCODE_CODE49, -1, -1, -1, BARCODE_BIND_TOP, "A123", 0, 20, 2, 70, 162, 42, 0, 0, 42 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -1017,24 +1017,24 @@ INTERNAL int zint_plot_vector(struct zint_symbol *symbol, int rotate_angle, int 
                 last_rect->x = xoffset;
                 last_rect->width -= xoffset + roffset;
             }
-        }
-        if (symbol->output_options & BARCODE_BOX) {
-            const float xbox_right = vector->width - symbol->border_width;
-            float box_top = yoffset;
-            /* Following equivalent to symbol->height except for BARCODE_MAXICODE */
-            float box_height = vector->height - textoffset - dot_overspill - yoffset - boffset;
-            if (horz_outside) {
-                box_top = symbol->border_width;
-                box_height = vector->height - symbol->border_width * 2;
-            } else if (upceanflag == 2 || upceanflag == 5) {
-                box_top += textoffset;
+            if (symbol->output_options & BARCODE_BOX) {
+                const float xbox_right = vector->width - symbol->border_width;
+                float box_top = yoffset;
+                /* Following equivalent to symbol->height except for BARCODE_MAXICODE */
+                float box_height = vector->height - textoffset - dot_overspill - yoffset - boffset;
+                if (horz_outside) {
+                    box_top = symbol->border_width;
+                    box_height = vector->height - symbol->border_width * 2;
+                } else if (upceanflag == 2 || upceanflag == 5) {
+                    box_top += textoffset;
+                }
+                /* Left */
+                if (!vector_add_rect(symbol, 0.0f, box_top, symbol->border_width, box_height, &last_rect))
+                        return ZINT_ERROR_MEMORY;
+                /* Right */
+                if (!vector_add_rect(symbol, xbox_right, box_top, symbol->border_width, box_height, &last_rect))
+                        return ZINT_ERROR_MEMORY;
             }
-            /* Left */
-            if (!vector_add_rect(symbol, 0.0f, box_top, symbol->border_width, box_height, &last_rect))
-                    return ZINT_ERROR_MEMORY;
-            /* Right */
-            if (!vector_add_rect(symbol, xbox_right, box_top, symbol->border_width, box_height, &last_rect))
-                    return ZINT_ERROR_MEMORY;
         }
     }
 

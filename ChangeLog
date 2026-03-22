@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-03-18)
+Version 2.16.0.9 (dev) not released yet (2026-03-22)
 ====================================================
 
 **Incompatible changes**
@@ -42,6 +42,7 @@ Bugs
 - CODE32/PZN: fix not restoring `option_2` (props axxel)
 - DBAR_EXP_CC/DBAR_EXPSTK_CC: fix separator over finder patterns when linear
   part is greater than 4 codeblocks
+- raster/vector: fix BARCODE_BIND_TOP trumping BARCODE_BOX
 
 
 Version 2.16.0 (2025-12-19)

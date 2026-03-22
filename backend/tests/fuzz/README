@@ -1,0 +1,56 @@
+% backend/tests/fuzz/README 2026-03-22
+% vim: set ts=4 sw=4 et :
+
+To run fuzzers "fuzz_data" and "fuzz_gs1" using OSS-Fuzz
+
+Assuming have cloned OSS-Fuzz somewhere:
+
+    git clone https://github.com/google/oss-fuzz
+
+and using the following shell vars:
+
+    export OSS_FUZZ_DIR=<oss-fuzz-clone-dir>
+    export ZINT_DIR=<zint-clone-dir>
+    export PROJECT_NAME=zint
+
+make sure have latest:
+
+    cd $OSS_FUZZ_DIR
+    git pull origin master
+
+Link zint's "backend/tests/fuzz" to a sub-dir of OSS-Fuzz`s project dir as "zint", e.g.:
+
+    cd $OSS_FUZZ_DIR/projects
+    ln -s $ZINT_DIR/backend/tests/fuzz $PROJECT_NAME
+
+Create corpus dirs, e.g. could create in the "build" dir in "<oss_fuzz_dir>":
+
+    mkdir -p $OSS_FUZZ_DIR/build/corpus_data
+    mkdir -p $OSS_FUZZ_DIR/build/corpus_gs1
+
+Then can use OSS-Fuzz's python helpers to build the docker image and fuzzers:
+
+    cd $OSS_FUZZ_DIR/projects/$PROJECT_NAME
+    python3 $OSS_FUZZ_DIR/infra/helper.py build_image $PROJECT_NAME
+
+(on any subsequent runs can add "--no-pull" option to avoid question)
+
+    python3 $OSS_FUZZ_DIR/infra/helper.py build_fuzzers $PROJECT_NAME
+
+Then run "fuzz_data":
+
+    python3 $OSS_FUZZ_DIR/infra/helper.py run_fuzzer --corpus-dir=build/corpus_data $PROJECT_NAME fuzz_data
+
+and/or "fuzz_gs1":
+
+    python3 $OSS_FUZZ_DIR/infra/helper.py run_fuzzer --corpus-dir=build/corpus_gs1 $PROJECT_NAME fuzz_gs1
+
+If want to test local changes not in zint's commit tree, then create an archive, e.g.
+
+    cd $ZINT_DIR
+    git stash
+    git archive -o backend/tests/fuzz/zint.tar.gz 'stash@{0}'
+    git stash pop
+
+then edit "Dockerfile" and comment out "RUN zint clone ..." and uncomment "ADD ./zint.tar.gz zint" and
+rebuild Docker image and fuzzers.

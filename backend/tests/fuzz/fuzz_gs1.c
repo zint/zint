@@ -36,20 +36,30 @@ extern "C" {
 
 #if 0
 #define Z_FUZZ_DEBUG                 /* Set `symbol->debug` flag */
-#define Z_FUZZ_SET_OUTPUT_OPTIONS    /* Set `symbol->output_options` */
 #endif
 #include "fuzz.h"
 
+static const int symbologies[] = {
+    BARCODE_AZTEC, BARCODE_CODE16K, BARCODE_CODE49, BARCODE_CODEONE, BARCODE_DATAMATRIX, BARCODE_DBAR_EXP,
+    BARCODE_DBAR_EXPSTK, BARCODE_DOTCODE, BARCODE_GS1_128, BARCODE_QRCODE, BARCODE_RMQR, BARCODE_ULTRA,
+    BARCODE_EANX_CC, BARCODE_GS1_128_CC, BARCODE_DBAR_OMN_CC, BARCODE_DBAR_LTD_CC, BARCODE_DBAR_EXP_CC,
+    BARCODE_UPCA_CC, BARCODE_UPCE_CC, BARCODE_DBAR_STK_CC, BARCODE_DBAR_OMNSTK_CC, BARCODE_DBAR_EXPSTK_CC,
+};
+
+#if Z_FUZZ_MAIN
+/* For testing that a corpus file reproduces a bug:
+   cc -g -O0 -DZ_FUZZ_MAIN fuzz_gs1.c -o fuzz_data -lzint -fsanitize=address
+   ./fuzz_gs1 <corpus-file>
+*/
+#include <errno.h>
+#include <limits.h>
+Z_FUZZ_MAIN_READ_ARGV_1(i, gs1_buf)
+#else
 int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
-    static const int symbologies[] = {
-        BARCODE_AZTEC, BARCODE_CODE16K, BARCODE_CODE49, BARCODE_CODEONE, BARCODE_DATAMATRIX, BARCODE_DBAR_EXP,
-        BARCODE_DBAR_EXPSTK, BARCODE_DOTCODE, BARCODE_GS1_128, BARCODE_QRCODE, BARCODE_RMQR, BARCODE_ULTRA,
-        BARCODE_EANX_CC, BARCODE_GS1_128_CC, BARCODE_DBAR_OMN_CC, BARCODE_DBAR_LTD_CC, BARCODE_DBAR_EXP_CC,
-        BARCODE_UPCA_CC, BARCODE_UPCE_CC, BARCODE_DBAR_STK_CC, BARCODE_DBAR_OMNSTK_CC, BARCODE_DBAR_EXPSTK_CC,
-    };
     struct zint_symbol *symbol;
-    unsigned char *gs1_buf;
     int i;
+    unsigned char *gs1_buf;
+#endif
 
     /* Ignore empty or very large input */
     if (size < 1 || size > 10000) {
@@ -65,12 +75,16 @@ int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
     gs1_buf[1] = ']';
 
     for (i = 0; i < ZARRAY_SIZE(symbologies); i++) {
+        static const char primary_ai_raw[] = "0112345678901231";
+        static const char primary_ai_caret[] = "^0112345678901231";
+        static const char primary_ai_parens[] = "(01)12345678901231";
         static const char primary_ai[] = "[01]12345678901231";
         static const char primary_upce[] = "12345670";
         static const char primary[] = "123456789012";
         const int idx = symbologies[i];
         const int is_composite = ZBarcode_Cap(idx, ZINT_CAP_COMPOSITE) & ZINT_CAP_COMPOSITE;
         const unsigned char *input;
+        int input_mode;
         int length;
         int ret;
 
@@ -81,10 +95,21 @@ int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
         if (!length) {
             continue;
         }
+        input_mode = symbol->input_mode;
+
+        symbol->output_options |= BARCODE_MEMORY_FILE;
 
         if (is_composite) {
             if (idx == BARCODE_GS1_128_CC || idx == BARCODE_DBAR_EXP_CC || idx == BARCODE_DBAR_EXPSTK_CC) {
-                memcpy(symbol->primary, primary_ai, sizeof(primary_ai));
+                if (input_mode & GS1RAW_MODE) {
+                    memcpy(symbol->primary, primary_ai_raw, sizeof(primary_ai_raw));
+                } else if (input[0] == '^') {
+                    memcpy(symbol->primary, primary_ai_caret, sizeof(primary_ai_caret));
+                } else if (input_mode & GS1PARENS_MODE) {
+                    memcpy(symbol->primary, primary_ai_parens, sizeof(primary_ai_parens));
+                } else {
+                    memcpy(symbol->primary, primary_ai, sizeof(primary_ai));
+                }
             } else if (idx == BARCODE_UPCE_CC) {
                 memcpy(symbol->primary, primary_upce, sizeof(primary_upce));
             } else {
@@ -92,21 +117,21 @@ int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
             }
         }
 
-        /* Try it first without GS1NOCHECK_MODE */
-        symbol->input_mode = (symbol->input_mode & ~0x07) | GS1_MODE;
+        /* Try it first with GS1NOCHECK_MODE */
+        symbol->input_mode = (input_mode & ~0x07) | GS1_MODE | GS1NOCHECK_MODE;
 
-        ret = ZBarcode_Encode(symbol, input, length);
+        ret = ZBarcode_Encode_and_Print(symbol, input, length, 0 /*rotate_angle*/);
         assert(ret != ZINT_ERROR_ENCODING_PROBLEM);
 
         ZBarcode_Clear(symbol);
 
-        /* Now with GS1NOCHECK_MODE */
-        symbol->input_mode = (symbol->input_mode & ~0x07) | GS1_MODE | GS1NOCHECK_MODE;
-        symbol->input_mode &= ~GS1PARENS_MODE;
+        /* Now without GS1NOCHECK_MODE */
+        symbol->input_mode = (input_mode & ~0x07) | GS1_MODE;
+        symbol->input_mode &= ~GS1NOCHECK_MODE;
 
         memcpy(gs1_buf + 2, input, length);
 
-        ret = ZBarcode_Encode(symbol, gs1_buf, length + 2);
+        ret = ZBarcode_Encode_and_Print(symbol, gs1_buf, length + 2, 90 * (size % 3) /*rotate_angle*/);
         assert(ret != ZINT_ERROR_ENCODING_PROBLEM);
     }
 

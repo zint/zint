@@ -1,4 +1,5 @@
-% docs/README 2026-03-17
+% docs/README 2026-03-22
+% vim: set ts=4 sw=4 et :
 
 For generation of "docs/manual.html", "docs/manual.pdf" and "docs/manual.txt" from "manual.pmd"
 and man pages "docs/zint.1" from "docs/zint.1.pmd" and "docs/zint-qt.1" from "docs/zint-qt.1.pmd"
@@ -6,8 +7,8 @@ using pandoc >= 3.8.2.
 
 On Ubuntu/Debian (tested on Ubuntu 22.04 and Ubuntu 24.04)
 
-    wget https://github.com/jgm/pandoc/releases/download/3.9/pandoc-3.9-1-amd64.deb
-    sudo dpkg -i pandoc-3.9-1-amd64.deb
+    wget https://github.com/jgm/pandoc/releases/download/3.9.0.2/pandoc-3.9.0.2-1-amd64.deb
+    sudo dpkg -i pandoc-3.9.0.2-1-amd64.deb
     sudo apt install librsvg2-bin
     sudo apt install texlive-xetex
     sudo apt install texlive-lang-cjk
@@ -16,9 +17,9 @@ On Ubuntu/Debian (tested on Ubuntu 22.04 and Ubuntu 24.04)
 
 On Fedora (tested on Fedora Linux 38 (Workstation Edition) and Fedora Linux 42 (Workstation Edition))
 
-    wget https://github.com/jgm/pandoc/releases/download/3.9/pandoc-3.9-linux-amd64.tar.gz
-    tar xf pandoc-3.9-linux-amd64.tar.gz
-    sudo mv -i pandoc-3.9/bin/pandoc /usr/local/bin
+    wget https://github.com/jgm/pandoc/releases/download/3.9.0.2/pandoc-3.9.0.2-linux-amd64.tar.gz
+    tar xf pandoc-3.9.0.2-linux-amd64.tar.gz
+    sudo mv -i pandoc-3.9.0.2/bin/pandoc /usr/local/bin
     sudo dnf install librsvg2-tools.x86_64
     sudo dnf install texlive-xetex
     sudo dnf install texlive-ctex.noarch
