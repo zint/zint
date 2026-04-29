@@ -5495,9 +5495,12 @@ OPTIONS
 
 --gs1
 
-    Treat input as GS1 compatible data. Application Identifiers (AIs) should be
-    placed in square brackets "[]" (but see --gs1parens). Also accepts GS1
-    Digital Link URIs (unverified) for matrix symbologies.
+    Treat input as GS1 compatible data. A number of input formats are available.
+    Application Identifiers (AIs) may be placed in square brackets "[]".
+    Alternatively the GS1 Syntax Engine “Unbracketed AI” format may be used,
+    which starts with a caret (^) and uses carets to indicate required FNC1s.
+    For matrix symbologies, GS1 Digital Link URIs (unverified) may be given.
+    Further input options are available with --gs1parens and --gs1raw.
 
 --gs1nocheck
 

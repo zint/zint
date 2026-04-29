@@ -185,7 +185,7 @@ static void usage(const int no_png, const int have_gs1syntaxengine) {
            "  -d, --data=DATA       Set the symbol data content (segment 0)\n", stdout);
     fputs( "  --direct              Send output to stdout\n"
            "  --dmb256=INTEGER      Start Data Matrix in Base 256 for given length (0 all)\n"
-           "  --dmc40=INTERGER      Start Data Matrix in C40 mode for given length (0 all)\n"
+           "  --dmc40=INTEGER       Start Data Matrix in C40 mode for given length (0 all)\n"
            "  --dmiso144            Use ISO format for 144x144 Data Matrix symbols\n"
            "  --dmre                Allow Data Matrix Rectangular Extended\n", stdout);
     fputs( "  --dotsize=NUMBER      Set radius of dots in dotty mode\n"

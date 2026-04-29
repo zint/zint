@@ -9469,10 +9469,14 @@ non-ASCII data.</p>
 </dd>
 <dt><code>--gs1</code></dt>
 <dd>
-<p>Treat input as GS1 compatible data. Application Identifiers (AIs)
-should be placed in square brackets <code>"[]"</code> (but see
-<code>--gs1parens</code>). Also accepts GS1 Digital Link URIs
-(unverified) for matrix symbologies.</p>
+<p>Treat input as GS1 compatible data. A number of input formats are
+available. Application Identifiers (AIs) may be placed in square
+brackets <code>"[]"</code>. Alternatively the GS1 Syntax Engine
+“Unbracketed AI” format may be used, which starts with a caret
+(<code>^</code>) and uses carets to indicate required
+<code>FNC1</code>s. For matrix symbologies, GS1 Digital Link URIs
+(unverified) may be given. Further input options are available with
+<code>--gs1parens</code> and <code>--gs1raw</code>.</p>
 </dd>
 <dt><code>--gs1nocheck</code></dt>
 <dd>
