@@ -57,7 +57,7 @@ ZINT_FORMAT_PRINTF(2, 3) static int gs1_err_msg_printf_nochk(char err_msg[50], c
     int size;
     va_start(ap, fmt);
 
-#ifdef ZINT_IS_C89
+#ifdef Z_NO_VSNPRINTF
     size = vsprintf(err_msg, fmt, ap);
 #else
     size = vsnprintf(err_msg, 50, fmt, ap);

@@ -133,6 +133,11 @@ typedef unsigned __int64 uint64_t;
 #  define roundf(arg) floorf((arg) + 0.5f)
 #endif
 
+/* Whether `vsnprintf()` available */
+#if (defined(_MSC_VER) && _MSC_VER < 1900) || defined(ZINT_IS_C89) /* Pre-MSVC 2015 (C++ 14.0) or C89 */
+#define Z_NO_VSNPRINTF
+#endif
+
 /* Is float integral value? (https://stackoverflow.com/a/40404149) */
 #define z_isfintf(arg) (fmodf(arg, 1.0f) == 0.0f)
 

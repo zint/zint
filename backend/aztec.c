@@ -980,7 +980,8 @@ static int az_binary_string(const unsigned char source[], const int length, int 
     const int entry_bp = bp;
 #endif
 
-    if (!az_state_list_init(list, length)) {
+    assert(length < USHRT_MAX);
+    if (!az_state_list_init(list, (unsigned short) length)) {
         return 0;
     }
     memset(list->states, 0, sizeof(struct az_state));

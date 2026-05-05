@@ -960,7 +960,7 @@ INTERNAL void z_hrt_printf_nochk(struct zint_symbol *symbol, const char *fmt, ..
 
     va_start(ap, fmt);
 
-#ifdef ZINT_IS_C89
+#ifdef Z_NO_VSNPRINTF
     size = vsprintf((char *) symbol->text, fmt, ap);
 #else
     size = vsnprintf((char *) symbol->text, sizeof(symbol->text), fmt, ap);

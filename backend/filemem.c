@@ -1,7 +1,7 @@
 /*  filemem.c - write to file/memory abstraction */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2023-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2023-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -84,7 +84,7 @@ static void fm_clear_mem(struct filemem *restrict const fmp) {
         fmp->mem = NULL;
     }
     fmp->memsize = fmp->mempos = fmp->memend = 0;
-#ifdef FM_NO_VSNPRINTF
+#ifdef Z_NO_VSNPRINTF
     if (fmp->fp_null) {
         (void) fclose(fmp->fp_null);
         fmp->fp_null = NULL;
@@ -100,7 +100,7 @@ INTERNAL int zint_fm_open(struct filemem *restrict const fmp, struct zint_symbol
     fmp->memsize = fmp->mempos = fmp->memend = 0;
     fmp->flags = symbol->output_options & (BARCODE_STDOUT | BARCODE_MEMORY_FILE);
     fmp->err = 0;
-#ifdef FM_NO_VSNPRINTF
+#ifdef Z_NO_VSNPRINTF
     fmp->fp_null = NULL;
 #endif
 
@@ -240,7 +240,7 @@ INTERNAL int zint_fm_puts(const char *str, struct filemem *restrict const fmp) {
     return 1;
 }
 
-#ifdef FM_NO_VSNPRINTF
+#ifdef Z_NO_VSNPRINTF
 #  ifdef _WIN32
 #    define DEV_NULL "NUL"
 #  else
@@ -254,14 +254,14 @@ static int fm_vprintf(struct filemem *restrict const fmp, const char *fmt, va_li
     int size, check;
 
     /* Adapted from https://stackoverflow.com/a/52558247/664741 */
-#ifdef FM_NO_VSNPRINTF
+#ifdef Z_NO_VSNPRINTF
     if (!fmp->fp_null && !(fmp->fp_null = fopen(DEV_NULL, "wb"))) {
         return fm_seterr(fmp, errno);
     }
 #endif
 
     va_copy(cpy, ap);
-#ifdef FM_NO_VSNPRINTF
+#ifdef Z_NO_VSNPRINTF
     size = vfprintf(fmp->fp_null, fmt, cpy);
 #else
     size = vsnprintf(NULL, 0, fmt, cpy);
@@ -276,7 +276,7 @@ static int fm_vprintf(struct filemem *restrict const fmp, const char *fmt, va_li
         return 0;
     }
 
-#ifdef FM_NO_VSNPRINTF
+#ifdef Z_NO_VSNPRINTF
     check = vsprintf((char *) fmp->mem + fmp->mempos, fmt, ap);
 #else
     check = vsnprintf((char *) fmp->mem + fmp->mempos, size + 1, fmt, ap);
