@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +31,12 @@
 // Shorthand
 #define QSL QStringLiteral
 
+#if QT_VERSION < 0x60000
+#define QZINT_SIZETYPE  int
+#else
+#define QZINT_SIZETYPE  qsizetype
+#endif
+
 static const int tempMessageTimeout = 2000;
 
 DataWindow::DataWindow(const QString &input, bool isEscaped, int seg_no) : Valid(false), Escaped(false),
@@ -56,7 +62,7 @@ DataWindow::DataWindow(const QString &input, bool isEscaped, int seg_no) : Valid
         // Substitute escaped Line Feeds with actual Line Feeds
         QString out;
         out.reserve(input.length());
-        int lastPosn = 0;
+        QZINT_SIZETYPE lastPosn = 0;
         QRegularExpression escRE(QSL("\\\\(?:[0EabtnvfreGR\\\\]|d[0-9]{3}|o[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}"
                                         "|U[0-9A-Fa-f]{6})"));
         QRegularExpressionMatchIterator matchI = escRE.globalMatch(input);

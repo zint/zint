@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,8 +91,8 @@ QString SequenceWindow::apply_format(const QString& raw_number)
     QChar format_qchar;
 
     format = linSeqFormat->text();
-    input_len = raw_number.length();
-    format_len = format.length();
+    input_len = (int) raw_number.length();
+    format_len = (int) format.length();
 
     inpos = input_len;
 

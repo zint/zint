@@ -489,7 +489,7 @@ static void az_state_free(struct az_state *state) {
 
 /* Check that there's enough room for `extra` more tokens in `state` */
 static int az_tokens_add_chk(struct az_state *state, const int extra) {
-    assert(extra < AZ_MIN_TOKENS_SIZE);
+    assert(extra > 0 && extra < AZ_MIN_TOKENS_SIZE);
     if (!state->tokens.tokens) {
         const unsigned short size = AZ_MIN_TOKENS_SIZE;
         if (!(state->tokens.tokens = (struct az_token *) malloc(sizeof(struct az_token) * size))) {

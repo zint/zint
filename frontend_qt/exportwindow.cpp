@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,6 +30,12 @@
 // Shorthand
 #define QSL     QStringLiteral
 #define QSEmpty QLatin1String("")
+
+#if QT_VERSION < 0x60000
+#define QZINT_SIZETYPE  int
+#else
+#define QZINT_SIZETYPE  qsizetype
+#endif
 
 ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data)
     : m_bc(bc), m_output_data(output_data), m_lines(0)
@@ -66,7 +72,7 @@ ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data)
     connect(btnDestPath, SIGNAL(clicked(bool)), SLOT(get_directory()));
 
     m_dataList = m_output_data.split('\n');
-    m_lines = m_dataList.size();
+    m_lines = (int) m_dataList.size();
     if (m_lines && m_dataList[m_lines - 1].isEmpty()) {
         m_lines--;
     }
@@ -131,7 +137,7 @@ void ExportWindow::process()
     }
 
     QString suffix;
-    int suffixIdx = cmbFileType->currentText().lastIndexOf(QSL("(*."));
+    QZINT_SIZETYPE suffixIdx = cmbFileType->currentText().lastIndexOf(QSL("(*."));
     if (suffixIdx == -1) {
         suffix = m_bc->bc.noPng() ? QSL(".gif") : QSL(".png");
     } else {

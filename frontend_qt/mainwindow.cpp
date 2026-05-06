@@ -52,6 +52,12 @@
 #define QSL     QStringLiteral
 #define QSEmpty QLatin1String("")
 
+#if QT_VERSION < 0x60000
+#define QZINT_SIZETYPE  int
+#else
+#define QZINT_SIZETYPE  qsizetype
+#endif
+
 static const int tempMessageTimeout = 2000;
 
 // Use on Windows also (i.e. not using QKeySequence::Quit)
@@ -90,9 +96,9 @@ static QColor str_to_qcolor(const QString &str)
     QColor color;
     int r, g, b, a;
     if (str.contains(',')) {
-        int comma1 = str.indexOf(',');
-        int comma2 = str.indexOf(',', comma1 + 1);
-        int comma3 = str.indexOf(',', comma2 + 1);
+        QZINT_SIZETYPE comma1 = str.indexOf(',');
+        QZINT_SIZETYPE comma2 = str.indexOf(',', comma1 + 1);
+        QZINT_SIZETYPE comma3 = str.indexOf(',', comma2 + 1);
         int black = 100 - str.mid(comma3 + 1).toInt();
         int val = 100 - str.mid(0, comma1).toInt();
         r = (int) roundf((0xFF * val * black) / 10000.0f);
@@ -204,13 +210,13 @@ static const struct bstyle_item bstyle_items[] = {
 void MainWindow::mac_hack_vLayouts(QWidget *win)
 {
     QList<QVBoxLayout *> vlayouts = win->findChildren<QVBoxLayout *>();
-    for (int i = 0, vcnt = vlayouts.size(); i < vcnt; i++) {
+    for (int i = 0, vcnt = (int) vlayouts.size(); i < vcnt; i++) {
         if (vlayouts[i]->objectName() == "vLayoutData" || vlayouts[i]->objectName() == "vLayoutComposite"
                 || vlayouts[i]->objectName() == "vLayoutSegs") {
             vlayouts[i]->setSpacing(2);
             // If set spacing on QVBoxLayout then it seems its QHBoxLayout children inherit this so undo
             QList<QHBoxLayout *> hlayouts = vlayouts[i]->findChildren<QHBoxLayout *>();
-            for (int j = 0, hcnt = hlayouts.size(); j < hcnt; j++) {
+            for (int j = 0, hcnt = (int) hlayouts.size(); j < hcnt; j++) {
                 hlayouts[j]->setSpacing(8);
             }
         }
@@ -223,7 +229,7 @@ void MainWindow::mac_hack_statusBars(QWidget *win, const char* name)
     QList<QStatusBar *> sbars = name ? win->findChildren<QStatusBar *>(name) : win->findChildren<QStatusBar *>();
     QColor bgColor = QGuiApplication::palette().window().color();
     QString sbarSS = QSL("QStatusBar {background-color:") + bgColor.name() + QSL(";}");
-    for (int i = 0, cnt = sbars.size(); i < cnt; i++) {
+    for (int i = 0, cnt = (int) sbars.size(); i < cnt; i++) {
         sbars[i]->setStyleSheet(sbarSS);
     }
 }
@@ -751,7 +757,7 @@ bool MainWindow::save()
     }
 
     QString nativePathname = QDir::toNativeSeparators(pathname);
-    int lastSeparator = nativePathname.lastIndexOf(QDir::separator());
+    QZINT_SIZETYPE lastSeparator = nativePathname.lastIndexOf(QDir::separator());
     QString dirname = nativePathname.mid(0, lastSeparator);
     if (dirname.isEmpty()) {
         /*: %1 is path saved to */
@@ -1447,13 +1453,13 @@ void MainWindow::filter_symbologies()
     /* QString::split() only introduced Qt 5.14, so too new for us to use */
     QStringList filter_list;
     if (!filter.isEmpty()) {
-        int i, j;
+        QZINT_SIZETYPE i, j;
         for (i = 0; (j = filter.indexOf(' ', i)) != -1; i = j + 1) {
             filter_list << filter.mid(i, j - i);
         }
         filter_list << filter.mid(i);
     }
-    int filter_cnt = filter_list.size();
+    int filter_cnt = (int) filter_list.size();
     int cnt = ARRAY_SIZE(bstyle_items);
 
     if (filter_cnt) {
