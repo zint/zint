@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -35,13 +35,13 @@
 /* Channel code precalculated values to avoid excessive looping */
 /* To generate uncomment CHANNEL_GENERATE_PRECALCS define and run "backend/tests/test_channel -f generate -g" */
 /* Paste result below here */
-static channel_precalc channel_precalcs7[] = {
+static const struct channel_precalc channel_precalcs7[] = {
     {  115338, { 1, 3, 1, 1, 1, 1, 5, 1, }, { 1, 1, 1, 2, 1, 2, 3, 3, }, { 1, 7, 5, 5, 5, 5, 5, }, { 1, 7, 7, 7, 6, 6, 5, }, },
     {  230676, { 1, 1, 2, 2, 4, 1, 1, 2, }, { 1, 2, 1, 3, 2, 1, 3, 1, }, { 1, 7, 7, 6, 5, 2, 2, }, { 1, 7, 6, 6, 4, 3, 3, }, },
     {  346014, { 1, 2, 3, 1, 1, 1, 3, 2, }, { 1, 2, 2, 1, 1, 3, 1, 3, }, { 1, 7, 6, 4, 4, 4, 4, }, { 1, 7, 6, 5, 5, 5, 3, }, },
     {  461352, { 1, 2, 1, 1, 1, 2, 2, 4, }, { 1, 3, 1, 1, 3, 2, 2, 1, }, { 1, 7, 6, 6, 6, 6, 5, }, { 1, 7, 5, 5, 5, 3, 2, }, },
 };
-static channel_precalc channel_precalcs8[] = {
+static const struct channel_precalc channel_precalcs8[] = {
     {  119121, { 2, 1, 3, 2, 1, 3, 2, 1, }, { 1, 1, 1, 4, 3, 2, 1, 2, }, { 8, 7, 7, 5, 4, 4, 2, }, { 8, 8, 8, 8, 5, 3, 2, }, },
     {  238242, { 2, 1, 1, 2, 2, 2, 1, 4, }, { 1, 1, 3, 1, 1, 2, 4, 2, }, { 8, 7, 7, 7, 6, 5, 4, }, { 8, 8, 8, 6, 6, 6, 5, }, },
     {  357363, { 2, 2, 1, 4, 1, 1, 1, 3, }, { 1, 1, 1, 1, 3, 2, 5, 1, }, { 8, 7, 6, 6, 3, 3, 3, }, { 8, 8, 8, 8, 8, 6, 5, }, },

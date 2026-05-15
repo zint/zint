@@ -1,6 +1,6 @@
-% README.linux 2026-01-01
+% README.linux 2026-05-15
 % Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
-% Fedora Linux 43 (Workstation Edition)
+% Fedora Linux 44 (Workstation Edition)
 % vim: set ts=4 sw=4 et :
 
 1. Prerequisites for building zint

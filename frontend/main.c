@@ -736,8 +736,8 @@ static int supported_filetype(const char *const filetype, const int no_png, int 
 }
 
 /* Get file extension, excluding those of more than 4 letters */
-static char *get_extension(const char *const file) {
-    char *const dot = strrchr(file, '.');
+static const char *get_extension(const char *const file) {
+    const char *const dot = strrchr(file, '.');
     if (dot && strlen(file) - (dot - file) <= 5) { /* Only recognize up to 4 letter extensions */
         return dot + 1;
     }
@@ -755,7 +755,7 @@ static void set_extension(char file[256], const char *const filetype) {
     cpy_str(lc_filetype, ARRAY_SIZE(lc_filetype), filetype);
     to_lower(lc_filetype);
 
-    extension = get_extension(file);
+    extension = (char *) get_extension(file);
     if (extension) {
         cpy_str(lc_extension, ARRAY_SIZE(lc_extension), extension);
         to_lower(lc_extension);
@@ -1517,7 +1517,7 @@ int main(int argc, char **argv) {
     int val;
     int i;
     int ret;
-    char *outfile_extension;
+    const char *outfile_extension;
     int data_arg_num = 0;
     int seg_count = 0;
     float x_dim_mm = 0.0f, dpmm = 0.0f;

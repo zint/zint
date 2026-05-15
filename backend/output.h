@@ -71,7 +71,7 @@ INTERNAL float zint_out_large_bar_height(struct zint_symbol *symbol, const int s
                 int *symbol_height_si);
 
 /* Create output file, creating sub-directories if necessary. Returns `fopen()` FILE pointer */
-INTERNAL FILE *zint_out_fopen(const char filename[256], const char *mode);
+INTERNAL FILE *zint_out_fopen(char filename[256], const char *mode);
 
 #ifdef _WIN32
 /* Do `fopen()` on Windows, assuming `filename` is UTF-8 encoded. Props Marcel, ticket #288 */

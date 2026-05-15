@@ -84,7 +84,7 @@ static char az_get_next_mode(const char modes[], const int length, int i) {
 
 #define AZ_DOUBLE_PUNCT_NO_LEN_CHECK(s, i) \
     (((s)[i] == '\r' && (s)[(i) + 1] == '\n') \
-    || ((s)[(i) + 1] == ' ' && ((s)[i] == '.' || (s)[i] == ',' || (s)[i] == ':')))
+        || ((s)[(i) + 1] == ' ' && ((s)[i] == '.' || (s)[i] == ',' || (s)[i] == ':')))
 
 #define AZ_DOUBLE_PUNCT(s, l, i) ((i) + 1 < (l) && AZ_DOUBLE_PUNCT_NO_LEN_CHECK(s, i))
 
@@ -497,7 +497,7 @@ static int az_tokens_add_chk(struct az_state *state, const int extra) {
         }
         state->tokens.size = size;
         state->tokens.used = 0;
-    } else if (state->tokens.used + extra >= state->tokens.size) {
+    } else if (state->tokens.used >= state->tokens.size - extra) { /* Compare this way to avoid possible overflow */
         struct az_token *tokens;
         const unsigned short size = state->tokens.size * 2;
         if (size <= state->tokens.size /* Overflow */
@@ -1029,7 +1029,7 @@ static int az_binary_string(const unsigned char source[], const int length, int 
     }
 
     for (i = 0; i < stateEnd.tokens.used; i++) {
-        const struct az_token *token = stateEnd.tokens.tokens + i;
+        const struct az_token *const token = stateEnd.tokens.tokens + i;
         const int count = token->count;
         if (count < 0) {
             bp = z_bin_append_posn(token->value, -count, binary_string, bp);

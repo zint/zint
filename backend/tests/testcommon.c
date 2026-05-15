@@ -2163,7 +2163,8 @@ int testUtilHaveLibreOffice(void) {
 int testUtilVerifyLibreOffice(const char *filename, int debug) {
     char cmd[512 + 128];
     char svg[512];
-    char *slash, *dot;
+    const char *slash;
+    char *dot;
     char buf[16384];
     char *b = buf, *be = buf + sizeof(buf) - 1;
     FILE *fp;
@@ -4347,7 +4348,7 @@ static int textUtilZXingCPPDX(const char *expected, const int expected_len, cons
 
 /* Helper to append add-on if any to EAN-13, returning expected length */
 static int textUtilZXingCPPEAN13AddOn(const char *expected, const int expected_len, char *out) {
-    char *sep;
+    const char *sep;
     if ((sep = strchr(expected, '+')) != NULL || (sep = strchr(expected, ' ')) != NULL) {
         const int addon_len = expected_len - (int) (sep + 1 - expected);
         if (addon_len <= 2) {

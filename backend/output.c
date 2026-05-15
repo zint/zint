@@ -957,7 +957,7 @@ static int out_maybe_mkdir(const char *path) {
 }
 
 /* Create output file, creating sub-directories if necessary. Returns `fopen()` FILE pointer */
-INTERNAL FILE *zint_out_fopen(const char filename[256], const char *mode) {
+INTERNAL FILE *zint_out_fopen(char filename[256], const char *mode) {
     FILE *outfile;
 
 #ifdef _WIN32
@@ -968,12 +968,10 @@ INTERNAL FILE *zint_out_fopen(const char filename[256], const char *mode) {
         char dirname[256];
         char *d;
 #ifdef _WIN32
-        char *dirend = strrchr(filename, '\\');
-        if (!dirend) {
-            dirend = strrchr(filename, '/');
-        }
+        char *const dirend_backslash = strrchr(filename, '\\');
+        char *const dirend = dirend_backslash ? dirend_backslash : strrchr(filename, '/');
 #else
-        char *dirend = strrchr(filename, '/');
+        char *const dirend = strrchr(filename, '/');
 #endif
         if (!dirend) {
             return outfile;

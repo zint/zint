@@ -35,9 +35,9 @@
 #include <stdio.h>
 #include "common.h"
 
-typedef const struct s_channel_precalc {
+struct channel_precalc {
     int value; unsigned char B[8]; unsigned char S[8]; unsigned char bmax[7]; unsigned char smax[7];
-} channel_precalc;
+};
 
 #if 0
 #define CHANNEL_GENERATE_PRECALCS
@@ -49,8 +49,8 @@ typedef const struct s_channel_precalc {
 static void channel_generate_precalc(int channels, int value, int mod, int last, int B[8], int S[8], int bmax[7],
             int smax[7]) {
     int i;
-    if (value == mod) printf("static channel_precalc channel_precalcs%d[] = {\n", channels);
-    printf("    { %7ld, {", value); for (i = 0; i < 8; i++) printf(" %d,", B[i]); fputs(" },", stdout);
+    if (value == mod) printf("static const struct channel_precalc channel_precalcs%d[] = {\n", channels);
+    printf("    { %7d, {", value); for (i = 0; i < 8; i++) printf(" %d,", B[i]); fputs(" },", stdout);
     fputs(" {", stdout); for (i = 0; i < 8; i++) printf(" %d,", S[i]); fputs(" },", stdout);
     fputs(" {", stdout); for (i = 0; i < 7; i++) printf(" %d,", bmax[i]); fputs(" },", stdout);
     fputs(" {", stdout); for (i = 0; i < 7; i++) printf(" %d,", smax[i]); fputs(" }, },\n", stdout);
@@ -60,7 +60,8 @@ static void channel_generate_precalc(int channels, int value, int mod, int last,
 #include "channel_precalcs.h"
 #endif
 
-static int channel_copy_precalc(channel_precalc *const precalc, int B[8], int S[8], int bmax[7], int smax[7]) {
+static int channel_copy_precalc(const struct channel_precalc *const precalc, int B[8], int S[8], int bmax[7],
+            int smax[7]) {
     int i;
 
     for (i = 0; i < 7; i++) {
@@ -89,7 +90,7 @@ static void CHNCHR(int channels, int target_value, int B[8], int S[8]) {
     /* Use of initial pre-calculations taken from Barcode Writer in Pure PostScript (BWIPP)
        Copyright (c) 2004-2026 Terry Burton */
     /* SPDX-License-Identifier: MIT */
-    static channel_precalc initial_precalcs[6] = {
+    static const struct channel_precalc initial_precalcs[6] = {
         { 0, { 1, 1, 1, 1, 1, 2, 1, 2, }, { 1, 1, 1, 1, 1, 1, 1, 3, }, { 1, 1, 1, 1, 1, 3, 2, },
             { 1, 1, 1, 1, 1, 3, 3, }, },
         { 0, { 1, 1, 1, 1, 2, 1, 1, 3, }, { 1, 1, 1, 1, 1, 1, 1, 4, }, { 1, 1, 1, 1, 4, 3, 3, },
