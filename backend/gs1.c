@@ -1694,8 +1694,8 @@ static int gs1se_verify(struct zint_symbol *symbol, const unsigned char source[]
     char msgBuf[120];
     gs1_encoder_init_status_t status = GS1_ENCODERS_INIT_SUCCESS;
     gs1_encoder_init_opts_t opts = {
-        /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) suppress clang-tidy-21 warning OR-ing enums */
-        sizeof(gs1_encoder_init_opts_t), gs1_encoder_iNO_SYNDICT | gs1_encoder_iQUIET, &status, msgBuf, sizeof(msgBuf)
+        sizeof(gs1_encoder_init_opts_t), gs1_encoder_iDEFAULT, &status, msgBuf, sizeof(msgBuf),
+        NULL /*syntaxDictionary*/
     };
     gs1_encoder *ctx;
     int gs1se_ret;
