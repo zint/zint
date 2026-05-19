@@ -1166,7 +1166,7 @@ static int az_text_process(unsigned char *source, const int length, int bp, char
     char current_mode = p_current_mode ? *p_current_mode : AZ_U;
     const char initial_mode = current_mode;
     const int initial_bp = bp;
-    const int all_byte_only_or_uld = az_all_byte_only_or_uld(source, length); /* -1 if not */
+    const int all_byte_only_or_uld = length > 1 ? az_all_byte_only_or_uld(source, length) : -1; /* -1 if not */
     const int debug_print = debug & ZINT_DEBUG_PRINT;
 #ifdef ZINT_TEST
     const int debug_skip_all = debug & 2048; /* ZINT_DEBUG_TEST_AZTEC_SKIP_ALL - skip using `all_byte_only_or_uld` */
@@ -1351,7 +1351,11 @@ static int az_text_process_segs(struct zint_symbol *symbol, struct zint_seg segs
         const int length = segs[0].length;
         if (position_fnc1) {
             if (position_fnc1 == 4) {
-                bp = z_bin_append_posn(AztecChar[AZ_U][source[0]], 5, binary_string, bp);
+                if (z_islower(source[0])) {
+                    current_mode = AZ_L;
+                    bp = z_bin_append_posn(28, 5, binary_string, bp); /* L/L */
+                }
+                bp = z_bin_append_posn(AztecChar[(int) current_mode][source[0]], 5, binary_string, bp);
             } else if (position_fnc1 == 5) {
                 current_mode = AZ_D;
                 bp = z_bin_append_posn(30, 5, binary_string, bp); /* D/L */
@@ -1361,7 +1365,7 @@ static int az_text_process_segs(struct zint_symbol *symbol, struct zint_seg segs
             have_extra_escapes = 1;
         }
         if (gs1 || (position_fnc1 <= 4 && length > position_fnc1 && z_isdigit(source[position_fnc1]))) {
-            assert(current_mode == AZ_U);
+            assert(current_mode == AZ_U || current_mode == AZ_L);
             /* Latch to D/L to save a bit */
             current_mode = AZ_D;
             bp = z_bin_append_posn(30, 5, binary_string, bp); /* D/L */
