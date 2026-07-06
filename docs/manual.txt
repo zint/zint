@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.16.0.9
-June 2026
+July 2026
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -1668,9 +1668,10 @@ GS1 options.
     gs1encoders library, otherwise the default built-in validation will be used.
 
 -   --gs1nocheck, for use with legacy systems that have data that does not
-    conform to the current GS1 standard. Printable ASCII input is still checked
-    for, as is the validity of GS1 data specified without AIs (e.g. linear data
-    for GS1 DataBar Omnidirectional/Limited/etc.). Also checked is GS1 DataBar
+    conform to the current GS1 standard, this disables checking for valid AIs,
+    and AI data types and lengths. Printable ASCII input is still checked for,
+    as is the validity of GS1 data specified without AIs (e.g. linear data for
+    GS1 DataBar Omnidirectional/Limited/etc.). Also checked is GS1 DataBar
     Expanded and GS1 Composite input that is not in the GS1 encodable character
     set 82 (see GS1 General Specifications 26.0 Table 7-2 “GS1 AI encodable
     character set 82”), otherwise encodation would fail. In “Unbracketed AI” and
@@ -5333,7 +5334,7 @@ configured barcode is updated when the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.16.0.9 % % June 2026
+% ZINT(1) Version 2.16.0.9 % % July 2026
 
 NAME
 

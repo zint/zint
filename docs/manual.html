@@ -334,7 +334,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.16.0.9</p>
-<p class="date">June 2026</p>
+<p class="date">July 2026</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -3133,7 +3133,8 @@ Engine to strictly validate GS1 data, including GS1 Digital Link URIs
 that Zint was built with the <code>gs1encoders</code> library, otherwise
 the default built-in validation will be used.</p></li>
 <li><p><code>--gs1nocheck</code>, for use with legacy systems that have
-data that does not conform to the current GS1 standard. Printable ASCII
+data that does not conform to the current GS1 standard, this disables
+checking for valid AIs, and AI data types and lengths. Printable ASCII
 input is still checked for, as is the validity of GS1 data specified
 without AIs (e.g. linear data for GS1 DataBar
 Omnidirectional/Limited/etc.). Also checked is GS1 DataBar Expanded and

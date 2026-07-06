@@ -4119,7 +4119,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_DBAR_EXPSTK_CC, 139, },
         { "", BARCODE_CHANNEL, 140, },
         { "", BARCODE_CODEONE, 141, },
-        { "", BARCODE_GRIDMATRIX, 142, },
+        { "GridMatrix", BARCODE_GRIDMATRIX, 142, },
         { "QRCode", BARCODE_UPNQR, 143, },
         { "", BARCODE_ULTRA, 144, },
         { "RMQRCode", BARCODE_RMQR, 145, },

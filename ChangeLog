@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-06-23)
+Version 2.16.0.9 (dev) not released yet (2026-07-06)
 ====================================================
 
 **Incompatible changes**
@@ -75,6 +75,8 @@ Bugs
   minimum height
 - CLI: stop looping over data args when have error
 - composite: preserve `gs1_verify()` warning (if any)
+- GRIDMATRIX: fix byte latch 6 -> 7, & allowing more than one non-digit in
+  numeral (both caused misencodation)
 
 
 Version 2.16.0 (2025-12-19)
