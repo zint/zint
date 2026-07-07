@@ -610,7 +610,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
     `--version`).
 
 `1`
-:   Human Readable Text was truncated (maximum 199 bytes) (`ZINT_WARN_HRT_TRUNCATED`)
+:   Human Readable Text was truncated (maximum 255 bytes) (`ZINT_WARN_HRT_TRUNCATED`)
 
 `2`
 :   Invalid option given but overridden by Zint (`ZINT_WARN_INVALID_OPTION`)

@@ -5992,7 +5992,7 @@ EXIT STATUS
     --ecinos, -t | --types, -v | --version).
 
 1
-    Human Readable Text was truncated (maximum 199 bytes)
+    Human Readable Text was truncated (maximum 255 bytes)
     (ZINT_WARN_HRT_TRUNCATED)
 
 2

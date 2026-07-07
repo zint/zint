@@ -341,7 +341,7 @@ extern "C" {
 #define ULTRA_COMPRESSION       128     /* Enable Ultracode compression (experimental) */
 
 /* Warning and error conditions (API return values) */
-#define ZINT_WARN_HRT_TRUNCATED     1   /* Human Readable Text was truncated (max 199 bytes) */
+#define ZINT_WARN_HRT_TRUNCATED     1   /* Human Readable Text was truncated (max 255 bytes) */
 #define ZINT_WARN_INVALID_OPTION    2   /* Invalid option given but overridden by Zint */
 #define ZINT_WARN_USES_ECI          3   /* Automatic ECI inserted by Zint */
 #define ZINT_WARN_NONCOMPLIANT      4   /* Symbol created not compliant with standards */
