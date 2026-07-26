@@ -1381,6 +1381,9 @@ static void test_bad_args(const testCtx *const p_ctx) {
         /*  0*/ { BARCODE_CODE128, NULL, -1, NULL, NULL, "Error 109: Option '-d' requires an argument" },
         /*  1*/ { BARCODE_CODE128, "1", -1, " -o", NULL, "Error 109: Option '-o' requires an argument" },
         /*  2*/ { BARCODE_CODE128, "1", -1, " --fast=", "1", "Error 126: Option '--fast' does not take an argument" },
+        /*  3*/ { BARCODE_CODE128, "1", -1, " -x", NULL, "Error 101: Unknown option '-x'" },
+        /*  4*/ { BARCODE_CODE128, "1", -1, " --x", NULL, "Error 101: Unknown option '--x'" },
+        /*  5*/ { BARCODE_CODE128, "1", -1, " --dm", NULL, "Error 187: Ambiguous option '--dm'" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;

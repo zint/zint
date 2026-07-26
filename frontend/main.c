@@ -1546,6 +1546,173 @@ static int do_exit(const int error_number) {
 
 struct arg_opt { const char *arg; int opt; };
 
+enum options {
+    OPT_ADDONGAP = 128, OPT_AZFULL,
+    OPT_BATCH, OPT_BG, OPT_BINARY, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
+    OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT,
+    OPT_DIRECT, OPT_DMISO144, OPT_DMRE, OPT_DMB256, OPT_DMC40, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
+    OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FULLMULTIBYTE,
+    OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GS1RAW, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/,
+    OPT_GSSEP, OPT_GUARDDESCENT, OPT_GUARDWHITESPACE,
+    OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MASK, OPT_MIRROR, OPT_MODE,
+    OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
+    OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
+    OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
+    OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
+#ifdef ZINT_TEST
+    OPT_TEST,
+#endif
+    OPT_TEXTGAP, OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
+};
+
+static const struct option long_options[] = {
+    {"addongap", 1, NULL, OPT_ADDONGAP},
+    {"azfull", 0, NULL, OPT_AZFULL},
+    {"barcode", 1, NULL, 'b'},
+    {"batch", 0, NULL, OPT_BATCH},
+    {"bg", 1, 0, OPT_BG},
+    {"bgcolor", 1, 0, OPT_BG}, /* Synonym */
+    {"bgcolour", 1, 0, OPT_BG}, /* Synonym */
+    {"binary", 0, NULL, OPT_BINARY},
+    {"bind", 0, NULL, OPT_BIND},
+    {"bindtop", 0, NULL, OPT_BIND_TOP},
+    {"bold", 0, NULL, OPT_BOLD},
+    {"border", 1, NULL, OPT_BORDER},
+    {"box", 0, NULL, OPT_BOX},
+    {"cmyk", 0, NULL, OPT_CMYK},
+    {"cols", 1, NULL, OPT_COLS},
+    {"compliantheight", 0, NULL, OPT_COMPLIANTHEIGHT},
+    {"data", 1, NULL, 'd'},
+    {"direct", 0, NULL, OPT_DIRECT},
+    {"dmb256", 2, NULL, OPT_DMB256},
+    {"dmc40", 2, NULL, OPT_DMC40},
+    {"dmiso144", 0, NULL, OPT_DMISO144},
+    {"dmre", 0, NULL, OPT_DMRE},
+    {"dotsize", 1, NULL, OPT_DOTSIZE},
+    {"dotty", 0, NULL, OPT_DOTTY},
+    {"dump", 0, NULL, OPT_DUMP},
+    {"eci", 1, NULL, OPT_ECI},
+    {"ecinos", 0, NULL, 'e'},
+    {"embedfont", 0, NULL, OPT_EMBEDFONT},
+    {"esc", 0, NULL, OPT_ESC},
+    {"extraesc", 0, NULL, OPT_EXTRAESC},
+    {"fast", 0, NULL, OPT_FAST},
+    {"fg", 1, 0, OPT_FG},
+    {"fgcolor", 1, 0, OPT_FG}, /* Synonym */
+    {"fgcolour", 1, 0, OPT_FG}, /* Synonym */
+    {"filetype", 1, NULL, OPT_FILETYPE},
+    {"fullmultibyte", 0, NULL, OPT_FULLMULTIBYTE},
+    {"gs1", 0, 0, OPT_GS1},
+    {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
+    {"gs1parens", 0, NULL, OPT_GS1PARENS},
+    {"gs1raw", 0, NULL, OPT_GS1RAW},
+    {"gs1strict", 0, NULL, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/},
+    {"gssep", 0, NULL, OPT_GSSEP},
+    {"guarddescent", 1, NULL, OPT_GUARDDESCENT},
+    {"guardwhitespace", 0, NULL, OPT_GUARDWHITESPACE},
+    {"height", 1, NULL, OPT_HEIGHT},
+    {"heightperrow", 0, NULL, OPT_HEIGHTPERROW},
+    {"help", 0, NULL, 'h'},
+    {"init", 0, NULL, OPT_INIT},
+    {"input", 1, NULL, 'i'},
+    {"mask", 1, NULL, OPT_MASK},
+    {"mirror", 0, NULL, OPT_MIRROR},
+    {"mode", 1, NULL, OPT_MODE},
+    {"nobackground", 0, NULL, OPT_NOBACKGROUND},
+    {"noquietzones", 0, NULL, OPT_NOQUIETZONES},
+    {"notext", 0, NULL, OPT_NOTEXT},
+    {"output", 1, NULL, 'o'},
+    {"primary", 1, NULL, OPT_PRIMARY},
+    {"quietzones", 0, NULL, OPT_QUIETZONES},
+    {"reverse", 0, NULL, 'r'},
+    {"rotate", 1, NULL, OPT_ROTATE},
+    {"rows", 1, NULL, OPT_ROWS},
+    {"scale", 1, NULL, OPT_SCALE},
+    {"scalexdimdp", 2, NULL, OPT_SCALEXDIM},
+    {"scmvv", 2, NULL, OPT_SCMVV},
+    {"secure", 1, NULL, OPT_SECURE},
+    {"seg1", 1, NULL, OPT_SEG1},
+    {"seg2", 1, NULL, OPT_SEG2},
+    {"seg3", 1, NULL, OPT_SEG3},
+    {"seg4", 1, NULL, OPT_SEG4},
+    {"seg5", 1, NULL, OPT_SEG5},
+    {"seg6", 1, NULL, OPT_SEG6},
+    {"seg7", 1, NULL, OPT_SEG7},
+    {"seg8", 1, NULL, OPT_SEG8},
+    {"seg9", 1, NULL, OPT_SEG9},
+    {"separator", 1, NULL, OPT_SEPARATOR},
+    {"small", 0, NULL, OPT_SMALL},
+    {"square", 0, NULL, OPT_SQUARE},
+    {"structapp", 1, NULL, OPT_STRUCTAPP},
+#ifdef ZINT_TEST
+    {"test", 0, NULL, OPT_TEST},
+#endif
+    {"textgap", 1, NULL, OPT_TEXTGAP},
+    {"types", 0, NULL, 't'},
+    {"verbose", 0, NULL, OPT_VERBOSE},
+    {"vers", 1, NULL, OPT_VERS},
+    {"version", 0, NULL, 'v'},
+    {"vwhitesp", 1, NULL, OPT_VWHITESP},
+    {"werror", 0, NULL, OPT_WERROR},
+    {"whitesp", 1, NULL, 'w'},
+    {NULL, 0, NULL, 0}
+};
+
+/* Helper to determine if unknown option ambiguous or not */
+#ifdef ZINT_TEST
+static int is_ambiguous_opt(const char *arg, const int test) {
+#else
+static int is_ambiguous_opt(const char *arg) {
+#endif
+    const char *equals_sign;
+    int length;
+    int s = 0, e = ARRAY_SIZE(long_options) - 2; /* Omit NULL entry at end */
+
+#ifdef ZINT_TEST
+/* LCOV_EXCL_START */
+    if (test) {
+        int i;
+        /* Ensure array sorted */
+        for (i = 0; i < e; i++) {
+            if (strcmp(long_options[i].name, long_options[i + 1].name) >= 0) {
+                fprintf(stderr, "is_ambiguous_opt: %d: %s >= %s\n",
+                        i, long_options[i].name, long_options[i + 1].name);
+                assert(0);
+                return 0;
+            }
+        }
+        return 1;
+    }
+/* LCOV_EXCL_STOP */
+#endif
+
+    if (*arg == '-') {
+        arg++;
+        if (*arg == '-') {
+            arg++;
+        }
+    }
+    if ((equals_sign = strchr(arg, '='))) {
+        length = (int) (equals_sign - arg);
+    } else {
+        length = (int) strlen(arg);
+    }
+
+    while (s <= e) {
+        const int m = (s + e) / 2;
+        const int cmp = strncmp(long_options[m].name, arg, length);
+        if (cmp < 0) {
+            s = m + 1;
+        } else if (cmp > 0) {
+            e = m - 1;
+        } else {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 #define OPT_ARGS_MAX    300 /* Make greater than 200 (max no. of stacked rows) as that's a better error message */
 
 int main(int argc, char **argv) {
@@ -1598,116 +1765,6 @@ int main(int argc, char **argv) {
 
     opterr = 0; /* Disable `getopt_long_only()` printing errors */
     while (1) {
-        enum options {
-            OPT_ADDONGAP = 128, OPT_AZFULL,
-            OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
-            OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT,
-            OPT_DIRECT, OPT_DMISO144, OPT_DMRE, OPT_DMB256, OPT_DMC40, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
-            OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FULLMULTIBYTE,
-            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GS1RAW, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/,
-            OPT_GSSEP, OPT_GUARDDESCENT, OPT_GUARDWHITESPACE,
-            OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
-            OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
-            OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
-            OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
-            OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
-#ifdef ZINT_TEST
-            OPT_TEST,
-#endif
-            OPT_TEXTGAP, OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
-        };
-        static const struct option long_options[] = {
-            {"addongap", 1, NULL, OPT_ADDONGAP},
-            {"azfull", 0, NULL, OPT_AZFULL},
-            {"barcode", 1, NULL, 'b'},
-            {"batch", 0, NULL, OPT_BATCH},
-            {"binary", 0, NULL, OPT_BINARY},
-            {"bg", 1, 0, OPT_BG},
-            {"bgcolor", 1, 0, OPT_BG}, /* Synonym */
-            {"bgcolour", 1, 0, OPT_BG}, /* Synonym */
-            {"bind", 0, NULL, OPT_BIND},
-            {"bindtop", 0, NULL, OPT_BIND_TOP},
-            {"bold", 0, NULL, OPT_BOLD},
-            {"border", 1, NULL, OPT_BORDER},
-            {"box", 0, NULL, OPT_BOX},
-            {"cmyk", 0, NULL, OPT_CMYK},
-            {"cols", 1, NULL, OPT_COLS},
-            {"compliantheight", 0, NULL, OPT_COMPLIANTHEIGHT},
-            {"data", 1, NULL, 'd'},
-            {"direct", 0, NULL, OPT_DIRECT},
-            {"dmb256", 2, NULL, OPT_DMB256},
-            {"dmc40", 2, NULL, OPT_DMC40},
-            {"dmiso144", 0, NULL, OPT_DMISO144},
-            {"dmre", 0, NULL, OPT_DMRE},
-            {"dotsize", 1, NULL, OPT_DOTSIZE},
-            {"dotty", 0, NULL, OPT_DOTTY},
-            {"dump", 0, NULL, OPT_DUMP},
-            {"eci", 1, NULL, OPT_ECI},
-            {"ecinos", 0, NULL, 'e'},
-            {"embedfont", 0, NULL, OPT_EMBEDFONT},
-            {"esc", 0, NULL, OPT_ESC},
-            {"extraesc", 0, NULL, OPT_EXTRAESC},
-            {"fast", 0, NULL, OPT_FAST},
-            {"fg", 1, 0, OPT_FG},
-            {"fgcolor", 1, 0, OPT_FG}, /* Synonym */
-            {"fgcolour", 1, 0, OPT_FG}, /* Synonym */
-            {"filetype", 1, NULL, OPT_FILETYPE},
-            {"fullmultibyte", 0, NULL, OPT_FULLMULTIBYTE},
-            {"gs1", 0, 0, OPT_GS1},
-            {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
-            {"gs1parens", 0, NULL, OPT_GS1PARENS},
-            {"gs1raw", 0, NULL, OPT_GS1RAW},
-            {"gs1strict", 0, NULL, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/},
-            {"gssep", 0, NULL, OPT_GSSEP},
-            {"guarddescent", 1, NULL, OPT_GUARDDESCENT},
-            {"guardwhitespace", 0, NULL, OPT_GUARDWHITESPACE},
-            {"height", 1, NULL, OPT_HEIGHT},
-            {"heightperrow", 0, NULL, OPT_HEIGHTPERROW},
-            {"help", 0, NULL, 'h'},
-            {"init", 0, NULL, OPT_INIT},
-            {"input", 1, NULL, 'i'},
-            {"mirror", 0, NULL, OPT_MIRROR},
-            {"mask", 1, NULL, OPT_MASK},
-            {"mode", 1, NULL, OPT_MODE},
-            {"nobackground", 0, NULL, OPT_NOBACKGROUND},
-            {"noquietzones", 0, NULL, OPT_NOQUIETZONES},
-            {"notext", 0, NULL, OPT_NOTEXT},
-            {"output", 1, NULL, 'o'},
-            {"primary", 1, NULL, OPT_PRIMARY},
-            {"quietzones", 0, NULL, OPT_QUIETZONES},
-            {"reverse", 0, NULL, 'r'},
-            {"rotate", 1, NULL, OPT_ROTATE},
-            {"rows", 1, NULL, OPT_ROWS},
-            {"scale", 1, NULL, OPT_SCALE},
-            {"scalexdimdp", 2, NULL, OPT_SCALEXDIM},
-            {"scmvv", 2, NULL, OPT_SCMVV},
-            {"secure", 1, NULL, OPT_SECURE},
-            {"seg1", 1, NULL, OPT_SEG1},
-            {"seg2", 1, NULL, OPT_SEG2},
-            {"seg3", 1, NULL, OPT_SEG3},
-            {"seg4", 1, NULL, OPT_SEG4},
-            {"seg5", 1, NULL, OPT_SEG5},
-            {"seg6", 1, NULL, OPT_SEG6},
-            {"seg7", 1, NULL, OPT_SEG7},
-            {"seg8", 1, NULL, OPT_SEG8},
-            {"seg9", 1, NULL, OPT_SEG9},
-            {"separator", 1, NULL, OPT_SEPARATOR},
-            {"small", 0, NULL, OPT_SMALL},
-            {"square", 0, NULL, OPT_SQUARE},
-            {"structapp", 1, NULL, OPT_STRUCTAPP},
-#ifdef ZINT_TEST
-            {"test", 0, NULL, OPT_TEST},
-#endif
-            {"textgap", 1, NULL, OPT_TEXTGAP},
-            {"types", 0, NULL, 't'},
-            {"verbose", 0, NULL, OPT_VERBOSE},
-            {"vers", 1, NULL, OPT_VERS},
-            {"version", 0, NULL, 'v'},
-            {"vwhitesp", 1, NULL, OPT_VWHITESP},
-            {"werror", 0, NULL, OPT_WERROR},
-            {"whitesp", 1, NULL, 'w'},
-            {NULL, 0, NULL, 0}
-        };
         const int opt = getopt_long_only(argc, argv, "b:d:ehi:o:rtvw:", long_options, NULL);
         if (opt == -1) break;
 
@@ -1962,10 +2019,6 @@ int main(int argc, char **argv) {
             case OPT_INIT:
                 my_symbol->output_options |= READER_INIT;
                 break;
-            case OPT_MIRROR:
-                /* Use filenames which reflect content */
-                mirror_mode = 1;
-                break;
             case OPT_MASK:
                 if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 148: Invalid mask value (digits only)\n");
@@ -1979,6 +2032,10 @@ int main(int argc, char **argv) {
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
+                break;
+            case OPT_MIRROR:
+                /* Use filenames which reflect content */
+                mirror_mode = 1;
                 break;
             case OPT_MODE:
                 if (!validate_int(optarg, -1 /*len*/, &val)) {
@@ -2342,7 +2399,15 @@ int main(int argc, char **argv) {
                             fprintf(stderr, "Error 126: Option '%.*s' does not take an argument\n", optlen, arg);
                         }
                     } else {
-                        fprintf(stderr, "Error 101: Unknown option '%s'\n", arg);
+#ifdef ZINT_TEST
+                        if (is_ambiguous_opt(arg, 0 /*test*/)) {
+#else
+                        if (is_ambiguous_opt(arg)) {
+#endif
+                            fprintf(stderr, "Error 187: Ambiguous option '%s'\n", arg);
+                        } else {
+                            fprintf(stderr, "Error 101: Unknown option '%s'\n", arg);
+                        }
                     }
                 }
                 return do_exit(ZINT_ERROR_INVALID_OPTION);
@@ -3361,6 +3426,7 @@ static int test_utf8_to_wide(void) {
 static int test(void) {
     int ret = 1;
     ret &= get_barcode_name(NULL, 1 /*test*/);
+    ret &= is_ambiguous_opt(NULL, 1 /*test*/);
     ret &= test_cpy_str();
     ret &= test_ncpy_str();
     ret &= test_cpycat_str();
