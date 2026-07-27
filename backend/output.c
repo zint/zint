@@ -760,8 +760,8 @@ INTERNAL int zint_out_process_upcean(const struct zint_symbol *symbol, const int
     /* Isolate add-on text */
     for (i = 6; i < symbol->text_length && j < 5; i++) {
         if (latch == 1) {
-            /* Use dummy space-filled add-on if no hrt */
-            addon[j] = symbol->show_hrt ? symbol->text[i] : ' ';
+            /* Use dummy space-filled add-on if no HRT */
+            addon[j] = (symbol->show_hrt & 0x7) ? symbol->text[i] : ' ';
             j++;
         } else if (symbol->text[i] == '+') {
             latch = 1;
@@ -786,29 +786,29 @@ INTERNAL int zint_out_process_upcean(const struct zint_symbol *symbol, const int
             case 16: /* EAN-13 + EAN-2 */
             case 19: /* EAN-13 + EAN-5 */
                 main_width = 95 + comp_xoffset; /* EAN-13 main symbol 95 modules wide */
-                upceanflag = 13;
+                upceanflag = OUT_UPCEANFLAG_EAN13;
                 break;
             case 2:
                 /* EAN-2 can't have add-on or be composite */
-                upceanflag = 2;
+                upceanflag = OUT_UPCEANFLAG_EAN2;
                 break;
             case 5:
                 /* EAN-5 can't have add-on or be composite */
-                upceanflag = 5;
+                upceanflag = OUT_UPCEANFLAG_EAN5;
                 break;
             default:
                 main_width = 68 + comp_xoffset; /* EAN-8 main symbol 68 modules wide */
-                upceanflag = 8;
+                upceanflag = OUT_UPCEANFLAG_EAN8;
                 break;
         }
     } else if (symbol->symbology == BARCODE_UPCA || symbol->symbology == BARCODE_UPCA_CHK
                 || symbol->symbology == BARCODE_UPCA_CC) {
         main_width = 95 + comp_xoffset; /* UPC-A main symbol 95 modules wide */
-        upceanflag = 12;
+        upceanflag = OUT_UPCEANFLAG_UPCA;
     } else if (symbol->symbology == BARCODE_UPCE || symbol->symbology == BARCODE_UPCE_CHK
                 || symbol->symbology == BARCODE_UPCE_CC) {
         main_width = 51 + comp_xoffset; /* UPC-E main symbol 51 modules wide */
-        upceanflag = 6;
+        upceanflag = OUT_UPCEANFLAG_UPCE;
     }
 
     *p_main_width = main_width;
@@ -888,6 +888,13 @@ INTERNAL float zint_out_large_bar_height(struct zint_symbol *symbol, const int s
     }
 
     return large_bar_height;
+}
+
+/* Whether output will be in 8-bit grayscale or not */
+INTERNAL int zint_out_grayscale(const struct zint_symbol *symbol) {
+    const int hide_text = !(symbol->show_hrt & 0x7) || symbol->text[0] == '\0';
+
+    return !hide_text && (symbol->show_hrt & ZINT_HRT_GRAYSCALE);
 }
 
 #ifdef _WIN32

@@ -593,6 +593,11 @@ INTERNAL int zint_code16k(struct zint_symbol *symbol, unsigned char source[], in
         symbol->border_width = 1; /* BS EN 12323:2005 Section 4.3.7 minimum (note change from previous default 2) */
     }
 
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_STACKED) {
+        assert(length < ARRAY_SIZE(symbol->text));
+        (void) z_hrt_cpy_iso8859_1(symbol, source, length);
+    }
+
     if (content_segs) {
         if ((symbol->input_mode & 0x07) == DATA_MODE) {
             if (z_ct_cpy(symbol, source, length)) {

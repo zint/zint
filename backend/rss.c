@@ -304,7 +304,8 @@ INTERNAL int zint_dbar_stk_set_height(struct zint_symbol *symbol, const int firs
             symbol->row_height[second_row] = 0.7f; /* 0.7f is actually 0.699999988 (0x3F333333) */
         } else {
             symbol->row_height[second_row] = z_stripf(symbol->height - fixed_height - symbol->row_height[first_row]);
-            /* (h - 1) * 5/12 >= 0.5 -> h - 1 >= 0.5 * 12/5 -> h >= 2.2 -> rh[sr] >= (2.2 - 1 - 0.5) -> rh[sr] >= 0.7 */
+            /* (h - 1) * 5/12 >= 0.5 -> h - 1 >= 0.5 * 12/5 -> h >= 2.2 -> rh[sr] >= (2.2 - 1 - 0.5)
+               -> rh[sr] >= 0.7 */
             assert(symbol->row_height[second_row] >= 0.7f);
         }
     }
@@ -469,9 +470,6 @@ INTERNAL int zint_dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[]
         }
         symbol->rows++;
 
-        /* Set human readable text */
-        dbar_set_gtin14_hrt(symbol, source, length);
-
         if (symbol->output_options & COMPLIANT_HEIGHT) {
             /* Minimum height is 13X for truncated symbol ISO/IEC 24724:2011 5.3.1
                Default height is 33X for DataBar Omnidirectional ISO/IEC 24724:2011 5.2 */
@@ -579,6 +577,12 @@ INTERNAL int zint_dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[]
                 (void) z_set_height(symbol, 0.0f, 66.0f, 0.0f, 1 /*no_errtxt*/);
             }
         }
+    }
+
+    if (symbol->symbology == BARCODE_DBAR_OMN || symbol->symbology == BARCODE_DBAR_OMN_CC
+            || (symbol->show_hrt & 0x7) >= ZINT_HRT_STACKED) {
+        /* Set human readable text */
+        dbar_set_gtin14_hrt(symbol, source, length);
     }
 
     if (content_segs) {
@@ -1218,7 +1222,8 @@ INTERNAL int zint_dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[]
     int reduced_length;
     /* Allow for 8 bits + 5-bit latch per char + 200 bits overhead/padding */
     char *binary_string = (char *) z_alloca(13 * length + 200 + 1);
-    const int set_hrt = symbol->symbology == BARCODE_DBAR_EXP || symbol->symbology == BARCODE_DBAR_EXP_CC;
+    const int set_hrt = symbol->symbology == BARCODE_DBAR_EXP || symbol->symbology == BARCODE_DBAR_EXP_CC
+                            || (symbol->show_hrt & 0x7) >= ZINT_HRT_STACKED;
     const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 

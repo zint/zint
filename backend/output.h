@@ -39,6 +39,19 @@ extern "C" {
 
 #include <stdio.h> /* For FILE */
 
+/* EAN/UPC types */
+#define OUT_UPCEANFLAG_EAN2     2
+#define OUT_UPCEANFLAG_EAN5     5
+#define OUT_UPCEANFLAG_UPCE     6
+#define OUT_UPCEANFLAG_EAN8     8
+#define OUT_UPCEANFLAG_UPCA     12
+#define OUT_UPCEANFLAG_EAN13    13
+
+/* Alignment flags `textflags` */
+#define OUT_HALIGN_CENTRE       0
+#define OUT_HALIGN_LEFT         1
+#define OUT_HALIGN_RIGHT        2
+
 /* Check colour options are good (`symbol->fgcolour`, `symbol->bgcolour`) */
 INTERNAL int zint_out_check_colour_options(struct zint_symbol *symbol);
 
@@ -69,6 +82,9 @@ INTERNAL int zint_out_process_upcean(const struct zint_symbol *symbol, const int
    to nearest pixel and symbol height adjusted */
 INTERNAL float zint_out_large_bar_height(struct zint_symbol *symbol, const int si, int *row_heights_si,
                 int *symbol_height_si);
+
+/* Whether output will be in 8-bit grayscale or not */
+INTERNAL int zint_out_grayscale(const struct zint_symbol *symbol);
 
 /* Create output file, creating sub-directories if necessary. Returns `fopen()` FILE pointer */
 INTERNAL FILE *zint_out_fopen(char filename[256], const char *mode);

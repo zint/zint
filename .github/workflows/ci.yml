@@ -1,11 +1,11 @@
 name: CI
 
-# .github/workflows/ci.yml 2026-07-01
+# .github/workflows/ci.yml 2026-07-27
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch (or test branch github_ci push)
 on:
   push:
-    branches: [ master, github_ci ]
+    branches: [ master, github_ci, font_wip ]
   pull_request:
     branches: [ master ]
 

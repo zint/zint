@@ -338,10 +338,21 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(heightb, SIGNAL(valueChanged(double)), SLOT(update_preview()));
     connect(bwidth,  SIGNAL(valueChanged(int)), SLOT(update_preview()));
     connect(btype, SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
-    connect(cmbFontSetting, SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
+
+    connect(chkHRTShow, SIGNAL(toggled(bool)), SLOT(HRTShow_ui_set()));
+    connect(chkHRTShow, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(spnTextGap, SIGNAL(valueChanged(double)), SLOT(text_gap_ui_set()));
     connect(spnTextGap, SIGNAL(valueChanged(double)), SLOT(update_preview()));
     connect(btnClearTextGap, SIGNAL(clicked(bool)), SLOT(clear_text_gap()));
+    connect(cmbTextHAlign, SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
+    connect(cmbFontSetting, SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
+    connect(chkFontHeightDefault, SIGNAL(toggled(bool)), SLOT(font_height_ui_set()));
+    connect(chkFontHeightDefault, SIGNAL(toggled(bool)), SLOT(update_preview()));
+    connect(spnFontHeight, SIGNAL(valueChanged(int)), SLOT(update_preview()));
+    connect(radTextRasterFontModeMonochrome, SIGNAL(toggled(bool)), SLOT(update_preview()));
+    connect(radTextRasterFontModeGrayscale, SIGNAL(toggled(bool)), SLOT(update_preview()));
+    connect(chkTextGS1Newline, SIGNAL(toggled(bool)), SLOT(update_preview()));
+
     connect(txtData, SIGNAL(textChanged(QString)), SLOT(data_ui_set()));
     connect(txtData, SIGNAL(textChanged(QString)), SLOT(upcae_no_quiet_zones_ui_set()));
     connect(txtData, SIGNAL(textChanged(QString)), SLOT(update_preview()));
@@ -396,8 +407,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(chkAutoHeight, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(chkCompliantHeight, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(btnScale, SIGNAL(clicked(bool)), SLOT(open_scale_dialog()));
-    connect(chkHRTShow, SIGNAL(toggled(bool)), SLOT(HRTShow_ui_set()));
-    connect(chkHRTShow, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(chkCMYK, SIGNAL(toggled(bool)), SLOT(change_cmyk()));
     connect(chkQuietZones, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(cmbRotate, SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
@@ -490,13 +499,19 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/appearance/vwhitespace"), spnVWhitespace->value());
     settings.setValue(QSL("studio/appearance/scale"), spnScale->value());
     settings.setValue(QSL("studio/appearance/border_type"), btype->currentIndex());
+    settings.setValue(QSL("studio/appearance/chk_hrt_show"), chkHRTShow->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/font_setting"), cmbFontSetting->currentIndex());
     settings.setValue(QSL("studio/appearance/text_gap"), spnTextGap->value());
-    settings.setValue(QSL("studio/appearance/chk_hrt_show"), chkHRTShow->isChecked() ? 1 : 0);
+    settings.setValue(QSL("studio/appearance/chk_embed_vector_font"), chkEmbedVectorFont->isChecked() ? 1 : 0);
+    settings.setValue(QSL("studio/text/halign"), cmbTextHAlign->currentIndex());
+    settings.setValue(QSL("studio/text/font_height"), spnFontHeight->value());
+    settings.setValue(QSL("studio/text/chk_font_height_default"), chkFontHeightDefault->isChecked() ? 1 : 0);
+    settings.setValue(QSL("studio/text/grayscale"), get_rad_index(
+        QStringList() << QSL("radTextRasterFontModeMonochrome") << QSL("radTextRasterFontModeGrayscale")));
+    settings.setValue(QSL("studio/text/chk_text_gs1_newline"), chkTextGS1Newline->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/chk_cmyk"), chkCMYK->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/chk_quiet_zones"), chkQuietZones->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/rotate"), cmbRotate->currentIndex());
-    settings.setValue(QSL("studio/appearance/chk_embed_vector_font"), chkEmbedVectorFont->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/chk_dotty"), chkDotty->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/dot_size"), spnDotSize->value());
     // These are "system-wide"
@@ -564,14 +579,26 @@ void MainWindow::load_settings(QSettings &settings)
     spnVWhitespace->setValue(settings.value(QSL("studio/appearance/vwhitespace"), 0).toInt());
     spnScale->setValue(settings.value(QSL("studio/appearance/scale"), 1.0).toFloat());
     btype->setCurrentIndex(settings.value(QSL("studio/appearance/border_type"), 0).toInt());
+
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
+    int hrtDefault = symbology && m_bc.bc.hasHRT(symbology) ? 1 : 0;
+    chkHRTShow->setChecked(settings.value(QSL("studio/appearance/chk_hrt_show"), hrtDefault).toInt() ? true : false);
     cmbFontSetting->setCurrentIndex(settings.value(QSL("studio/appearance/font_setting"), 0).toInt());
     spnTextGap->setValue(settings.value(QSL("studio/appearance/text_gap"), 1.0).toFloat());
-    chkHRTShow->setChecked(settings.value(QSL("studio/appearance/chk_hrt_show"), 1).toInt() ? true : false);
+    chkEmbedVectorFont->setChecked(settings.value(QSL("studio/appearance/chk_embed_vector_font"), 0).toInt()
+                                                    ? true : false);
+    cmbTextHAlign->setCurrentIndex(settings.value(QSL("studio/text/halign"), 0).toInt());
+    spnFontHeight->setValue(settings.value(QSL("studio/text/font_height"), 0).toInt());
+    chkFontHeightDefault->setChecked(settings.value(QSL("studio/text/chk_font_height_default"), 1).toInt()
+                                                    ? true : false);
+    set_rad_from_setting(settings, QSL("studio/text/grayscale"),
+        QStringList() << QSL("radTextRasterFontModeMonochrome") << QSL("radTextRasterFontModeGrayscale"));
+    chkTextGS1Newline->setChecked(settings.value(QSL("studio/text/chk_text_gs1_newline"), 0).toInt()
+                                                    ? true : false);
+
     chkCMYK->setChecked(settings.value(QSL("studio/appearance/chk_cmyk"), 0).toInt() ? true : false);
     chkQuietZones->setChecked(settings.value(QSL("studio/appearance/chk_quiet_zones"), 0).toInt() ? true : false);
     cmbRotate->setCurrentIndex(settings.value(QSL("studio/appearance/rotate"), 0).toInt());
-    chkEmbedVectorFont->setChecked(settings.value(QSL("studio/appearance/chk_embed_vector_font"), 0).toInt()
-                                                    ? true : false);
     chkDotty->setChecked(settings.value(QSL("studio/appearance/chk_dotty"), 0).toInt() ? true : false);
     spnDotSize->setValue(settings.value(QSL("studio/appearance/dot_size"), 4.0 / 5.0).toFloat());
     // These are "system-wide"
@@ -1192,13 +1219,21 @@ void MainWindow::autoheight_ui_set()
 
 void MainWindow::HRTShow_ui_set()
 {
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
     bool enabled = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
+    bool isEANUPC = m_bc.bc.isEANUPC(symbology);
+
+    chkEmbedVectorFont->setEnabled(enabled);
+    lblTextHAlign->setEnabled(enabled && !isEANUPC);
+    cmbTextHAlign->setEnabled(enabled && !isEANUPC);
     lblFontSetting->setEnabled(enabled);
     cmbFontSetting->setEnabled(enabled);
     lblTextGap->setEnabled(enabled);
     spnTextGap->setEnabled(enabled);
-    chkEmbedVectorFont->setEnabled(enabled);
     text_gap_ui_set();
+    font_height_ui_set();
+    groupBoxTextRasterFontMode->setEnabled(enabled && !isEANUPC);
+    gs1_newline_ui_set();
     upcean_no_quiet_zones_ui_set();
     upcae_no_quiet_zones_ui_set();
     eanaddon_no_quiet_zones_ui_set();
@@ -1206,8 +1241,37 @@ void MainWindow::HRTShow_ui_set()
 
 void MainWindow::text_gap_ui_set()
 {
-    bool hrtEnabled = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
-    btnClearTextGap->setEnabled(hrtEnabled && spnTextGap->value() != 1.0);
+    bool showHRT = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
+    btnClearTextGap->setEnabled(showHRT && spnTextGap->value() != 1.0);
+}
+
+void MainWindow::font_height_ui_set()
+{
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
+    bool showHRT = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
+    bool defaultChecked = chkFontHeightDefault->isChecked();
+    bool isEANUPC = m_bc.bc.isEANUPC(symbology);
+
+    lblFontHeight->setEnabled(showHRT && !isEANUPC);
+    chkFontHeightDefault->setEnabled(showHRT && !isEANUPC);
+    spnFontHeight->setEnabled(showHRT && !defaultChecked && !isEANUPC);
+}
+
+void MainWindow::gs1_newline_ui_set()
+{
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
+    bool showHRT = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
+    bool isEANUPC = m_bc.bc.isEANUPC(symbology);
+    if (showHRT && !isEANUPC) {
+        if (symbology == BARCODE_GS1_128 || symbology == BARCODE_DBAR_EXP || symbology == BARCODE_DBAR_EXPSTK
+                || (m_bc.bc.supportsGS1(symbology) && (m_bc.bc.inputMode() & 0x07))) {
+            chkTextGS1Newline->setEnabled(true);
+        } else {
+            chkTextGS1Newline->setEnabled(false);
+        }
+    } else {
+        chkTextGS1Newline->setEnabled(false);
+    }
 }
 
 void MainWindow::dotty_ui_set()
@@ -1734,7 +1798,7 @@ void MainWindow::change_options()
 
     grpSpecific->hide();
     if (m_optionWidget) {
-        if (tabMain->count() == 3) {
+        if (tabMain->count() == 4) {
             tabMain->removeTab(1);
         } else {
             vLayoutSpecific->removeWidget(m_optionWidget);
@@ -1759,6 +1823,7 @@ void MainWindow::change_options()
     m_xdimdpVars.x_dim_units = 0;
     m_xdimdpVars.set = 0;
 
+    // Begin ifelse(symbology)
     if (symbology == BARCODE_CODE128) {
         QFile file(QSL(":/grpC128.ui"));
         if (!file.open(QIODevice::ReadOnly))
@@ -2432,6 +2497,7 @@ void MainWindow::change_options()
         m_optionWidget = nullptr;
         load_sub_settings(settings, symbology);
     }
+    // End ifelse(symbology)
 
     switch (symbology) {
         case BARCODE_CODE128:
@@ -2473,7 +2539,7 @@ void MainWindow::change_options()
     // ECI, GS1Parens, GS1Raw, GS1NoCheck, GS1Strict, RInit, CompliantHeight will be checked in update_preview() as
     // encoding mode dependent (HIBC and/or GS1)
     chkAutoHeight->setEnabled(!m_bc.bc.isFixedRatio(symbology));
-    chkHRTShow->setEnabled(m_bc.bc.hasHRT(symbology));
+    chkHRTShow->setEnabled(!m_bc.bc.isFixedRatio(symbology) && symbology != BARCODE_DAFT);
     chkQuietZones->setEnabled(!m_bc.bc.hasDefaultQuietZones(symbology));
     chkDotty->setEnabled(m_bc.bc.isDotty(symbology));
 
@@ -3507,14 +3573,32 @@ void MainWindow::update_preview()
         m_bc.bc.setGS1SyntaxEngine(chkGS1Strict->isEnabled() && chkGS1Strict->isChecked());
     }
     m_bc.bc.setReaderInit(chkRInit->isEnabled() && chkRInit->isChecked());
-    m_bc.bc.setShowText(chkHRTShow->isEnabled() && chkHRTShow->isChecked());
+    if (chkHRTShow->isEnabled() && chkHRTShow->isChecked()) {
+        m_bc.bc.setShowText(true);
+        m_bc.bc.setTextGap(spnTextGap->value());
+        m_bc.bc.setHAlign(cmbTextHAlign->isEnabled() ? cmbTextHAlign->currentIndex() : 0);
+        m_bc.bc.setFontSetting(cmbFontSetting->currentIndex());
+        if (chkFontHeightDefault->isChecked() || !spnFontHeight->isEnabled()) {
+            m_bc.bc.setFontHeight(0);
+        } else {
+            m_bc.bc.setFontHeight(spnFontHeight->value());
+        }
+        m_bc.bc.setGrayscale(radTextRasterFontModeGrayscale->isChecked());
+        m_bc.bc.setGS1Newline(chkTextGS1Newline->isChecked());
+    } else {
+        m_bc.bc.setShowText(false);
+        m_bc.bc.setTextGap(1.0f);
+        m_bc.bc.setHAlign(0);
+        m_bc.bc.setFontSetting(0);
+        m_bc.bc.setFontHeight(0);
+        m_bc.bc.setGrayscale(false);
+        m_bc.bc.setGS1Newline(false);
+    }
     m_bc.bc.setBorderType(btype->currentIndex());
     m_bc.bc.setBorderWidth(bwidth->value());
     m_bc.bc.setWhitespace(spnWhitespace->value());
     m_bc.bc.setVWhitespace(spnVWhitespace->value());
     m_bc.bc.setQuietZones(chkQuietZones->isEnabled() && chkQuietZones->isChecked());
-    m_bc.bc.setFontSetting(cmbFontSetting->currentIndex());
-    m_bc.bc.setTextGap(spnTextGap->value());
     m_bc.bc.setRotateAngle(cmbRotate->currentIndex());
     m_bc.bc.setEmbedVectorFont(chkEmbedVectorFont->isEnabled() && chkEmbedVectorFont->isChecked());
     m_bc.bc.setDotty(chkDotty->isEnabled() && chkDotty->isChecked());
@@ -4255,6 +4339,18 @@ QString MainWindow::get_setting_name(int symbology)
     return Zint::QZint::barcodeName(symbology).mid(8).toLower(); // Strip "BARCODE_" prefix
 }
 
+int MainWindow::get_rad_index(const QStringList &names)
+{
+    QRadioButton *radioButton;
+    for (int index = 0; index < names.size(); index++) {
+        radioButton = findChild<QRadioButton*>(names[index]);
+        if (radioButton && radioButton->isChecked()) {
+            return index;
+        }
+    }
+    return 0;
+}
+
 /* Helper to return index of selected radio button in group, checking for NULL */
 int MainWindow::get_rad_grp_index(const QStringList &names)
 {
@@ -4272,6 +4368,22 @@ int MainWindow::get_rad_grp_index(const QStringList &names)
 
 /* Helper to set radio button in group from index in settings, checking for NULL */
 void MainWindow::set_rad_from_setting(QSettings &settings, const QString &setting,
+            const QStringList &names, int default_val)
+{
+    int index = settings.value(setting, default_val).toInt();
+    QRadioButton *radioButton;
+    if (index >= 0 && index < names.size()) {
+        radioButton = findChild<QRadioButton*>(names[index]);
+    } else {
+        radioButton = findChild<QRadioButton*>(names[0]);
+    }
+    if (radioButton) {
+        radioButton->setChecked(true);
+    }
+}
+
+/* Helper to set radio button in group from index in settings, checking for NULL */
+void MainWindow::set_rad_grp_from_setting(QSettings &settings, const QString &setting,
             const QStringList &names, int default_val)
 {
     if (m_optionWidget) {
@@ -4433,11 +4545,19 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         settings.setValue(QSL("studio/bc/%1/appearance/scale").arg(name), spnScale->value());
         settings.setValue(QSL("studio/bc/%1/appearance/border_type").arg(name), btype->currentIndex());
         if (chkHRTShow->isEnabled()) {
+            settings.setValue(QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), chkHRTShow->isChecked() ? 1 : 0);
             settings.setValue(QSL("studio/bc/%1/appearance/font_setting").arg(name), cmbFontSetting->currentIndex());
             settings.setValue(QSL("studio/bc/%1/appearance/text_gap").arg(name), spnTextGap->value());
             settings.setValue(QSL("studio/bc/%1/appearance/chk_embed_vector_font").arg(name),
                 chkEmbedVectorFont->isChecked() ? 1 : 0);
-            settings.setValue(QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), chkHRTShow->isChecked() ? 1 : 0);
+            settings.setValue(QSL("studio/bc/%1/text/halign").arg(name), cmbTextHAlign->currentIndex());
+            settings.setValue(QSL("studio/bc/%1/text/font_height").arg(name), spnFontHeight->value());
+            settings.setValue(QSL("studio/bc/%1/text/chk_font_height_default").arg(name),
+                chkFontHeightDefault->isChecked() ? 1 : 0);
+            settings.setValue(QSL("studio/bc/%1/text/grayscale").arg(name), get_rad_index(
+                QStringList() << QSL("radTextRasterFontModeMonochrome") << QSL("radTextRasterFontModeGrayscale")));
+            settings.setValue(QSL("studio/bc/%1/text/chk_text_gs1_newline").arg(name),
+                chkTextGS1Newline->isChecked() ? 1 : 0);
         }
         settings.setValue(QSL("studio/bc/%1/appearance/chk_cmyk").arg(name), chkCMYK->isChecked() ? 1 : 0);
         settings.setValue(
@@ -4879,13 +4999,22 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         spnScale->setValue(settings.value(QSL("studio/bc/%1/appearance/scale").arg(name), 1.0).toFloat());
         btype->setCurrentIndex(settings.value(QSL("studio/bc/%1/appearance/border_type").arg(name), 0).toInt());
         if (chkHRTShow->isEnabled()) {
+            int hrtDefault = m_bc.bc.hasHRT(symbology) ? 1 : 0;
+            chkHRTShow->setChecked(settings.value(
+                QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), hrtDefault).toInt() ? true : false);
             cmbFontSetting->setCurrentIndex(settings.value(
                 QSL("studio/bc/%1/appearance/font_setting").arg(name), 0).toInt());
             spnTextGap->setValue(settings.value(QSL("studio/bc/%1/appearance/text_gap").arg(name), 1.0).toFloat());
             chkEmbedVectorFont->setChecked(settings.value(
                 QSL("studio/bc/%1/appearance/chk_embed_vector_font").arg(name), 0).toInt() ? true : false);
-            chkHRTShow->setChecked(settings.value(
-                QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
+            cmbTextHAlign->setCurrentIndex(settings.value(QSL("studio/bc/%1/text/halign").arg(name), 0).toInt());
+            spnFontHeight->setValue(settings.value(QSL("studio/bc/%1/text/font_height").arg(name), 0).toInt());
+            chkFontHeightDefault->setChecked(settings.value(
+                QSL("studio/bc/%1/text/chk_font_height_default").arg(name), 1).toInt() ? true : false);
+            set_rad_from_setting(settings, QSL("studio/bc/%1/text/grayscale").arg(name),
+                QStringList() << QSL("radTextRasterFontModeMonochrome") << QSL("radTextRasterFontModeGrayscale"));
+            chkTextGS1Newline->setChecked(
+                settings.value(QSL("studio/bc/%1/text/chk_text_gs1_newline").arg(name), 0).toInt() ? true : false);
         }
         chkCMYK->setChecked(settings.value(
             QSL("studio/bc/%1/appearance/chk_cmyk").arg(name), 0).toInt() ? true : false);
@@ -4935,7 +5064,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_GS1_128:
         case BARCODE_GS1_128_CC:
         case BARCODE_HIBC_128:
-            set_rad_from_setting(settings, QSL("studio/bc/code128/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/code128/encoding_mode"),
                 QStringList() << QSL("radC128Stand") << QSL("radC128EAN") << QSL("radC128CSup")
                                 << QSL("radC128HIBC") << QSL("radC128ExtraEsc"));
             break;
@@ -4947,7 +5076,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/pdf417/rows"), QSL("cmbPDFRows"));
             set_dspn_from_setting(settings, QSL("studio/bc/pdf417/height_per_row"), QSL("spnPDFHeightPerRow"), 0.0f);
             set_cmb_from_setting(settings, QSL("studio/bc/pdf417/ecc"), QSL("cmbPDFECC"));
-            set_rad_from_setting(settings, QSL("studio/bc/pdf417/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/pdf417/encoding_mode"),
                 QStringList() << QSL("radPDFStand") << QSL("radPDFTruncated") << QSL("radPDFHIBC"));
             set_chk_from_setting(settings, QSL("studio/bc/pdf417/chk_fast"), QSL("chkPDFFast"));
             set_spn_from_setting(settings, QSL("studio/bc/pdf417/structapp_count"), QSL("spnPDFStructAppCount"), 1);
@@ -4960,7 +5089,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/micropdf417/cols"), QSL("cmbMPDFCols"));
             set_dspn_from_setting(settings, QSL("studio/bc/micropdf417/height_per_row"), QSL("spnMPDFHeightPerRow"),
                 0.0f);
-            set_rad_from_setting(settings, QSL("studio/bc/micropdf417/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/micropdf417/encoding_mode"),
                 QStringList() << QSL("radMPDFStand") << QSL("radMPDFHIBC"));
             set_chk_from_setting(settings, QSL("studio/bc/micropdf417/chk_fast"), QSL("chkMPDFFast"));
             set_spn_from_setting(settings, QSL("studio/bc/micropdf417/structapp_count"),
@@ -4974,7 +5103,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_DOTCODE:
             set_cmb_from_setting(settings, QSL("studio/bc/dotcode/cols"), QSL("cmbDotCols"));
             set_cmb_from_setting(settings, QSL("studio/bc/dotcode/mask"), QSL("cmbDotMask"));
-            set_rad_from_setting(settings, QSL("studio/bc/dotcode/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/dotcode/encoding_mode"),
                 QStringList() << QSL("radDotStand") << QSL("radDotGS1"));
             set_cmb_from_setting(settings, QSL("studio/bc/dotcode/structapp_count"), QSL("cmbDotStructAppCount"));
             set_cmb_from_setting(settings, QSL("studio/bc/dotcode/structapp_index"), QSL("cmbDotStructAppIndex"));
@@ -4982,7 +5111,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
 
         case BARCODE_AZTEC:
         case BARCODE_HIBC_AZTEC:
-            set_rad_from_setting(settings, QSL("studio/bc/aztec/autoresizing"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/aztec/autoresizing"),
                 QStringList() << QSL("radAztecAuto") << QSL("radAztecSize") << QSL("radAztecECC"));
             m_aztecSizeIndex = settings.value(QSL("studio/bc/aztec/size"), -1).toInt();
             if (get_rad_val(QSL("radAztecSize"))) {
@@ -4993,7 +5122,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
                 set_cmb_index(QSL("cmbAztecECC"), m_aztecECCIndex);
             }
             set_cmb_from_setting(settings, QSL("studio/bc/aztec/ecc"), QSL("cmbAztecECC"));
-            set_rad_from_setting(settings, QSL("studio/bc/aztec/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/aztec/encoding_mode"),
                 QStringList() << QSL("radAztecStand") << QSL("radAztecGS1") << QSL("radAztecHIBC")
                                 << QSL("radAztecExtraEsc"));
             set_chk_from_setting(settings, QSL("studio/bc/aztec/chk_full"), QSL("chkAztecFull"));
@@ -5010,45 +5139,45 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             break;
 
         case BARCODE_CODE11:
-            set_rad_from_setting(settings, QSL("studio/bc/code11/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/code11/check_digit"),
                 QStringList() << QSL("radC11TwoCheckDigits") << QSL("radC11OneCheckDigit")
                                 << QSL("radC11NoCheckDigits"));
             break;
 
         case BARCODE_C25STANDARD:
-            set_rad_from_setting(settings, QSL("studio/bc/c25standard/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/c25standard/check_digit"),
                 QStringList() << QSL("radC25Stand") << QSL("radC25Check") << QSL("radC25CheckHide"));
             break;
         case BARCODE_C25INTER:
-            set_rad_from_setting(settings, QSL("studio/bc/c25inter/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/c25inter/check_digit"),
                 QStringList() << QSL("radC25Stand") << QSL("radC25Check") << QSL("radC25CheckHide"));
             break;
         case BARCODE_C25IATA:
-            set_rad_from_setting(settings, QSL("studio/bc/c25iata/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/c25iata/check_digit"),
                 QStringList() << QSL("radC25Stand") << QSL("radC25Check") << QSL("radC25CheckHide"));
             break;
         case BARCODE_C25LOGIC:
-            set_rad_from_setting(settings, QSL("studio/bc/c25logic/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/c25logic/check_digit"),
                 QStringList() << QSL("radC25Stand") << QSL("radC25Check") << QSL("radC25CheckHide"));
             break;
         case BARCODE_C25IND:
-            set_rad_from_setting(settings, QSL("studio/bc/c25ind/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/c25ind/check_digit"),
                 QStringList() << QSL("radC25Stand") << QSL("radC25Check") << QSL("radC25CheckHide"));
             break;
 
         case BARCODE_CODE39:
         case BARCODE_HIBC_39:
-            set_rad_from_setting(settings, QSL("studio/bc/code39/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/code39/check_digit"),
                 QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39HIBC")
                                 << QSL("radC39CheckHide"));
             break;
 
         case BARCODE_EXCODE39:
-            set_rad_from_setting(settings, QSL("studio/bc/excode39/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/excode39/check_digit"),
                 QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39CheckHide"));
             break;
         case BARCODE_LOGMARS:
-            set_rad_from_setting(settings, QSL("studio/bc/logmars/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/logmars/check_digit"),
                 QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39CheckHide"));
             break;
 
@@ -5057,13 +5186,13 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_dspn_from_setting(settings, QSL("studio/bc/code16k/height_per_row"), QSL("spnC16kHeightPerRow"),
                 0.0f);
             set_cmb_from_setting(settings, QSL("studio/bc/code16k/row_sep_height"), QSL("cmbC16kRowSepHeight"));
-            set_rad_from_setting(settings, QSL("studio/bc/code16k/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/code16k/encoding_mode"),
                 QStringList() << QSL("radC16kStand") << QSL("radC16kGS1"));
             set_chk_from_setting(settings, QSL("studio/bc/code16k/chk_no_quiet_zones"), QSL("chkC16kNoQuietZones"));
             break;
 
         case BARCODE_CODABAR:
-            set_rad_from_setting(settings, QSL("studio/bc/codabar/check_digit"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/codabar/check_digit"),
                 QStringList() << QSL("radCodabarStand") << QSL("radCodabarCheckHide") << QSL("radCodabarCheck"));
             break;
 
@@ -5075,7 +5204,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
                 0.0f);
             set_cmb_from_setting(settings, QSL("studio/bc/codablockf/row_sep_height"),
                 QSL("cmbCbfRowSepHeight"));
-            set_rad_from_setting(settings, QSL("studio/bc/codablockf/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/codablockf/encoding_mode"),
                 QStringList() << QSL("radCbfStand") << QSL("radCbfHIBC"));
             set_chk_from_setting(settings, QSL("studio/bc/codablockf/chk_no_quiet_zones"), QSL("chkCbfNoQuietZones"));
             break;
@@ -5091,7 +5220,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_DATAMATRIX:
         case BARCODE_HIBC_DM:
             set_cmb_from_setting(settings, QSL("studio/bc/datamatrix/size"), QSL("cmbDMSize"));
-            set_rad_from_setting(settings, QSL("studio/bc/datamatrix/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/datamatrix/encoding_mode"),
                 QStringList() << QSL("radDMStand") << QSL("radDMGS1") << QSL("radDMHIBC") << QSL("radDMExtraEsc"));
             set_chk_from_setting(settings, QSL("studio/bc/datamatrix/chk_suppress_rect"), QSL("chkDMRectangle"));
             set_chk_from_setting(settings, QSL("studio/bc/datamatrix/chk_allow_dmre"), QSL("chkDMRE"));
@@ -5125,7 +5254,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/qrcode/size"), QSL("cmbQRSize"));
             set_cmb_from_setting(settings, QSL("studio/bc/qrcode/ecc"), QSL("cmbQRECC"));
             set_cmb_from_setting(settings, QSL("studio/bc/qrcode/mask"), QSL("cmbQRMask"));
-            set_rad_from_setting(settings, QSL("studio/bc/qrcode/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/qrcode/encoding_mode"),
                 QStringList() << QSL("radQRStand") << QSL("radQRGS1") << QSL("radQRHIBC"));
             set_chk_from_setting(settings, QSL("studio/bc/qrcode/chk_full_multibyte"), QSL("chkQRFullMultibyte"));
             set_chk_from_setting(settings, QSL("studio/bc/qrcode/chk_fast_mode"), QSL("chkQRFast"));
@@ -5142,7 +5271,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_RMQR:
             set_cmb_from_setting(settings, QSL("studio/bc/rmqr/size"), QSL("cmbRMQRSize"));
             set_cmb_from_setting(settings, QSL("studio/bc/rmqr/ecc"), QSL("cmbRMQRECC"));
-            set_rad_from_setting(settings, QSL("studio/bc/rmqr/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/rmqr/encoding_mode"),
                 QStringList() << QSL("radRMQRStand") << QSL("radRMQRGS1"));
             set_chk_from_setting(settings, QSL("studio/bc/rmqr/chk_full_multibyte"), QSL("chkRMQRFullMultibyte"));
             break;
@@ -5190,7 +5319,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
 
         case BARCODE_CODEONE:
             set_cmb_from_setting(settings, QSL("studio/bc/codeone/size"), QSL("cmbC1Size"));
-            set_rad_from_setting(settings, QSL("studio/bc/codeone/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/codeone/encoding_mode"),
                 QStringList() << QSL("radC1Stand") << QSL("radC1GS1"));
             set_spn_from_setting(settings, QSL("studio/bc/codeone/structapp_count"), QSL("spnC1StructAppCount"), 1);
             set_spn_from_setting(settings, QSL("studio/bc/codeone/structapp_index"), QSL("spnC1StructAppIndex"), 0);
@@ -5200,7 +5329,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/code49/rows"), QSL("cmbC49Rows"));
             set_dspn_from_setting(settings, QSL("studio/bc/code49/height_per_row"), QSL("spnC49HeightPerRow"), 0.0f);
             set_cmb_from_setting(settings, QSL("studio/bc/code49/row_sep_height"), QSL("cmbC49RowSepHeight"));
-            set_rad_from_setting(settings, QSL("studio/bc/code49/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/code49/encoding_mode"),
                 QStringList() << QSL("radC49Stand") << QSL("radC49GS1"));
             set_chk_from_setting(settings, QSL("studio/bc/code49/chk_no_quiet_zones"), QSL("chkC49NoQuietZones"));
             break;
@@ -5210,7 +5339,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             break;
 
         case BARCODE_DBAR_EXPSTK:
-            set_rad_from_setting(settings, QSL("studio/bc/dbar_expstk/colsrows"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/dbar_expstk/colsrows"),
                 QStringList() << QSL("radDBESCols") << QSL("radDBESRows"));
             set_cmb_from_setting(settings, QSL("studio/bc/dbar_expstk/cols"), QSL("cmbDBESCols"));
             set_cmb_from_setting(settings, QSL("studio/bc/dbar_expstk/rows"), QSL("cmbDBESRows"));
@@ -5231,11 +5360,11 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             break;
 
         case BARCODE_ULTRA:
-            set_rad_from_setting(settings, QSL("studio/bc/ultra/autoresizing"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/ultra/autoresizing"),
                 QStringList() << QSL("radUltraAuto") << QSL("radUltraEcc"));
             set_cmb_from_setting(settings, QSL("studio/bc/ultra/ecc"), QSL("cmbUltraEcc"));
             set_cmb_from_setting(settings, QSL("studio/bc/ultra/revision"), QSL("cmbUltraRevision"));
-            set_rad_from_setting(settings, QSL("studio/bc/ultra/encoding_mode"),
+            set_rad_grp_from_setting(settings, QSL("studio/bc/ultra/encoding_mode"),
                 QStringList() << QSL("radUltraStand") << QSL("radUltraGS1"));
             set_cmb_from_setting(settings, QSL("studio/bc/ultra/structapp_count"), QSL("cmbUltraStructAppCount"));
             set_cmb_from_setting(settings, QSL("studio/bc/ultra/structapp_index"), QSL("cmbUltraStructAppIndex"));

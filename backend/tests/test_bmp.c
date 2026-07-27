@@ -136,6 +136,8 @@ static void test_print(const testCtx *const p_ctx) {
         int output_options;
         int whitespace_width;
         int whitespace_height;
+        int show_hrt;
+        int font_height;
         int option_1;
         int option_2;
         const char *fgcolour;
@@ -144,14 +146,15 @@ static void test_print(const testCtx *const p_ctx) {
         const char *expected_file;
     };
     static const struct item data[] = {
-        /*  0*/ { BARCODE_PDF417, -1, -1, 5, -1, -1, -1, "147AD0", "FC9630", "123", "pdf417_fg_bg.bmp" },
-        /*  1*/ { BARCODE_ULTRA, -1, -1, 5, -1, -1, -1, "147AD0", "FC9630", "123", "ultracode_fg_bg.bmp" },
-        /*  2*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, "147AD0", "FC9630", "123", "ultracode_fg_bg_hvwsp1_box1.bmp" },
-        /*  3*/ { BARCODE_PDF417COMP, -1, -1, 2, 2, -1, -1, "", "", "123", "pdf417comp_hvwsp2.bmp" },
+        /*  0*/ { BARCODE_PDF417, -1, -1, 5, -1, -1, -1, -1, -1, "147AD0", "FC9630", "123", "pdf417_fg_bg.bmp" },
+        /*  1*/ { BARCODE_ULTRA, -1, -1, 5, -1, -1, -1, -1, -1, "147AD0", "FC9630", "123", "ultracode_fg_bg.bmp" },
+        /*  2*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, -1, -1, "147AD0", "FC9630", "123", "ultracode_fg_bg_hvwsp1_box1.bmp" },
+        /*  3*/ { BARCODE_PDF417COMP, -1, -1, 2, 2, -1, -1, -1, -1, "", "", "123", "pdf417comp_hvwsp2.bmp" },
+        /*  4*/ { BARCODE_DBAR_EXP, -1, -1, -1, -1, -1, 28, -1, -1, "", "", "[01]09501101530003[17]140704[10]AB-123", "dbar_exp_fnt28.bmp" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     const char *data_dir = "/backend/tests/data/bmp";
     const char *bmp = "out.bmp";
@@ -163,7 +166,7 @@ static void test_print(const testCtx *const p_ctx) {
 
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStart(p_ctx->func_name);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
@@ -194,6 +197,12 @@ static void test_print(const testCtx *const p_ctx) {
         if (data[i].whitespace_height != -1) {
             symbol->whitespace_height = data[i].whitespace_height;
         }
+        if (data[i].show_hrt != -1) {
+            symbol->show_hrt = data[i].show_hrt;
+        }
+        if (data[i].font_height != -1) {
+            symbol->show_hrt |= data[i].font_height << 16;
+        }
         if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
         }
@@ -214,10 +223,11 @@ static void test_print(const testCtx *const p_ctx) {
                     "i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, %s, %d, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
+            printf("        /*%3d*/ { %s, %d, %s, %d, %d, %s, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].border_width,
                     testUtilOutputOptionsName(data[i].output_options),
                     data[i].whitespace_width, data[i].whitespace_height,
+                    testUtilShowHRTName(data[i].show_hrt), data[i].font_height,
                     data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
             ret = testUtilRename(symbol->outfile, expected_file);

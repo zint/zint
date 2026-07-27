@@ -501,6 +501,10 @@ INTERNAL int zint_mailmark_4s(struct zint_symbol *symbol, unsigned char source[]
     symbol->rows = 3;
     symbol->width = j - 1;
 
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_cpy_nochk(symbol, local_source, length);
+    }
+
     if (content_segs && z_ct_cpy(symbol, local_source, length)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
@@ -661,6 +665,10 @@ INTERNAL int zint_mailmark_2d(struct zint_symbol *symbol, unsigned char source[]
     segs[0].eci = 0;
     segs[0].source = local_source;
     segs[0].length = length;
+
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_ALL) {
+        (void) z_hrt_cpy_iso8859_1(symbol, local_source, length);
+    }
 
     if (content_segs) {
         if ((symbol->input_mode & 0x07) == DATA_MODE) {

@@ -165,6 +165,10 @@ INTERNAL int zint_postnet(struct zint_symbol *symbol, unsigned char source[], in
     symbol->rows = 2;
     symbol->width = writer - 1;
 
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_cpy_cat_nochk(symbol, source, length, (char) z_itoc(check_digit), NULL /*cat*/, 0);
+    }
+
     if (content_segs && z_ct_cpy_cat(symbol, source, length, (char) z_itoc(check_digit), NULL /*cat*/, 0)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
@@ -277,6 +281,10 @@ INTERNAL int zint_fim(struct zint_symbol *symbol, unsigned char source[], int le
         error_number = z_set_height(symbol, min_height, default_height, max_height, 0 /*no_errtxt*/);
     } else {
         (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+    }
+
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_cpy_nochk(symbol, source, length);
     }
 
     if (content_segs && z_ct_cpy(symbol, source, length)) {
@@ -457,6 +465,10 @@ INTERNAL int zint_rm4scc(struct zint_symbol *symbol, unsigned char source[], int
         (void) zint_daft_set_height(symbol, 0.0f, 0.0f);
     }
 
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_cpy_cat_nochk(symbol, source, length, check_digit, NULL /*cat*/, 0);
+    }
+
     if (content_segs && z_ct_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }
@@ -546,6 +558,10 @@ INTERNAL int zint_flat(struct zint_symbol *symbol, unsigned char source[], int l
     z_expand(symbol, dest, (int) (d - dest));
 
     /* TODO: Find documentation on BARCODE_FLAT dimensions/height */
+
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_cpy_nochk(symbol, source, length);
+    }
 
     if (content_segs && z_ct_cpy(symbol, source, length)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
@@ -657,6 +673,10 @@ INTERNAL int zint_japanpost(struct zint_symbol *symbol, unsigned char source[], 
         symbol->row_height[0] = 3.0f;
         symbol->row_height[1] = 2.0f;
         (void) zint_daft_set_height(symbol, 0.0f, 0.0f);
+    }
+
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_cpy_nochk(symbol, source, length);
     }
 
     /* Note: check char is in KASUTSET and not truly representable in raw text's SHKASUTSET_F */

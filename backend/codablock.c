@@ -567,7 +567,9 @@ INTERNAL int zint_codablockf(struct zint_symbol *symbol, unsigned char source[],
             if (symbol->border_width == 0) { /* Allow override if non-zero */
                 symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
             }
-            z_hrt_cpy_nochk(symbol, ZCUCP(""), 0); /* Zap HRT for compatibility with CODABLOCKF */
+            if ((symbol->show_hrt & 0x7) < ZINT_HRT_STACKED) {
+                z_hrt_cpy_nochk(symbol, ZCUCP(""), 0); /* Zap HRT for compatibility with CODABLOCKF */
+            }
             /* Use `content_segs` from `zint_code128()` */
             if (symbol->output_options & COMPLIANT_HEIGHT) {
                 /* AIM ISS-X-24 Section 4.6.1 minimum row height 8X (for compatibility with CODABLOCKF, not specced
@@ -881,6 +883,10 @@ INTERNAL int zint_codablockf(struct zint_symbol *symbol, unsigned char source[],
 
     if (symbol->border_width == 0) { /* Allow override if non-zero */
         symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
+    }
+
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_STACKED) {
+        error_number = z_hrt_cpy_iso8859_1(symbol, source, length);
     }
 
     if (content_segs) {

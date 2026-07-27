@@ -30,6 +30,7 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "code49.h"
@@ -371,6 +372,11 @@ INTERNAL int zint_code49(struct zint_symbol *symbol, unsigned char source[], int
 
     if (symbol->border_width == 0) { /* Allow override if non-zero */
         symbol->border_width = 1; /* ANSI/AIM BC6-2000 Section 2.1 (note change from previous default 2) */
+    }
+
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_STACKED) {
+        assert(length < ARRAY_SIZE(symbol->text));
+        z_hrt_cpy_nochk(symbol, source, length);
     }
 
     if (!gs1 && content_segs && z_ct_cpy(symbol, source, length)) { /* GS1 dealt with by `ZBarcode_Encode_Segs()` */

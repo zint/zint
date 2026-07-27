@@ -108,13 +108,14 @@ INTERNAL int zint_png_pixel_plot(struct zint_symbol *symbol, const unsigned char
     png_color bg, fg;
     unsigned char bg_alpha, fg_alpha;
     unsigned char map[128];
-    png_color palette[32];
+    png_color palette[256];
     int num_palette;
-    unsigned char trans_alpha[32];
+    unsigned char trans_alpha[256];
     int num_trans; /* Note initialize below to avoid gcc -Wclobbered warning due to `longjmp()` */
     int bit_depth;
     int compression_strategy;
     const unsigned char *pb;
+    const int grayscale = zint_out_grayscale(symbol);
     unsigned char *outdata = (unsigned char *) z_alloca(symbol->bitmap_width);
 
     zpng_error.symbol = symbol;
@@ -176,6 +177,25 @@ INTERNAL int zint_png_pixel_plot(struct zint_symbol *symbol, const unsigned char
                 }
             }
         }
+    } else if (grayscale) {
+        const int diff_red = fg.red - bg.red;
+        const int diff_green = fg.green - bg.green;
+        const int diff_blue = fg.blue - bg.blue;
+        for (num_palette = 0; num_palette <= 0xFF; num_palette++) {
+            png_color color;
+            color.red = bg.red + (diff_red * num_palette) / 0xFF;
+            color.green = bg.green + (diff_green * num_palette) / 0xFF;
+            color.blue = bg.blue + (diff_blue * num_palette) / 0xFF;
+            palette[num_palette] = color;
+        }
+        if (bg_alpha != 0xFF || fg_alpha != 0xFF) {
+            trans_alpha[num_trans++] = bg_alpha;
+            if (fg_alpha != 0xFF) {
+                for (; num_trans <= 0xFF; num_trans++) {
+                    trans_alpha[num_trans] = fg_alpha;
+                }
+            }
+        }
     } else {
         int bg_idx = 0, fg_idx = 1;
         /* Do alphas first so can swop indexes if background not alpha */
@@ -200,8 +220,10 @@ INTERNAL int zint_png_pixel_plot(struct zint_symbol *symbol, const unsigned char
 
     if (num_palette <= 2) {
         bit_depth = 1;
-    } else {
+    } else if (num_palette <= 16) {
         bit_depth = 4;
+    } else {
+        bit_depth = 8;
     }
 
     /* Open output file in binary mode */
@@ -280,7 +302,7 @@ INTERNAL int zint_png_pixel_plot(struct zint_symbol *symbol, const unsigned char
             /* write row contents to file */
             png_write_row(png_ptr, outdata);
         }
-    } else { /* Bit depth 4 */
+    } else if (bit_depth == 4) {
         for (row = 0; row < symbol->bitmap_height; row++) {
             if (row && memcmp(pb, pb - symbol->bitmap_width, symbol->bitmap_width) == 0) {
                 pb += symbol->bitmap_width;
@@ -302,6 +324,12 @@ INTERNAL int zint_png_pixel_plot(struct zint_symbol *symbol, const unsigned char
                 png_write_flush(png_ptr);
             }
 #endif
+        }
+    } else { /* Bit depth 8 */
+        for (row = 0; row < symbol->bitmap_height; row++) {
+            /* write row contents to file */
+            png_write_row(png_ptr, pb);
+            pb += symbol->bitmap_width;
         }
     }
 

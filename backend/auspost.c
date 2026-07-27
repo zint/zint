@@ -274,6 +274,10 @@ INTERNAL int zint_auspost(struct zint_symbol *symbol, unsigned char source[], in
         error_number = zint_daft_set_height(symbol, 0.0f, 0.0f);
     }
 
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_cpy_cat_nochk(symbol, fccs[fcc_idx], 2, '\xFF' /*separator (none)*/, source, length);
+    }
+
     if (content_segs && z_ct_cpy_cat(symbol, fccs[fcc_idx], 2, '\xFF' /*separator (none)*/, source, length)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_cpy_cat()` only fails with OOM */
     }

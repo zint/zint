@@ -1,7 +1,7 @@
 /* bmp.c - Handles output to Windows Bitmap file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -50,9 +50,10 @@ INTERNAL int zint_bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char
     bitmap_info_header_t info_header;
     color_ref_t bg;
     color_ref_t fg;
-    color_ref_t palette[8];
+    color_ref_t palette[256];
     int ultra_fg_index = 9;
     unsigned char map[128];
+    const int grayscale = zint_out_grayscale(symbol);
     unsigned char *rowbuf;
 
     (void) zint_out_colour_get_rgb(symbol->fgcolour, &fg.red, &fg.green, &fg.blue, NULL /*alpha*/);
@@ -75,6 +76,18 @@ INTERNAL int zint_bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char
         colour_count = ultra_fg_index == 9 ? 10 : 9;
         map['0'] = 0;
         map['1'] = (unsigned char) ultra_fg_index;
+    } else if (grayscale) {
+        const int diff_red = fg.red - bg.red;
+        const int diff_green = fg.green - bg.green;
+        const int diff_blue = fg.blue - bg.blue;
+        color_ref_t color = {0}; /* Ensure `reserved` is zero */
+        bits_per_pixel = 8;
+        for (colour_count = 0; colour_count <= 0xFF; colour_count++) {
+            color.red = bg.red + (diff_red * colour_count) / 0xFF;
+            color.green = bg.green + (diff_green * colour_count) / 0xFF;
+            color.blue = bg.blue + (diff_blue * colour_count) / 0xFF;
+            palette[colour_count] = color;
+        }
     } else {
         bits_per_pixel = 1;
         colour_count = 2;
@@ -123,16 +136,22 @@ INTERNAL int zint_bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char
     zint_fm_write(&file_header, sizeof(bitmap_file_header_t), 1, fmp);
     zint_fm_write(&info_header, sizeof(bitmap_info_header_t), 1, fmp);
 
-    zint_fm_write(&bg, sizeof(color_ref_t), 1, fmp);
-    if (bits_per_pixel == 4) {
-        for (i = 0; i < 8; i++) {
+    if (bits_per_pixel == 8) {
+        for (i = 0; i < colour_count; i++) {
             zint_fm_write(&palette[i], sizeof(color_ref_t), 1, fmp);
         }
-        if (ultra_fg_index == 9) {
+    } else {
+        zint_fm_write(&bg, sizeof(color_ref_t), 1, fmp);
+        if (bits_per_pixel == 4) {
+            for (i = 0; i < 8; i++) {
+                zint_fm_write(&palette[i], sizeof(color_ref_t), 1, fmp);
+            }
+            if (ultra_fg_index == 9) {
+                zint_fm_write(&fg, sizeof(color_ref_t), 1, fmp);
+            }
+        } else {
             zint_fm_write(&fg, sizeof(color_ref_t), 1, fmp);
         }
-    } else {
-        zint_fm_write(&fg, sizeof(color_ref_t), 1, fmp);
     }
 
     /* Pixel Plotting */
@@ -143,6 +162,13 @@ INTERNAL int zint_bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char
             for (column = 0; column < symbol->bitmap_width; column++) {
                 rowbuf[column >> 1] |= map[pb[column]] << (!(column & 1) << 2);
             }
+            zint_fm_write(rowbuf, 1, row_size, fmp);
+        }
+    } else if (bits_per_pixel == 8) {
+        memset(rowbuf, 0, row_size);
+        for (row = 0; row < symbol->bitmap_height; row++) {
+            const unsigned char *pb = pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1));
+            memcpy(rowbuf, pb, symbol->bitmap_width);
             zint_fm_write(rowbuf, 1, row_size, fmp);
         }
     } else { /* bits_per_pixel == 1 */

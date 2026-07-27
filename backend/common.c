@@ -864,7 +864,7 @@ INTERNAL int z_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char
 
     for (i = 0, j = 0; i < length && j < text_size; i++) {
         if (z_isascii(source[i])) {
-            symbol->text[j++] = z_iscntrl(source[i]) ? ' ' : source[i];
+            symbol->text[j++] = z_iscntrl(source[i]) && source[i] != '\n' ? ' ' : source[i]; /* Leave newlines */
         } else if (source[i] < 0xC0) {
             if (source[i] < 0xA0) { /* 0x80-0x9F not valid ISO/IEC 8859-1 */
                 symbol->text[j++] = ' ';

@@ -248,6 +248,11 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
 
     *output_length = bp;
 
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_printf_nochk(symbol, (*has_frame_info ? "%d-%d%s%s" : "%d-%d"), dx_code_1, dx_code_2, "/",
+                                            frame_info);
+    }
+
     if (content_segs && z_ct_printf_256(symbol, (*has_frame_info ? "%d-%d%s%s" : "%d-%d"), dx_code_1, dx_code_2, "/",
                                     frame_info)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_printf_256()` only fails with OOM */

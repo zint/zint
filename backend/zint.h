@@ -320,6 +320,18 @@ extern "C" {
 #define GS1SYNTAXENGINE_MODE    0x0200  /* Use the GS1 Syntax Engine (if available) to strictly validate GS1 input */
 #define GS1RAW_MODE             0x0400  /* Process GS1 data literally (no AI delimiters), parsing GSs as FNC1s */
 
+/* HRT options (`symbol->show_hrt`) */
+#define ZINT_HRT_DEFAULT        1       /* Show for most linear barcodes excepting postal and some others (default) */
+#define ZINT_HRT_LINEAR_ALL     2       /* Show for all linear barcodes */
+#define ZINT_HRT_STACKED        3       /* Show for stacked barcodes, incl. all linear */
+#define ZINT_HRT_ALL            4       /* Show for all barcodes, incl. matrix (2D), stacked & all linear */
+/* The following may be OR-ed with above */
+#define ZINT_HRT_GRAYSCALE      0x0008  /* Use 8-bit grayscale */
+#define ZINT_HRT_GREYSCALE      0x0008  /* Synonym for above */
+#define ZINT_HRT_HALIGN_LEFT    0x0010  /* Horizontally align HRT left (default is centred) */
+#define ZINT_HRT_HALIGN_RIGHT   0x0020  /* Horizontally align HRT right */
+#define ZINT_HRT_GS1_NEWLINE    0x0040  /* Put each GS1 AI on a separate line (may wrap) */
+
 /* Aztec Code specific options (`symbol->option_3`) */
 #define ZINT_AZTEC_FULL         128     /* Only consider Full versions on automatic symbol size selection */
 

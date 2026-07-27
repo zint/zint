@@ -134,6 +134,8 @@ static void test_print(const testCtx *const p_ctx) {
         int output_options;
         int whitespace_width;
         int whitespace_height;
+        int show_hrt;
+        int font_height;
         int option_1;
         int option_2;
         float height;
@@ -147,44 +149,46 @@ static void test_print(const testCtx *const p_ctx) {
         const char *comment;
     };
     static const struct item data[] = {
-        /*  0*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "12", "dotcode_1.0.gif", "" },
-        /*  1*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0.1, { 0, 0, "" }, "", "", "12", "dotcode_1.0_ds0.1.gif", "" },
-        /*  2*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_1.0_ds1.1.gif", "" },
-        /*  3*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 0, { 0, 0, "" }, "", "", "12", "dotcode_1.5.gif", "" },
-        /*  4*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 0.4, { 0, 0, "" }, "", "", "12", "dotcode_1.5_ds0.4.gif", "" },
-        /*  5*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_1.5_ds1.1.gif", "" },
-        /*  6*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 2.1, { 0, 0, "" }, "", "", "12", "dotcode_1.5_ds2.1.gif", "" },
-        /*  7*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 2, 0, { 0, 0, "" }, "", "", "12", "dotcode_2.0.gif", "" },
-        /*  8*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 2, 0.9, { 0, 0, "" }, "", "", "12", "dotcode_2.0_ds0.9.gif", "" },
-        /*  9*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 2, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_2.0_ds1.1.gif", "" },
-        /* 10*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3, 0, { 0, 0, "" }, "", "", "12", "dotcode_3.0.gif", "" },
-        /* 11*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3, 0.4, { 0, 0, "" }, "", "", "12", "dotcode_3.0_ds0.4.gif", "" },
-        /* 12*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_3.0_ds1.1.gif", "" },
-        /* 13*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3.5, 0, { 0, 0, "" }, "", "", "12", "dotcode_3.5.gif", "" },
-        /* 14*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3.5, 0.4, { 0, 0, "" }, "", "", "12", "dotcode_3.5_ds0.4.gif", "" },
-        /* 15*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3.5, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_3.5_ds1.1.gif", "" },
-        /* 16*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 0, { 0, 0, "" }, "", "", "12", "dotcode_5.0.gif", "" },
-        /* 17*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 0.2, { 0, 0, "" }, "", "", "12", "dotcode_5.0_ds0.2.gif", "" },
-        /* 18*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_5.0_ds1.1.gif", "" },
-        /* 19*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 1.7, { 0, 0, "" }, "", "", "12", "dotcode_5.0_ds1.7.gif", "" },
-        /* 20*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "2674C344", "FDFFC2CC", "12", "dotcode_bgfgalpha.gif", "" },
-        /* 21*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "00000000", "FFFFFF00", "12", "dotcode_bgfgtrans.gif", "" },
-        /* 22*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "00000000", "FFFFFF", "12", "dotcode_fgtrans.gif", "" },
-        /* 23*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "000000", "FFFFFF00", "12", "dotcode_bgtrans.gif", "" },
-        /* 24*/ { BARCODE_DOTCODE, -1, CMYK_COLOUR, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "71,0,40,44", "", "12", "dotcode_cmyk_fg.gif", "" },
-        /* 25*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF", "FF0000", "12", "ultra_fgbg_hvwsp1_box1.gif", "" },
-        /* 26*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF00", "FF000000", "12", "ultra_fgbg_hvwsp1_box1_bgfgtrans.gif", "" },
-        /* 27*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF", "FF000000", "12", "ultra_fgbg_hvwsp1_box1_bgtrans.gif", "" },
-        /* 28*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF00", "FF0000", "12", "ultra_fgbg_hvwsp1_box1_fgtrans.gif", "" },
-        /* 29*/ { BARCODE_ITF14, 4, BARCODE_BIND, 24, -1, -1, -1, 61.8, 3, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height61.8_bind4_wsp24_3.gif", "#204 ARM-Cortex crash" },
-        /* 30*/ { BARCODE_ITF14, 0, BARCODE_BIND, -1, -1, -1, -1, 0.5, 0.5, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_box0_0.5.gif", "No box, no text" },
-        /* 31*/ { BARCODE_ITF14, -1, -1, -1, -1, -1, -1, 0.5, 1.1, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_1.1.gif", "" },
-        /* 32*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 0.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height0.5_wsp3_vwsp5.gif", "Separator covers bars" },
-        /* 33*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 1.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height1.5_wsp3_vwsp5.gif", "" },
-        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 2, 9, "001002" }, "", "", "1234567890", "datamatrix_seq2of9.gif", "" },
-        /* 35*/ { BARCODE_ULTRA, -1, -1, 1, -1, -1, 2, 0, 0, 0, { 0, 0, "" }, "", "", "12", "ultra_rev2.gif", "Revision 2" },
-        /* 36*/ { BARCODE_ULTRA, 1, BARCODE_BOX | BARCODE_QUIET_ZONES | BARCODE_NO_QUIET_ZONES, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "12", "ultra_box.gif", "NO_QUIET_ZONES trumps QUIET_ZONES" },
-        /* 37*/ { BARCODE_DPD, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "008182709980000020028101276", "dpd_compliant.gif", "Now with bind top 3X default" },
+        /*  0*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "12", "dotcode_1.0.gif", "" },
+        /*  1*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0.1, { 0, 0, "" }, "", "", "12", "dotcode_1.0_ds0.1.gif", "" },
+        /*  2*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_1.0_ds1.1.gif", "" },
+        /*  3*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1.5, 0, { 0, 0, "" }, "", "", "12", "dotcode_1.5.gif", "" },
+        /*  4*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1.5, 0.4, { 0, 0, "" }, "", "", "12", "dotcode_1.5_ds0.4.gif", "" },
+        /*  5*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1.5, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_1.5_ds1.1.gif", "" },
+        /*  6*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1.5, 2.1, { 0, 0, "" }, "", "", "12", "dotcode_1.5_ds2.1.gif", "" },
+        /*  7*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 2, 0, { 0, 0, "" }, "", "", "12", "dotcode_2.0.gif", "" },
+        /*  8*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 2, 0.9, { 0, 0, "" }, "", "", "12", "dotcode_2.0_ds0.9.gif", "" },
+        /*  9*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 2, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_2.0_ds1.1.gif", "" },
+        /* 10*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3, 0, { 0, 0, "" }, "", "", "12", "dotcode_3.0.gif", "" },
+        /* 11*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3, 0.4, { 0, 0, "" }, "", "", "12", "dotcode_3.0_ds0.4.gif", "" },
+        /* 12*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_3.0_ds1.1.gif", "" },
+        /* 13*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3.5, 0, { 0, 0, "" }, "", "", "12", "dotcode_3.5.gif", "" },
+        /* 14*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3.5, 0.4, { 0, 0, "" }, "", "", "12", "dotcode_3.5_ds0.4.gif", "" },
+        /* 15*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3.5, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_3.5_ds1.1.gif", "" },
+        /* 16*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 5, 0, { 0, 0, "" }, "", "", "12", "dotcode_5.0.gif", "" },
+        /* 17*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 5, 0.2, { 0, 0, "" }, "", "", "12", "dotcode_5.0_ds0.2.gif", "" },
+        /* 18*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 5, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_5.0_ds1.1.gif", "" },
+        /* 19*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 5, 1.7, { 0, 0, "" }, "", "", "12", "dotcode_5.0_ds1.7.gif", "" },
+        /* 20*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "2674C344", "FDFFC2CC", "12", "dotcode_bgfgalpha.gif", "" },
+        /* 21*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "00000000", "FFFFFF00", "12", "dotcode_bgfgtrans.gif", "" },
+        /* 22*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "00000000", "FFFFFF", "12", "dotcode_fgtrans.gif", "" },
+        /* 23*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "000000", "FFFFFF00", "12", "dotcode_bgtrans.gif", "" },
+        /* 24*/ { BARCODE_DOTCODE, -1, CMYK_COLOUR, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "71,0,40,44", "", "12", "dotcode_cmyk_fg.gif", "" },
+        /* 25*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF", "FF0000", "12", "ultra_fgbg_hvwsp1_box1.gif", "" },
+        /* 26*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF00", "FF000000", "12", "ultra_fgbg_hvwsp1_box1_bgfgtrans.gif", "" },
+        /* 27*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF", "FF000000", "12", "ultra_fgbg_hvwsp1_box1_bgtrans.gif", "" },
+        /* 28*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF00", "FF0000", "12", "ultra_fgbg_hvwsp1_box1_fgtrans.gif", "" },
+        /* 29*/ { BARCODE_ITF14, 4, BARCODE_BIND, 24, -1, -1, -1, -1, -1, 61.8, 3, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height61.8_bind4_wsp24_3.gif", "#204 ARM-Cortex crash" },
+        /* 30*/ { BARCODE_ITF14, 0, BARCODE_BIND, -1, -1, -1, -1, -1, -1, 0.5, 0.5, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_box0_0.5.gif", "No box, no text" },
+        /* 31*/ { BARCODE_ITF14, -1, -1, -1, -1, -1, -1, -1, -1, 0.5, 1.1, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_1.1.gif", "" },
+        /* 32*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, -1, -1, 0.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height0.5_wsp3_vwsp5.gif", "Separator covers bars" },
+        /* 33*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, -1, -1, 1.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height1.5_wsp3_vwsp5.gif", "" },
+        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 2, 9, "001002" }, "", "", "1234567890", "datamatrix_seq2of9.gif", "" },
+        /* 35*/ { BARCODE_ULTRA, -1, -1, 1, -1, -1, -1, -1, 2, 0, 0, 0, { 0, 0, "" }, "", "", "12", "ultra_rev2.gif", "Revision 2" },
+        /* 36*/ { BARCODE_ULTRA, 1, BARCODE_BOX | BARCODE_QUIET_ZONES | BARCODE_NO_QUIET_ZONES, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "12", "ultra_box.gif", "NO_QUIET_ZONES trumps QUIET_ZONES" },
+        /* 37*/ { BARCODE_DPD, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "008182709980000020028101276", "dpd_compliant.gif", "Now with bind top 3X default" },
+        /* 38*/ { BARCODE_DBAR_STK, -1, COMPLIANT_HEIGHT, -1, -1, ZINT_HRT_STACKED | ZINT_HRT_GRAYSCALE, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "0950110153000", "dbar_stk_grayscale.gif", "" },
+        /* 39*/ { BARCODE_DBAR_OMNSTK, -1, COMPLIANT_HEIGHT, -1, -1, ZINT_HRT_STACKED, 21, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "0950110153000", "dbar_omnstk_fh21.gif", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -231,6 +235,12 @@ static void test_print(const testCtx *const p_ctx) {
         if (data[i].whitespace_height != -1) {
             symbol->whitespace_height = data[i].whitespace_height;
         }
+        if (data[i].show_hrt != -1) {
+            symbol->show_hrt = data[i].show_hrt;
+        }
+        if (data[i].font_height != -1) {
+            symbol->show_hrt |= data[i].font_height << 16;
+        }
         if (data[i].height) {
             symbol->height = data[i].height;
         }
@@ -263,10 +273,12 @@ static void test_print(const testCtx *const p_ctx) {
                     "i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, %s, %d, %d, %d, %d, %.5g, %.5g, %.5g, \"%s\", \"%s\", \"%s\", \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %d, %s, %d, %d, %s, %d, %d, %d, %.5g, %.5g, %.5g, \"%s\", \"%s\", \"%s\""
+                    ", \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].border_width,
                     testUtilOutputOptionsName(data[i].output_options),
                     data[i].whitespace_width, data[i].whitespace_height,
+                    testUtilShowHRTName(data[i].show_hrt), data[i].font_height,
                     data[i].option_1, data[i].option_2, data[i].height, data[i].scale, data[i].dot_size,
                     data[i].fgcolour, data[i].bgcolour,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file,

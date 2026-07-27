@@ -57,10 +57,10 @@ static void test_file(const testCtx *const p_ctx) {
         /*  0*/ { BARCODE_CODE128, BARCODE_MEMORY_FILE, "out.svg", "ABCDEF", -1, 0,
                     "<?xml version=\"1.0\" standalone=\"no\"?>\n"
                     "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
-                    "<svg width=\"202\" height=\"117\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n"
+                    "<svg width=\"202\" height=\"118\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n"
                     " <desc>Zint Generated Symbol</desc>\n"
                     " <g id=\"barcode\" fill=\"#000000\">\n"
-                    "  <rect x=\"0\" y=\"0\" width=\"202\" height=\"117\" fill=\"#FFFFFF\"/>\n"
+                    "  <rect x=\"0\" y=\"0\" width=\"202\" height=\"118\" fill=\"#FFFFFF\"/>\n"
                     "  <path d=\"M0 0h4v100h-4ZM6 0h2v100h-2ZM12 0h2v100h-2ZM22 0h2v100h-2ZM26 0h2v100h-2ZM34 0h4v100h-4ZM44 0h2v100h-2ZM52 0h2v100h-2ZM56 0h4v100h-4ZM66 0h2v100h-2ZM74 0h2v100h-2ZM82 0h4v100h-4ZM88 0h2v100h-2ZM92 0h4v100h-4ZM102 0h2v100h-2ZM110 0h2v100h-2ZM118 0h4v100h-4ZM124 0h2v100h-2ZM132 0h2v100h-2ZM140 0h4v100h-4ZM150 0h2v100h-2ZM154 0h2v100h-2ZM158 0h4v100h-4ZM168 0h6v100h-6ZM176 0h4v100h-4ZM186 0h6v100h-6ZM194 0h2v100h-2ZM198 0h4v100h-4Z\"/>\n"
                     "  <text x=\"101\" y=\"113.34\" text-anchor=\"middle\" font-family=\"Arimo, Arial, sans-serif\" font-size=\"14\">\n"
                     "   ABCDEF\n"

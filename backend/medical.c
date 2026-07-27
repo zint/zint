@@ -99,6 +99,10 @@ INTERNAL int zint_pharma(struct zint_symbol *symbol, unsigned char source[], int
         (void) z_set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_cpy_nochk(symbol, source, length);
+    }
+
     if (content_segs && z_ct_cpy(symbol, source, length)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */
     }
@@ -188,6 +192,10 @@ INTERNAL int zint_pharma_two(struct zint_symbol *symbol, unsigned char source[],
         error_number = z_set_height(symbol, 2.0f, 8.0f, 15.0f, 0 /*no_errtxt*/);
     } else {
         (void) z_set_height(symbol, 0.0f, 10.0f, 0.0f, 1 /*no_errtxt*/);
+    }
+
+    if ((symbol->show_hrt & 0x7) >= ZINT_HRT_LINEAR_ALL) {
+        z_hrt_cpy_nochk(symbol, source, length);
     }
 
     if (content_segs && z_ct_cpy(symbol, source, length)) {

@@ -180,8 +180,8 @@ namespace Zint {
             m_fgStr(QSL("000000")), m_bgStr(QSL("FFFFFF")), m_cmyk(false),
             m_borderType(0), m_borderWidth(0),
             m_whitespace(0), m_vwhitespace(0),
-            m_fontSetting(0),
-            m_show_hrt(true),
+            m_show_hrt(ZINT_HRT_ALL),
+            m_fontSetting(0), m_halign(0), m_font_height(0), m_grayscale(false), m_gs1_newline(false),
             m_gssep(false),
             m_quiet_zones(false), m_no_quiet_zones(false),
             m_compliant_height(false),
@@ -259,7 +259,23 @@ namespace Zint {
         m_zintSymbol->option_1 = m_option_1;
         m_zintSymbol->option_2 = m_option_2;
         m_zintSymbol->option_3 = m_option_3;
-        m_zintSymbol->show_hrt = m_show_hrt ? 1 : 0;
+
+        m_zintSymbol->show_hrt = m_show_hrt;
+        if (m_grayscale) {
+            m_zintSymbol->show_hrt |= ZINT_HRT_GRAYSCALE;
+        }
+        if (m_halign == ZINT_HRT_HALIGN_LEFT) {
+            m_zintSymbol->show_hrt |= ZINT_HRT_HALIGN_LEFT;
+        } else if (m_halign == ZINT_HRT_HALIGN_RIGHT) {
+            m_zintSymbol->show_hrt |= ZINT_HRT_HALIGN_RIGHT;
+        }
+        if (m_gs1_newline) {
+            m_zintSymbol->show_hrt |= ZINT_HRT_GS1_NEWLINE;
+        }
+        if (m_font_height >= 10 && m_font_height <= 200) {
+            m_zintSymbol->show_hrt |= m_font_height << 16;
+        }
+
         m_zintSymbol->input_mode = m_input_mode;
         if (m_gs1parens) {
             m_zintSymbol->input_mode |= GS1PARENS_MODE;
@@ -273,6 +289,7 @@ namespace Zint {
         if (m_gs1syntaxengine) {
             m_zintSymbol->input_mode |= GS1SYNTAXENGINE_MODE;
         }
+
         m_zintSymbol->eci = m_eci;
         m_zintSymbol->dpmm = m_dpmm;
         m_zintSymbol->dot_size = m_dot_size;
@@ -676,11 +693,57 @@ namespace Zint {
 
     /* Show (true) or hide (false) Human Readable Text (HRT) */
     bool QZint::showText() const {
-        return m_show_hrt;
+        return !!m_show_hrt;
     }
 
     void QZint::setShowText(bool showText) {
-        m_show_hrt = showText;
+        m_show_hrt = showText ? ZINT_HRT_ALL : 0;
+    }
+
+    /* Horizontal alignment of HRT */
+    int QZint::halign() const {
+        return m_halign;
+    }
+
+    void QZint::setHAlign(int halignIndex) { // Sets from combobox index
+        if (halignIndex == 1) {
+            m_halign = ZINT_HRT_HALIGN_LEFT;
+        } else if (halignIndex == 2) {
+            m_halign = ZINT_HRT_HALIGN_RIGHT;
+        } else {
+            m_halign = 0;
+        }
+    }
+
+    void QZint::setHAlignValue(int halign) { // Sets literal value
+        m_halign = halign == ZINT_HRT_HALIGN_LEFT || halign == ZINT_HRT_HALIGN_RIGHT ? halign : 0;
+    }
+
+    /* Font height */
+    int QZint::fontHeight() const {
+        return m_font_height;
+    }
+
+    void QZint::setFontHeight(int fontHeight) {
+        m_font_height = fontHeight >= 10 && fontHeight <= 200 ? fontHeight : 0;
+    }
+
+    /* 8-bit grayscale raster font mode */
+    bool QZint::grayscale() const {
+        return m_grayscale;
+    }
+
+    void QZint::setGrayscale(bool grayscale) {
+        m_grayscale = grayscale;
+    }
+
+    /* 8-bit grayscale raster font mode */
+    bool QZint::gs1Newline() const {
+        return m_gs1_newline;
+    }
+
+    void QZint::setGS1Newline(bool gs1Newline) {
+        m_gs1_newline = gs1Newline;
     }
 
     /* Set to true to use GS (Group Separator) instead of FNC1 as GS1 separator (Data Matrix) */

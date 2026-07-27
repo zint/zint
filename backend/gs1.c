@@ -1921,15 +1921,21 @@ static int gs1_hrt_conv_parsed(struct zint_symbol *symbol, const unsigned char s
     int i, j;
     int warn_number = 0;
     const int text_size = ARRAY_SIZE(symbol->text);
+    const int gs1_newline = symbol->show_hrt & ZINT_HRT_GS1_NEWLINE;
+    int first_ai = 1;
+
 #ifdef NDEBUG
     (void)length;
 #endif
 
     for (i = 0, j = 0; i < ai_count && j < text_size; i++) {
         const int ai_len = 2 + (ai_vals[i] >= 100) + (ai_vals[i] >= 1000);
-        if (j + 1 + ai_len + 1 + data_lens[i] >= text_size) {
+        if (j + 1 + ai_len + 1 + data_lens[i] + (!first_ai && gs1_newline) >= text_size) {
             warn_number = ZINT_WARN_HRT_TRUNCATED;
             break;
+        }
+        if (!first_ai && gs1_newline) {
+            symbol->text[j++] = '\n';
         }
         symbol->text[j++] = '(';
         memcpy(symbol->text + j, source + ai_locs[i], ai_len);
@@ -1938,11 +1944,12 @@ static int gs1_hrt_conv_parsed(struct zint_symbol *symbol, const unsigned char s
         assert(data_locs[i] + data_lens[i] <= length);
         memcpy(symbol->text + j, source + data_locs[i], data_lens[i]);
         j += data_lens[i];
+        first_ai = 0;
     }
 
-    if (j == text_size) {
+    if (j >= text_size) {
         warn_number = ZINT_WARN_HRT_TRUNCATED;
-        j--;
+        j = text_size - 1;
     }
     symbol->text_length = j;
     symbol->text[j] = '\0';
@@ -1966,16 +1973,50 @@ INTERNAL int zint_test_gs1_hrt_conv_parsed(struct zint_symbol *symbol, const uns
 /* Helper to set HRT when have GS1PARENS_MODE - truncates if too long for HRT buffer */
 static int gs1_hrt_cpy(struct zint_symbol *symbol, const unsigned char source[], const int length,
             const int no_errtxt) {
-    int warn_number;
+    int warn_number = 0;
     const int text_size = ARRAY_SIZE(symbol->text);
+    const int gs1_newline = symbol->show_hrt & ZINT_HRT_GS1_NEWLINE;
 
     assert(symbol->input_mode & GS1PARENS_MODE);
     assert(source[0] == '(');
 
-    if (length < text_size) {
+    if (gs1_newline) {
+        int i, j = 1, last_opening_bracket = 0;
+        assert(source[0] == '(');
+        symbol->text[0] = '(';
+        for (i = 1; i < length && j < text_size; i++) {
+            if (source[i] == '\\' && i + 1 < length && (source[i + 1] == '\\' || source[i + 1] == '(')) {
+                if (j + 1 >= text_size) {
+                    break;
+                }
+                symbol->text[j++] = source[i++];
+            } else if (source[i] == '(') {
+                if (j + 1 >= text_size) {
+                    break;
+                }
+                last_opening_bracket = j;
+                symbol->text[j++] = '\n';
+            }
+            symbol->text[j++] = source[i];
+        }
+        if (i < length || j >= text_size) {
+            if (j < text_size && source[i] == '(') {
+                /* Finished at end of AI data */
+                symbol->text_length = j;
+                symbol->text[j] = '\0';
+            } else {
+                /* Use last full AI + data */
+                symbol->text_length = last_opening_bracket;
+                symbol->text[last_opening_bracket] = '\0';
+            }
+            warn_number = ZINT_WARN_HRT_TRUNCATED;
+        } else {
+            symbol->text_length = j;
+            symbol->text[j] = '\0';
+        }
+    } else if (length < text_size) {
         memcpy(symbol->text, source, length + 1); /* Include terminating NUL */
         symbol->text_length = length;
-        warn_number = 0;
     } else {
         /* Find last full AI - need to scan forward to track escaped opening parens */
         int i, last_opening_bracket = 0;
@@ -1998,9 +2039,9 @@ static int gs1_hrt_cpy(struct zint_symbol *symbol, const unsigned char source[],
             symbol->text[last_opening_bracket] = '\0';
         }
         warn_number = ZINT_WARN_HRT_TRUNCATED;
-        if (!no_errtxt) {
-            z_errtxt(0, symbol, 801, "Human Readable Text truncated");
-        }
+    }
+    if (warn_number && !no_errtxt) {
+        z_errtxt(0, symbol, 801, "Human Readable Text truncated");
     }
     return warn_number;
 }
@@ -2016,37 +2057,48 @@ INTERNAL int zint_test_gs1_hrt_cpy(struct zint_symbol *symbol, const unsigned ch
    & truncates if too long for HRT buffer */
 static int gs1_hrt_conv_brackets(struct zint_symbol *symbol, const unsigned char source[], const int length,
             const int no_errtxt) {
-    int i;
+    int i, j;
     int warn_number = 0;
     int bracket_level = 0; /* Non-compliant closing square brackets may be in text */
     int last_opening_bracket = 0;
     const int text_size = ARRAY_SIZE(symbol->text);
     const int max_len = length > text_size ? text_size : length;
+    const int gs1_newline = symbol->show_hrt & ZINT_HRT_GS1_NEWLINE;
+    int first_ai = 1;
 
     assert((symbol->input_mode & GS1PARENS_MODE) == 0);
     assert(source[0] == '[');
 
-    for (i = 0; i < max_len; i++) {
+    for (i = 0, j = 0; i < max_len && j < text_size; i++) {
         if (source[i] == '[') {
-            symbol->text[i] = '(';
+            const int do_gs1_newline = !first_ai && gs1_newline;
+            if (j + 1 + do_gs1_newline >= text_size) {
+                warn_number = ZINT_WARN_HRT_TRUNCATED;
+                break;
+            }
+            if (do_gs1_newline) {
+                symbol->text[j++] = '\n';
+            }
+            symbol->text[j++] = '(';
             bracket_level++;
-            last_opening_bracket = i;
+            last_opening_bracket = j - (1 + do_gs1_newline);
         } else if (source[i] == ']' && bracket_level) {
-            symbol->text[i] = ')';
+            symbol->text[j++] = ')';
             bracket_level--;
         } else {
-            symbol->text[i] = source[i];
+            symbol->text[j++] = source[i];
         }
+        first_ai = 0;
     }
-    if (i == text_size) {
-        i--;
+    if (j == text_size) {
+        j--;
         if (source[i] != '[') {
-            i = last_opening_bracket;
+            j = last_opening_bracket;
         }
         warn_number = ZINT_WARN_HRT_TRUNCATED;
     }
-    symbol->text_length = i;
-    symbol->text[i] = '\0';
+    symbol->text_length = j;
+    symbol->text[j] = '\0';
 
     if (warn_number && !no_errtxt) {
         z_errtxt(0, symbol, 798, "Human Readable Text truncated");

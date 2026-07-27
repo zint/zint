@@ -764,6 +764,66 @@ const char *testUtilOutputOptionsName(int output_options) {
     return buf;
 }
 
+/* Pretty name for show HRT */
+const char *testUtilShowHRTName(int show_hrt) {
+    static char buf[512];
+
+    struct item {
+        const char *name;
+        int define;
+        int val;
+    };
+    static const struct item data[] = {
+        { "ZINT_HRT_GRAYSCALE", ZINT_HRT_GRAYSCALE, 0x0008 },
+        { "ZINT_HRT_HALIGN_LEFT", ZINT_HRT_HALIGN_LEFT, 0x0010 },
+        { "ZINT_HRT_HALIGN_RIGHT", ZINT_HRT_HALIGN_RIGHT, 0x0020 },
+        { "ZINT_HRT_GS1_NEWLINE", ZINT_HRT_GS1_NEWLINE, 0x0040 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int set, i;
+
+    if (show_hrt < 0) {
+        return "-1";
+    }
+    *buf = '\0';
+    if ((show_hrt & 0x07) == ZINT_HRT_DEFAULT) {
+        strcpy(buf, "ZINT_HRT_DEFAULT");
+        set = ZINT_HRT_DEFAULT;
+    } else if ((show_hrt & 0x07) == ZINT_HRT_LINEAR_ALL) {
+        strcpy(buf, "ZINT_HRT_LINEAR_ALL");
+        set = ZINT_HRT_LINEAR_ALL;
+    } else if ((show_hrt & 0x07) == ZINT_HRT_STACKED) {
+        strcpy(buf, "ZINT_HRT_STACKED");
+        set = ZINT_HRT_STACKED;
+    } else if ((show_hrt & 0x07) == ZINT_HRT_ALL) {
+        strcpy(buf, "ZINT_HRT_ALL");
+        set = ZINT_HRT_ALL;
+    } else {
+        set = 0;
+    }
+    for (i = 0; i < data_size; i++) {
+        if (data[i].define != data[i].val) { /* Self-check */
+            fprintf(stderr, "testUtilShowHRTName: data table out of sync (%d)\n", i);
+            abort();
+        }
+        if (show_hrt & data[i].define) {
+            if (*buf) {
+                strcat(buf, " | ");
+            }
+            strcat(buf, data[i].name);
+            set |= data[i].define;
+        }
+    }
+    if (set != show_hrt) {
+        fprintf(stderr, "testUtilShowHRTName: unknown show hrt %d (%d)\n", show_hrt & set, show_hrt);
+        abort();
+    }
+    if (set == 0 && *buf == '\0') {
+        strcpy(buf, "0");
+    }
+    return buf;
+}
+
 /* Convert modules spanning 3 rows to DAFT equivalents */
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, const int buffer_size) {
     int i;

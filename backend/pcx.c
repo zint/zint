@@ -41,6 +41,7 @@
 /* ZSoft PCX File Format Technical Reference Manual http://bespin.org/~qz/pc-gpe/pcx.txt */
 INTERNAL int zint_pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
     unsigned char fgred, fggrn, fgblu, fgalpha, bgred, bggrn, bgblu, bgalpha;
+    int diff_red, diff_grn, diff_blu;
     int row, column, i, colour;
     int run_count;
     struct filemem fm;
@@ -49,12 +50,16 @@ INTERNAL int zint_pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char
     unsigned char previous;
     const unsigned char *pb;
     const int bytes_per_line = symbol->bitmap_width + (symbol->bitmap_width & 1); /* Must be even */
+    const int grayscale = zint_out_grayscale(symbol);
     unsigned char *rle_row = (unsigned char *) z_alloca(bytes_per_line);
 
     rle_row[bytes_per_line - 1] = 0; /* Will remain zero if bitmap_width odd */
 
     (void) zint_out_colour_get_rgb(symbol->fgcolour, &fgred, &fggrn, &fgblu, &fgalpha);
     (void) zint_out_colour_get_rgb(symbol->bgcolour, &bgred, &bggrn, &bgblu, &bgalpha);
+    diff_red = fgred - bgred;
+    diff_grn = fggrn - bggrn;
+    diff_blu = fgblu - bgblu;
 
     header.manufacturer = 10; /* ZSoft */
     header.version = 5; /* Version 3.0 */
@@ -98,21 +103,27 @@ INTERNAL int zint_pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char
                 const unsigned char ch = pb[column];
                 switch (colour) {
                     case 0:
-                        if (ch == '0' || ch == '1') {
+                        if (grayscale) {
+                            rle_row[column] = bgred + (diff_red * ch) / 0xFF;
+                        } else if (ch == '0' || ch == '1') {
                             rle_row[column] = ch != '0' ? fgred : bgred;
                         } else {
                             zint_out_colour_char_to_rgb(ch, &rle_row[column], NULL, NULL);
                         }
                         break;
                     case 1:
-                        if (ch == '0' || ch == '1') {
+                        if (grayscale) {
+                            rle_row[column] = bggrn + (diff_grn * ch) / 0xFF;
+                        } else if (ch == '0' || ch == '1') {
                             rle_row[column] = ch != '0' ? fggrn : bggrn;
                         } else {
                             zint_out_colour_char_to_rgb(ch, NULL, &rle_row[column], NULL);
                         }
                         break;
                     case 2:
-                        if (ch == '0' || ch == '1') {
+                        if (grayscale) {
+                            rle_row[column] = bgblu + (diff_blu * ch) / 0xFF;
+                        } else if (ch == '0' || ch == '1') {
                             rle_row[column] = ch != '0' ? fgblu : bgblu;
                         } else {
                             zint_out_colour_char_to_rgb(ch, NULL, NULL, &rle_row[column]);

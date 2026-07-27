@@ -1678,6 +1678,339 @@ including GS1 Digital Link URIs
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="tabText">
+          <property name="maximumSize">
+           <size>
+            <width>678</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <attribute name="title">
+           <string>Te&amp;xt</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="vLayoutText">
+           <item>
+            <layout class="QGridLayout" name="gLayoutText">
+             <item row="0" column="0" colspan="2">
+              <widget class="QCheckBox" name="chkHRTShow">
+               <property name="toolTip">
+                <string>Show Human Readable Text (HRT) in image</string>
+               </property>
+               <property name="text">
+                <string>Sho&amp;w Text</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="lblTextGap">
+               <property name="toolTip">
+                <string>Gap between barcode and text in X-dimensions
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>Text &amp;Gap:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="buddy">
+                <cstring>spnTextGap</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <layout class="QHBoxLayout" name="horzLayoutTextGap">
+               <item>
+                <widget class="QDoubleSpinBox" name="spnTextGap">
+                 <property name="toolTip">
+                  <string>Gap between barcode and text in X-dimensions
+(ignored if disabled)</string>
+                 </property>
+                 <property name="prefix">
+                  <string/>
+                 </property>
+                 <property name="suffix">
+                  <string> X</string>
+                 </property>
+                 <property name="decimals">
+                  <number>2</number>
+                 </property>
+                 <property name="minimum">
+                  <double>-5.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1.000000000000000</double>
+                 </property>
+                 <property name="accelerated">
+                  <bool>true</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>3</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnClearTextGap">
+                 <property name="maximumSize">
+                  <size>
+                   <width>22</width>
+                   <height>26</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Set text gap to default 1X</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="lblTextHAlign">
+               <property name="toolTip">
+                <string>Set horizontal alignment of HRT
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>Text Alignment:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="buddy">
+                <cstring>cmbTextHAlign</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QComboBox" name="cmbTextHAlign">
+               <property name="toolTip">
+                <string>Set horizontal alignment of HRT
+(ignored if disabled)</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Center</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Left</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Right</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="lblFontSetting">
+               <property name="toolTip">
+                <string>Set font characteristics
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>Fo&amp;nt Setting:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="buddy">
+                <cstring>cmbFontSetting</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QComboBox" name="cmbFontSetting">
+               <property name="toolTip">
+                <string>Set font characteristics (bold, small)
+(ignored if disabled)</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Normal</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Bold</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Small</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Small Bold (vector only)</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="lblFontHeight">
+               <property name="toolTip">
+                <string>Use default height for font or set height in pixels
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>Font &amp;Height:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="buddy">
+                <cstring>spnFontHeight</cstring>
+               </property>
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QSpinBox" name="spnFontHeight">
+               <property name="toolTip">
+                <string>Height of font in pixels
+(ignored if disabled)</string>
+               </property>
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="suffix">
+                <string> px</string>
+               </property>
+               <property name="minimum">
+                <number>10</number>
+               </property>
+               <property name="maximum">
+                <number>200</number>
+               </property>
+               <property name="value">
+                <number>14</number>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="2">
+              <widget class="QCheckBox" name="chkFontHeightDefault">
+               <property name="toolTip">
+                <string>Use default font height</string>
+               </property>
+               <property name="text">
+                <string>Defaul&amp;t</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0" colspan="2">
+              <widget class="QGroupBox" name="groupBoxTextRasterFontMode">
+               <property name="title">
+                <string>Raster Font Mode</string>
+               </property>
+               <property name="toolTip">
+                <string>Whether to use 1-bit monochrome or 8-bit grayscale on raster output
+(BMP/GIF/PCX/PNG/TIF)
+(ignored if disabled)</string>
+               </property>
+               <layout class="QGridLayout" name="gLayoutTextRasterFontMode">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMinimumSize</enum>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="radTextRasterFontModeMonochrome">
+                  <property name="text">
+                   <string>&amp;1-bit monochrome</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>1-bit raster output, no anti-aliasing</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QRadioButton" name="radTextRasterFontModeGrayscale">
+                  <property name="text">
+                   <string>&amp;8-bit grayscale</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>8-bit anti-aliasing raster output</string>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="6" column="0" colspan="2">
+              <widget class="QCheckBox" name="chkEmbedVectorFont">
+               <property name="toolTip">
+                <string>Embed font in SVG output
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>Embed Font &amp;(SVG)</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="0" colspan="2">
+              <widget class="QCheckBox" name="chkTextGS1Newline">
+               <property name="toolTip">
+                <string>Put each GS1 AI on a separate line
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>Put GS1 AIs on separate lines</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer name="vSpacerText">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>10</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="tabAppear">
           <property name="maximumSize">
            <size>
@@ -1908,128 +2241,50 @@ the barcode in X-dimensions</string>
                </item>
               </layout>
              </item>
-             <item row="5" column="0" colspan="2">
-              <widget class="QCheckBox" name="chkHRTShow">
+             <item row="5" column="0">
+              <widget class="QLabel" name="lblRotate">
                <property name="toolTip">
-                <string>Show Human Readable Text in image
-(ignored if disabled)</string>
+                <string>Rotate symbol by degrees</string>
                </property>
                <property name="text">
-                <string>Show Te&amp;xt</string>
+                <string>R&amp;otate:</string>
                </property>
-               <property name="checked">
-                <bool>true</bool>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                </property>
+               <property name="buddy">
+                <cstring>cmbRotate</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QComboBox" name="cmbRotate">
+               <property name="toolTip">
+                <string>Rotate symbol by degrees</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>0°</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>90°</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>180°</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>270°</string>
+                </property>
+               </item>
               </widget>
              </item>
              <item row="6" column="0">
-              <widget class="QLabel" name="lblFontSetting">
-               <property name="toolTip">
-                <string>Set font characteristics
-(ignored if disabled)</string>
-               </property>
-               <property name="text">
-                <string>Fo&amp;nt Setting:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-               <property name="buddy">
-                <cstring>cmbFontSetting</cstring>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1" colspan="2">
-              <widget class="QComboBox" name="cmbFontSetting">
-               <property name="toolTip">
-                <string>Set font characteristics
-(ignored if disabled)</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>Normal</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Bold</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Small</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Small Bold (vector only)</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="7" column="0">
-              <widget class="QLabel" name="lblTextGap">
-               <property name="toolTip">
-                <string>Gap between barcode and text in X-dimensions
-(ignored if disabled)</string>
-               </property>
-               <property name="text">
-                <string>Text &amp;Gap:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-               <property name="buddy">
-                <cstring>spnTextGap</cstring>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="1">
-              <widget class="QDoubleSpinBox" name="spnTextGap">
-               <property name="toolTip">
-                <string>Gap between barcode and text in X-dimensions
-(ignored if disabled)</string>
-               </property>
-               <property name="prefix">
-                <string/>
-               </property>
-               <property name="suffix">
-                <string> X</string>
-               </property>
-               <property name="decimals">
-                <number>2</number>
-               </property>
-               <property name="minimum">
-                <double>-5.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>10.000000000000000</double>
-               </property>
-               <property name="singleStep">
-                <double>0.100000000000000</double>
-               </property>
-               <property name="value">
-                <double>1.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="2">
-              <widget class="QToolButton" name="btnClearTextGap">
-               <property name="maximumSize">
-                <size>
-                 <width>22</width>
-                 <height>26</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string>Set text gap to default 1X</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item row="8" column="0">
               <widget class="QLabel" name="lblScale">
                <property name="toolTip">
                 <string>Image scale when output to file
@@ -2046,7 +2301,7 @@ the barcode in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="1">
+             <item row="6" column="1">
               <widget class="QDoubleSpinBox" name="spnScale">
                <property name="toolTip">
                 <string>Image scale when output to file
@@ -2072,7 +2327,7 @@ the barcode in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="2">
+             <item row="6" column="2">
               <widget class="QToolButton" name="btnScale">
                <property name="maximumSize">
                 <size>
@@ -2088,7 +2343,7 @@ the barcode in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="9" column="0">
+             <item row="7" column="0">
               <widget class="QLabel" name="lblSize">
                <property name="toolTip">
                 <string>Image size (width x height) of barcode
@@ -2102,7 +2357,7 @@ at given dot density</string>
                </property>
               </widget>
              </item>
-             <item row="9" column="1" colspan="5">
+             <item row="7" column="1" colspan="5">
               <widget class="QLabel" name="lblSizeMsg">
                <property name="toolTip">
                 <string>Image size (width x height) of barcode
@@ -2300,64 +2555,7 @@ e.g. &quot;FFFFFF00&quot;</string>
                </property>
               </widget>
              </item>
-             <item row="5" column="3">
-              <widget class="QLabel" name="lblRotate">
-               <property name="toolTip">
-                <string>Rotate symbol by degrees</string>
-               </property>
-               <property name="text">
-                <string>R&amp;otate:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="buddy">
-                <cstring>cmbRotate</cstring>
-               </property>
-              </widget>
-             </item>
              <item row="5" column="4" colspan="2">
-              <widget class="QComboBox" name="cmbRotate">
-               <property name="toolTip">
-                <string>Rotate symbol by degrees</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>0°</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>90°</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>180°</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>270°</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="6" column="4" colspan="2">
-              <widget class="QCheckBox" name="chkEmbedVectorFont">
-               <property name="toolTip">
-                <string>Embed font in SVG output
-(ignored if disabled)</string>
-               </property>
-               <property name="text">
-                <string>Embed Font &amp;(SVG)</string>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="4" colspan="2">
               <widget class="QCheckBox" name="chkDotty">
                <property name="toolTip">
                 <string>Use dots instead of squares for matrix symbols
@@ -2371,7 +2569,7 @@ e.g. &quot;FFFFFF00&quot;</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="3">
+             <item row="6" column="3">
               <widget class="QLabel" name="lblDotSize">
                <property name="enabled">
                 <bool>false</bool>
@@ -2391,7 +2589,7 @@ e.g. &quot;FFFFFF00&quot;</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="4" colspan="2">
+             <item row="6" column="4" colspan="2">
               <widget class="QDoubleSpinBox" name="spnDotSize">
                <property name="enabled">
                 <bool>false</bool>

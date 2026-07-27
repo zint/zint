@@ -201,10 +201,12 @@ static void usage(const int no_png, const int have_gs1syntaxengine) {
            "  --fast                Use faster encodation or other shortcuts if available\n"
            "  --fg=COLOUR           Specify a foreground colour (as RGB(A) or \"C,M,Y,K\")\n", stdout);
     printf("  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n", no_png_type);
-    fputs( "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
+    fputs( "  --fontheight=INTEGER  Set font height in pixels\n"
+           "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
+           "  --grayscale           Use 8-bit antialiasing for HRT\n"
            "  --gs1                 Treat input as GS1 compatible data\n"
-           "  --gs1nocheck          Do not check validity of GS1 data\n"
-           "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
+           "  --gs1nocheck          Do not check validity of GS1 data\n", stdout);
+    fputs( "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
            "  --gs1raw              Process as raw GS1 input (no brackets), with GS for FNC1\n", stdout);
 if (have_gs1syntaxengine) {
     fputs( "  --gs1strict           Use GS1 Syntax Engine to strictly validate GS1 data\n", stdout);
@@ -239,13 +241,17 @@ if (have_gs1syntaxengine) {
            "  --square              Force Data Matrix symbols to be square\n"
            "  --structapp=I,C[,ID]  Set Structured Append info (I index, C count)\n"
            "  -t, --types           Display table of barcode types\n", stdout);
-    fputs( "  --textgap=NUMBER      Adjust gap between barcode and HRT in multiples of X-dim\n"
-           "  --verbose             Output debug info to stdout\n"
+    fputs( "  --text=INTEGER        Configure HRT: 1 default, 2 all linear, 3 stacked, 4 all\n"
+           "  --textgap=NUMBER      Adjust gap between barcode and HRT in multiples of X-dim\n"
+           "  --textgs1newline      Print each new GS1 AI on a separate line\n"
+           "  --textleft            Align HRT left\n"
+           "  --textright           Align HRT right\n", stdout);
+    fputs( "  --verbose             Output debug info to stdout\n"
            "  --vers=INTEGER        Set symbol version (size, check digits, other options)\n"
            "  -v, --version         Display Zint version\n"
-           "  --vwhitesp=INTEGER    Set height of vertical whitespace in multiples of X-dim\n", stdout);
-    fputs( "  -w, --whitesp=INTEGER Set width of horizontal whitespace in multiples of X-dim\n"
-           "  --werror              Convert all warnings into errors\n", stdout);
+           "  --vwhitesp=INTEGER    Set height of vertical whitespace in multiples of X-dim\n"
+           "  -w, --whitesp=INTEGER Set width of horizontal whitespace in multiples of X-dim\n", stdout);
+    fputs( "  --werror              Convert all warnings into errors\n", stdout);
 }
 
 /* Display supported ECI codes */
@@ -1551,8 +1557,9 @@ enum options {
     OPT_BATCH, OPT_BG, OPT_BINARY, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
     OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT,
     OPT_DIRECT, OPT_DMISO144, OPT_DMRE, OPT_DMB256, OPT_DMC40, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
-    OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FULLMULTIBYTE,
-    OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GS1RAW, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/,
+    OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC,
+    OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FONTHEIGHT, OPT_FULLMULTIBYTE,
+    OPT_GRAYSCALE, OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GS1RAW, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/,
     OPT_GSSEP, OPT_GUARDDESCENT, OPT_GUARDWHITESPACE,
     OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MASK, OPT_MIRROR, OPT_MODE,
     OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
@@ -1562,7 +1569,8 @@ enum options {
 #ifdef ZINT_TEST
     OPT_TEST,
 #endif
-    OPT_TEXTGAP, OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
+    OPT_TEXT, OPT_TEXTGAP, OPT_TEXTGS1NEWLINE, OPT_TEXTLEFT, OPT_TEXTRIGHT,
+    OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
 };
 
 static const struct option long_options[] = {
@@ -1601,6 +1609,7 @@ static const struct option long_options[] = {
     {"fgcolor", 1, 0, OPT_FG}, /* Synonym */
     {"fgcolour", 1, 0, OPT_FG}, /* Synonym */
     {"filetype", 1, NULL, OPT_FILETYPE},
+    {"fontheight", 1, NULL, OPT_FONTHEIGHT},
     {"fullmultibyte", 0, NULL, OPT_FULLMULTIBYTE},
     {"gs1", 0, 0, OPT_GS1},
     {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
@@ -1647,7 +1656,11 @@ static const struct option long_options[] = {
 #ifdef ZINT_TEST
     {"test", 0, NULL, OPT_TEST},
 #endif
+    {"text", 1, NULL, OPT_TEXT},
     {"textgap", 1, NULL, OPT_TEXTGAP},
+    {"textgs1newline", 0, NULL, OPT_TEXTGS1NEWLINE},
+    {"textleft", 0, NULL, OPT_TEXTLEFT},
+    {"textright", 0, NULL, OPT_TEXTRIGHT},
     {"types", 0, NULL, 't'},
     {"verbose", 0, NULL, OPT_VERBOSE},
     {"vers", 1, NULL, OPT_VERS},
@@ -1957,8 +1970,25 @@ int main(int argc, char **argv) {
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
+            case OPT_FONTHEIGHT:
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
+                    fprintf(stderr, "Error 138: Invalid font height (digits only)\n");
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
+                }
+                if (val >= 10 && val <= 200) {
+                    my_symbol->show_hrt &= 0xFFFF;
+                    my_symbol->show_hrt |= val << 16;
+                } else {
+                    fprintf(stderr, "Warning 167: Font height '%d' out of range (10 to 200), **IGNORED**\n", val);
+                    fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
+                }
+                break;
             case OPT_FULLMULTIBYTE:
                 fullmultibyte = 1;
+                break;
+            case OPT_GRAYSCALE:
+                my_symbol->show_hrt |= ZINT_HRT_GRAYSCALE;
                 break;
             case OPT_GS1:
                 my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE;
@@ -2239,6 +2269,20 @@ int main(int argc, char **argv) {
                 break;
 /* LCOV_EXCL_STOP */
 #endif
+            case OPT_TEXT:
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
+                    fprintf(stderr, "Error 174: Invalid text value (digits only)\n");
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
+                }
+                if (val >= 1 && val <= 4) {
+                    my_symbol->show_hrt &= ~0x7;
+                    my_symbol->show_hrt = val;
+                } else {
+                    fprintf(stderr, "Warning 127: Text value '%d' out of range (1 to 4), **IGNORED**\n", val);
+                    fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
+                }
+                break;
             case OPT_TEXTGAP:
                 if (!validate_float(optarg, 1 /*allow_neg*/, &float_opt, errbuf)) {
                     fprintf(stderr, "Error 194: Invalid text gap floating point (%s)\n", errbuf);
@@ -2252,6 +2296,17 @@ int main(int argc, char **argv) {
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
+                break;
+            case OPT_TEXTGS1NEWLINE:
+                my_symbol->show_hrt |= ZINT_HRT_GS1_NEWLINE;
+                break;
+            case OPT_TEXTLEFT:
+                my_symbol->show_hrt &= ~ZINT_HRT_HALIGN_RIGHT;
+                my_symbol->show_hrt |= ZINT_HRT_HALIGN_LEFT;
+                break;
+            case OPT_TEXTRIGHT:
+                my_symbol->show_hrt &= ~ZINT_HRT_HALIGN_LEFT;
+                my_symbol->show_hrt |= ZINT_HRT_HALIGN_RIGHT;
                 break;
             case OPT_VERBOSE:
                 my_symbol->debug = 1;

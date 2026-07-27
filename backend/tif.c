@@ -208,9 +208,9 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
     uint16_t bits_per_sample;
     int samples_per_pixel;
     int pixels_per_sample;
-    unsigned char map[128];
+    unsigned char map[256];
     tiff_color_t color_map[256] = {{0}};
-    unsigned char palette[32][5];
+    unsigned char palette[256][5];
     int color_map_size = 0;
     int extra_samples = 0;
     size_t free_memory;
@@ -236,9 +236,13 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
     int ifd_size;
     uint32_t temp32;
     uint16_t temp16;
+    int have_alpha;
+    const int grayscale = zint_out_grayscale(symbol);
 
     (void) zint_out_colour_get_rgb(symbol->fgcolour, &fg[0], &fg[1], &fg[2], &fg[3]);
     (void) zint_out_colour_get_rgb(symbol->bgcolour, &bg[0], &bg[1], &bg[2], &bg[3]);
+
+    have_alpha = fg[3] != 0xFF || bg[3] != 0xFF;
 
     if (symbol->symbology == BARCODE_ULTRA) {
         static const unsigned char ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
@@ -266,13 +270,9 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
 
             pmi = TIF_PMI_SEPARATED;
             bits_per_sample = 8;
-            if (fg[3] == 0xff && bg[3] == 0xff) { /* If no alpha */
-                samples_per_pixel = 4;
-            } else {
-                samples_per_pixel = 5;
-                extra_samples = 1; /* Associated alpha */
-            }
+            samples_per_pixel = 4 + have_alpha;
             pixels_per_sample = 1;
+            extra_samples = have_alpha; /* Associated alpha */
         } else {
             static const unsigned char ultra_rgbs[8][3] = {
                 { 0xff, 0xff, 0xff, }, /* White */
@@ -294,7 +294,7 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
             map['1'] = 9;
             memcpy(palette[9], fg, 4);
 
-            if (fg[3] == 0xff && bg[3] == 0xff) { /* If no alpha */
+            if (!have_alpha) {
                 pmi = TIF_PMI_PALETTE_COLOR;
                 for (i = 0; i < 10; i++) {
                     tif_to_color_map(palette[i], &color_map[i]);
@@ -311,6 +311,53 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
                 extra_samples = 1; /* Associated alpha */
             }
         }
+    } else if (grayscale) { /* Anti-aliased */
+        if (symbol->output_options & CMYK_COLOUR) {
+            int diff_cyan, diff_magenta, diff_yellow, diff_black, diff_alpha;
+
+            tif_to_cmyk(symbol->bgcolour, palette[0]);
+            tif_to_cmyk(symbol->fgcolour, palette[0xFF]);
+
+            diff_cyan = palette[0xFF][0] - palette[0][0];
+            diff_magenta = palette[0xFF][1] - palette[0][1];
+            diff_yellow = palette[0xFF][2] - palette[0][2];
+            diff_black = palette[0xFF][3] - palette[0][3];
+            diff_alpha = palette[0xFF][4] - palette[0][4];
+            for (i = 1; i < 0xFF; i++) {
+                palette[i][0] = palette[0][0] + (diff_cyan * i) / 100.0f;
+                palette[i][1] = palette[0][1] + (diff_magenta * i) / 100.0f;
+                palette[i][2] = palette[0][2] + (diff_yellow * i) / 100.0f;
+                palette[i][3] = palette[0][3] + (diff_black * i) / 100.0f;
+                if (have_alpha) {
+                    palette[i][4] = palette[0][4] + (diff_alpha * i) / 100.0f;
+                }
+                map[i] = i;
+            }
+            pmi = TIF_PMI_SEPARATED;
+            bits_per_sample = 8;
+            samples_per_pixel = 4 + have_alpha;
+            pixels_per_sample = 1;
+            extra_samples = have_alpha; /* Associated alpha */
+        } else {
+            const int diff_red = fg[0] - bg[0];
+            const int diff_green = fg[1] - bg[1];
+            const int diff_blue = fg[2] - bg[2];
+            const int diff_alpha = fg[3] - bg[3];
+            for (i = 0; i <= 0xFF; i++) {
+                palette[i][0] = bg[0] + (diff_red * i) / 0xFF;
+                palette[i][1] = bg[1] + (diff_green * i) / 0xFF;
+                palette[i][2] = bg[2] + (diff_blue * i) / 0xFF;
+                if (have_alpha) {
+                    palette[i][3] = bg[3] + (diff_alpha * i) / 0xFF;
+                }
+                map[i] = i;
+            }
+            pmi = TIF_PMI_RGB;
+            bits_per_sample = 8;
+            samples_per_pixel = 3 + have_alpha;
+            pixels_per_sample = 1;
+            extra_samples = have_alpha; /* Associated alpha */
+        }
     } else { /* fg/bg only */
         if (symbol->output_options & CMYK_COLOUR) {
             map['0'] = 0;
@@ -320,13 +367,9 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
 
             pmi = TIF_PMI_SEPARATED;
             bits_per_sample = 8;
-            if (fg[3] == 0xff && bg[3] == 0xff) { /* If no alpha */
-                samples_per_pixel = 4;
-            } else {
-                samples_per_pixel = 5;
-                extra_samples = 1; /* Associated alpha */
-            }
+            samples_per_pixel = 4 + have_alpha;
             pixels_per_sample = 1;
+            extra_samples = have_alpha; /* Associated alpha */
         } else if (bg[0] == 0xff && bg[1] == 0xff && bg[2] == 0xff && bg[3] == 0xff
                     && fg[0] == 0 && fg[1] == 0 && fg[2] == 0 && fg[3] == 0xff) {
             map['0'] = 0;
@@ -355,7 +398,7 @@ INTERNAL int zint_tif_pixel_plot(struct zint_symbol *symbol, const unsigned char
             for (i = 0; i < 2; i++) {
                 tif_to_color_map(palette[i], &color_map[i]);
             }
-            if (fg[3] == 0xff && bg[3] == 0xff) { /* If no alpha */
+            if (!have_alpha) {
                 bits_per_sample = 4;
                 samples_per_pixel = 1;
                 pixels_per_sample = 2;

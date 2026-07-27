@@ -171,8 +171,25 @@ public:
     void setTextGap(float textGap);
 
     /* Show (true) or hide (false) Human Readable Text (HRT) */
-    bool showText() const; // `symbol->show_hrt`
+    bool showText() const; // `symbol->show_hrt` as boolean
     void setShowText(bool showText);
+
+    /* Horizontal alignment of HRT */
+    int halign() const; // ZINT_HRT_HALIGN_LEFT/RIGHT
+    void setHAlign(int halignIndex); // Sets from combobox index
+    void setHAlignValue(int halign); // Sets literal value
+
+    /* Font height */
+    int fontHeight() const;
+    void setFontHeight(int fontHeight);
+
+    /* 8-bit grayscale raster font mode */
+    bool grayscale() const;
+    void setGrayscale(bool grayscale);
+
+    /* Put each GS1 AI on a newline in HRT */
+    bool gs1Newline() const;
+    void setGS1Newline(bool gs1Newline);
 
     /* Set to true to use GS (Group Separator) instead of FNC1 as GS1 separator (Data Matrix) */
     bool gsSep() const; // `symbol->output_options | GS1_GS_SEPARATOR`
@@ -264,7 +281,7 @@ public:
 
 
     /* Test capabilities - `ZBarcode_Cap()` */
-    bool hasHRT(int symbology = 0) const;
+    bool hasHRT(int symbology = 0) const; /* Whether has HRT by default */
     bool isStackable(int symbology = 0) const;
     bool isEANUPC(int symbology = 0) const;
     bool isExtendable(int symbology = 0) const; /* Legacy - same as `isEANUPC()` */
@@ -405,8 +422,12 @@ private:
     int m_borderWidth;
     int m_whitespace;
     int m_vwhitespace;
+    int m_show_hrt;
     int m_fontSetting;
-    bool m_show_hrt;
+    int m_halign;
+    int m_font_height;
+    bool m_grayscale;
+    bool m_gs1_newline;
     bool m_gssep;
     bool m_quiet_zones;
     bool m_no_quiet_zones;

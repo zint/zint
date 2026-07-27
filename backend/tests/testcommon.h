@@ -159,6 +159,7 @@ const char *testUtilErrorName(int error_number);
 const char *testUtilInputModeName(int input_mode);
 const char *testUtilOption3Name(int symbology, int option_3);
 const char *testUtilOutputOptionsName(int output_options);
+const char *testUtilShowHRTName(int show_hrt);
 
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, const int buffer_size);
 int testUtilIsValidUTF8(const unsigned char str[], const int length);

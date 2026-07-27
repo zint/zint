@@ -1,11 +1,11 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="128" height="18" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<svg width="128" height="19" version="1.1" xmlns="http://www.w3.org/2000/svg">
  <desc>Zint Generated Symbol</desc>
  <g id="barcode" fill="#000000">
-  <rect x="0" y="0" width="128" height="18" fill="#FFFFFF"/>
-  <path d="M126 16.28h2v1h-2ZM122 16.28h2v1h-2ZM118 16.28h2v1h-2ZM114 16.28h2v1h-2ZM110 16.28h2v1h-2ZM102 16.28h6v1h-6ZM94 16.28h2v1h-2ZM86 16.28h6v1h-6ZM78 16.28h6v1h-6ZM70 16.28h6v1h-6ZM62 16.28h2v1h-2ZM54 16.28h2v1h-2ZM50 16.28h2v1h-2ZM46 16.28h2v1h-2ZM42 16.28h2v1h-2ZM34 16.28h2v1h-2ZM26 16.28h6v1h-6ZM18 16.28h2v1h-2ZM14 16.28h2v1h-2ZM10 16.28h2v1h-2ZM6 16.28h2v1h-2ZM2 16.28h2v1h-2Z"/>
-  <text x="64" y="2.94" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="14" transform="rotate(180,64,2.94)">
+  <rect x="0" y="0" width="128" height="19" fill="#FFFFFF"/>
+  <path d="M126 17.92h2v1h-2ZM122 17.92h2v1h-2ZM118 17.92h2v1h-2ZM114 17.92h2v1h-2ZM110 17.92h2v1h-2ZM102 17.92h6v1h-6ZM94 17.92h2v1h-2ZM86 17.92h6v1h-6ZM78 17.92h6v1h-6ZM70 17.92h6v1h-6ZM62 17.92h2v1h-2ZM54 17.92h2v1h-2ZM50 17.92h2v1h-2ZM46 17.92h2v1h-2ZM42 17.92h2v1h-2ZM34 17.92h2v1h-2ZM26 17.92h6v1h-6ZM18 17.92h2v1h-2ZM14 17.92h2v1h-2ZM10 17.92h2v1h-2ZM6 17.92h2v1h-2ZM2 17.92h2v1h-2Z"/>
+  <text x="64" y="4.58" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="14" transform="rotate(180,64,4.58)">
    A
   </text>
  </g>

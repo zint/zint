@@ -66,7 +66,7 @@ static void set_symbol_defaults(struct zint_symbol *symbol) {
     memcpy(symbol->outfile, "out.png", 8);
 #endif
     symbol->option_1 = -1;
-    symbol->show_hrt = 1; /* Show human readable text */
+    symbol->show_hrt = ZINT_HRT_DEFAULT; /* Show human readable text (HRT) for most linear barcodes */
     symbol->input_mode = DATA_MODE;
     /* symbol->eci = 0; Default 0 uses ECI 3 */
     symbol->dot_size = 0.8f; /* 0.4 / 0.5 */
@@ -988,9 +988,17 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         return error_tag(ZINT_ERROR_INVALID_DATA, symbol, 771, "Too many input segments (maximum 256)");
     }
 
-    if ((symbol->input_mode & 0x07) > 2) {
+    if ((symbol->input_mode & 0x07) > GS1_MODE) {
         symbol->input_mode = DATA_MODE; /* Reset completely */
         warn_number = error_tag(ZINT_WARN_INVALID_OPTION, symbol, 212, "Invalid input mode - reset to DATA_MODE");
+        if (warn_number >= ZINT_ERROR) {
+            return warn_number;
+        }
+    }
+    if ((symbol->show_hrt & 0x7) > ZINT_HRT_ALL) {
+        symbol->show_hrt = ZINT_HRT_DEFAULT; /* Reset completely */
+        warn_number = error_tag(ZINT_WARN_INVALID_OPTION, symbol, 210,
+                                "Invalid show HRT - reset to ZINT_HRT_DEFAULT");
         if (warn_number >= ZINT_ERROR) {
             return warn_number;
         }
@@ -1069,8 +1077,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                 "                      output_options: 0x%X, fg: \"%s\", bg: \"%s\"\n"
                 "                      outfile: \"%s\"\n"
                 "                      primary (%d): \"%s\"\n"
-                "                      option_1/2/3: (%d, %d, %d), show_hrt: %d, input_mode: 0x%X, ECI: %d, dpmm: %g"
-                ", dot_size: %g\n"
+                "                      option_1/2/3: (%d, %d, %d), show_hrt: 0x%X, input_mode: 0x%X, ECI: %d"
+                ", dpmm: %g, dot_size: %g\n"
                 "                      text_gap: %g, guard_descent: %g, structapp index/count/id: (%d, %d, \"%s\")"
                 ", warn_level: %d, seg_count %d\n"
                 "                      %ssource%s (%d): \"%s\"\n",
@@ -1129,6 +1137,12 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     /* Check other symbol fields */
     if (symbol->scale < 0.01f || symbol->scale > 200.0f) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 227, "Scale out of range (0.01 to 200)");
+    }
+    if (symbol->show_hrt & 0xFF0000) {
+        const int hrt_font_height = (symbol->show_hrt >> 16) & 0xFF;
+        if (hrt_font_height < 10 || hrt_font_height > 200) {
+            return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 764, "Font height out of range (10 to 200) ");
+        }
     }
     if (symbol->dot_size < 0.01f || symbol->dot_size > 20.0f) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 221, "Dot size out of range (0.01 to 20)");

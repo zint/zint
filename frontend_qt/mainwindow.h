@@ -71,6 +71,8 @@ public slots:
     void autoheight_ui_set();
     void HRTShow_ui_set();
     void text_gap_ui_set();
+    void font_height_ui_set();
+    void gs1_newline_ui_set();
     void dotty_ui_set();
     void codeone_ui_set();
     void upcean_no_quiet_zones_ui_set();
@@ -191,8 +193,11 @@ protected:
 
     static QString get_setting_name(int symbology);
 
+    int get_rad_index(const QStringList &names);
     int get_rad_grp_index(const QStringList &names);
     void set_rad_from_setting(QSettings &settings, const QString &setting, const QStringList &names,
+            int default_val = 0);
+    void set_rad_grp_from_setting(QSettings &settings, const QString &setting, const QStringList &names,
             int default_val = 0);
     bool get_rad_val(const QString &name);
 

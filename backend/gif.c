@@ -1,7 +1,7 @@
 /* gif.c - Handles output to gif file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -241,7 +241,7 @@ static void gif_lzw(struct gif_state *pState, unsigned char paletteBitSize) {
 INTERNAL int zint_gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     struct filemem fm;
     unsigned char outbuf[10];
-    unsigned char paletteRGB[10][3];
+    unsigned char paletteRGB[256][3];
     int paletteCount, i;
     unsigned char paletteBitSize;
     int paletteSize;
@@ -254,6 +254,7 @@ INTERNAL int zint_gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixe
     unsigned char RGBbg[3];
     unsigned char fgalpha;
     unsigned char bgalpha;
+    const int grayscale = zint_out_grayscale(symbol);
 
     const size_t bitmapSize = (size_t) symbol->bitmap_height * symbol->bitmap_width;
 
@@ -336,6 +337,19 @@ INTERNAL int zint_gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixe
                 paletteBitSize = 4;
             }
         }
+    } else if (grayscale) {
+        const int diff_red = RGBfg[0] - RGBbg[0];
+        const int diff_green = RGBfg[1] - RGBbg[1];
+        const int diff_blue = RGBfg[2] - RGBbg[2];
+        for (paletteCount = 0; paletteCount <= 0xFF; paletteCount++) {
+            paletteRGB[paletteCount][0] = RGBbg[0] + (diff_red * paletteCount) / 0xFF;
+            paletteRGB[paletteCount][1] = RGBbg[1] + (diff_green * paletteCount) / 0xFF;
+            paletteRGB[paletteCount][2] = RGBbg[2] + (diff_blue * paletteCount) / 0xFF;
+            State.map[paletteCount] = paletteCount;
+        }
+        bgindex = 0;
+        fgindex = 0xFF;
+        paletteBitSize = 8;
     } else {
         State.map['0'] = (unsigned char) (bgindex = 0);
         memcpy(paletteRGB[bgindex], RGBbg, 3);

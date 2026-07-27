@@ -17,7 +17,7 @@ if(ZINT_USE_GS1SE)
     endif()
 endif()
 
-set(zint_COMMON_SRCS common.c eci.c filemem.c general_field.c gs1.c large.c library.c reedsol.c)
+set(zint_COMMON_SRCS common.c eci.c filemem.c general_field.c gs1.c large.c library.c reedsol.c zfont.c)
 set(zint_ONEDIM_SRCS 2of5.c 2of5inter.c 2of5inter_based.c bc412.c channel.c codabar.c code.c code11.c code128.c
                      code128_based.c dxfilmedge.c medical.c plessey.c rss.c telepen.c upcean.c)
 set(zint_POSTAL_SRCS auspost.c imail.c mailmark.c postal.c)

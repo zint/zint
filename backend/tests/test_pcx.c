@@ -58,7 +58,7 @@ static void test_print(const testCtx *const p_ctx) {
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     const char *data_dir = "/backend/tests/data/pcx";
     const char *pcx = "out.pcx";
@@ -70,7 +70,7 @@ static void test_print(const testCtx *const p_ctx) {
 
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStart(p_ctx->func_name);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
