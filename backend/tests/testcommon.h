@@ -30,9 +30,11 @@
 /*
  * Adapted from qrencode/tests/common.h
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
+ * originally licensed under LGPL-2.1+ but permission given to change to
+ * BSD-3-clause:
+ * https://sourceforge.net/p/zint/mailman/message/30810495/
  */
-/* Due to above: */
-/* SPDX-License-Identifier: LGPL-2.1+ */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef Z_TESTCOMMON_H
 #define Z_TESTCOMMON_H

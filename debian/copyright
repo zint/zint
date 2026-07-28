@@ -15,12 +15,11 @@ Files: backend/*
 Copyright:
     Copyright (C) 2007-2026 Robin Stuart <rstuart114@gmail.com>
     Copyright (C) 2014-2026 Harald Oehlmann <oehhar@users.sourceforge.net>
-    Copyright (C) Cliff Hones 2004
     Copyright (c) 2004 Adrian Kennard, Andrews & Arnold Ltd
+    Copyright (c) 2004 Andrews & Arnold Ltd
     Copyright (c) 2015, Harald Kuhr
     Copyright (C) 1988 Bob Montgomery
     Copyright (C) 2024-2025 Antoine Merino <antoine.merino.dev@gmail.com>
-    Copyright (c) 2006 Stefan Schmidt <stefan@datenfreihafen.org>
     Copyright (C) 2016 Zoe Stuart
     Copyright (C) 2006-2009 United States Postal Service
 License: BSD-3-Clause
@@ -123,16 +122,6 @@ Copyright:
     Copyright © 2025 R. N. West.
     Copyright (C) 1987-2003 Free Software Foundation, Inc.
 License: GPL-2.0-or-later
-
-Files:
-    backend/tests/testcommon.*
-    backend/tests/CMakeLists.txt
-    cmake/zint_add_test.cmake
-    frontend/tests/CMakeLists.txt
-Copyright:
-    Copyright (C) 2019-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
-License: BSD-3-Clause and LGPL-2.0-or-later
 
 Files:
     backend/tests/fuzz/Dockerfile
@@ -464,20 +453,6 @@ License: ISC
  LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  PERFORMANCE OF THIS SOFTWARE.
-
-License: LGPL-2.0-or-later
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU Library General Public License as published
- by the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
- ․
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Library General Public License for more details.
- ․
- On Debian systems, the complete text of the GNU Library General Public
- License Version 2 can be found in "/usr/share/common-licenses/LGPL-2".
 
 License: LGPL-2.1-or-later
  This program is free software; you can redistribute it and/or modify

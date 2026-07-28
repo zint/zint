@@ -30,9 +30,11 @@
 /*
  * Adapted from qrencode/tests/common.c
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
+ * originally licensed under LGPL-2.1+ but permission given to change to
+ * BSD-3-clause:
+ * https://sourceforge.net/p/zint/mailman/message/30810495/
  */
-/* Due to above: */
-/* SPDX-License-Identifier: LGPL-2.0-or-later */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifdef _WIN32
 #include <windows.h>
