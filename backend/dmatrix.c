@@ -9,7 +9,8 @@
         with help from Cliff Hones on the RS coding
 
         Copyright (c) 2004 Adrian Kennard, Andrews & Arnold Ltd
-        Copyright (c) 2006 Stefan Schmidt <stefan@datenfreihafen.org>
+        which had been re-licensed additionally under BSD-3-clause:
+        https://codeberg.org/RevK/Datamatrix/src/branch/master/LICENSE
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions

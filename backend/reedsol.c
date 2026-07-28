@@ -1,6 +1,9 @@
 /*
     This is a simple Reed-Solomon encoder
-    Copyright (C) Cliff Hones 2004
+    Copyright (C) 2004 Andrews & Arnold Ltd
+    Written by Cliff Hones
+    which had been re-licensed additionally under BSD-3-clause:
+    https://codeberg.org/RevK/Reedsol/src/branch/master/LICENSE
 */
 /*
     libzint - the open source barcode library
