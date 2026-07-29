@@ -352,7 +352,7 @@ static int hx_in_fourbyte(const unsigned int ddata[], const int length, const in
 #define HX_NUM_MODES 7
 
 /* Calculate optimized encoding modes. Adapted from Project Nayuki */
-/* Copyright (c) Project Nayuki. (MIT License) See qr.c for detailed notice */
+/* Copyright (c) 2019 Project Nayuki. (MIT License) See qr.c for detailed notice */
 /* SPDX-License-Identifier: MIT */
 static void hx_define_modes(char *modes, const unsigned int ddata[], const int length, const int debug_print) {
     /* Must be in same order as HX_N etc */

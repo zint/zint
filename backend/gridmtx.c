@@ -126,7 +126,7 @@ static int gm_in_numeral(const unsigned int ddata[], const int length, const int
 static const char gm_debug_modes[6][5] = { "HAN ", "NUM ", "LWR ", "UPR ", "MXD ", "BYT " };
 
 /* Calculate optimized encoding modes. Adapted from Project Nayuki */
-/* Copyright (c) Project Nayuki. (MIT License) See qr.c for detailed notice */
+/* Copyright (c) 2019 Project Nayuki. (MIT License) See qr.c for detailed notice */
 /* SPDX-License-Identifier: MIT */
 static void gm_define_modes(char *modes, const unsigned int ddata[], const int length, const int debug_print) {
     /* Must be in same order as GM_H etc */

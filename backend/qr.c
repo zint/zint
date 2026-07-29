@@ -218,7 +218,7 @@ static unsigned int *qr_head_costs(unsigned int state[11]) {
 static void qr_define_modes(char modes[], const unsigned int ddata[], const int length, const int gs1,
             const int version, const int debug_print) {
     /*
-     * Copyright (c) Project Nayuki. (MIT License)
+     * Copyright (c) 2019 Project Nayuki. (MIT License)
      * https://www.nayuki.io/page/qr-code-generator-library
      *
      * Permission is hereby granted, free of charge, to any person obtaining a copy of

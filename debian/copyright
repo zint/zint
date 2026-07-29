@@ -5,24 +5,24 @@ Source: https://sourceforge.net/projects/zint/
 
 Files: *
 Copyright:
-    Copyright (C) 2006-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright (C) 2014-2026 Harald Oehlmann <oehhar@users.sourceforge.net>
-    Copyright (C) 2008 by BogDan Vatra < bogdan@licentia.eu >
-    Copyright (C) 2006-2017 Kentaro Fukuchi <fukuchi@megaui.net>
+    2006-2026 Robin Stuart <rstuart114@gmail.com>
+    2014-2026 Harald Oehlmann <oehhar@users.sourceforge.net>
+    2008      BogDan Vatra < bogdan@licentia.eu >
+    2006-2017 Kentaro Fukuchi <fukuchi@megaui.net>
 License: GPL-3.0-or-later
 
 Files: backend/*
 Copyright:
-    Copyright (C) 2007-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright (C) 2014-2026 Harald Oehlmann <oehhar@users.sourceforge.net>
-    Copyright (C) 2006-2017 Kentaro Fukuchi <fukuchi@megaui.net>
-    Copyright (c) 2004 Adrian Kennard, Andrews & Arnold Ltd
-    Copyright (c) 2004 Andrews & Arnold Ltd
-    Copyright (c) 2015, Harald Kuhr
-    Copyright (C) 1988 Bob Montgomery
-    Copyright (C) 2024-2025 Antoine Merino <antoine.merino.dev@gmail.com>
-    Copyright (C) 2016 Zoe Stuart
-    Copyright (C) 2006-2009 United States Postal Service
+    2007-2026 Robin Stuart <rstuart114@gmail.com>
+    2014-2026 Harald Oehlmann <oehhar@users.sourceforge.net>
+    2006-2017 Kentaro Fukuchi <fukuchi@megaui.net>
+    2004      Adrian Kennard, Andrews & Arnold Ltd
+    2004      Andrews & Arnold Ltd
+    2015      Harald Kuhr
+    1988      Bob Montgomery
+    2024-2025 Antoine Merino <antoine.merino.dev@gmail.com>
+    2016      Zoe Stuart
+    2006-2009 United States Postal Service
 License: BSD-3-Clause
 
 Files:
@@ -31,19 +31,19 @@ Files:
     backend/fonts/normal_ttf.h
     backend/fonts/normal_woff2.h
 Copyright:
-    Copyright (C) 2017-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright 2013 ZXing authors
-    Copyright 2016 Huy Cuong Nguyen
-    Copyright (c) 2024 GS1 AISBL.
-    Copyright 2013 Steve Matteson
+    2017-2026 Robin Stuart <rstuart114@gmail.com>
+    2013      ZXing authors
+    2016      Huy Cuong Nguyen
+    2024      GS1 AISBL.
+    2013      Steve Matteson
 License: BSD-3-Clause and Apache-2.0
 
 Files:
     backend/fonts/upcean_ttf.h
     backend/fonts/upcean_woff2.h
 Copyright:
-    Copyright (C) 2023 Robin Stuart <rstuart114@gmail.com>
-    Copyright Matthew Skala (2011)
+    2023 Robin Stuart <rstuart114@gmail.com>
+    2011 Matthew Skala
 License: BSD-3-Clause and Metafont-deriv
  You may freely use, modify, and/or distribute any of these files or the
  resulting fonts, without limitation.
@@ -52,7 +52,7 @@ Files:
     backend/fonts/OCRB-16.bdf
     backend/fonts/OCRB-18.bdf
 Copyright:
-    Copyright Matthew Skala (2011)
+    2011 Matthew Skala
 License: Metafont-permissive
  As far as the digitization in METAFONT input which I have developed, you
  may freely use, modify, and/or distribute any of these files or the
@@ -67,16 +67,16 @@ Files:
     backend/ksx1001.h
     backend/sjis.h
 Copyright:
-    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright © 1991-2023 Unicode, Inc.
+    2009-2026 Robin Stuart <rstuart114@gmail.com>
+    1991-2023 Unicode, Inc.
 License: BSD-3-Clause and Unicode-3.0
 
 Files:
     backend/channel.c
 Copyright:
-    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright © AIM 1997
-    Copyright (c) 2004-2026 Terry Burton
+    2008-2026 Robin Stuart <rstuart114@gmail.com>
+    2004-2026 Terry Burton
+    1997      AIM
 License: BSD-3-Clause and MIT and AIM
 
 Files:
@@ -85,57 +85,56 @@ Files:
     backend/hanxin.c
     backend/qr.*
 Copyright:
-    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright (c) 2004-2026 Terry Burton
-    Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
-    Copyright (c) Project Nayuki
+    2008-2026 Robin Stuart <rstuart114@gmail.com>
+    2004-2026 Terry Burton
+    2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+    2019      Project Nayuki
 License: BSD-3-Clause and MIT
-
 Files:
     backend/composite.c
     backend/rss.c
     backend/tools/gen_pwr928_table.php
 Copyright:
-    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright (c) 2004-2026 Terry Burton
-    Copyright (C) 2006 BSI
+    2008-2026 Robin Stuart <rstuart114@gmail.com>
+    2004-2026 Terry Burton
+    2006      BSI
 License: BSD-3-Clause and MIT and BSI
 
 Files:
     backend/pcx.c
 Copyright:
-    Copyright (C) 2009-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright 1999-2013 ImageMagick Studio LLC
+    2009-2026 Robin Stuart <rstuart114@gmail.com>
+    2013      ImageMagick Studio LLC
 License: BSD-3-Clause and ImageMagick
 
 Files:
     backend/pdf417.c
 Copyright:
-    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright (C) 2004 (Grandzebu).
+    2008-2026 Robin Stuart <rstuart114@gmail.com>
+    2004      Grandzebu
 License: BSD-3-Clause and GPL-2.0-or-later
 
 Files:
     backend/raster.c
 Copyright:
-    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright (c) 2020 zingl
+    2008-2026 Robin Stuart <rstuart114@gmail.com>
+    2020      zingl
 License: BSD-3-Clause and MIT
 
 Files:
     docs/lua-crossrefs/lua-crossrefs.lua
     getopt/*
 Copyright:
-    Copyright (C) 2025-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright © 2025 R. N. West.
-    Copyright (C) 1987-2003 Free Software Foundation, Inc.
+    2025-2026 Robin Stuart <rstuart114@gmail.com>
+    2025      R. N. West.
+    1987-2003 Free Software Foundation, Inc.
 License: GPL-2.0-or-later
 
 Files:
     backend/tests/fuzz/Dockerfile
     backend/tests/fuzz/build.sh
 Copyright:
-    Copyright 2024 Google LLC
+    2024 Google LLC
 License: Apache-2.0
 
 Files:
@@ -144,32 +143,32 @@ Files:
     backend_tcl/win/nmakehlp.c
     backend_tcl/win/rules.vc
 Copyright:
-    Copyright (c) 2002-2005 ActiveState Corporation.
-    Copyright (c) 1999-2000 Ajuba Solutions.
-    Copyright (c) 2001-2003 David Gravereaux.
-    Copyright (c) 2017      Ashok P. Nadkarni
-    Copyright (c) 1999 Scriptics Corporation.
-    Copyright (c) 2003-2008 Patrick Thoyts
+    2002-2005 ActiveState Corporation.
+    1999-2000 Ajuba Solutions.
+    2001-2003 David Gravereaux.
+    2017      Ashok P. Nadkarni
+    1999      Scriptics Corporation.
+    2003-2008 Patrick Thoyts
 License: BSD-3-Clause
 
 Files:
     backend_tcl/configure
 Copyright:
-    Copyright (C) 2003 Free Software Foundation, Inc.
+    2003 Free Software Foundation, Inc.
 License: GPL-2.0-or-later
 
 Files:
     backend_tcl/tclconfig/install-sh
 Copyright:
-    Copyright (C) 1994 X Consortium
+    1994 X Consortium
 License: X11
 
 Files:
     frontend/main.c
 Copyright:
-    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
-    Copyright 2002 Jon Griffiths
-    Copyright 2016 Sebastian Lackner
+    2008-2026 Robin Stuart <rstuart114@gmail.com>
+    2002      Jon Griffiths
+    2016      Sebastian Lackner
 License: GPL-3.0-or-later and LGPL-2.1-or-later
 
 Files:
@@ -185,7 +184,7 @@ Files:
     frontend_qt/res/x.svg
     frontend_qt/res/zap.svg
 Copyright:
-    Copyright (c) 2013-2022 Cole Bemis
+    2013-2022 Cole Bemis
 License: MIT
 
 Files:
@@ -193,8 +192,9 @@ Files:
     frontend_qt/res/monitor-bg.svg
     frontend_qt/res/scaling.svg
 Copyright:
-    Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
-License: ISC
+	2013-2022 Cole Bemis
+	2022      Lucide Contributors
+License: MIT and ISC
 
 Files: debian/*
 Copyright:
