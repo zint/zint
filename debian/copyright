@@ -116,6 +116,13 @@ Copyright:
 License: BSD-3-Clause and GPL-2.0-or-later
 
 Files:
+    backend/raster.c
+Copyright:
+    Copyright (C) 2008-2026 Robin Stuart <rstuart114@gmail.com>
+    Copyright (c) 2020 zingl
+License: BSD-3-Clause and MIT
+
+Files:
     docs/lua-crossrefs/lua-crossrefs.lua
     getopt/*
 Copyright:

@@ -30,6 +30,10 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+/* Contains routines adapted from https://zingl.github.io/bresenham.c
+   Copyright (c) 2020 zingl */
+/* SPDX-License-Identifier: MIT */
+
 #include <assert.h>
 #include <math.h>
 
@@ -580,31 +584,25 @@ static void draw_mp_circle_lines(unsigned char *pixelbuf, const int image_width,
 
 /* Draw disc using Midpoint Circle Algorithm. Using this for MaxiCode rather than `draw_circle()` because it gives a
  * flatter circumference with no single pixel peaks, similar to Figures J3 and J6 in ISO/IEC 16023:2000.
- * Taken from https://rosettacode.org/wiki/Bitmap/Midpoint_circle_algorithm#C
- * "Content is available under GNU Free Documentation License 1.2 unless otherwise noted."
- * https://www.gnu.org/licenses/old-licenses/fdl-1.2.html */
+ * Following adapted from `plotCircle()` in https://zingl.github.io/bresenham.c */
 static void draw_mp_circle(unsigned char *pixelbuf, const int image_width, const int image_height,
-            const int x0, const int y0, const int r, const int fill) {
-    /* Using top RHS octant from (0, r) going clockwise, so fast direction is x (i.e. always incremented) */
-    int f = 1 - r;
-    int ddF_x = 0;
-    int ddF_y = -2 * r;
-    int x = 0;
-    int y = r;
+            const int x0, const int y0, int r, const int fill) {
+    int x = -r;
+    int y = 0;
+    int err = 2 - 2 * r; /* Bottom left to top right */
+
+    do {
+        draw_mp_circle_lines(pixelbuf, image_width, image_height, x0, y0, x, y, fill);
+        r = err;
+        if (r <= y) {
+            err += ++y * 2 + 1;
+        }
+        if (r > x || err > y) {
+            err += ++x * 2 + 1;
+        }
+    } while (x < 0);
 
     draw_mp_circle_lines(pixelbuf, image_width, image_height, x0, y0, x, y, fill);
-
-    while (x < y) {
-        if (f >= 0) {
-            y--;
-            ddF_y += 2;
-            f += ddF_y;
-        }
-        x++;
-        ddF_x += 2;
-        f += ddF_x + 1;
-        draw_mp_circle_lines(pixelbuf, image_width, image_height, x0, y0, x, y, fill);
-    }
 }
 
 /* Draw central bullseye finder in Maxicode symbols */
@@ -651,8 +649,7 @@ static void draw_hexagon(unsigned char *pixelbuf, const int image_width, const i
 }
 
 /* Bresenham's line algorithm https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
- * Creative Commons Attribution-ShareAlike License
- * https://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License */
+ * Following adapted from `plotLine()` in https://zingl.github.io/bresenham.c */
 static void plot_hexline(unsigned char *scaled_hexagon, const int hex_width, const int hex_height,
             int start_x, int start_y, const int end_x, const int end_y) {
     const int dx = abs(end_x - start_x);
