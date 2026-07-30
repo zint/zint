@@ -57,6 +57,8 @@ static void test_print(const testCtx *const p_ctx) {
         const char *comment;
     };
     static const struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, -1, -1, -1, -1, 10.0, "", "", 0, "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", "", 0, "code128_latin1_1.svg", "" },
+        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, -1, -1, -1, -1, 10.0, "", "", 0, "¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ", "", 0, "code128_latin1_2.svg", "" },
         /*  0*/ { BARCODE_CODE128, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "<>\"&'", "", 0, "code128_amperands.svg", "" },
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "Égjpqy", "", 0, "code128_egrave_bold.svg", "" },
         /*  2*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT | EMBED_VECTOR_FONT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "Égjpqy", "", 0, "code128_egrave_bold_embed.svg", "" },
