@@ -85,7 +85,7 @@ INTERNAL int zint_codabar(struct zint_symbol *symbol, unsigned char source[], in
     /* And must not use A, B, C or D otherwise (BS EN 798:1995 4.3.2) */
     if ((i = z_not_sane(CALCIUM_INNER_F, source + 1, length - 2))) {
         return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 363,
-                        "Invalid character at position %d in input (cannot contain \"A\", \"B\", \"C\" or \"D\")", i);
+                        "Invalid character at position %d in input (cannot contain \"A\", \"B\", \"C\" or \"D\")", i + 1);
     }
 
     /* Add check character: 1 don't show to HRT, 2 do show to HRT
@@ -107,12 +107,11 @@ INTERNAL int zint_codabar(struct zint_symbol *symbol, unsigned char source[], in
                 }
                 memcpy(d, CodaTable[checksum], 8);
                 d += 8;
+                d_chars += checksum >= 12; /* Wide data char */
             }
         }
         memcpy(d, CodaTable[posns[i]], 8);
-        if (source[i] == '/' || source[i] == ':' || source[i] == '.' || source[i] == '+') { /* Wide data characters */
-            d_chars++;
-        }
+        d_chars += posns[i] >= 12 && posns[i] <= 15; /* Wide data chars ":/.+" */
     }
 
     z_expand(symbol, dest, (int) (d - dest));

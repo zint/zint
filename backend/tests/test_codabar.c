@@ -182,7 +182,7 @@ static void test_input(const testCtx *const p_ctx) {
         /*  4*/ { BARCODE_CODABAR, "C123.D", 0, 1, 63, "", 1, "" },
         /*  5*/ { BARCODE_CODABAR, "C123,D", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 357: Invalid character at position 5 in input (\"0123456789-$:/.+ABCD\" only)", 1, "" },
         /*  6*/ { BARCODE_CODABAR, "D:C", 0, 1, 33, "", 1, "" },
-        /*  7*/ { BARCODE_CODABAR, "DCC", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 363: Invalid character at position 1 in input (cannot contain \"A\", \"B\", \"C\" or \"D\")", 1, "" },
+        /*  7*/ { BARCODE_CODABAR, "DCC", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 363: Invalid character at position 2 in input (cannot contain \"A\", \"B\", \"C\" or \"D\")", 1, "" },
         /*  8*/ { BARCODE_CODABAR, "A234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123B", ZINT_ERROR_TOO_LONG, -1, -1, "Error 356: Input length 104 too long (maximum 103)", 1, "" },
         /*  9*/ { BARCODE_CODABAR, "AB", ZINT_ERROR_TOO_LONG, -1, -1, "Error 362: Input length 2 too short (minimum 3)", 1, "" },
     };
