@@ -1214,9 +1214,11 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
     char *dot_array;
     unsigned char *masked_codeword_array;
 
-    if (symbol->eci > 811799) {
-        return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 525, "ECI code '%d' out of range (0 to 811799)",
-                        symbol->eci);
+    for (i = 0; i < seg_count; i++) {
+        if (segs[i].eci > 811799) {
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 525, "ECI code '%d' out of range (0 to 811799)",
+                            segs[i].eci);
+        }
     }
 
     if (symbol->option_2 > 0) {
