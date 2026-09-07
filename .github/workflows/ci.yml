@@ -120,7 +120,7 @@ jobs:
     - name: Install Qt6
       uses: jurplel/install-qt-action@v4
       with:
-        version: 6.11.*
+        version: 6.12.*
         dir: .
 
     - name: Create Build Environment
@@ -292,7 +292,7 @@ jobs:
     - name: Test
       working-directory: build
       shell: bash
-      run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$(pwd)/backend" PATH=$PATH:"$(pwd)/frontend" ctest -V -C $BUILD_TYPE
+      run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$(pwd)/backend:/usr/local/lib" PATH=$PATH:"$(pwd)/frontend" ctest -V -C $BUILD_TYPE
 
   build-macOS-sanitize:
     runs-on: macOS-latest
