@@ -1547,6 +1547,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "10101010001010101010100000001"
                     "01000101000001010100000100010"
                 },
+        /* 12*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 811800 }, { TU(""), 0, 0 } }, ZINT_ERROR_INVALID_OPTION, -1, -1, 1, 1, "", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
