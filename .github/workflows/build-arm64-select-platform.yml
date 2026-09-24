@@ -1,0 +1,153 @@
+name: Build Zint ARM64 libraries
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: true
+        type: choice
+        options:
+          - both
+          - linux-arm64
+          - windows-arm64
+        default: both
+
+permissions:
+  contents: read
+
+jobs:
+  linux-arm64:
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'linux-arm64' }}
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout Zint
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libpng-dev
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DZINT_SHARED=ON \
+            -DZINT_STATIC=OFF \
+            -DZINT_USE_QT=OFF
+
+      - name: Build
+        run: |
+          cmake --build build -j"$(nproc)"
+
+      - name: Show architecture
+        run: |
+          file build/backend/libzint.so
+
+      - name: Upload Linux ARM64 library
+        uses: actions/upload-artifact@v4
+        with:
+          name: zint-linux-arm64
+          path: build/backend/libzint.so*
+          if-no-files-found: error
+
+  windows-arm64:
+    if: ${{ inputs.platform == 'both' || inputs.platform == 'windows-arm64' }}
+    runs-on: windows-11-arm
+
+    steps:
+      - name: Checkout Zint
+        uses: actions/checkout@v4
+
+      - name: Install libpng and zlib for ARM64
+        shell: pwsh
+        run: |
+          if (-not $env:VCPKG_INSTALLATION_ROOT) {
+            throw "VCPKG_INSTALLATION_ROOT is not defined"
+          }
+
+          vcpkg install libpng:arm64-windows
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to install libpng for ARM64"
+          }
+
+          $dependencyDirectory = Join-Path $env:VCPKG_INSTALLATION_ROOT "installed\arm64-windows\bin"
+          if (-not (Test-Path $dependencyDirectory)) {
+            throw "Dependency directory not found: $dependencyDirectory"
+          }
+          Write-Host "Installed ARM64 runtime libraries:"
+          Get-ChildItem $dependencyDirectory -Filter '*.dll' | Select-Object Name, Length
+
+      - name: Configure Zint with PNG support
+        shell: pwsh
+        run: |
+          $toolchain = Join-Path $env:VCPKG_INSTALLATION_ROOT "scripts\buildsystems\vcpkg.cmake"
+          if (-not (Test-Path $toolchain)) {
+            throw "vcpkg CMake toolchain not found: $toolchain"
+          }
+
+          cmake -S . -B build `
+            -A ARM64 `
+            "-DCMAKE_TOOLCHAIN_FILE=$toolchain" `
+            -DVCPKG_TARGET_TRIPLET=arm64-windows `
+            -DZINT_SHARED=ON `
+            -DZINT_STATIC=OFF `
+            -DZINT_FRONTEND=OFF `
+            -DZINT_USE_QT=OFF `
+            -DZINT_USE_PNG=ON `
+            2>&1 | Tee-Object -FilePath "cmake-configure.log"
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "CMake configuration failed"
+          }
+
+      - name: Verify PNG support
+        shell: pwsh
+        run: |
+          $log = Get-Content "cmake-configure.log" -Raw
+          if ($log -notmatch '(?m)^-- Using PNG\s*$') {
+            Write-Host $log
+            throw "Zint was configured WITHOUT PNG support"
+          }
+          Write-Host "SUCCESS: Zint PNG support is enabled."
+          Get-Content "build/CMakeCache.txt" | Select-String "PNG|ZLIB|VCPKG_TARGET_TRIPLET"
+
+      - name: Build Zint ARM64
+        shell: pwsh
+        run: |
+          cmake --build build --config Release
+          if ($LASTEXITCODE -ne 0) {
+            throw "Zint ARM64 build failed"
+          }
+
+      - name: Package Windows ARM64 libraries
+        shell: pwsh
+        run: |
+          $package = Join-Path $env:GITHUB_WORKSPACE "zint-arm64-package"
+          New-Item -ItemType Directory -Path $package -Force | Out-Null
+
+          $zintDlls = @(Get-ChildItem -Path build -Filter 'zint.dll' -Recurse -File)
+          if ($zintDlls.Count -ne 1) {
+            throw "Expected one zint.dll; found $($zintDlls.Count)"
+          }
+          Copy-Item $zintDlls[0].FullName -Destination $package
+
+          $dependencyDirectory = Join-Path $env:VCPKG_INSTALLATION_ROOT "installed\arm64-windows\bin"
+          $runtimeDlls = @(Get-ChildItem -Path $dependencyDirectory -Filter '*.dll' -File)
+          if ($runtimeDlls.Count -eq 0) {
+            throw "No ARM64 runtime DLLs found in $dependencyDirectory"
+          }
+          foreach ($dll in $runtimeDlls) {
+            Copy-Item $dll.FullName -Destination $package
+          }
+          Write-Host "Packaged libraries:"
+          Get-ChildItem $package | Select-Object Name, Length
+
+      - name: Upload Windows ARM64 libraries
+        uses: actions/upload-artifact@v4
+        with:
+          name: zint-windows-arm64
+          path: zint-arm64-package/
+          if-no-files-found: error
