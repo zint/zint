@@ -293,9 +293,6 @@ static int mx_text_process_segs(unsigned char codewords[144], const int mode, st
     unsigned char (*path_ops)[MX_STATES]
                                     = (unsigned char (*)[MX_STATES]) z_alloca(sizeof(*path_ops) * (segs_len + 9));
 
-    int digits = 0;
-    int num_a = 0;
-
     int min_len = 999999;
     int min_state = 0;
     int state;
@@ -333,12 +330,14 @@ static int mx_text_process_segs(unsigned char codewords[144], const int mode, st
         const unsigned char *const source = segs[seg].source;
         const int length = segs[seg].length;
         const int eci_len = mx_eci_len(segs[seg].eci);
+        int digits = 0; /* Counts don't span segments */
+        int num_a = 0;
+
         if (eci_len) {
             ci += eci_len;
             if (ci > max_len) {
                 return ZINT_ERROR_TOO_LONG;
             }
-            digits = 0;
         }
 
         for (i = 0; i < length; i++) {

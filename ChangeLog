@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-09-07)
+Version 2.16.0.9 (dev) not released yet (2026-10-09)
 ====================================================
 
 **Incompatible changes**
@@ -78,6 +78,8 @@ Bugs
 - GRIDMATRIX: fix byte latch 6 -> 7, & allowing more than one non-digit in
   numeral (both caused misencodation)
 - DOTCODE: fix not checking ECI on segs > 0 (MR #160, props Connor-Jay Dunn)
+- MAXICODE: do not span segments when counting digits/alphas even if no ECIs
+  as current logic can't handle it (ticket #361, props Zhiyuan He)
 
 
 Version 2.16.0 (2025-12-19)
