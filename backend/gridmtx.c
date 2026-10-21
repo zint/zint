@@ -448,7 +448,7 @@ static int gm_encode(const unsigned int ddata[], const int length, char binary[]
                     if (punt == 13) {
                         glyph = 15;
                     } else {
-                        glyph = z_posn(gm_numeral_nondigits, punt) * 3;
+                        glyph = z_posn(gm_numeral_nondigits, (const char) punt) * 3;
                     }
                     glyph += nondigit_posn;
                     glyph += 1000;

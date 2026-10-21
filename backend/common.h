@@ -126,6 +126,7 @@ typedef unsigned __int64 uint64_t;
 #  define ceilf (float) ceil
 #  define floorf (float) floor
 #  define fmodf (float) fmod
+#  define fabsf (float) fabs
 #endif
 /* `round()` (C99) not before MSVC 2013 (C++ 12.0) */
 #if (defined(_MSC_VER) && _MSC_VER < 1800) || defined(ZINT_IS_C89)

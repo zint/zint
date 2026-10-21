@@ -1041,12 +1041,15 @@ static void qr_populate_grid(unsigned char *grid, const int h_size, const int v_
     }
 }
 
+#if 0
+#define ZINTLOG
+#endif
 #ifdef ZINTLOG
 static void append_log(const unsigned char log) {
     FILE *file;
 
     if ((file = fopen("zintlog.txt", "a+"))) {
-        fprintf(file, "%02X", log);
+        fprintf(file, "%d", log);
         (void) fclose(file);
     }
 }
@@ -1061,18 +1064,18 @@ static void write_log(const char log[]) {
 }
 #endif
 
-static int qr_evaluate(unsigned char *local, const int size) {
+static int qr_evaluate(const unsigned char *local, const int size) {
     static const unsigned char h1011101[7] = { 1, 0, 1, 1, 1, 0, 1 };
 
     int x, y, r, k, block;
     int result = 0;
     char state;
     int dark_mods;
-    double percentage;
+    float percentage;
     int a, b, afterCount, beforeCount;
 #ifdef ZINTLOG
     int result_b = 0;
-    char str[15];
+    char str[64];
 #endif
 
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warnings */
@@ -1080,6 +1083,7 @@ static int qr_evaluate(unsigned char *local, const int size) {
 
 #ifdef ZINTLOG
     /* bitmask output */
+    write_log("\n+++++");
     for (y = 0; y < size; y++) {
         for (x = 0; x < size; x++) {
             append_log(local[(y * size) + x]);
@@ -1136,7 +1140,7 @@ static int qr_evaluate(unsigned char *local, const int size) {
 
 #ifdef ZINTLOG
     /* output Test 1 */
-    sprintf(str, "%d", result);
+    sprintf(str, " 1: %d", result);
     result_b = result;
     write_log(str);
 #endif
@@ -1154,7 +1158,7 @@ static int qr_evaluate(unsigned char *local, const int size) {
 
 #ifdef ZINTLOG
     /* output Test 2 */
-    sprintf(str, "%d", result - result_b);
+    sprintf(str, " 2: %d", result - result_b);
     result_b = result;
     write_log(str);
 #endif
@@ -1248,28 +1252,34 @@ static int qr_evaluate(unsigned char *local, const int size) {
 
 #ifdef ZINTLOG
     /* output Test 3 */
-    sprintf(str, "%d", result - result_b);
+    sprintf(str, " 3: %d", result - result_b);
     result_b = result;
     write_log(str);
 #endif
 
     /* Test 4: Proportion of dark modules in entire symbol */
-    percentage = (100.0 * dark_mods) / (size * size);
-    k = (int) (fabs(percentage - 50.0) / 5.0);
+    percentage = (100.0f * dark_mods) / (size * size);
+    k = (int) (fabsf(percentage - 50.0f) / 5.0f);
 
     result += 10 * k;
 
 #ifdef ZINTLOG
     /* output Test 4+summary */
-    sprintf(str, "%d", result - result_b);
+    sprintf(str, " 4: %d (%g%%, %d, %d)", result - result_b, percentage, k, dark_mods);
     write_log(str);
-    write_log("==========");
-    sprintf(str, "%d", result);
+    write_log(   "    ====");
+    sprintf(str, "    %d", result);
     write_log(str);
 #endif
 
     return result;
 }
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int zint_test_qr_evaluate(const unsigned char *local, const int size) {
+    return qr_evaluate(local, size);
+}
+#endif
 
 /* Add format information to grid */
 static void qr_add_format_info(unsigned char *grid, const int size, const int ecc_level, const int pattern) {

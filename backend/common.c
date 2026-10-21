@@ -1230,7 +1230,7 @@ INTERNAL int z_ct_printf_256(struct zint_symbol *symbol, const char *fmt, ...) {
 
     va_start(ap, fmt);
 
-#ifdef ZINT_IS_C89
+#ifdef Z_NO_VSNPRINTF
     size = vsprintf((char *) symbol->content_segs[0].source, fmt, ap);
 #else
     size = vsnprintf((char *) symbol->content_segs[0].source, 256, fmt, ap);
