@@ -1529,7 +1529,11 @@ namespace Zint {
         }
 
         if (m_symbol == BARCODE_MAXICODE) {
-            arg_int(cmd, "--scmvv=", option2() - 1, true /*allowZero*/);
+            if (option2() == 96 + 1) { // Default 96 (ASC MH10/SC 8)
+                arg_bool(cmd, "--scmvv", true);
+            } else {
+                arg_int(cmd, "--scmvv=", option2() - 1, true /*allowZero*/);
+            }
         }
 
         if (m_symbol == BARCODE_PDF417 || m_symbol == BARCODE_PDF417COMP || m_symbol == BARCODE_HIBC_PDF

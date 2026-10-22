@@ -304,7 +304,8 @@ INTERNAL int zint_dbar_stk_set_height(struct zint_symbol *symbol, const int firs
             symbol->row_height[second_row] = 0.7f; /* 0.7f is actually 0.699999988 (0x3F333333) */
         } else {
             symbol->row_height[second_row] = z_stripf(symbol->height - fixed_height - symbol->row_height[first_row]);
-            /* (h - 1) * 5/12 >= 0.5 -> h - 1 >= 0.5 * 12/5 -> h >= 2.2 -> rh[sr] >= (2.2 - 1 - 0.5) -> rh[sr] >= 0.7 */
+            /* (h - 1) * 5/12 >= 0.5 -> h - 1 >= 0.5 * 12/5 -> h >= 2.2 -> rh[sr] >= (2.2 - 1 - 0.5)
+               -> rh[sr] >= 0.7 */
             assert(symbol->row_height[second_row] >= 0.7f);
         }
     }

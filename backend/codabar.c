@@ -85,7 +85,8 @@ INTERNAL int zint_codabar(struct zint_symbol *symbol, unsigned char source[], in
     /* And must not use A, B, C or D otherwise (BS EN 798:1995 4.3.2) */
     if ((i = z_not_sane(CALCIUM_INNER_F, source + 1, length - 2))) {
         return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 363,
-                        "Invalid character at position %d in input (cannot contain \"A\", \"B\", \"C\" or \"D\")", i + 1);
+                            "Invalid character at position %d in input (cannot contain \"A\", \"B\", \"C\" or \"D\")",
+                            i + 1);
     }
 
     /* Add check character: 1 don't show to HRT, 2 do show to HRT

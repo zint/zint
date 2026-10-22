@@ -3343,7 +3343,8 @@ void MainWindow::update_preview()
                                     get_spn_val(QSL("spnMaxiSCMCountry")), get_spn_val(QSL("spnMaxiSCMService"))));
                 QCheckBox *chkMaxiSCMVV = get_chk(QSL("chkMaxiSCMVV"));
                 if (chkMaxiSCMVV && chkMaxiSCMVV->isEnabled() && chkMaxiSCMVV->isChecked()) {
-                    m_bc.bc.setOption2(get_spn_val(QSL("spnMaxiSCMVV")) + 1);
+                    item_val = get_spn_val(QSL("spnMaxiSCMVV"));
+                    m_bc.bc.setOption2((item_val == -1 ? 96 : item_val) + 1);
                 }
             } else {
                 m_bc.bc.setOption1(get_cmb_index(QSL("cmbMaxiMode")) + 3);
@@ -5178,8 +5179,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_spn_from_setting(settings, QSL("studio/bc/maxicode/scm_country"), QSL("spnMaxiSCMCountry"), 0);
             set_spn_from_setting(settings, QSL("studio/bc/maxicode/scm_service"), QSL("spnMaxiSCMService"), 0);
             set_chk_from_setting(settings, QSL("studio/bc/maxicode/chk_scm_vv"), QSL("chkMaxiSCMVV"));
-            // 96 is ASC MH10/SC 8
-            set_spn_from_setting(settings, QSL("studio/bc/maxicode/spn_scm_vv"), QSL("spnMaxiSCMVV"), 96);
+            // -1 defaults to 96 (ASC MH10/SC 8)
+            set_spn_from_setting(settings, QSL("studio/bc/maxicode/spn_scm_vv"), QSL("spnMaxiSCMVV"), -1);
             set_cmb_from_setting(settings, QSL("studio/bc/maxicode/structapp_count"), QSL("cmbMaxiStructAppCount"));
             set_cmb_from_setting(settings, QSL("studio/bc/maxicode/structapp_index"), QSL("cmbMaxiStructAppIndex"));
             break;

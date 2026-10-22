@@ -102,7 +102,7 @@ Mode 6 sets the scanner (Reader Initialisation/Programming)</string>
         </property>
         <property name="toolTip">
          <string>Postcode of up to 9 digits for Mode 2 or
-6 alphanumerics for Mode 3 (will truncate)
+6 alphanumerics for Mode 3 (will truncate).
 Mode 3 postcodes less than maximum
 length will be padded with spaces
 (ignored if disabled)</string>
@@ -257,8 +257,8 @@ Value ranges from 000 to 999
         </property>
         <property name="toolTip">
          <string>Prefix Structured Carrier Message with &quot;[)&gt;\R01\Gvv&quot;
-(ANS MH10.8.2 Format 01) where &quot;vv&quot; is version
-specified as follows
+(ISO/IEC 15434 Format "01") where &quot;vv&quot; is version
+specified in &quot;SCM Prefix Version&quot;
 (ignored if disabled)</string>
         </property>
         <property name="text">
@@ -285,7 +285,8 @@ specified as follows
          <bool>false</bool>
         </property>
         <property name="toolTip">
-         <string>Version &quot;vv&quot; to place at end of SCM prefix (default 96)
+         <string>Version &quot;vv&quot; to place at end of SCM prefix
+(default 96 for ASC MH10/SC 8)
 (ignored if disabled)</string>
         </property>
         <property name="text">
@@ -305,7 +306,8 @@ specified as follows
          <bool>false</bool>
         </property>
         <property name="toolTip">
-         <string>Version &quot;vv&quot; to place at end of SCM prefix (default 96)
+         <string>Version &quot;vv&quot; to place at end of SCM prefix
+(default 96 for ASC MH10/SC 8)
 (ignored if disabled)</string>
         </property>
         <property name="suffix">
@@ -315,13 +317,16 @@ specified as follows
          <string/>
         </property>
         <property name="minimum">
-         <number>0</number>
+         <number>-1</number>
         </property>
         <property name="maximum">
          <number>99</number>
         </property>
         <property name="value">
          <number>96</number>
+        </property>
+        <property name="specialValueText">
+         <string>Default (96)</string>
         </property>
        </widget>
       </item>

@@ -1481,9 +1481,28 @@ private slots:
             << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 57 -d '1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY"
-                "\\R\\E' --esc --primary='152382802840001' --quietzones --scale=2.5 --scmvv=96"
+                "\\R\\E' --esc --primary='152382802840001' --quietzones --scale=2.5 --scmvv"
             << "zint.exe -b 57 -d \"1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY"
-                "\\R\\E\" --esc --primary=\"152382802840001\" --quietzones --scale=2.5 --scmvv=96"
+                "\\R\\E\" --esc --primary=\"152382802840001\" --quietzones --scale=2.5 --scmvv"
+            << "" << "" << "" << "";
+
+        QTest::newRow("BARCODE_MAXICODE") << true << 0.0f << ""
+            << BARCODE_MAXICODE << (UNICODE_MODE | ESCAPE_MODE) // symbology-inputMode
+            << "152382802840001"
+            << "1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY\\R\\E" // text-primary
+            << 0.0f << -1 << (0 + 1) << 0 // height-scale
+            << 2.5f << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
+            << true << false << true << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << false // eci-gs1SyntaxEngine
+            << false << false << false << WARN_DEFAULT << false // readerInit-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 57 -d '1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY"
+                "\\R\\E' --esc --primary='152382802840001' --quietzones --scale=2.5 --scmvv=0"
+            << "zint.exe -b 57 -d \"1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY"
+                "\\R\\E\" --esc --primary=\"152382802840001\" --quietzones --scale=2.5 --scmvv=0"
             << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_MICROQR") << false << 0.0f << ""

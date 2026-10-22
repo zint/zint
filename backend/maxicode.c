@@ -1,7 +1,7 @@
 /* maxicode.c - Handles MaxiCode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2010-2025 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2010-2026 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -564,7 +564,7 @@ INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], c
         lp = (int) strlen(symbol->primary);
         if (lp == 0) {
             if (mode == 0) { /* Require primary message to auto-determine between 2 and 3 */
-                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 554, "Primary Message empty");
+                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 554, "Primary (Structured Carrier Message) empty");
             }
             mode = 4;
         } else {
@@ -592,10 +592,10 @@ INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], c
         }
         if (lp < 7 || lp > 15) { /* 1 to 9 character postcode + 3 digit country code + 3 digit service class */
             if (lp == 0) {
-                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 548, "Primary Message empty");
+                return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 548, "Primary (Structured Carrier Message) empty");
             }
             return z_errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 551,
-                            "Primary Message length %d wrong (7 to 15 characters required)", lp);
+                            "Primary (Structured Carrier Message) length %d wrong (7 to 15 characters required)", lp);
         }
         postcode_len = lp - 6;
 
@@ -604,7 +604,7 @@ INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], c
 
         if (countrycode == -1 || service == -1) { /* Check that country code and service are numeric */
             return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 552,
-                            "Non-numeric country code or service class in Primary Message");
+                            "Non-numeric country code or service class in primary (Structured Carrier Message)");
         }
 
         memcpy(postcode, symbol->primary, postcode_len);
@@ -618,7 +618,8 @@ INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], c
                     break;
                 }
                 if (!z_isdigit(postcode[i])) {
-                    return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 555, "Non-numeric postcode in Primary Message");
+                    return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 555,
+                                    "Non-numeric postcode in primary (Structured Carrier Message)");
                 }
             }
             if (countrycode == 840 && postcode_len == 5) {
@@ -640,7 +641,7 @@ INTERNAL int zint_maxicode(struct zint_symbol *symbol, struct zint_seg segs[], c
                 /* Don't allow control chars (CR FS GS RS for Code Set A) */
                 if (postcode[i] < ' ' || !(maxiCodeSet[postcode[i]] & MX_OP_SETA)) {
                     return z_errtxt(ZINT_ERROR_INVALID_DATA, symbol, 556,
-                                    "Invalid character in postcode in Primary Message");
+                                    "Invalid character in postcode in primary (Structured Carrier Message)");
                 }
             }
             mx_do_primary_3(codewords, postcode, countrycode, service);
