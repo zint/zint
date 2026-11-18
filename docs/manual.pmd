@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.16.0.9
-% July 2026
+% November 2026
 
 [//]: # ( vim: set ts=4 sw=4 et : )
 
@@ -3660,24 +3660,27 @@ character is an identification tag (Barcode ID), which should usually be `"%"`
 (except if marked as a "relabel", see below). The rest of the 27-character input
 must be alphanumeric, and is of the form:
 
------------------------------------------------------------------------
-Destination Post   Tracking Number     Service     Destination Country
-Code                                   Code        Code
------------------  ------------------  ----------  --------------------
-PPPPPPP            TTTTTTTTTTTTTT      SSS         CCC
-(7 alphanumerics)  (14 alphanumerics)  (3 digits)  (3-digit ISO 3166-1)
------------------------------------------------------------------------
+-------------------------------------------------------------------------
+Destination Post   Tracking Number       Service     Destination Country
+Code                                     Code        Code
+-----------------  --------------------  ----------  --------------------
+`PPPPPPP`          `TTTTNNNNNNNNNN`      `SSS`       `CCC`
+
+(7 alphanumerics)  (1st 4 alphanumeric,  (3 digits)  (3-digit ISO 3166-1)
+                   last 10 digits)
+-------------------------------------------------------------------------
 
 Table: DPD Input Fields {#tbl:dpd_input_fields}
 
 A warning will be generated if the Service Code, the Destination Country Code,
-or the last 10 characters of the Tracking Number are non-numeric.
+or the last 10 characters of the Tracking Number are non-numeric, or if the
+Destination Country Code is not ISO 3166-1.
 
 Zint formats the Human Readable Text as specified by DPD, leaving out the
-identification tag, and adds a modulo-36 check character to the text (not to the
-barcode itself), thus:
+identification tag, and adds a modulo-36 check character `D` to the text (not to
+the barcode itself), thus:
 
-`PPPP PPP TTTT TTTT TTTT TT SSS CCC D`
+`PPPP PPP TTTT NNNN NNNN NN SSS CCC D`
 
 By default a top boundary bar is added, with default width 3X. The width can be
 overridden using `--border` (API `border_width`). For a symbol with no top
@@ -3714,14 +3717,14 @@ symbols with 2D components.
 #### 6.1.11.1 GS1 DataBar Omnidirectional and GS1 DataBar Truncated
 
 Previously known as RSS-14 this standard encodes a 13-digit item code. A check
-digit and HRT-only Application Identifier of `"(01)"` are added by Zint. (A
+digit and HRT-only Application Identifier of `"(01)"` are added by Zint. A
 14-digit code that appends the standard GS1 check digit may be given, in which
-case the check digit will be verified.) Input less than 13 digits will be
+case the check digit will be verified. Input less than 13 digits will be
 zero-filled.
 
 ![`zint -b DBAR_OMN --compliant -d "0950110153001"`](images/dbar_omn.svg){.lin}
 
-GS1 DataBar Omnidirectional symbols should have a height of 33 or greater. To
+GS1 DataBar Omnidirectional symbols should have a height of 33X or greater. To
 produce a GS1 DataBar Truncated symbol set the symbol height to a value between
 13 and 32. Truncated symbols may not be scannable by omnidirectional scanners.
 
@@ -3766,6 +3769,9 @@ The Korean Postal Barcode is used to encode a 6-digit number and includes one
 check digit.
 
 ![`zint -b KOREAPOST -d "923457"`](images/koreapost.svg){.lin}
+
+By default the check digit is shown in the Human Readable Text - to not show it
+set `--vers=2` (API `option_2 = 2`).
 
 ### 6.1.13 Channel Code
 
@@ -4112,6 +4118,11 @@ string of shorter length. To select CC-C use `--mode=3` (API `option_1 = 3`).
 
 ![`zint -b GS1_128_CC --compliant -d "[99]1234-abcd" --mode=3
 --primary="[01]03312345678903"`](images/gs1_128_cc_c.svg){.upcean}
+
+Zint automatically adjusts the number of CC-C columns dependent on the data, but
+it can be overridden by setting `--cols` (API `option_2`) to a value between 1
+and 30. A warning will be issued if this results in a non-compliant columns/rows
+ratio.
 
 \clearpage
 
@@ -5173,6 +5184,11 @@ by using the `--mask` switch with values 0-3, or in the API by setting
 ```c
 option_3 = ZINT_FULL_MULTIBYTE | (N + 1) << 8
 ```
+
+An alternating filler pattern may be added to unused function information
+modules by specifying the `--hxalternatingfiller` switch (API `option_3 |=
+HX_ALTERNATING_FILLER`). The current standard is unclear on whether this should
+be added or not.
 
 ### 6.6.14 Ultracode
 

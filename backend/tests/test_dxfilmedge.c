@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2024-2025 Antoine Merino <antoine.merino.dev@gmail.com>
+    Copyright (C) 2024-2026 Antoine Merino <antoine.merino.dev@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -73,8 +73,8 @@ static void test_hrt(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, BARCODE_DXFILMEDGE, -1 /*input_mode*/, -1 /*eci*/,
-                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
-                    data[i].data, -1, debug);
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
         expected_content_length = (int) strlen(data[i].expected_content);
 
@@ -157,16 +157,23 @@ static void test_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                        i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                            i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                            i, symbol->width, data[i].expected_width);
         }
 
         ZBarcode_Delete(symbol);
@@ -180,113 +187,144 @@ static void test_encode(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
-        int option_2;
         const char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
         const char *comment;
         const char *expected;
     };
+    /* s/\v(\/\*)[ 0-9]*(\*\/)/\=printf("%s%3d%s", submatch(1), (@z+setreg('z',@z+1)), submatch(2))/ | let @z=0: */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_DXFILMEDGE, -1, "79-7", 0, 2, 23, "DX code 1: 79, DX code 2: 7. DX Extract = 1271. DX Full: X1271X (X is any digit)",
+        /*  0*/ { BARCODE_DXFILMEDGE, "79-7", 0, 2, 23, 1, "DX code 1: 79, DX code 2: 7. DX Extract = 1271. DX Full: X1271X (X is any digit)",
                     "1111101010101010101011110101010011110011100101"
                 },
-        /*  1*/ { BARCODE_DXFILMEDGE, -1, "1271", 0, 2, 23, "",
+        /*  1*/ { BARCODE_DXFILMEDGE, "1271", 0, 2, 23, 1, "",
                     "1111101010101010101011110101010011110011100101"
                 },
-        /*  2*/ { BARCODE_DXFILMEDGE, -1, "012710", 0, 2, 23, "",
+        /*  2*/ { BARCODE_DXFILMEDGE, "012710", 0, 2, 23, 1, "",
                     "1111101010101010101011110101010011110011100101"
                 },
-        /*  3*/ { BARCODE_DXFILMEDGE, -1, "112712", 0, 2, 23, "",
+        /*  3*/ { BARCODE_DXFILMEDGE, "112712", 0, 2, 23, 1, "",
                     "1111101010101010101011110101010011110011100101"
                 },
-        /*  4*/ { BARCODE_DXFILMEDGE, -1, "1-0", 0, 2, 23, "Lower limit: DX part 1 = 1, DX part 2 = 0",
+        /*  4*/ { BARCODE_DXFILMEDGE, "1-0", 0, 2, 23, 1, "Lower limit: DX part 1 = 1, DX part 2 = 0",
                     "1111101010101010101011110101000000010000010101"
                 },
-        /*  5*/ { BARCODE_DXFILMEDGE, -1, "000160", 0, 2, 23, "",
+        /*  5*/ { BARCODE_DXFILMEDGE, "000160", 0, 2, 23, 1, "",
                     "1111101010101010101011110101000000010000010101"
                 },
-        /*  6*/ { BARCODE_DXFILMEDGE, -1, "16", 0, 2, 23, "",
+        /*  6*/ { BARCODE_DXFILMEDGE, "16", 0, 2, 23, 1, "",
                     "1111101010101010101011110101000000010000010101"
                 },
-        /*  7*/ { BARCODE_DXFILMEDGE, -1, "920479/63A", 0, 2, 31, "Upper limit: DX part 1 = 127, DX part 2 = 15",
+        /*  7*/ { BARCODE_DXFILMEDGE, "920479/63A", 0, 2, 31, 1, "Upper limit: DX part 1 = 127, DX part 2 = 15",
                     "11111010101010101010101010101111010101111111011111111111000101"
                 },
-        /*  8*/ { BARCODE_DXFILMEDGE, -1, "127-15/00A", 0, 2, 31, "",
+        /*  8*/ { BARCODE_DXFILMEDGE, "127-15/00A", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101111111011111111111000101"
                 },
-        /*  9*/ { BARCODE_DXFILMEDGE, -1, "79-7/1", 0, 2, 31, "",
+        /*  9*/ { BARCODE_DXFILMEDGE, "79-7/1", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001110000010010101"
                 },
-        /* 10*/ { BARCODE_DXFILMEDGE, -1, "0079-7/001", 0, 2, 31, "Optional behaviour: leading zeros are accepted",
+        /* 10*/ { BARCODE_DXFILMEDGE, "0079-7/001", 0, 2, 31, 1, "Optional behaviour: leading zeros are accepted",
                     "11111010101010101010101010101111010101001111001110000010010101"
                 },
-        /* 11*/ { BARCODE_DXFILMEDGE, -1, "79-7/1", 0, 2, 31, "Frame number",
+        /* 11*/ { BARCODE_DXFILMEDGE, "79-7/1", 0, 2, 31, 1, "Frame number",
                     "11111010101010101010101010101111010101001111001110000010010101"
                 },
-        /* 12*/ { BARCODE_DXFILMEDGE, -1, "1271/1", 0, 2, 31, "",
+        /* 12*/ { BARCODE_DXFILMEDGE, "1271/1", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001110000010010101"
                 },
-        /* 13*/ { BARCODE_DXFILMEDGE, -1, "912718/1", 0, 2, 31, "",
+        /* 13*/ { BARCODE_DXFILMEDGE, "912718/1", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001110000010010101"
                 },
-        /* 14*/ { BARCODE_DXFILMEDGE, -1, "79-7/1A", 0, 2, 31, "",
+        /* 14*/ { BARCODE_DXFILMEDGE, "79-7/1A", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001110000011000101"
                 },
-        /* 15*/ { BARCODE_DXFILMEDGE, -1, "1271/1a", 0, 2, 31, "",
+        /* 15*/ { BARCODE_DXFILMEDGE, "1271/1a", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
                     "11111010101010101010101010101111010101001111001110000011000101"
                 },
-        /* 16*/ { BARCODE_DXFILMEDGE, -1, "212715/1A", 0, 2, 31, "",
+        /* 16*/ { BARCODE_DXFILMEDGE, "1271/1A", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001110000011000101"
                 },
-        /* 17*/ { BARCODE_DXFILMEDGE, -1, "79-7/62", 0, 2, 31, "Special frame numbers",
+        /* 17*/ { BARCODE_DXFILMEDGE, "212715/1A", 0, 2, 31, 1, "",
+                    "11111010101010101010101010101111010101001111001110000011000101"
+                },
+        /* 18*/ { BARCODE_DXFILMEDGE, "79-7/62", 0, 2, 31, 1, "Special frame numbers",
                     "11111010101010101010101010101111010101001111001111111100010101"
                 },
-        /* 18*/ { BARCODE_DXFILMEDGE, -1, "79-7/S", 0, 2, 31, "",
+        /* 19*/ { BARCODE_DXFILMEDGE, "79-7/S", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001111111100010101"
                 },
-        /* 19*/ { BARCODE_DXFILMEDGE, -1, "79-7/x", 0, 2, 31, "",
+        /* 20*/ { BARCODE_DXFILMEDGE, "79-7/x", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
                     "11111010101010101010101010101111010101001111001111111100010101"
                 },
-        /* 20*/ { BARCODE_DXFILMEDGE, -1, "79-7/62a", 0, 2, 31, "",
+        /* 21*/ { BARCODE_DXFILMEDGE, "79-7/X", 0, 2, 31, 1, "",
+                    "11111010101010101010101010101111010101001111001111111100010101"
+                },
+        /* 22*/ { BARCODE_DXFILMEDGE, "79-7/62a", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
                     "11111010101010101010101010101111010101001111001111111101000101"
                 },
-        /* 21*/ { BARCODE_DXFILMEDGE, -1, "79-7/sA", 0, 2, 31, "",
+        /* 23*/ { BARCODE_DXFILMEDGE, "79-7/62A", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001111111101000101"
                 },
-        /* 22*/ { BARCODE_DXFILMEDGE, -1, "79-7/Xa", 0, 2, 31, "",
+        /* 24*/ { BARCODE_DXFILMEDGE, "79-7/sA", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
                     "11111010101010101010101010101111010101001111001111111101000101"
                 },
-        /* 23*/ { BARCODE_DXFILMEDGE, -1, "79-7/63", 0, 2, 31, "",
+        /* 25*/ { BARCODE_DXFILMEDGE, "79-7/SA", 0, 2, 31, 1, "",
+                    "11111010101010101010101010101111010101001111001111111101000101"
+                },
+        /* 26*/ { BARCODE_DXFILMEDGE, "79-7/Xa", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
+                    "11111010101010101010101010101111010101001111001111111101000101"
+                },
+        /* 27*/ { BARCODE_DXFILMEDGE, "79-7/63", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001111111110000101"
                 },
-        /* 24*/ { BARCODE_DXFILMEDGE, -1, "79-7/k", 0, 2, 31, "",
+        /* 28*/ { BARCODE_DXFILMEDGE, "79-7/k", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
                     "11111010101010101010101010101111010101001111001111111110000101"
                 },
-        /* 25*/ { BARCODE_DXFILMEDGE, -1, "79-7/00", 0, 2, 31, "",
+        /* 29*/ { BARCODE_DXFILMEDGE, "79-7/K", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001111111110000101"
                 },
-        /* 26*/ { BARCODE_DXFILMEDGE, -1, "79-7/63a", 0, 2, 31, "",
+        /* 30*/ { BARCODE_DXFILMEDGE, "79-7/00", 0, 2, 31, 1, "",
+                    "11111010101010101010101010101111010101001111001111111110000101"
+                },
+        /* 31*/ { BARCODE_DXFILMEDGE, "79-7/63a", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
                     "11111010101010101010101010101111010101001111001111111111010101"
                 },
-        /* 27*/ { BARCODE_DXFILMEDGE, -1, "79-7/kA", 0, 2, 31, "",
+        /* 32*/ { BARCODE_DXFILMEDGE, "79-7/63A", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001111111111010101"
                 },
-        /* 28*/ { BARCODE_DXFILMEDGE, -1, "79-7/00a", 0, 2, 31, "",
+        /* 33*/ { BARCODE_DXFILMEDGE, "79-7/kA", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
                     "11111010101010101010101010101111010101001111001111111111010101"
                 },
-        /* 29*/ { BARCODE_DXFILMEDGE, -1, "79-7/0", 0, 2, 31, "",
+        /* 34*/ { BARCODE_DXFILMEDGE, "79-7/KA", 0, 2, 31, 1, "",
+                    "11111010101010101010101010101111010101001111001111111111010101"
+                },
+        /* 35*/ { BARCODE_DXFILMEDGE, "79-7/00a", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
+                    "11111010101010101010101010101111010101001111001111111111010101"
+                },
+        /* 36*/ { BARCODE_DXFILMEDGE, "79-7/00A", 0, 2, 31, 1, "",
+                    "11111010101010101010101010101111010101001111001111111111010101"
+                },
+        /* 37*/ { BARCODE_DXFILMEDGE, "79-7/0", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001110000000000101"
                 },
-        /* 30*/ { BARCODE_DXFILMEDGE, -1, "79-7/F", 0, 2, 31, "",
+        /* 38*/ { BARCODE_DXFILMEDGE, "79-7/F", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001110000000000101"
                 },
-        /* 31*/ { BARCODE_DXFILMEDGE, -1, "79-7/0a", 0, 2, 31, "",
+        /* 39*/ { BARCODE_DXFILMEDGE, "79-7/0a", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
                     "11111010101010101010101010101111010101001111001110000001010101"
                 },
-        /* 32*/ { BARCODE_DXFILMEDGE, -1, "79-7/fA", 0, 2, 31, "",
+        /* 40*/ { BARCODE_DXFILMEDGE, "79-7/0A", 0, 2, 31, 1, "",
+                    "11111010101010101010101010101111010101001111001110000001010101"
+                },
+        /* 41*/ { BARCODE_DXFILMEDGE, "79-7/fA", 0, 2, 31, 0, "BWIPP: case sensitive (see below)",
+                    "11111010101010101010101010101111010101001111001110000001010101"
+                },
+        /* 42*/ { BARCODE_DXFILMEDGE, "79-7/FA", 0, 2, 31, 1, "",
                     "11111010101010101010101010101111010101001111001110000001010101"
                 },
     };
@@ -298,7 +336,8 @@ static void test_encode(const testCtx *const p_ctx) {
     char cmp_buf[4096];
     char cmp_msg[1024];
 
-    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
     testStartSymbol(p_ctx->func_name, &symbol);
@@ -310,14 +349,18 @@ static void test_encode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, %d, \"%s\",\n",
-                    i, testUtilBarcodeName(data[i].symbology), data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+            printf("        /*%3d*/ { %s, \"%s\", %s, %d, %d, \"%s\",\n",
+                    i, testUtilBarcodeName(data[i].symbology),
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
@@ -325,12 +368,33 @@ static void test_encode(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 int width, row;
 
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                                i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                                i, symbol->width, data[i].expected_width, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n",
+                            i, ret, width, row, data[i].data);
 
+                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
+                    } else {
+                        ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf,
+                                sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                       data[i].expected);
+                    }
+                }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[8192 + 1];

@@ -355,6 +355,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(chkComposite, SIGNAL(toggled(bool)), SLOT(composite_ui_set()));
     connect(chkComposite, SIGNAL(toggled(bool)), SLOT(update_preview()));
     connect(cmbCompType, SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
+    connect(cmbCompCols, SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
     connect(btnClearComposite, SIGNAL(clicked(bool)), SLOT(clear_composite()));
     connect(cmbECI, SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
     connect(cmbECISeg1, SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
@@ -473,6 +474,7 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/composite_text"), txtComposite->toPlainText());
     settings.setValue(QSL("studio/chk_composite"), chkComposite->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/comp_type"), cmbCompType->currentIndex());
+    settings.setValue(QSL("studio/comp_cols"), cmbCompCols->currentIndex());
     settings.setValue(QSL("studio/eci"), cmbECI->currentIndex());
     /* Seg ECIs not saved so don't restore */
     settings.setValue(QSL("studio/chk_escape"), chkEscape->isChecked() ? 1 : 0);
@@ -546,6 +548,7 @@ void MainWindow::load_settings(QSettings &settings)
     txtComposite->setText(settings.value(QSL("studio/composite_text"), initialData).toString());
     chkComposite->setChecked(settings.value(QSL("studio/chk_composite")).toInt() ? true : false);
     cmbCompType->setCurrentIndex(settings.value(QSL("studio/comp_type"), 0).toInt());
+    cmbCompCols->setCurrentIndex(settings.value(QSL("studio/comp_cols"), 0).toInt());
     cmbECI->setCurrentIndex(settings.value(QSL("studio/eci"), 0).toInt());
     /* Don't save seg ECIs */
     chkEscape->setChecked(settings.value(QSL("studio/chk_escape")).toInt() ? true : false);
@@ -2150,6 +2153,7 @@ void MainWindow::change_options()
         connect(get_widget(QSL("cmbHXECC")), SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
         connect(get_widget(QSL("cmbHXMask")), SIGNAL(currentIndexChanged(int)), SLOT(update_preview()));
         connect(get_widget(QSL("chkHXFullMultibyte")), SIGNAL(toggled(bool)), SLOT(update_preview()));
+        connect(get_widget(QSL("chkHXAlternatingFiller")), SIGNAL(toggled(bool)), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_MICROQR) {
         QFile file(QSL(":/grpMQR.ui"));
@@ -2285,6 +2289,17 @@ void MainWindow::change_options()
         m_btnHeightPerRowDefault = get_btn(QSL("btnDBESHeightPerRowDefault"));
         connect(m_btnHeightPerRowDisable, SIGNAL(clicked(bool)), SLOT(height_per_row_disable()));
         connect(m_btnHeightPerRowDefault, SIGNAL(clicked(bool)), SLOT(height_per_row_default()));
+
+    } else if (symbology == BARCODE_KOREAPOST) {
+        QFile file(QSL(":/grpKoreaPost.ui"));
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            load_sub_settings(settings, symbology);
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
+            connect(get_widget(QSL("chkKoreaPostShowCheck")), SIGNAL(toggled(bool)), SLOT(update_preview()));
+        }
 
     } else if (symbology == BARCODE_PLESSEY) {
         QFile file(QSL(":/grpPlessey.ui"));
@@ -2578,18 +2593,32 @@ void MainWindow::composite_ui_set()
 
     lblCompType->setEnabled(enabled);
     cmbCompType->setEnabled(enabled);
+    composite_cc_c_ui_set();
     lblComposite->setEnabled(enabled);
     btnClearComposite->setEnabled(enabled);
     txtComposite->setEnabled(enabled);
 
-    if (enabled) {
-        if (bstyle_items[bstyle->currentIndex()].symbology == BARCODE_CODE128) {
+    if (bstyle_items[bstyle->currentIndex()].symbology == BARCODE_CODE128) {
+        lblCompCols->show();
+        cmbCompCols->show();
+        if (enabled) {
             QRadioButton *radioButton = get_rad(QSL("radC128EAN"));
             if (radioButton) {
                 radioButton->setChecked(true);
             }
         }
+    } else {
+        lblCompCols->hide();
+        cmbCompCols->hide();
     }
+}
+
+void MainWindow::composite_cc_c_ui_set()
+{
+    bool enabled = !grpComposite->isHidden() && chkComposite->isChecked();
+    int is_cc_c = enabled && (cmbCompType->currentIndex() == 3 || m_bc.bc.encodedOption1() == 3);
+    lblCompCols->setEnabled(is_cc_c);
+    cmbCompCols->setEnabled(is_cc_c);
 }
 
 void MainWindow::composite_ean_check()
@@ -2773,6 +2802,7 @@ void MainWindow::update_preview()
         m_bc.bc.setPrimaryMessage(txtData->text());
         m_bc.bc.setText(txtComposite->toPlainText());
         btnClearComposite->setEnabled(!txtComposite->toPlainText().isEmpty());
+        composite_cc_c_ui_set();
     } else {
         btnClearComposite->setEnabled(false);
         if (!grpSegs->isHidden() && !txtDataSeg1->text().isEmpty()) {
@@ -3418,6 +3448,16 @@ void MainWindow::update_preview()
             if (get_chk_val(QSL("chkHXFullMultibyte"))) {
                 m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE | m_bc.bc.option3());
             }
+            if (get_chk_val(QSL("chkHXAlternatingFiller"))) {
+                m_bc.bc.setOption3(HX_ALTERNATING_FILLER | m_bc.bc.option3());
+            }
+            break;
+
+        case BARCODE_KOREAPOST:
+            m_bc.bc.setSymbol(BARCODE_KOREAPOST);
+            if (!get_chk_val(QSL("chkKoreaPostShowCheck"))) {
+                m_bc.bc.setOption2(2);
+            }
             break;
 
         case BARCODE_PLESSEY:
@@ -3485,8 +3525,12 @@ void MainWindow::update_preview()
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
     chkCompliantHeight->setEnabled(m_bc.bc.hasCompliantHeight());
 
-    if (!grpComposite->isHidden() && chkComposite->isChecked())
+    if (!grpComposite->isHidden() && chkComposite->isChecked()) {
         m_bc.bc.setOption1(cmbCompType->currentIndex());
+        if (cmbCompCols->isEnabled() && cmbCompCols->currentIndex()) {
+            m_bc.bc.setOption2(cmbCompCols->currentIndex());
+        }
+    }
 
     if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked()) {
         m_bc.bc.setHeight(0);
@@ -3770,9 +3814,14 @@ void MainWindow::automatic_info_set()
     if (compEnabled) {
         if (!isError && cmbCompType->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 1 && opt <= 3) {
             static const char ccModes[3] = { 'A', 'B', 'C' };
-            cmbCompType->setItemText(0, QSL("Automatic CC-%1").arg(ccModes[opt - 1]));
+            cmbCompType->setItemText(0, QSL("Auto CC-%1").arg(ccModes[opt - 1]));
         } else {
             cmbCompType->setItemText(0, QSL("Automatic"));
+        }
+        if (!isError && cmbCompCols->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 30) {
+            cmbCompCols->setItemText(0, QSL("Auto %1").arg(opt));
+        } else {
+            cmbCompCols->setItemText(0, QSL("Automatic"));
         }
     }
 
@@ -4404,6 +4453,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         settings.setValue(QSL("studio/bc/%1/composite_text").arg(name), txtComposite->toPlainText());
         settings.setValue(QSL("studio/bc/%1/chk_composite").arg(name), chkComposite->isChecked() ? 1 : 0);
         settings.setValue(QSL("studio/bc/%1/comp_type").arg(name), cmbCompType->currentIndex());
+        settings.setValue(QSL("studio/bc/%1/comp_cols").arg(name), cmbCompCols->currentIndex());
         if (cmbECI->isEnabled()) {
             settings.setValue(QSL("studio/bc/%1/eci").arg(name), cmbECI->currentIndex());
             settings.setValue(QSL("studio/bc/%1/eci_seg1").arg(name), cmbECISeg1->currentIndex());
@@ -4666,6 +4716,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/hanxin/ecc"), get_cmb_index(QSL("cmbHXECC")));
             settings.setValue(QSL("studio/bc/hanxin/mask"), get_cmb_index(QSL("cmbHXMask")));
             settings.setValue(QSL("studio/bc/hanxin/chk_full_multibyte"), get_chk_val(QSL("chkHXFullMultibyte")));
+            settings.setValue(QSL("studio/bc/hanxin/chk_alternating_filler"),
+                                get_chk_val(QSL("chkHXAlternatingFiller")));
             break;
 
         case BARCODE_MICROQR:
@@ -4730,6 +4782,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/dbar_expstk/cols"), get_cmb_index(QSL("cmbDBESCols")));
             settings.setValue(QSL("studio/bc/dbar_expstk/rows"), get_cmb_index(QSL("cmbDBESRows")));
             settings.setValue(QSL("studio/bc/dbar_expstk/height_per_row"), get_dspn_val(QSL("spnDBESHeightPerRow")));
+            break;
+
+        case BARCODE_KOREAPOST:
+            settings.setValue(QSL("studio/bc/koreapost/chk_show_check"), get_chk_val(QSL("chkKoreaPostShowCheck")));
             break;
 
         case BARCODE_PLESSEY:
@@ -4848,6 +4904,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         chkComposite->setChecked(settings.value(
             QSL("studio/bc/%1/chk_composite").arg(name), 0).toInt() ? true : false);
         cmbCompType->setCurrentIndex(settings.value(QSL("studio/bc/%1/comp_type").arg(name), 0).toInt());
+        cmbCompCols->setCurrentIndex(settings.value(QSL("studio/bc/%1/comp_cols").arg(name), 0).toInt());
         if (cmbECI->isEnabled()) {
             cmbECI->setCurrentIndex(settings.value(QSL("studio/bc/%1/eci").arg(name), 0).toInt());
             cmbECISeg1->setCurrentIndex(settings.value(QSL("studio/bc/%1/eci_seg1").arg(name), 0).toInt());
@@ -5098,7 +5155,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_chk_from_setting(settings, QSL("studio/bc/datamatrix/chk_allow_dmre"), QSL("chkDMRE"));
             set_chk_from_setting(settings, QSL("studio/bc/datamatrix/chk_gs_sep"), QSL("chkDMGSSep"));
             set_cmb_from_setting(settings, QSL("studio/bc/datamatrix/startmode"), QSL("cmbDMStartMode"));
-            set_spn_from_setting(settings, QSL("studio/bc/datamatrix/startmodelength"), QSL("spnDMStartModeLength"), 0);
+            set_spn_from_setting(settings, QSL("studio/bc/datamatrix/startmodelength"), QSL("spnDMStartModeLength"),
+                                    0);
             set_chk_from_setting(settings, QSL("studio/bc/datamatrix/iso_144"), QSL("chkDMISO144"));
             set_chk_from_setting(settings, QSL("studio/bc/datamatrix/chk_fast"), QSL("chkDMFast"));
             set_cmb_from_setting(settings, QSL("studio/bc/datamatrix/structapp_count"), QSL("cmbDMStructAppCount"));
@@ -5153,6 +5211,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/hanxin/ecc"), QSL("cmbHXECC"));
             set_cmb_from_setting(settings, QSL("studio/bc/hanxin/mask"), QSL("cmbHXMask"));
             set_chk_from_setting(settings, QSL("studio/bc/hanxin/chk_full_multibyte"), QSL("chkHXFullMultibyte"));
+            set_chk_from_setting(settings, QSL("studio/bc/hanxin/chk_alternating_filler"),
+                                    QSL("chkHXAlternatingFiller"));
             break;
 
         case BARCODE_MICROQR:
@@ -5216,7 +5276,12 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/dbar_expstk/cols"), QSL("cmbDBESCols"));
             set_cmb_from_setting(settings, QSL("studio/bc/dbar_expstk/rows"), QSL("cmbDBESRows"));
             set_dspn_from_setting(settings, QSL("studio/bc/dbar_expstk/height_per_row"), QSL("spnDBESHeightPerRow"),
-                0.0f);
+                                    0.0f);
+            break;
+
+        case BARCODE_KOREAPOST:
+            set_chk_from_setting(settings, QSL("studio/bc/koreapost/chk_show_check"), QSL("chkKoreaPostShowCheck"),
+                                    true);
             break;
 
         case BARCODE_PLESSEY:

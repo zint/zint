@@ -425,8 +425,8 @@ the data with a slash &quot;/&quot;</string>
       <bool>false</bool>
      </property>
      <property name="toolTip">
-      <string>Use Kanji multibyte encoding for binary
-and Latin data</string>
+      <string>Allow use of Kanji multibyte encoding for
+binary and Latin data</string>
      </property>
     </widget>
    </item>

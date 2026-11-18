@@ -243,7 +243,7 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
                 z_set_module(symbol, i, j);
             }
         }
-        symbol->row_height[i] = 2;
+        symbol->row_height[i] = 2.0f;
 
         /* Set up RAPs and Cluster for next row */
         LeftRAP = LeftRAP == 51 ? 0 : LeftRAP + 1;
@@ -310,7 +310,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     zint_micropdf_expand(symbol, chainemc, mclength, pattern, cc_width, variant, debug_print);
 
     for (i = 0; i < symbol->rows; i++) {
-        symbol->row_height[i] = 2;
+        symbol->row_height[i] = 2.0f;
     }
 
     if (debug_print) {
@@ -429,7 +429,7 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
                 z_set_module(symbol, i, j);
             }
         }
-        symbol->row_height[i] = 3;
+        symbol->row_height[i] = 3.0f;
     }
     symbol->width = bp;
 
@@ -479,27 +479,30 @@ static int cc_b_calc_padding(const int binary_length, const int cc_width) {
     return target_bitsize;
 }
 
-static int cc_c_calc_padding(const int binary_length, int *p_cc_width, const int linear_width, int *p_ecc) {
+static int cc_c_calc_padding(const int binary_length, int *p_cc_width, const int linear_width, int *p_ecc,
+            int *p_noncompliant) {
     int target_bitsize;
     int codewords_used, ecc, ecc_cwds, rows;
     int codewords_total, target_codewords, target_bytesize;
-    int cc_width;
+    int cc_width = *p_cc_width;
+    const int auto_cc_width = cc_width < 1 || cc_width > 30;
     const int byte_length = (binary_length + 7) >> 3;
 
     codewords_used = (byte_length / 6) * 5;
     codewords_used += byte_length % 6;
+    codewords_used += 3; /* Codeword count + linkage flag 920 + byte latch 923/901 */
 
-    /* Recommended minimum ecc levels ISO/IEC 1543:2015 (PDF417) Annex E Table E.1,
-       restricted by CC-C codeword max 900 (30 cols * 30 rows), GS1 General Specifications 19.1 5.9.2.3 */
+    /* Recommended minimum ecc levels ISO/IEC 1543:2015 (PDF417) Annex E Table E.1, restricted by
+       CC-C codeword max 900 (30 cols * 30 rows), GS1 General Specifications 26.0 5.11.2.3 CC-C structure */
     if (codewords_used <= 40) {
         ecc = 2;
     } else if (codewords_used <= 160) {
         ecc = 3;
     } else if (codewords_used <= 320) {
         ecc = 4;
-    } else if (codewords_used <= 833) { /* 900 - 3 - 64 */
+    } else if (codewords_used <= 836) { /* 900 - 64 */
         ecc = 5;
-    } else if (codewords_used <= 865) { /* 900 - 3 - 32 */
+    } else if (codewords_used <= 868) { /* 900 - 32 */
         ecc = 4; /* Not recommended but allow to meet advertised "up to 2361 digits" (allows max 2372) */
     } else {
         return 0;
@@ -508,27 +511,46 @@ static int cc_c_calc_padding(const int binary_length, int *p_cc_width, const int
     ecc_cwds = 1 << (ecc + 1);
 
     codewords_used += ecc_cwds;
-    codewords_used += 3;
     assert(codewords_used <= 900);
 
     /* Minimum possible linear width (with GS1_NO_CHECK) is 11*5 (start, FNC1, linkage, data, check) + 13 stop */
     assert(linear_width >= 68);
-    /* -52 = 7 left shift (section 12.3 f) + 10 right quiet zone - 17 start + 2x17 row indicators + 18 stop */
-    cc_width = linear_width == 68 ? 1 : (linear_width - 52) / 17; /* Ensure > 0 */
-    if (cc_width > 30) {
-        cc_width = 30;
+    if (auto_cc_width) {
+        /* -52 = 7 left shift (section 12.3 f) + 10 right quiet zone - 17 start + 2x17 row indicators + 18 stop */
+        cc_width = linear_width == 68 ? 1 : (linear_width - 52) / 17; /* Ensure > 0 */
+        if (cc_width > 30) {
+            cc_width = 30;
+        }
+        assert(cc_width > 0);
     }
-    assert(cc_width > 0);
-    rows = (int) ceil((double) codewords_used / cc_width);
+    rows = (int) ceilf((float) codewords_used / cc_width);
     /* Stop the symbol from becoming too high */
     while (rows > 30 && cc_width < 30) {
         cc_width++;
-        rows = (int) ceil((double) codewords_used / cc_width);
+        rows = (int) ceilf((float) codewords_used / cc_width);
     }
     assert(rows <= 30); /* Guaranteed by codewords_used <= 900 */
 
     if (rows < 3) {
         rows = 3;
+    }
+
+    if (auto_cc_width) {
+        /* ISO/IEC 24723:2010 Section 10 'CC-C component requirements' - "the total number of CC-C columns shall be less
+           than four times the number of rows" where total no. of cols includes Start/Stop & the 2 Row Indicators */
+        while (cc_width + 4 >= rows * 4) {
+            cc_width--;
+        }
+        while (cc_width * rows < codewords_used) {
+            rows++;
+            if (cc_width + 5 < rows * 4) {
+                cc_width++;
+            }
+        }
+        assert(cc_width + 4 < rows * 4);
+        *p_noncompliant = 0;
+    } else {
+        *p_noncompliant = cc_width + 4 >= rows * 4;
     }
 
     codewords_total = cc_width * rows;
@@ -545,9 +567,17 @@ static int cc_c_calc_padding(const int binary_length, int *p_cc_width, const int
     return target_bitsize;
 }
 
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int zint_test_cc_c_calc_padding(const int binary_length, int *p_cc_width, const int linear_width,
+                int *p_ecc, int *p_noncompliant) {
+    return cc_c_calc_padding(binary_length, p_cc_width, linear_width, p_ecc, p_noncompliant);
+}
+#endif
+
 /* Handles all data encodation from section 5 of ISO/IEC 24723 */
 static int cc_binary_string(struct zint_symbol *symbol, const unsigned char source[], const int length,
-            char binary_string[], const int cc_mode, int *p_cc_width, int *p_ecc, const int linear_width) {
+            char binary_string[], const int cc_mode, int *p_cc_width, int *p_ecc, int *p_cc_c_noncompliant,
+            const int linear_width) {
     int encoding_method, read_posn, alpha_pad;
     int i, j, ai_crop, ai_crop_posn, fnc1_latch;
     int ai90_mode, remainder;
@@ -842,7 +872,8 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             target_bitsize = cc_b_calc_padding(bp, *p_cc_width);
             break;
         case 3:
-            target_bitsize = cc_c_calc_padding(bp, p_cc_width, linear_width, p_ecc);
+            *p_cc_width = symbol->option_2 >= 1 && symbol->option_2 <= 30 ? symbol->option_2 : 0;
+            target_bitsize = cc_c_calc_padding(bp, p_cc_width, linear_width, p_ecc, p_cc_c_noncompliant);
             break;
     }
 
@@ -868,16 +899,20 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             bp = z_bin_append_posn(11 * z_ctoi(last_digit) + 18, 7, binary_string, bp);
             /* This may push the symbol up to the next size */
         }
-    }
 
-    switch (cc_mode) {
-        case 1: target_bitsize = cc_a_calc_padding(bp, *p_cc_width); break;
-        case 2: target_bitsize = cc_b_calc_padding(bp, *p_cc_width); break;
-        case 3: target_bitsize = cc_c_calc_padding(bp, p_cc_width, linear_width, p_ecc); break;
-    }
+        /* Re-check bitsize */
+        switch (cc_mode) {
+            case 1: target_bitsize = cc_a_calc_padding(bp, *p_cc_width); break;
+            case 2: target_bitsize = cc_b_calc_padding(bp, *p_cc_width); break;
+            case 3:
+                *p_cc_width = symbol->option_2 >= 1 && symbol->option_2 <= 30 ? symbol->option_2 : 0;
+                target_bitsize = cc_c_calc_padding(bp, p_cc_width, linear_width, p_ecc, p_cc_c_noncompliant);
+                break;
+        }
 
-    if (target_bitsize == 0) {
-        return z_errtxt(ZINT_ERROR_TOO_LONG, symbol, 444, "Input too long (2D component)");
+        if (target_bitsize == 0) {
+            return z_errtxt(ZINT_ERROR_TOO_LONG, symbol, 444, "Input too long (2D component)");
+        }
     }
 
     if (bp < target_bitsize) {
@@ -929,7 +964,7 @@ static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source
 }
 
 INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int error_number = 0, warn_number;
+    int error_number = 0, warn_number, cc_c_noncompliant;
     int cc_mode, cc_width = 0, ecc = 0;
     int i, j;
     /* Allow for 8 bits + 5-bit latch per char + 1000 bits overhead/padding */
@@ -1036,7 +1071,8 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
     }
 
     if (cc_mode == 1) {
-        i = cc_binary_string(symbol, source, length, binary_string, cc_mode, &cc_width, &ecc, linear_width);
+        i = cc_binary_string(symbol, source, length, binary_string, cc_mode, &cc_width, &ecc, &cc_c_noncompliant,
+                                linear_width);
         if (i == ZINT_ERROR_TOO_LONG) {
             symbol->errtxt[0] = '\0'; /* Unset error text */
             cc_mode = 2;
@@ -1047,7 +1083,8 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
 
     if (cc_mode == 2) {
         /* If the data didn't fit into CC-A it is recalculated for CC-B */
-        i = cc_binary_string(symbol, source, length, binary_string, cc_mode, &cc_width, &ecc, linear_width);
+        i = cc_binary_string(symbol, source, length, binary_string, cc_mode, &cc_width, &ecc, &cc_c_noncompliant,
+                                linear_width);
         if (i == ZINT_ERROR_TOO_LONG) {
             if (symbol->symbology != BARCODE_GS1_128_CC) {
                 return ZINT_ERROR_TOO_LONG;
@@ -1061,7 +1098,8 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
 
     if (cc_mode == 3) {
         /* If the data didn't fit in CC-B (and linear part is GS1-128) it is recalculated for CC-C */
-        i = cc_binary_string(symbol, source, length, binary_string, cc_mode, &cc_width, &ecc, linear_width);
+        i = cc_binary_string(symbol, source, length, binary_string, cc_mode, &cc_width, &ecc, &cc_c_noncompliant,
+                                linear_width);
         if (i != 0) {
             return i;
         }
@@ -1085,6 +1123,13 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
 
     /* Feedback options */
     symbol->option_1 = cc_mode;
+    if (cc_mode == 3) {
+        symbol->option_2 = cc_width;
+        if (warn_number == 0 && cc_c_noncompliant) {
+            warn_number = z_errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 448,
+                                    "Composite CC-C columns/rows ratio is non-standard");
+        }
+    }
 
     /* 2D component done, now calculate linear component */
     linear = ZBarcode_Create(); /* Symbol contains the 2D component and Linear contains the rest */
@@ -1103,11 +1148,6 @@ INTERNAL int zint_composite(struct zint_symbol *symbol, unsigned char source[], 
     /* If symbol->height given minimum row height will be returned, else default height */
     linear->height = symbol->height;
     linear->debug = symbol->debug;
-
-    if (linear->symbology != BARCODE_GS1_128_CC) {
-        /* Set the "component linkage" flag in the linear component */
-        linear->option_1 = 2;
-    }
 
     switch (symbol->symbology) {
         case BARCODE_EANX_CC:

@@ -268,7 +268,7 @@ static float ult_look_ahead_eightbit(const unsigned char source[], const int len
     if (codeword_count == 0) {
         return 0.0f;
     }
-    return (float) letters_encoded / (float) codeword_count;
+    return (float) letters_encoded / codeword_count;
 }
 
 /* Encode character in the ASCII mode/submode (including numeric compression) */
@@ -344,7 +344,7 @@ static float ult_look_ahead_ascii(unsigned char source[], const int length, cons
     if (codeword_count == 0) {
         return 0.0f;
     }
-    return (float) letters_encoded / (float) codeword_count;
+    return (float) letters_encoded / codeword_count;
 }
 
 /* Returns true if should latch to subset other than given `subset` */
@@ -570,7 +570,7 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
     if (codeword_count == 0) {
         return 0.0f;
     }
-    return (float) letters_encoded / (float) codeword_count;
+    return (float) letters_encoded / codeword_count;
 }
 
 /* Produces a set of codewords which are "somewhat" optimised - this could be improved on */
@@ -1214,7 +1214,7 @@ INTERNAL int zint_ultra(struct zint_symbol *symbol, struct zint_seg segs[], cons
     symbol->width = total_width;
 
     for (i = 0; i < total_height; i++) {
-        symbol->row_height[i] = 1;
+        symbol->row_height[i] = 1.0f;
         for (j = 0; j < total_width; j++) {
             z_set_module_colour(symbol, i, j, z_posn(ult_colour, pattern[(i * total_width) + j]));
         }

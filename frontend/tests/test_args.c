@@ -1204,6 +1204,7 @@ static void test_other_opts(const testCtx *const p_ctx) {
         /* 65*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12,123.45678", "Error 189: scalexdimdp resolution invalid floating point: 7 significant digits maximum", 0 },
         /* 66*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "10.1,1000", "Warning 185: scalexdimdp X-dim '10.1' out of range (greater than 10), **IGNORED**", 0 },
         /* 67*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "10,1000.1", "Warning 186: scalexdimdp resolution '1000.1' out of range (greater than 1000), **IGNORED**", 0 },
+        /* 68*/ { BARCODE_HANXIN, "1", -1, " --hxalternatingfiller", NULL, "", 0 },
     };
     int data_size = ARRAY_SIZE(data);
     int i;

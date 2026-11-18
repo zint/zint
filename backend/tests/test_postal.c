@@ -67,7 +67,7 @@ static void test_large(const testCtx *const p_ctx) {
         /* 15*/ { BARCODE_JAPANPOST, "1", 21, ZINT_ERROR_TOO_LONG, -1, -1, "Error 496: Input length 21 too long (maximum 20)" },
         /* 16*/ { BARCODE_JAPANPOST, "A", 10, 0, 3, 133, "" },
         /* 17*/ { BARCODE_JAPANPOST, "A", 11, ZINT_ERROR_TOO_LONG, -1, -1, "Error 477: Input too long, requires too many symbol characters (maximum 20)" },
-        /* 18*/ { BARCODE_KOREAPOST, "1", 6, 0, 1, 162, "" },
+        /* 18*/ { BARCODE_KOREAPOST, "1", 6, 0, 1, 168, "" },
         /* 19*/ { BARCODE_KOREAPOST, "1", 7, ZINT_ERROR_TOO_LONG, -1, -1, "Error 484: Input length 7 too long (maximum 6)" },
         /* 20*/ { BARCODE_PLANET, "1", 13, 0, 2, 143, "" },
         /* 21*/ { BARCODE_PLANET, "1", 14, ZINT_WARN_NONCOMPLIANT, 2, 153, "Warning 478: Input length 14 is not standard (should be 11 or 13 digits)" },
@@ -94,17 +94,24 @@ static void test_large(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
-        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n",
+                        i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+                                    data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                            i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                            i, symbol->width, data[i].expected_width);
         }
 
         ZBarcode_Delete(symbol);
@@ -124,13 +131,21 @@ static void test_koreapost(const testCtx *const p_ctx) {
         float expected_height;
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
+        const char *comment;
     };
     static const struct item data[] = {
-        /* 0*/ { "123456", 0, 0, 50, 1, 167 },
+        /* 0*/ { "123456", 0, 0, 50, 1, 168, 1, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+
+    char cmp_buf[8192];
+    char cmp_msg[1024];
+
+    /* Only do BWIPP test if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -141,18 +156,45 @@ static void test_koreapost(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_KOREAPOST, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_KOREAPOST, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret_encode);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %.8g != %.8g\n", i, symbol->height, data[i].expected_height);
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %.8g != %.8g\n",
+                            i, symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                            i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                            i, symbol->width, data[i].expected_width);
+
+            if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) {
+                        printf("i:%d %s not BWIPP compatible (%s)\n",
+                                i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    }
+                } else {
+                    char modules_dump[4096];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf),
+                                        NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
 
             ret = ZBarcode_Buffer_Vector(symbol, 0);
-            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n",
+                            i, ret, data[i].ret_vector);
         }
 
         ZBarcode_Delete(symbol);
@@ -194,18 +236,24 @@ static void test_japanpost(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_JAPANPOST, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_JAPANPOST, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret_encode);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %.8g != %.8g\n", i, symbol->height, data[i].expected_height);
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %.8g != %.8g\n",
+                            i, symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                            i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                            i, symbol->width, data[i].expected_width);
 
             ret = ZBarcode_Buffer_Vector(symbol, 0);
-            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n",
+                            i, ret, data[i].ret_vector);
         }
 
         ZBarcode_Delete(symbol);
@@ -243,12 +291,14 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 12*/ { BARCODE_JAPANPOST, -1, BARCODE_CONTENT_SEGS, "123456-AB", "", "123456-AB" }, /* Ditto */
         /* 13*/ { BARCODE_KOREAPOST, -1, -1, "123456", "1234569", "" },
         /* 14*/ { BARCODE_KOREAPOST, -1, BARCODE_CONTENT_SEGS, "123456", "1234569", "1234569" }, /* No difference */
-        /* 15*/ { BARCODE_PLANET, -1, -1, "12345678901", "", "" }, /* None */
-        /* 16*/ { BARCODE_PLANET, -1, BARCODE_CONTENT_SEGS, "12345678901", "", "123456789014" },
-        /* 17*/ { BARCODE_KIX, -1, -1, "0123456789ABCDEFGH", "", "" }, /* None */
-        /* 18*/ { BARCODE_KIX, -1, BARCODE_CONTENT_SEGS, "0123456789ABCDEFGH", "", "0123456789ABCDEFGH" },
-        /* 19*/ { BARCODE_DAFT, -1, -1, "DAFT", "", "" }, /* None */
-        /* 20*/ { BARCODE_DAFT, -1, BARCODE_CONTENT_SEGS, "DAFT", "", "DAFT" },
+        /* 15*/ { BARCODE_KOREAPOST, 2, -1, "123456", "123456", "" },
+        /* 16*/ { BARCODE_KOREAPOST, 2, BARCODE_CONTENT_SEGS, "123456", "123456", "1234569" },
+        /* 17*/ { BARCODE_PLANET, -1, -1, "12345678901", "", "" }, /* None */
+        /* 18*/ { BARCODE_PLANET, -1, BARCODE_CONTENT_SEGS, "12345678901", "", "123456789014" },
+        /* 19*/ { BARCODE_KIX, -1, -1, "0123456789ABCDEFGH", "", "" }, /* None */
+        /* 20*/ { BARCODE_KIX, -1, BARCODE_CONTENT_SEGS, "0123456789ABCDEFGH", "", "0123456789ABCDEFGH" },
+        /* 21*/ { BARCODE_DAFT, -1, -1, "DAFT", "", "" }, /* None */
+        /* 22*/ { BARCODE_DAFT, -1, BARCODE_CONTENT_SEGS, "DAFT", "", "DAFT" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -265,8 +315,8 @@ static void test_hrt(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
-                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
-                    data[i].data, -1, debug);
+                                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
         expected_content_length = (int) strlen(data[i].expected_content);
 
@@ -274,19 +324,19 @@ static void test_hrt(const testCtx *const p_ctx) {
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
         assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
-                    i, symbol->text_length, expected_length);
+                        i, symbol->text_length, expected_length);
         assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
-                    i, symbol->text, data[i].expected);
+                        i, symbol->text, data[i].expected);
         if (symbol->output_options & BARCODE_CONTENT_SEGS) {
             assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
             assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
             assert_equal(symbol->content_segs[0].length, expected_content_length,
-                        "i:%d content_segs[0].length %d != expected_content_length %d\n",
-                        i, symbol->content_segs[0].length, expected_content_length);
+                            "i:%d content_segs[0].length %d != expected_content_length %d\n",
+                            i, symbol->content_segs[0].length, expected_content_length);
             assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected_content, expected_content_length),
-                        "i:%d memcmp(%.*s, %s, %d) != 0\n",
-                        i, symbol->content_segs[0].length, symbol->content_segs[0].source, data[i].expected_content,
-                        expected_content_length);
+                            "i:%d memcmp(%.*s, %s, %d) != 0\n",
+                            i, symbol->content_segs[0].length, symbol->content_segs[0].source, data[i].expected_content,
+                            expected_content_length);
         } else {
             assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
         }
@@ -344,7 +394,7 @@ static void test_input(const testCtx *const p_ctx) {
         /* 26*/ { BARCODE_JAPANPOST, -1, 0, "1234567890ABCDE", 0, 3, 133, 8, "", 1, "" }, /* 20 symbol chars */
         /* 27*/ { BARCODE_JAPANPOST, -1, 0, "a", 0, 3, 133, 8, "", 1, "" }, /* Converts to upper */
         /* 28*/ { BARCODE_JAPANPOST, -1, 0, ",", ZINT_ERROR_INVALID_DATA, -1, -1, -1, "Error 497: Invalid character at position 1 in input (alphanumerics and \"-\" only)", 1, "" },
-        /* 29*/ { BARCODE_KOREAPOST, -1, 0, "123456", 0, 1, 167, 50, "", 1, "" },
+        /* 29*/ { BARCODE_KOREAPOST, -1, 0, "123456", 0, 1, 168, 50, "", 1, "" },
         /* 30*/ { BARCODE_KOREAPOST, -1, 0, "A", ZINT_ERROR_INVALID_DATA, -1, -1, -1, "Error 485: Invalid character at position 1 in input (digits only)", 1, "" },
         /* 31*/ { BARCODE_PLANET, -1, 0, "12345678901", 0, 2, 123, 12, "", 1, "" },
         /* 32*/ { BARCODE_PLANET, -1, 0, "1234567890123", 0, 2, 143, 12, "", 1, "" },
@@ -370,7 +420,8 @@ static void test_input(const testCtx *const p_ctx) {
     char cmp_buf[8192];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    /* Only do BWIPP test if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -381,28 +432,41 @@ static void test_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
         if (data[i].height) {
             symbol->height = data[i].height;
         }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
-            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %g != %g\n", i, symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                            i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                            i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %g != %g\n",
+                            i, symbol->height, data[i].expected_height);
 
             if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
                 if (!data[i].bwipp_cmp) {
-                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    if (debug & ZINT_DEBUG_TEST_PRINT) {
+                        printf("i:%d %s not BWIPP compatible (%s)\n",
+                                i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    }
                 } else {
                     char modules_dump[4096];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf),
+                                        NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                     assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
@@ -431,14 +495,14 @@ static void test_encode(const testCtx *const p_ctx) {
         const char *expected;
     };
     static const struct item data[] = {
-        /*  0*/ { BARCODE_FLAT, "1304056", 0, 1, 63, "Verified manually against tec-it",
+        /*  0*/ { BARCODE_FLAT, "1304056", 0, 1, 63, "Verified manually against TEC-IT",
                     "100000000001000000000000000000100000000000000000010000000001000"
                 },
         /*  1*/ { BARCODE_POSTNET, "12345678901", 0, 2, 123, "USPS Publication 25 (2003) Exhibit 4-1",
                     "100000001010000010001000001010000010000010001000100000101000001000000010100000100010001000001010000000000000101000100000101"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                 },
-        /*  2*/ { BARCODE_POSTNET, "555551237", 0, 2, 103, "Verified manually against tec-it",
+        /*  2*/ { BARCODE_POSTNET, "555551237", 0, 2, 103, "Verified manually against TEC-IT",
                     "1000100010000010001000001000100000100010000010001000000000101000001000100000101000100000001000001000101"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                 },
@@ -456,71 +520,71 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100000101000001010000000100000101010000000101000000010100000001010000000101000000010000000101"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                 },
-        /*  7*/ { BARCODE_RM4SCC, "BX11LT1A", 0, 3, 75, "Verified manually against tec-it",
+        /*  7*/ { BARCODE_RM4SCC, "BX11LT1A", 0, 3, 75, "Verified manually against TEC-IT",
                     "100010001010100000000010100000101010000010100010000000101000100010100000101"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "001010000010000010001000100010001010000010101000000010001010001000000010101"
                 },
-        /*  8*/ { BARCODE_RM4SCC, "W1J0TR01", 0, 3, 75, "Verified manually against tec-it",
+        /*  8*/ { BARCODE_RM4SCC, "W1J0TR01", 0, 3, 75, "Verified manually against TEC-IT",
                     "101010000000001010100000100000101010001000100010000000101000001010101000001"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "000010100000100010001000100000101010100000100000100000101000100010001010001"
                 },
-        /*  9*/ { BARCODE_RM4SCC, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 3, 299, "Verified manually against tec-it",
+        /*  9*/ { BARCODE_RM4SCC, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 3, 299, "Verified manually against TEC-IT",
                     "10000010100000101000001010000010100000101000001010001000100010001000100010001000100010001000100010001010000010100000101000001010000010100000101000100000101000001010000010100000101000001010000010100010001000100010001000100010001000100010001000101000001010000010100000101000001010000010100000101000001"
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "00000010100010001000101000100000101000100010100000000010100010001000101000100000101000100010100000000010100010001000101000100000101000100010100000000010100010001000101000100000101000100010100000000010100010001000101000100000101000100010100000000010100010001000101000100000101000100010100000101000001"
                 },
-        /* 10*/ { BARCODE_JAPANPOST, "15400233-16-4-205", 0, 3, 133, "Zip/Barcode Manual p.6 1st example; verified manually against tec-it",
+        /* 10*/ { BARCODE_JAPANPOST, "15400233-16-4-205", 0, 3, 133, "Zip/Barcode Manual p.6 1st example; verified manually against TEC-IT",
                     "1000101000100010101000100000100000100010001010001010001000101000001010001000101000001000100010100000100010000010000010000010001010001"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "1010101000100010100010100000100000101000101000101000001000101000100010001000100010001000101000100000100010001000001000001000100010101"
                 },
-        /* 11*/ { BARCODE_JAPANPOST, "350110622-1A308", 0, 3, 133, "Zip/Barcode Manual p.6 2nd example; verified manually against tec-it",
+        /* 11*/ { BARCODE_JAPANPOST, "350110622-1A308", 0, 3, 133, "Zip/Barcode Manual p.6 2nd example; verified manually against TEC-IT",
                     "1000001010100010100000101000101000100000001010100010100010001000101000001000100000001010100000100010000010000010000010000010100010001"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "1010101000100010100000101000101000100000100010101000101000001000101000100000100000101000100000001010001000001000001000001000100010101"
                 },
-        /* 12*/ { BARCODE_JAPANPOST, "12345671-2-3", 0, 3, 133, "Verified manually against tec-it",
+        /* 12*/ { BARCODE_JAPANPOST, "12345671-2-3", 0, 3, 133, "Verified manually against TEC-IT",
                     "1000101000100010001010101000100010001010101000101000001000100010001000001010000010000010000010000010000010000010000010000010100010001"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "1010101000101000101000100010100010100010001010101000001000101000001000101000001000001000001000001000001000001000001000001000100010101"
                 },
-        /* 13*/ { BARCODE_JAPANPOST, "1234567BCDEFG", 0, 3, 133, "Verified manually against tec-it",
+        /* 13*/ { BARCODE_JAPANPOST, "1234567BCDEFG", 0, 3, 133, "Verified manually against TEC-IT",
                     "1000101000100010001010101000100010001010101000001000101000001000100010001000001010001000101000001000100010001000001010000010101000001"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "1010101000101000101000100010100010100010001010100000101000100000101000100000101000100000100010100000100010100000100010001000100010101"
                 },
-        /* 14*/ { BARCODE_JAPANPOST, "8901234HIJKLM", 0, 3, 133, "Verified manually against tec-it",
+        /* 14*/ { BARCODE_JAPANPOST, "8901234HIJKLM", 0, 3, 133, "Verified manually against TEC-IT",
                     "1000100010001010100000101000100010001010101000001000101000001000100010001000001010000010100000000010101000000010100010000010100000001"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "1010001010001010100000101000101000101000100010100000001010100000001010100000001010100000100000100000101000100000101000001000000010101"
                 },
-        /* 15*/ { BARCODE_JAPANPOST, "0987654NOPQRS", 0, 3, 133, "Verified manually against tec-it",
+        /* 15*/ { BARCODE_JAPANPOST, "0987654NOPQRS", 0, 3, 133, "Verified manually against TEC-IT",
                     "1000100000001010100010101000001010100010101000000010001010000010101000000010100010000010001010000010101000000010100010000010100000001"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "1010100000001010001010001010100010100010100010100000101000100000100010100000100010100000100010100000001010100000001010001000001000101"
                 },
-        /* 16*/ { BARCODE_JAPANPOST, "3210987TUVWXY", 0, 3, 133, "Verified manually against tec-it",
+        /* 16*/ { BARCODE_JAPANPOST, "3210987TUVWXY", 0, 3, 133, "Verified manually against TEC-IT",
                     "1000001010100010101000100000001010100010101000000010001010100000100000100000101000100000100010100000001010100000101000000010000010001"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "1010101000101000101000100000001010001010001010100000001010001000100000001000101000001000101000001000101000001000100010001000100000101"
                 },
-        /* 17*/ { BARCODE_KOREAPOST, "010230", 0, 1, 167, "Verified manually against tec-it",
-                    "10001000100000000000100010000000000010001000100000001000000010001000100010001000100000000000100000000001000100010001000100010001000000000001000000010001000000010001000"
+        /* 17*/ { BARCODE_KOREAPOST, "010230", 0, 1, 168, "Verified manually against TEC-IT",
+                    "100010001000000000001000100000000000100010001000000010000000100010001000100010001000000000001000000000001000100010001000100010001000000000001000000010001000000010001000"
                 },
-        /* 18*/ { BARCODE_KOREAPOST, "923457", 0, 1, 168, "Verified manually against tec-it",
+        /* 18*/ { BARCODE_KOREAPOST, "923457", 0, 1, 168, "Verified manually against TEC-IT",
                     "000010001000100000001000100000001000000010001000000010001000000010001000100000000000100010001000000010000000100010001000100010000000100000001000100010001000000000001000"
                 },
-        /* 19*/ { BARCODE_PLANET, "4012345235636", 0, 2, 143, "USPS Publication 197 (2004) Exhibit 4; verified manually against tec-it",
+        /* 19*/ { BARCODE_PLANET, "4012345235636", 0, 2, 143, "USPS Publication 197 (2004) Exhibit 4; verified manually against TEC-IT",
                     "10100010100000001010101010100000101000100010100000101000101000100010001010100010001010000010100010001010000010101010000010100000101010000010101"
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                 },
-        /* 20*/ { BARCODE_PLANET, "40123452356", 0, 2, 123, "Verified manually against tec-it",
+        /* 20*/ { BARCODE_PLANET, "40123452356", 0, 2, 123, "Verified manually against TEC-IT",
                     "101000101000000010101010101000001010001000101000001010001010001000100010101000100010100000101000100010100000101010001000101"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                 },
-        /* 21*/ { BARCODE_PLANET, "5020140235635", 0, 2, 143, "USPS Publication 197 (2004) Exhibit 6; verified manually against tec-it",
+        /* 21*/ { BARCODE_PLANET, "5020140235635", 0, 2, 143, "USPS Publication 197 (2004) Exhibit 6; verified manually against TEC-IT",
                     "10100010001000001010101010001000000010101010101000001000101000000010101010100010001010000010100010001010000010101010000010100010001010001010001"
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                 },
@@ -544,17 +608,17 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "001000100010100010000010001000101000001010100000001000101000001010000010101000001000100"
                 },
-        /* 26*/ { BARCODE_KIX, "1234567890ABCDEFGH", 0, 3, 143, "Verified manually against tec-it",
+        /* 26*/ { BARCODE_KIX, "1234567890ABCDEFGH", 0, 3, 143, "Verified manually against TEC-IT",
                     "00001010000010100000101000001010000010100010001000100010001000100010001000001010001000100010001000101000001010000010100000101000001010000010100"
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "00100010001010001000001010001000101000000000101000100010001010001000001000001010100010001010000000001010001000100010100010000010100010001010000"
                 },
-        /* 27*/ { BARCODE_KIX, "IJKLMNOPQRSTUVWXYZ", 0, 3, 143, "Verified manually against tec-it",
+        /* 27*/ { BARCODE_KIX, "IJKLMNOPQRSTUVWXYZ", 0, 3, 143, "Verified manually against TEC-IT",
                     "10000010100000101000001010000010100000101000001010001000100010001000100010001000100010001000100010100000101000001010000010100000101000001010000"
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "00001010001000100010100010000010100010001010000000001010001000100010100010000010100010001010000000001010001000100010100010000010100010001010000"
                 },
-        /* 28*/ { BARCODE_DAFT, "DAFTTFADFATDTATFT", 0, 3, 33, "Verified manually against tec-it",
+        /* 28*/ { BARCODE_DAFT, "DAFTTFADFATDTATFT", 0, 3, 33, "Verified manually against TEC-IT",
                     "001010000010100010100000001000100"
                     "101010101010101010101010101010101"
                     "100010000010001010000010000000100"
@@ -568,7 +632,8 @@ static void test_encode(const testCtx *const p_ctx) {
     char bwipp_buf[8192];
     char bwipp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    /* Only do BWIPP test if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -579,14 +644,18 @@ static void test_encode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, %d, %d, \"%s\",\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    i, testUtilBarcodeName(data[i].symbology),
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
@@ -594,19 +663,25 @@ static void test_encode(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 int width, row;
 
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                                i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                                i, symbol->width, data[i].expected_width, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n",
+                                i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
-                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf), NULL);
-                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, bwipp_buf,
+                                        sizeof(bwipp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
                     assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                                   i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf,
+                                   data[i].expected);
                 }
             }
         }

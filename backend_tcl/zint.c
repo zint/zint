@@ -193,6 +193,8 @@
 - Added -gs1raw switch.
 2026-03-30 GL
 - Added -dmb256 & -dmc40 switches.
+2026-11-18 GL
+- Added -hxalternatingfiller switch.
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -597,6 +599,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -guardwhitespace bool: add quiet zone indicators (EAN/UPC only)\n"
     "   -height double: symbol height in modules\n"
     "   -heightperrow bool: treat height as per-row\n"
+    "   -hxalternatingfiller bool: for Han Xin, add alternating filler to unused function information\n"
     /* cli option --input not supported */
     "   -init bool: create reader initialisation symbol (Code 128, Data Matrix)\n"
     "   -mask integer: set masking pattern to use (QR/MicroQR/HanXin/DotCode)\n"
@@ -876,6 +879,7 @@ static int Encode(Tcl_Interp *interp, int objc,
     int destHeight = 0;
     int ECIIndex = 0;
     int fFullMultiByte = 0;
+    int fHXAlternatingFiller = 0;
     int addon_gap = 0;
     int Separator = 1;
     int Mask = 0;
@@ -920,7 +924,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-eci", "-esc", "-extraesc", "-fast", "-fg", "-format", "-fullmultibyte",
             "-gs1nocheck", "-gs1parens", "-gs1raw", "-gs1strict",
             "-gssep", "-guarddescent",
-            "-guardwhitespace", "-height", "-heightperrow", "-init", "-mask", "-mode",
+            "-guardwhitespace", "-height", "-heightperrow", "-hxalternatingfiller", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
             "-reverse", "-rotate", "-rows", "-scale", "-scalexdimdp", "-scmvv", "-secure",
             "-seg1", "-seg2", "-seg3", "-seg4", "-seg5", "-seg6", "-seg7", "-seg8", "-seg9",
@@ -935,7 +939,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             iECI, iEsc, iExtraEsc, iFast, iFG, iFormat, iFullMultiByte,
             iGS1NoCheck, iGS1Parens, iGS1Raw, iGS1Strict,
             iGSSep, iGuardDescent,
-            iGuardWhitespace, iHeight, iHeightPerRow, iInit, iMask, iMode,
+            iGuardWhitespace, iHeight, iHeightPerRow, iHXAlternatingFiller, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
             iReverse, iRotate, iRows, iScale, iScaleXdimDp, iSCMvv, iSecure,
             iSeg1, iSeg2, iSeg3, iSeg4, iSeg5, iSeg6, iSeg7, iSeg8, iSeg9,
@@ -976,6 +980,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iGSSep:
         case iGuardWhitespace:
         case iHeightPerRow:
+        case iHXAlternatingFiller:
         case iInit:
         case iNoBackground:
         case iNoQuietZones:
@@ -1242,6 +1247,9 @@ static int Encode(Tcl_Interp *interp, int objc,
             } else {
                 my_symbol->input_mode &= ~HEIGHTPERROW_MODE;
             }
+            break;
+        case iHXAlternatingFiller:
+            fHXAlternatingFiller = intValue;
             break;
         case iInit:
             if (intValue) {
@@ -1639,6 +1647,9 @@ static int Encode(Tcl_Interp *interp, int objc,
     }
     if (Separator && (cap & ZINT_CAP_STACKABLE)) {
         my_symbol->option_3 = Separator;
+    }
+    if (fHXAlternatingFiller && my_symbol->symbology == BARCODE_HANXIN) {
+        my_symbol->option_3 |= HX_ALTERNATING_FILLER;
     }
     /*------------------------------------------------------------------------*/
     /* >>> option_2 is set by two values depending on the symbology */

@@ -339,6 +339,10 @@ static int hx_in_fourbyte(const unsigned int ddata[], const int length, const in
     return 1;
 }
 
+#if 0
+#define HX_DEBUG_DEFINE_MODES /* For debugging costings */
+#endif
+
 /* Indexes into mode_types array */
 #define HX_N   0 /* Numeric */
 #define HX_T   1 /* Text */
@@ -399,6 +403,14 @@ static void hx_define_modes(char *modes, const unsigned int ddata[], const int l
     /* At the beginning of each iteration of the loop below, prev_costs[j] is the minimum number of 1/6 (1/XX_MULT)
      * bits needed to encode the entire string prefix of length i, and end in mode_types[j] */
     memcpy(prev_costs, head_costs, HX_NUM_MODES * sizeof(unsigned int));
+
+    #ifdef HX_DEBUG_DEFINE_MODES
+    printf(" head");
+    for (j = 0; j < HX_NUM_MODES; j++) {
+        printf(" %c(0)=%.1f", mode_types[j], (float) prev_costs[j] / HX_MULT);
+    }
+    printf("\n");
+    #endif
 
     /* Calculate costs using dynamic programming */
     for (i = 0; i < length; i++) {
@@ -467,6 +479,18 @@ static void hx_define_modes(char *modes, const unsigned int ddata[], const int l
                 }
             }
         }
+
+        #ifdef HX_DEBUG_DEFINE_MODES
+        {
+            int min_j = 0;
+            printf(" % 4d: curr", i);
+            for (j = 0; j < HX_NUM_MODES; j++) {
+                printf(" %c(%c)=%.1f", mode_types[j], char_modes[i][j], (float) cur_costs[j] / HX_MULT);
+                if (cur_costs[j] < cur_costs[min_j]) min_j = j;
+            }
+            printf(" min %c(%c)=%.1f\n", mode_types[min_j], char_modes[i][min_j], (float) cur_costs[min_j] / HX_MULT);
+        }
+        #endif
 
         memcpy(prev_costs, cur_costs, HX_NUM_MODES * sizeof(unsigned int));
     }
@@ -1150,7 +1174,7 @@ static void hx_add_ecc(unsigned char fullstream[], const unsigned char datastrea
 }
 
 static void hx_set_function_info(unsigned char *grid, const int size, const int version, const int ecc_level,
-            const int bitmask, const int debug_print) {
+            const int bitmask, const int alt_filler, const int debug_print) {
     int i, j;
     char function_information[34];
     unsigned char fi_cw[3] = {0};
@@ -1180,11 +1204,15 @@ static void hx_set_function_info(unsigned char *grid, const int size, const int 
         bp = z_bin_append_posn(fi_ecc[i], 4, function_information, bp);
     }
 
-    /* Previously added alternating filler pattern here (as does BWIPP) but not mentioned in ISO/IEC 20830:2021 and
-       does not appear in Figure 1 nor in the figures in Annex K (although does appear in Figure 2 and Figures 4-9)
-       nor in the AIM ITS/04-023:2022 examples: so just clear */
-    for (i = 28; i < 34; i++) {
-        function_information[i] = '0';
+    /* Previously always added alternating filler pattern here (as does BWIPP) but not mentioned in ISO/IEC 20830:2021
+       & does not appear in Figure 1 nor in the figures in Annex K (although does appear in Figure 2 and Figures 4-9)
+       nor in the AIM ITS/04-023:2022 examples */
+    memset(function_information + 28, '0', 6);
+    /* Now only do it if requested */
+    if (alt_filler) {
+        function_information[29] = '1';
+        function_information[31] = '1';
+        function_information[33] = '1';
     }
 
     if (debug_print) {
@@ -1227,6 +1255,29 @@ static void hx_make_picket_fence(const unsigned char fullstream[], unsigned char
     }
 }
 
+#if 0
+#define HX_ZINTLOG
+#endif
+#ifdef HX_ZINTLOG
+static void append_log(const unsigned char log) {
+    FILE *file;
+
+    if ((file = fopen("hx_zintlog.txt", "a+"))) {
+        fprintf(file, "%d", log);
+        (void) fclose(file);
+    }
+}
+
+static void write_log(const char log[]) {
+    FILE *file;
+
+    if ((file = fopen("hx_zintlog.txt", "a+"))) {
+        fprintf(file, "%s\n", log); /*writes*/
+        (void) fclose(file);
+    }
+}
+#endif
+
 /* Evaluate a bitmask according to table 9 */
 static int hx_evaluate(const unsigned char *local, const int size) {
     static const unsigned char h1010111[7] = { 1, 0, 1, 0, 1, 1, 1 };
@@ -1236,6 +1287,21 @@ static int hx_evaluate(const unsigned char *local, const int size) {
     int result = 0;
     int state;
     int a, b, afterCount, beforeCount;
+#ifdef HX_ZINTLOG
+    int result_b = 0;
+    char str[64];
+#endif
+
+#ifdef HX_ZINTLOG
+    /* bitmask output */
+    write_log("\n+++++");
+    for (y = 0; y < size; y++) {
+        for (x = 0; x < size; x++) {
+            append_log(local[(y * size) + x]);
+        }
+        write_log("");
+    }
+#endif
 
     /* Test 1: 1:1:1:1:3 or 3:1:1:1:1 ratio pattern in row/column */
     /* Vertical */
@@ -1256,10 +1322,10 @@ static int hx_evaluate(const unsigned char *local, const int size) {
                     }
                     beforeCount++;
                 }
-                if (beforeCount == 3) {
+                if (beforeCount == 3 && (y + 7 >= size || !local[(y + 7) * size + x])) { /* Need >= 1 light after */
                     /* Pattern is preceded by light area 3 modules wide */
                     result += 50;
-                } else {
+                } else if (beforeCount) {
                     afterCount = 0;
                     for (a = (y + 7); a <= (y + 9); a++) {
                         if (a >= size) { /* Count > edge as whitespace */
@@ -1281,6 +1347,13 @@ static int hx_evaluate(const unsigned char *local, const int size) {
         }
     }
 
+#ifdef HX_ZINTLOG
+    /* Output Test 1 vertical */
+    sprintf(str, " 1v: %d", result);
+    result_b = result;
+    write_log(str);
+#endif
+
     /* Horizontal */
     for (y = 0; y < size; y++) {
         r = y * size;
@@ -1299,10 +1372,10 @@ static int hx_evaluate(const unsigned char *local, const int size) {
                     beforeCount++;
                 }
 
-                if (beforeCount == 3) {
+                if (beforeCount == 3 && (x + 7 >= size || !local[r + x + 7])) { /* Need >= 1 light after */
                     /* Pattern is preceded by light area 3 modules wide */
                     result += 50;
-                } else {
+                } else if (beforeCount) { /* Need >= 1 light before */
                     afterCount = 0;
                     for (a = (x + 7); a <= (x + 9); a++) {
                         if (a >= size) { /* Count > edge as whitespace */
@@ -1323,6 +1396,13 @@ static int hx_evaluate(const unsigned char *local, const int size) {
             }
         }
     }
+
+#ifdef HX_ZINTLOG
+    /* Output Test 1 horizontal */
+    sprintf(str, " 1h: %d", result - result_b);
+    result_b = result;
+    write_log(str);
+#endif
 
     /* Test 2: Adjacent modules in row/column in same colour */
     /* In AIMD-15 section 5.8.3.2 it is stated... “In Table 9 below, i refers to the row
@@ -1352,6 +1432,13 @@ static int hx_evaluate(const unsigned char *local, const int size) {
         }
     }
 
+#ifdef HX_ZINTLOG
+    /* Output Test 2 vertical */
+    sprintf(str, " 2v: %d", result - result_b);
+    result_b = result;
+    write_log(str);
+#endif
+
     /* Horizontal */
     for (y = 0; y < size; y++) {
         r = y * size;
@@ -1373,6 +1460,16 @@ static int hx_evaluate(const unsigned char *local, const int size) {
         }
     }
 
+#ifdef HX_ZINTLOG
+    /* Output Test 2 horizontal+summary */
+    sprintf(str, " 2h: %d", result - result_b);
+    result_b = result;
+    write_log(str);
+    write_log(   "     ====");
+    sprintf(str, "     %d", result);
+    write_log(str);
+#endif
+
     return result;
 }
 
@@ -1380,7 +1477,7 @@ static int hx_evaluate(const unsigned char *local, const int size) {
 /* TODO: Haven't been able to replicate (or even get close to) the penalty scores in ISO/IEC 20830:2021
  * Annex K examples */
 static int hx_apply_bitmask(unsigned char *grid, const int size, const int version, const int ecc_level,
-            const int user_mask, const int debug_print) {
+            const int user_mask, const int alt_filler, const int debug_print) {
     int x, y;
     int i, j, r, k;
     int pattern, penalty[4] = {0};
@@ -1424,7 +1521,7 @@ static int hx_apply_bitmask(unsigned char *grid, const int size, const int versi
             local[k] = grid[k] & 0x0F;
         }
         /* Set the Structural Info */
-        hx_set_function_info(local, size, version, ecc_level, pattern, 0 /*debug_print*/);
+        hx_set_function_info(local, size, version, ecc_level, pattern, alt_filler, 0 /*debug_print*/);
 
         /* Evaluate result */
         penalty[pattern] = hx_evaluate(local, size);
@@ -1440,7 +1537,7 @@ static int hx_apply_bitmask(unsigned char *grid, const int size, const int versi
                 }
             }
             /* Set the Structural Info */
-            hx_set_function_info(local, size, version, ecc_level, pattern, 0 /*debug_print*/);
+            hx_set_function_info(local, size, version, ecc_level, pattern, alt_filler, 0 /*debug_print*/);
 
             /* Evaluate result */
             penalty[pattern] = hx_evaluate(local, size);
@@ -1472,7 +1569,7 @@ static int hx_apply_bitmask(unsigned char *grid, const int size, const int versi
         }
     }
     /* Set the Structural Info */
-    hx_set_function_info(grid, size, version, ecc_level, best_pattern, debug_print);
+    hx_set_function_info(grid, size, version, ecc_level, best_pattern, alt_filler, debug_print);
 
     return best_pattern;
 }
@@ -1483,14 +1580,16 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
     int est_binlen;
     int ecc_level = symbol->option_1;
     int i, j, j_max, version;
-    int full_multibyte;
     int user_mask, bitmask;
     int data_codewords = 0, size;
     int size_squared;
     int codewords;
     int bin_len;
+    /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 18030 in UNICODE_MODE */
+    const int full_multibyte = (symbol->option_3 & 0xF8) == ZINT_FULL_MULTIBYTE;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
     const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
+    const int alt_filler = symbol->option_3 & HX_ALTERNATING_FILLER;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = zint_get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
@@ -1504,8 +1603,6 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     z_segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECI & protect lengths) */
 
-    /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 18030 in UNICODE_MODE */
-    full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
     user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is pattern + 1, so >= 1 and <= 4 */
     if (user_mask > 4) {
         user_mask = 0; /* Ignore */
@@ -1683,7 +1780,7 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
         }
     }
 
-    bitmask = hx_apply_bitmask(grid, size, version, ecc_level, user_mask, debug_print);
+    bitmask = hx_apply_bitmask(grid, size, version, ecc_level, user_mask, alt_filler, debug_print);
 
     /* Feedback options */
     symbol->option_1 = ecc_level;
@@ -1700,7 +1797,7 @@ INTERNAL int zint_hanxin(struct zint_symbol *symbol, struct zint_seg segs[], con
                 z_set_module(symbol, i, j);
             }
         }
-        symbol->row_height[i] = 1;
+        symbol->row_height[i] = 1.0f;
     }
     symbol->height = size;
 

@@ -573,8 +573,22 @@ error correction codewords</string>
       <bool>false</bool>
      </property>
      <property name="toolTip">
-      <string>Use Hanzi multibyte encoding for binary
-and Latin data</string>
+      <string>Allow use of Hanzi multibyte encoding for
+binary and Latin data</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkHXAlternatingFiller">
+     <property name="text">
+      <string>Add &amp;Alternating Filler</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Add alternating pattern to unused
+function information modules</string>
      </property>
     </widget>
    </item>

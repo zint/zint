@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-10-09)
+Version 2.16.0.9 (dev) not released yet (2026-11-18)
 ====================================================
 
 **Incompatible changes**
@@ -16,6 +16,9 @@ Version 2.16.0.9 (dev) not released yet (2026-10-09)
 - CLI now warns if both "--dmre" and "--square" are given
   (previously silently ignored "--dmre")
 - New escape sequences `\L` (DLE), `\F` (FS), `\N` (US)
+- No. of columns/rows of CC-C composites adjusted to follow standard ratio
+  (may cause symbol size change)
+- DPD now warns if Destination Country Code is not ISO 3166-1
 
 Changes
 -------
@@ -47,6 +50,13 @@ Changes
   "--vers=1" (API `option_2 = 1`)
 - TELEPEN_NUM: support switching to Full ASCII mode with DLE
 - TELEPEN: support switching to Compressed Numeric Mode with DLE if AIM enabled
+- KOREAPOST: allow hiding of check digit in HRT (`--vers=2`, `option_2 = 2`)
+- GS1-128 Composite CC-C: allow no. of columns to be specified via `--cols` (API
+  `option_2`)
+- HANXIN: new option `--hxalternatingfiller` (API `option_3 |=
+  HX_ALTERNATING_FILLER`) to add filler pattern to unused function information
+  modules (standard is unclear on this)
+- DPD: now warns if Destination Country Code is not ISO 3166-1
 
 Bugs
 ----
@@ -77,9 +87,16 @@ Bugs
 - composite: preserve `gs1_verify()` warning (if any)
 - GRIDMATRIX: fix byte latch 6 -> 7, & allowing more than one non-digit in
   numeral (both caused misencodation)
+- GRIDMATRIX/UPNQR: fix incorrect setting of default ECIs when have muliple segs
+  & data is in ECI 29 (GRIDMATRIX) or ECI 4 (UPNQR)
 - DOTCODE: fix not checking ECI on segs > 0 (MR #160, props Connor-Jay Dunn)
 - MAXICODE: do not span segments when counting digits/alphas even if no ECIs
   as current logic can't handle it (ticket #361, props Zhiyuan He)
+- KOREAPOST: fix misencodation of digit 1 (props BWIPP)
+- GS1-128 Composite CC-C: ensure columns/rows satisfy standard ratio (props
+  BWIPP)
+- HANXIN/QRCODE: fix mask evaluation for finder patterns (must have at least
+  1 white space both before & after)
 
 
 Version 2.16.0 (2025-12-19)

@@ -829,7 +829,19 @@ INTERNAL int zint_get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg 
 
     for (i = 0; i < seg_count; i++) {
         if (segs[i].eci == 0) {
-            const int eci = zint_get_best_eci(segs[i].source, segs[i].length);
+            int eci;
+            /* Special-case Grid Matrix and UPNQR */
+            if (default_eci != 3) {
+                /* Note: attempting ECI 29 or single-byte conversions only, so `zint_get_eci_length()` unnecessary */
+                int length = segs[i].length;
+                unsigned char *local_source = (unsigned char *) z_alloca(length + 1);
+                eci = default_eci;
+                if (zint_utf8_to_eci(default_eci, segs[i].source, local_source, &length) != 0) {
+                    eci = zint_get_best_eci(segs[i].source, segs[i].length);
+                }
+            } else {
+                eci = zint_get_best_eci(segs[i].source, segs[i].length);
+            }
             if (eci == default_eci) {
                 if (i != 0 && segs[i - 1].eci != 0 && segs[i - 1].eci != default_eci) {
                     segs[i].eci = eci;

@@ -1372,7 +1372,7 @@ private slots:
         QTest::newRow("BARCODE_HANXIN") << false << 0.0f << ""
             << BARCODE_HANXIN << (UNICODE_MODE | ESCAPE_MODE) // symbology-inputMode
             << "éβÿ啊\\e\"'" << "" // text-primary
-            << 30.0f << 2 << 5 << ((0 + 1) // height-scale
+            << 30.0f << 2 << 5 << (HX_ALTERNATING_FILLER | ((0 + 1)) // height-scale
             << 8) << 1.0f << 0.0f << false << 0.8f << 1.0f // dpmm-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
@@ -1381,8 +1381,8 @@ private slots:
             << 29 << false << false << false << false // eci-gs1SyntaxEngine
             << false << false << false << WARN_DEFAULT << false // readerInit-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
-            << "zint -b 116 --eci=29 -d 'éβÿ啊\\e\"'\\''' --esc --mask=0 --secure=2 --vers=5"
-            << "zint.exe -b 116 --eci=29 -d \"éβÿ啊\\e\\\"'\" --esc --mask=0 --secure=2 --vers=5"
+            << "zint -b 116 --eci=29 -d 'éβÿ啊\\e\"'\\''' --esc --hxalternatingfiller --mask=0 --secure=2 --vers=5"
+            << "zint.exe -b 116 --eci=29 -d \"éβÿ啊\\e\\\"'\" --esc --hxalternatingfiller --mask=0 --secure=2 --vers=5"
             << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_HIBC_DM") << false << 10.0f << ""

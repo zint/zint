@@ -333,7 +333,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.16.0.9</p>
-<p class="date">July 2026</p>
+<p class="date">November 2026</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -5482,10 +5482,10 @@ alphanumeric, and is of the form:</p>
 <caption><span class="table-label">Table 20:</span> DPD Input
 Fields</caption>
 <colgroup>
-<col style="width: 26%" />
-<col style="width: 27%" />
-<col style="width: 16%" />
+<col style="width: 25%" />
 <col style="width: 29%" />
+<col style="width: 16%" />
+<col style="width: 28%" />
 </colgroup>
 <thead>
 <tr>
@@ -5497,20 +5497,26 @@ Fields</caption>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">PPPPPPP (7 alphanumerics)</td>
-<td style="text-align: left;">TTTTTTTTTTTTTT (14 alphanumerics)</td>
-<td style="text-align: left;">SSS (3 digits)</td>
-<td style="text-align: left;">CCC (3-digit ISO 3166-1)</td>
+<td style="text-align: left;"><code>PPPPPPP</code></td>
+<td style="text-align: left;"><code>TTTTNNNNNNNNNN</code></td>
+<td style="text-align: left;"><code>SSS</code></td>
+<td style="text-align: left;"><code>CCC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">(7 alphanumerics)</td>
+<td style="text-align: left;">(1st 4 alphanumeric, last 10 digits)</td>
+<td style="text-align: left;">(3 digits)</td>
+<td style="text-align: left;">(3-digit ISO 3166-1)</td>
 </tr>
 </tbody>
 </table>
 <p>A warning will be generated if the Service Code, the Destination
 Country Code, or the last 10 characters of the Tracking Number are
-non-numeric.</p>
+non-numeric, or if the Destination Country Code is not ISO 3166-1.</p>
 <p>Zint formats the Human Readable Text as specified by DPD, leaving out
-the identification tag, and adds a modulo-36 check character to the text
-(not to the barcode itself), thus:</p>
-<p><code>PPPP PPP TTTT TTTT TTTT TT SSS CCC D</code></p>
+the identification tag, and adds a modulo-36 check character
+<code>D</code> to the text (not to the barcode itself), thus:</p>
+<p><code>PPPP PPP TTTT NNNN NNNN NN SSS CCC D</code></p>
 <p>By default a top boundary bar is added, with default width 3X. The
 width can be overridden using <code>--border</code> (API
 <code>border_width</code>). For a symbol with no top boundary bar,
@@ -5549,16 +5555,16 @@ Symbols (ISO 24723)</a> to find out how to generate DataBar symbols with
 GS1 DataBar Omnidirectional and GS1 DataBar Truncated</h4>
 <p>Previously known as RSS-14 this standard encodes a 13-digit item
 code. A check digit and HRT-only Application Identifier of
-<code>"(01)"</code> are added by Zint. (A 14-digit code that appends the
+<code>"(01)"</code> are added by Zint. A 14-digit code that appends the
 standard GS1 check digit may be given, in which case the check digit
-will be verified.) Input less than 13 digits will be zero-filled.</p>
+will be verified. Input less than 13 digits will be zero-filled.</p>
 <figure>
 <img src="images/dbar_omn.svg" class="lin"
 alt="zint -b DBAR_OMN --compliant -d &quot;0950110153001&quot;" />
 <figcaption><span class="figure-label">Figure 78:</span>
 <code>zint -b DBAR_OMN --compliant -d "0950110153001"</code></figcaption>
 </figure>
-<p>GS1 DataBar Omnidirectional symbols should have a height of 33 or
+<p>GS1 DataBar Omnidirectional symbols should have a height of 33X or
 greater. To produce a GS1 DataBar Truncated symbol set the symbol height
 to a value between 13 and 32. Truncated symbols may not be scannable by
 omnidirectional scanners.</p>
@@ -5611,6 +5617,9 @@ alt="zint -b KOREAPOST -d &quot;923457&quot;" />
 <figcaption><span class="figure-label">Figure 82:</span>
 <code>zint -b KOREAPOST -d "923457"</code></figcaption>
 </figure>
+<p>By default the check digit is shown in the Human Readable Text - to
+not show it set <code>--vers=2</code> (API
+<code>option_2 = 2</code>).</p>
 <h3 id="channel-code">6.1.13 Channel Code</h3>
 <p>A highly compressed symbol for numeric data. The number of channels
 in the symbol can be between 3 and 8 and this can be specified by
@@ -6067,6 +6076,10 @@ alt="zint -b GS1_128_CC --compliant -d &quot;[99]1234-abcd&quot; --mode=3 --prim
 <figcaption><span class="figure-label">Figure 98:</span>
 <code>zint -b GS1_128_CC --compliant -d "[99]1234-abcd" --mode=3 --primary="[01]03312345678903"</code></figcaption>
 </figure>
+<p>Zint automatically adjusts the number of CC-C columns dependent on
+the data, but it can be overridden by setting <code>--cols</code> (API
+<code>option_2</code>) to a value between 1 and 30. A warning will be
+issued if this results in a non-compliant columns/rows ratio.</p>
 <h2 id="two-track-symbols">6.4 Two-Track Symbols</h2>
 <h3 id="pharmacode-two-track">6.4.1 Pharmacode Two-Track</h3>
 <p>Developed by Laetus, Pharmacode Two-Track is an alternative system to
@@ -8510,6 +8523,10 @@ values 0-3, or in the API by setting
 <code>ZINT_FULL_MULTIBYTE</code> set</p>
 <div class="sourceCode" id="cb128"><pre
 class="sourceCode c"><code class="sourceCode c"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a>option_3 <span class="op">=</span> ZINT_FULL_MULTIBYTE <span class="op">|</span> <span class="op">(</span>N <span class="op">+</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">8</span></span></code></pre></div>
+<p>An alternating filler pattern may be added to unused function
+information modules by specifying the <code>--hxalternatingfiller</code>
+switch (API <code>option_3 |= HX_ALTERNATING_FILLER</code>). The current
+standard is unclear on whether this should be added or not.</p>
 <h3 id="ultracode">6.6.14 Ultracode</h3>
 <p>This symbology uses a grid of coloured elements to encode data. ECI
 and GS1 modes are supported.</p>
@@ -9415,8 +9432,9 @@ the <code>--border</code> option.</p>
 <dt><strong><code>--cols=</code></strong><em><code>INTEGER</code></em></dt>
 <dd>
 <p>Set the number of data columns in the symbol to
-<em><code>INTEGER</code></em>. Affects Codablock F, DotCode, GS1 DataBar
-Expanded Stacked (DBAR_EXPSTK), MicroPDF417 and PDF417 symbols.</p>
+<em><code>INTEGER</code></em>. Affects Codablock F, DotCode, GS1-128
+Composite CC-C, GS1 DataBar Expanded Stacked (DBAR_EXPSTK), MicroPDF417
+and PDF417 symbols.</p>
 </dd>
 <dt><strong><code>--compliantheight</code></strong></dt>
 <dd>
@@ -9635,6 +9653,11 @@ and/or <code>"&gt;"</code> to HRT where applicable.</p>
 <dd>
 <p>Treat height as per-row. Affects Codablock F, Code 16K, Code 49, GS1
 DataBar Expanded Stacked (DBAR_EXPSTK), MicroPDF417 and PDF417.</p>
+</dd>
+<dt><strong><code>--hxalternatingfiller</code></strong></dt>
+<dd>
+<p>For Han Xin symbols, add an alternating pattern to unused function
+information.</p>
 </dd>
 <dt><strong><code>-i</code></strong> <em><code>FILE</code></em>,
 <strong><code>--input=</code></strong><em><code>FILE</code></em></dt>
@@ -9958,6 +9981,7 @@ Code 11         0 to 2 (2 visible check digits to none)
 Code 39         1 or 2 (add visible or hidden check digit)
 Code 93         1      (show the default check characters)
 EXCODE39        1 or 2 (add visible or hidden check digit)
+Korea Post      2      (hide the check digit)
 LOGMARS         1 or 2 (add visible or hidden check digit)
 UK Plessey      1      (show the default check characters)
 MSI Plessey     0 to 6 (none to various visible options)

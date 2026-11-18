@@ -64,6 +64,7 @@ public slots:
 
     void data_ui_set();
     void composite_ui_set();
+    void composite_cc_c_ui_set();
     void composite_ean_check();
     void maxi_scm_ui_set();
     void msi_plessey_ui_set();

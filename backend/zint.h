@@ -337,6 +337,9 @@ extern "C" {
 /* QR, Han Xin, Grid Matrix specific options (`symbol->option_3`) */
 #define ZINT_FULL_MULTIBYTE     200     /* Enable Kanji/Hanzi compression for Latin-1 & binary data */
 
+/* Han Xin specific options (`symbol->option_3`) */
+#define HX_ALTERNATING_FILLER   0x01
+
 /* Ultracode specific option (`symbol->option_3`) */
 #define ULTRA_COMPRESSION       128     /* Enable Ultracode compression (experimental) */
 

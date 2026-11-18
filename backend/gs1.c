@@ -2415,6 +2415,11 @@ INTERNAL char zint_gs1_check_digit(const unsigned char source[], const int lengt
     return z_itoc((10 - (count % 10)) % 10);
 }
 
+/* Helper to expose `iso3166_numeric()` */
+INTERNAL int zint_gs1_iso3166_numeric(int cc) {
+    return iso3166_numeric(cc);
+}
+
 /* Helper to expose `iso3166_alpha2()` */
 INTERNAL int zint_gs1_iso3166_alpha2(const unsigned char *cc) {
     return iso3166_alpha2((const char *) cc);

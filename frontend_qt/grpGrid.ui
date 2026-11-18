@@ -200,8 +200,8 @@ error correction codewords</string>
       <bool>false</bool>
      </property>
      <property name="toolTip">
-      <string>Use Hanzi multibyte encoding for binary
-and Latin data</string>
+      <string>Allow use of Hanzi multibyte encoding for
+binary and Latin data</string>
      </property>
     </widget>
    </item>

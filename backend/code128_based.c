@@ -230,6 +230,12 @@ INTERNAL int zint_dpd(struct zint_symbol *symbol, unsigned char source[], int le
                     "Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric");
         }
         error_number = ZINT_WARN_NONCOMPLIANT;
+    } else {
+        if (!zint_gs1_iso3166_numeric(z_to_int(local_source + length - 3, 3))) {
+            error_number = z_errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 846,
+                                        "Destination Country Code '%.3s' (last 3 characters) is not ISO 3166-1",
+                                        local_source + length - 3);
+        }
     }
 
     return error_number;

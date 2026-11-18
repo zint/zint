@@ -215,11 +215,12 @@ if (have_gs1syntaxengine) {
            "  -h, --help            Display help message\n"
            "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n", stdout);
     fputs( "  --heightperrow        Treat height as per-row\n"
+           "  --hxalternatingfiller For Han Xin, add alternating filler to function info\n"
            "  -i, --input=FILE      Read input data from FILE\n"
            "  --init                Create Reader Initialisation (Programming) symbol\n"
-           "  --mask=INTEGER        Set masking pattern to use (QR/Han Xin/DotCode)\n"
-           "  --mirror              Use data to determine filename\n", stdout);
-    fputs( "  --mode=INTEGER        Set encoding mode (MaxiCode/Composite)\n", stdout);
+           "  --mask=INTEGER        Set masking pattern to use (QR/Han Xin/DotCode)\n", stdout);
+    fputs( "  --mirror              Use data to determine filename\n"
+           "  --mode=INTEGER        Set encoding mode (MaxiCode/Composite)\n", stdout);
     printf("  --nobackground        Remove background (EMF/EPS/GIF%s/SVG/TIF only)\n", no_png_type);
     fputs( "  --noquietzones        Disable default quiet zones\n"
            "  --notext              Remove human readable text (HRT)\n", stdout);
@@ -1557,7 +1558,7 @@ enum options {
     OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FULLMULTIBYTE,
     OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GS1RAW, OPT_GS1STRICT /*GS1SYNTAXENGINE_MODE*/,
     OPT_GSSEP, OPT_GUARDDESCENT, OPT_GUARDWHITESPACE,
-    OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MASK, OPT_MIRROR, OPT_MODE,
+    OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_HXALTERNATINGFILLER, OPT_INIT, OPT_MASK, OPT_MIRROR, OPT_MODE,
     OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
     OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
     OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
@@ -1616,6 +1617,7 @@ static const struct option long_options[] = {
     {"height", 1, NULL, OPT_HEIGHT},
     {"heightperrow", 0, NULL, OPT_HEIGHTPERROW},
     {"help", 0, NULL, 'h'},
+    {"hxalternatingfiller", 0, NULL, OPT_HXALTERNATINGFILLER},
     {"init", 0, NULL, OPT_INIT},
     {"input", 1, NULL, 'i'},
     {"mask", 1, NULL, OPT_MASK},
@@ -1730,6 +1732,7 @@ int main(int argc, char **argv) {
     int batch_mode = 0;
     int mirror_mode = 0;
     int fullmultibyte = 0;
+    int hx_alternating_filler = 0;
     int mask = 0;
     int separator = 0;
     int addon_gap = 0;
@@ -2018,6 +2021,9 @@ int main(int argc, char **argv) {
                 break;
             case OPT_HEIGHTPERROW:
                 my_symbol->input_mode |= HEIGHTPERROW_MODE;
+                break;
+            case OPT_HXALTERNATINGFILLER:
+                hx_alternating_filler = 1;
                 break;
             case OPT_INIT:
                 my_symbol->output_options |= READER_INIT;
@@ -2447,6 +2453,9 @@ int main(int argc, char **argv) {
         }
         if (addon_gap && (cap & ZINT_CAP_EANUPC)) {
             my_symbol->option_2 = addon_gap;
+        }
+        if (symbology == BARCODE_HANXIN && hx_alternating_filler) {
+            my_symbol->option_3 |= HX_ALTERNATING_FILLER;
         }
         if (rows) {
             if (symbology == BARCODE_PDF417 || symbology == BARCODE_PDF417COMP || symbology == BARCODE_HIBC_PDF

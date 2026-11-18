@@ -175,7 +175,7 @@ INTERNAL int zint_postnet(struct zint_symbol *symbol, unsigned char source[], in
 /* Korean Postal Authority */
 INTERNAL int zint_koreapost(struct zint_symbol *symbol, unsigned char source[], int length) {
     static const char KoreaTable[10][10] = {
-        {'1','3','1','3','1','5','0','6','1','3'}, {'0','7','1','3','1','3','1','3','1','3'},
+        {'1','3','1','3','1','5','0','6','1','3'}, {'0','8','1','3','1','3','1','3','1','3'},
         {'0','4','1','7','1','3','1','3','1','3'}, {'1','5','0','6','1','3','1','3','1','3'},
         {'0','4','1','3','1','7','1','3','1','3'}, {              "17171313"               },
         {'1','3','1','5','0','6','1','3','1','3'}, {'0','4','1','3','1','3','1','7','1','3'},
@@ -208,6 +208,8 @@ INTERNAL int zint_koreapost(struct zint_symbol *symbol, unsigned char source[], 
     }
     local_source[6] = z_itoc(check);
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check digit: %d\n", check);
+
     for (i = 5; i >= 0; i--) {
         const char *const entry = KoreaTable[posns[i]];
         memcpy(d, entry, 10);
@@ -220,7 +222,7 @@ INTERNAL int zint_koreapost(struct zint_symbol *symbol, unsigned char source[], 
 
     /* TODO: Find documentation on BARCODE_KOREAPOST dimensions/height */
 
-    z_hrt_cpy_nochk(symbol, local_source, 7);
+    z_hrt_cpy_nochk(symbol, local_source, symbol->option_2 == 2 ? 6 : 7); /* Hide check digit */
 
     if (content_segs && z_ct_cpy(symbol, local_source, 7)) {
         return ZINT_ERROR_MEMORY; /* `z_ct_cpy()` only fails with OOM */

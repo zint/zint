@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.16.0.9
-July 2026
+November 2026
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -3500,25 +3500,27 @@ character is an identification tag (Barcode ID), which should usually be "%"
 if marked as a “relabel”, see below). The rest of the 27-character input must be
 alphanumeric, and is of the form:
 
-  -----------------------------------------------------------------------
-  Destination Post   Tracking Number     Service     Destination Country
-  Code                                   Code        Code
-  ------------------ ------------------- ----------- --------------------
-  PPPPPPP (7         TTTTTTTTTTTTTT (14  SSS (3      CCC (3-digit ISO
-  alphanumerics)     alphanumerics)      digits)     3166-1)
+  -------------------------------------------------------------------------
+  Destination Post   Tracking Number       Service     Destination Country
+  Code                                     Code        Code
+  ------------------ --------------------- ----------- --------------------
+  PPPPPPP            TTTTNNNNNNNNNN        SSS         CCC
 
-  -----------------------------------------------------------------------
+  (7 alphanumerics)  (1st 4 alphanumeric,  (3 digits)  (3-digit ISO 3166-1)
+                     last 10 digits)
+  -------------------------------------------------------------------------
 
   Table 20: DPD Input Fields
 
 A warning will be generated if the Service Code, the Destination Country Code,
-or the last 10 characters of the Tracking Number are non-numeric.
+or the last 10 characters of the Tracking Number are non-numeric, or if the
+Destination Country Code is not ISO 3166-1.
 
 Zint formats the Human Readable Text as specified by DPD, leaving out the
-identification tag, and adds a modulo-36 check character to the text (not to the
-barcode itself), thus:
+identification tag, and adds a modulo-36 check character D to the text (not to
+the barcode itself), thus:
 
-PPPP PPP TTTT TTTT TTTT TT SSS CCC D
+PPPP PPP TTTT NNNN NNNN NN SSS CCC D
 
 By default a top boundary bar is added, with default width 3X. The width can be
 overridden using --border (API border_width). For a symbol with no top boundary
@@ -3555,14 +3557,14 @@ symbols with 2D components.
 6.1.11.1 GS1 DataBar Omnidirectional and GS1 DataBar Truncated
 
 Previously known as RSS-14 this standard encodes a 13-digit item code. A check
-digit and HRT-only Application Identifier of "(01)" are added by Zint. (A
+digit and HRT-only Application Identifier of "(01)" are added by Zint. A
 14-digit code that appends the standard GS1 check digit may be given, in which
-case the check digit will be verified.) Input less than 13 digits will be
+case the check digit will be verified. Input less than 13 digits will be
 zero-filled.
 
 [Figure 78: zint -b DBAR_OMN --compliant -d "0950110153001"]
 
-GS1 DataBar Omnidirectional symbols should have a height of 33 or greater. To
+GS1 DataBar Omnidirectional symbols should have a height of 33X or greater. To
 produce a GS1 DataBar Truncated symbol set the symbol height to a value between
 13 and 32. Truncated symbols may not be scannable by omnidirectional scanners.
 
@@ -3604,6 +3606,9 @@ The Korean Postal Barcode is used to encode a 6-digit number and includes one
 check digit.
 
 [Figure 82: zint -b KOREAPOST -d "923457"]
+
+By default the check digit is shown in the Human Readable Text - to not show it
+set --vers=2 (API option_2 = 2).
 
 6.1.13 Channel Code
 
@@ -3932,6 +3937,11 @@ string of shorter length. To select CC-C use --mode=3 (API option_1 = 3).
 
 [Figure 98: zint -b GS1_128_CC --compliant -d "[99]1234-abcd" --mode=3 --primary
 ="[01]03312345678903"]
+
+Zint automatically adjusts the number of CC-C columns dependent on the data, but
+it can be overridden by setting --cols (API option_2) to a value between 1 and
+30. A warning will be issued if this results in a non-compliant columns/rows
+ratio.
 
 6.4 Two-Track Symbols
 
@@ -4953,6 +4963,11 @@ option_3 = (N + 1) << 8 where N is 0-3. To use with ZINT_FULL_MULTIBYTE set
 
     option_3 = ZINT_FULL_MULTIBYTE | (N + 1) << 8
 
+An alternating filler pattern may be added to unused function information
+modules by specifying the --hxalternatingfiller switch (API
+option_3 |= HX_ALTERNATING_FILLER). The current standard is unclear on whether
+this should be added or not.
+
 6.6.14 Ultracode
 
 This symbology uses a grid of coloured elements to encode data. ECI and GS1
@@ -5334,7 +5349,7 @@ configured barcode is updated when the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.16.0.9 % % July 2026
+% ZINT(1) Version 2.16.0.9 % % November 2026
 
 NAME
 
@@ -5440,8 +5455,8 @@ OPTIONS
 --cols=INTEGER
 
     Set the number of data columns in the symbol to INTEGER. Affects Codablock
-    F, DotCode, GS1 DataBar Expanded Stacked (DBAR_EXPSTK), MicroPDF417 and
-    PDF417 symbols.
+    F, DotCode, GS1-128 Composite CC-C, GS1 DataBar Expanded Stacked
+    (DBAR_EXPSTK), MicroPDF417 and PDF417 symbols.
 
 --compliantheight
 
@@ -5633,6 +5648,11 @@ OPTIONS
 
     Treat height as per-row. Affects Codablock F, Code 16K, Code 49, GS1 DataBar
     Expanded Stacked (DBAR_EXPSTK), MicroPDF417 and PDF417.
+
+--hxalternatingfiller
+
+    For Han Xin symbols, add an alternating pattern to unused function
+    information.
 
 -i FILE, --input=FILE
 
@@ -5948,6 +5968,7 @@ OPTIONS
         Code 39         1 or 2 (add visible or hidden check digit)
         Code 93         1      (show the default check characters)
         EXCODE39        1 or 2 (add visible or hidden check digit)
+        Korea Post      2      (hide the check digit)
         LOGMARS         1 or 2 (add visible or hidden check digit)
         UK Plessey      1      (show the default check characters)
         MSI Plessey     0 to 6 (none to various visible options)

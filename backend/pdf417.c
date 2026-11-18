@@ -1315,7 +1315,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
         }
     } else { /* Rows automatic, cols automatic or given */
         if (cols < 1) { /* Cols automatic */
-            cols = (int) round(sqrt((longueur - 1) / 3.0)); /* -1 (length descriptor) for back-compatibility */
+            cols = (int) round(sqrtf((longueur - 1) / 3.0f)); /* -1 (length descriptor) for back-compatibility */
         }
         rows = (longueur + cols - 1) / cols;
         if (rows <= 3) {

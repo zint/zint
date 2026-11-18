@@ -186,7 +186,7 @@ ret /pixs known {
         } if
 
         % Check for 2-track postal
-        b (postnet) eq b (planet) eq or {
+        b (postnet) eq b (planet) eq or b (cepnet) eq or {
             /nosbs true def
             /bhs ret /bhs get def
             0 1 bhs length 1 sub {
@@ -204,17 +204,22 @@ ret /pixs known {
         } if
 
         % Check for 4-track postal
-        b (auspost) eq b (kix) eq or b (royalmail) eq or b (onecode) eq or b (japanpost) eq or b (daft) eq or {
+        b (auspost) eq b (kix) eq or b (royalmail) eq or b (onecode) eq or b (japanpost) eq or b (daft) eq or b (mailmark4state) eq or {
             /nosbs true def
             /bhs ret /bhs get def
             /bbs ret /bbs get def
+            b (mailmark4state) eq {
+                /cbbs 0.04 def /cbhs1 0.10 def /cbhs2 0.08 def /cbhs3 -0.1 def
+            } {
+                /cbbs 0.05 def /cbhs1 0.14 def /cbhs2 0.09 def /cbhs3 0.09 def
+            } ifelse
             0 1 bbs length 1 sub {
                 /i exch def
                 i 0 ne { (0) print } if
-                bbs i get 0.05 lt {
-                    bhs i get 0.14 gt { (1) print } { (0) print } ifelse
+                bbs i get cbbs lt {
+                    bhs i get cbhs1 gt { (1) print } { (0) print } ifelse
                 } {
-                    bhs i get 0.09 gt { (1) print } { (0) print } ifelse
+                    bhs i get cbhs2 gt { (1) print } { (0) print } ifelse
                 } ifelse
             } for
             n { (\n) print } if
@@ -227,8 +232,8 @@ ret /pixs known {
             0 1 bbs length 1 sub {
                 /i exch def
                 i 0 ne { (0) print } if
-                bbs i get 0.05 lt {
-                    bhs i get 0.09 gt { (1) print } { (0) print } ifelse
+                bbs i get cbbs lt {
+                    bhs i get cbhs3 gt { (1) print } { (0) print } ifelse
                 } {
                     (0) print
                 } ifelse
@@ -248,6 +253,7 @@ ret /pixs known {
                     } ifelse
                 } if
             } for
+            b (koreapost) eq { (000) print } if % Zero-pad Korea Post
             n { (\n) print } if
         } if
     } if

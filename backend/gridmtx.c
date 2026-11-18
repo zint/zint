@@ -104,6 +104,10 @@ static int gm_in_numeral(const unsigned int ddata[], const int length, const int
     return 1;
 }
 
+#if 0
+#define GM_DEBUG_DEFINE_MODES /* For debugging costings */
+#endif
+
 /* Encoding modes */
 #define GM_CHINESE  1
 #define GM_NUMERAL  2
@@ -155,8 +159,9 @@ static void gm_define_modes(char *modes, const unsigned int ddata[], const int l
         13 * GM_MULT, 10 * GM_MULT, 5 * GM_MULT, 5 * GM_MULT, 10 * GM_MULT, 4 * GM_MULT
     };
 
-    unsigned int numeral_end = 0, numeral_cost = 0, byte_count = 0; /* State */
-    int double_byte, space, digit, lower, upper, control, double_digit, eol;
+    /* State */
+    unsigned int numeral_end = 0, numeral_cost = 0, byte_count = 0, double_digit = 0, eol = 0, in_double = 0;
+    int double_byte, space, digit, lower, upper, control;
 
     int i, j, k;
     unsigned int min_cost;
@@ -173,10 +178,19 @@ static void gm_define_modes(char *modes, const unsigned int ddata[], const int l
      * bits needed to encode the entire string prefix of length i, and end in mode_types[j] */
     memcpy(prev_costs, head_costs, GM_NUM_MODES * sizeof(unsigned int));
 
+    #ifdef GM_DEBUG_DEFINE_MODES
+    printf(" head");
+    for (j = 0; j < GM_NUM_MODES; j++) {
+        printf(" %c(0)=%.1f", gm_debug_modes[mode_types[j] - 1][0], (float) prev_costs[j] / GM_MULT);
+    }
+    printf("\n");
+    #endif
+
     /* Calculate costs using dynamic programming */
     for (i = 0; i < length; i++) {
         memset(cur_costs, 0, GM_NUM_MODES * sizeof(unsigned int));
 
+        in_double = double_digit || eol;
         space = digit = lower = upper = control = double_digit = eol = 0;
 
         if (!(double_byte = ddata[i] > 0xFF) && !(space = ddata[i] == ' ')) {
@@ -186,12 +200,12 @@ static void gm_define_modes(char *modes, const unsigned int ddata[], const int l
                     eol = i + 1 < length && ddata[i] == 13 && ddata[i + 1] == 10;
                 }
             } else if (i + 1 < length) {
-                double_digit = z_isdigit(ddata[i + 1]);
+                double_digit = !in_double && z_isdigit(ddata[i + 1]);
             }
         }
 
         /* Hanzi mode can encode anything */
-        cur_costs[GM_H] = prev_costs[GM_H] + (double_digit || eol ? 39 : 78); /* (6.5 : 13) * GM_MULT */
+        cur_costs[GM_H] = prev_costs[GM_H] + (double_digit || eol || in_double ? 39 : 78); /* (6.5 : 13) * GM_MULT */
         char_modes[i][GM_H] = GM_CHINESE;
 
         /* Byte mode can encode anything */
@@ -255,6 +269,19 @@ static void gm_define_modes(char *modes, const unsigned int ddata[], const int l
             }
         }
 
+        #ifdef GM_DEBUG_DEFINE_MODES
+        {
+            int min_j = 0;
+            printf(" % 4d: curr", i);
+            for (j = 0; j < GM_NUM_MODES; j++) {
+                printf(" %c(%c)=%.1f", gm_debug_modes[mode_types[j] - 1][0],
+                        gm_debug_modes[char_modes[i][j] - 1][0], (float) cur_costs[j] / GM_MULT);
+                if (cur_costs[j] < cur_costs[min_j]) min_j = j;
+            }
+            printf(" min %c(%c)=%.1f\n", gm_debug_modes[mode_types[min_j] - 1][0],
+                    gm_debug_modes[char_modes[i][min_j] - 1][0], (float) cur_costs[min_j] / GM_MULT);
+        }
+        #endif
         memcpy(prev_costs, cur_costs, GM_NUM_MODES * sizeof(unsigned int));
     }
 
@@ -598,7 +625,7 @@ static int gm_encode_segs(const unsigned int ddata[], const struct zint_seg segs
 
     if (p_structapp) {
         bp = z_bin_append_posn(9, 4, binary, bp); /* FNC2 - Structured Append */
-        bp = z_bin_append_posn(z_to_int(ZCUCP( p_structapp->id), (int) strlen(p_structapp->id)), 8,
+        bp = z_bin_append_posn(z_to_int(ZCUCP(p_structapp->id), (int) strlen(p_structapp->id)), 8,
                 binary, bp); /* File signature */
         bp = z_bin_append_posn(p_structapp->count - 1, 4, binary, bp);
         bp = z_bin_append_posn(p_structapp->index - 1, 4, binary, bp);
@@ -795,7 +822,6 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     int size, macromodules_per_dim, error_number;
     int auto_layers, min_layers, layers, rec_ecc_level, min_rec_ecc_level, ecc_level;
     int x, y, i;
-    int full_multibyte;
     char binary[9240]; /* 1313 * 7 = 9191 + 46 (max overflow (GM_BYTE) in `gm_encode()`) + 3 */
     int num_data_cws;
     unsigned char cws[1458] = {0};
@@ -803,6 +829,8 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     const struct zint_structapp *p_structapp = NULL;
     int size_squared;
     int bin_len;
+    /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 2312 in UNICODE_MODE */
+    const int full_multibyte = (symbol->option_3 & 0xF8) == ZINT_FULL_MULTIBYTE;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
     const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
@@ -812,9 +840,6 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     char *grid;
 
     z_segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs & protect lengths) */
-
-    /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 2312 in UNICODE_MODE */
-    full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
 
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
         zint_gb2312_cpy_segs(symbol, local_segs, seg_count, ddata, full_multibyte);
@@ -830,7 +855,7 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
                     eci = local_segs[i].eci;
                 } else {
                     return z_errtxtf(error_number, symbol, 535, "Invalid character in input for ECI '%d'",
-                                    local_segs[i].eci);
+                                        local_segs[i].eci);
                 }
             }
             if (!eci) {
@@ -853,7 +878,7 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
     if (symbol->structapp.count) {
         if (symbol->structapp.count < 2 || symbol->structapp.count > 16) {
             return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 536,
-                            "Structured Append count '%d' out of range (2 to 16)", symbol->structapp.count);
+                                "Structured Append count '%d' out of range (2 to 16)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
             return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 537,
@@ -1005,7 +1030,7 @@ INTERNAL int zint_gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[],
                 z_set_module(symbol, y, x);
             }
         }
-        symbol->row_height[x] = 1;
+        symbol->row_height[x] = 1.0f;
     }
     symbol->height = size;
 

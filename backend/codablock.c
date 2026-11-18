@@ -621,7 +621,7 @@ INTERNAL int zint_codablockf(struct zint_symbol *symbol, unsigned char source[],
     /* Neither row nor column count given */
     if (rows <= 0 && columns <= 0) {
         /* Use 1/1 aspect/ratio */
-        columns = (int) floor(sqrt(dataLength)) + 5;
+        columns = (int) floorf(sqrtf(dataLength)) + 5;
         if (columns > 67) {
             columns = 67;
         } else if (columns < 9) {

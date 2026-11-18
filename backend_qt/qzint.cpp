@@ -1492,6 +1492,8 @@ namespace Zint {
             }
         }
 
+        arg_bool(cmd, "--hxalternatingfiller", m_symbol == BARCODE_HANXIN && (option3() & HX_ALTERNATING_FILLER));
+
         arg_bool(cmd, "--init", supportsReaderInit() && readerInit());
 
         if (hasMask()) {

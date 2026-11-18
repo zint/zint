@@ -1042,13 +1042,13 @@ static void qr_populate_grid(unsigned char *grid, const int h_size, const int v_
 }
 
 #if 0
-#define ZINTLOG
+#define QR_ZINTLOG
 #endif
-#ifdef ZINTLOG
+#ifdef QR_ZINTLOG
 static void append_log(const unsigned char log) {
     FILE *file;
 
-    if ((file = fopen("zintlog.txt", "a+"))) {
+    if ((file = fopen("qr_zintlog.txt", "a+"))) {
         fprintf(file, "%d", log);
         (void) fclose(file);
     }
@@ -1057,7 +1057,7 @@ static void append_log(const unsigned char log) {
 static void write_log(const char log[]) {
     FILE *file;
 
-    if ((file = fopen("zintlog.txt", "a+"))) {
+    if ((file = fopen("qr_zintlog.txt", "a+"))) {
         fprintf(file, "%s\n", log); /*writes*/
         (void) fclose(file);
     }
@@ -1073,7 +1073,7 @@ static int qr_evaluate(const unsigned char *local, const int size) {
     int dark_mods;
     float percentage;
     int a, b, afterCount, beforeCount;
-#ifdef ZINTLOG
+#ifdef QR_ZINTLOG
     int result_b = 0;
     char str[64];
 #endif
@@ -1081,7 +1081,7 @@ static int qr_evaluate(const unsigned char *local, const int size) {
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warnings */
     assert(size > 0);
 
-#ifdef ZINTLOG
+#ifdef QR_ZINTLOG
     /* bitmask output */
     write_log("\n+++++");
     for (y = 0; y < size; y++) {
@@ -1138,8 +1138,8 @@ static int qr_evaluate(const unsigned char *local, const int size) {
         }
     }
 
-#ifdef ZINTLOG
-    /* output Test 1 */
+#ifdef QR_ZINTLOG
+    /* Output Test 1 */
     sprintf(str, " 1: %d", result);
     result_b = result;
     write_log(str);
@@ -1156,14 +1156,15 @@ static int qr_evaluate(const unsigned char *local, const int size) {
         }
     }
 
-#ifdef ZINTLOG
-    /* output Test 2 */
+#ifdef QR_ZINTLOG
+    /* Output Test 2 */
     sprintf(str, " 2: %d", result - result_b);
     result_b = result;
     write_log(str);
 #endif
 
-    /* Test 3: 1:1:3:1:1 ratio pattern in row/column */
+    /* Test 3: 1:1:3:1:1 ratio pattern in row/column - note that interpreting this as module ratio,
+       not multi-module ratio (i.e. not counting 2:2:6:2:2, 3:3:9:3:3 etc.), unlike BWIPP */
     /* Vertical */
     for (x = 0; x < size; x++) {
         for (y = 0; y <= (size - 7); y++) {
@@ -1182,10 +1183,10 @@ static int qr_evaluate(const unsigned char *local, const int size) {
                     }
                     beforeCount++;
                 }
-                if (beforeCount == 4) {
+                if (beforeCount == 4 && (y + 7 >= size || !local[(y + 7) * size + x])) { /* Need >= 1 light after */
                     /* Pattern is preceded by light area 4 modules wide */
                     result += 40;
-                } else {
+                } else if (beforeCount) { /* Need >= 1 light before */
                     afterCount = 0;
                     for (a = y + 7; a <= y + 10; a++) {
                         if (a >= size) { /* Count > edge as whitespace */
@@ -1224,11 +1225,10 @@ static int qr_evaluate(const unsigned char *local, const int size) {
                     }
                     beforeCount++;
                 }
-
-                if (beforeCount == 4) {
+                if (beforeCount == 4 && (x + 7 >= size || !local[r + x + 7])) { /* Need >= 1 light after */
                     /* Pattern is preceded by light area 4 modules wide */
                     result += 40;
-                } else {
+                } else if (beforeCount) { /* Need >= 1 light before */
                     afterCount = 0;
                     for (a = x + 7; a <= x + 10; a++) {
                         if (a >= size) { /* Count > edge as whitespace */
@@ -1250,8 +1250,8 @@ static int qr_evaluate(const unsigned char *local, const int size) {
         }
     }
 
-#ifdef ZINTLOG
-    /* output Test 3 */
+#ifdef QR_ZINTLOG
+    /* Output Test 3 */
     sprintf(str, " 3: %d", result - result_b);
     result_b = result;
     write_log(str);
@@ -1263,8 +1263,8 @@ static int qr_evaluate(const unsigned char *local, const int size) {
 
     result += 10 * k;
 
-#ifdef ZINTLOG
-    /* output Test 4+summary */
+#ifdef QR_ZINTLOG
+    /* Output Test 4+summary */
     sprintf(str, " 4: %d (%g%%, %d, %d)", result - result_b, percentage, k, dark_mods);
     write_log(str);
     write_log(   "    ====");
@@ -1326,7 +1326,7 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
     const int size_squared = size * size;
     unsigned char *mask = (unsigned char *) z_alloca(size_squared);
     unsigned char *local = (unsigned char *) z_alloca(size_squared);
-#ifdef ZINTLOG
+#ifdef QR_ZINTLOG
     char str[15];
 #endif
 
@@ -1385,7 +1385,7 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
         fputc('\n', stdout);
     }
 
-#ifdef ZINTLOG
+#ifdef QR_ZINTLOG
     sprintf(str, "%d", best_pattern);
     write_log("chose pattern:");
     write_log(str);
@@ -1562,7 +1562,7 @@ static int qr_prep_data(struct zint_symbol *symbol, struct zint_seg segs[], cons
     int warn_number = 0;
     int i;
     /* If ZINT_FULL_MULTIBYTE use Kanji mode in DATA_MODE or for non-Shift JIS in UNICODE_MODE */
-    const int full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
+    const int full_multibyte = (symbol->option_3 & 0xF8) == ZINT_FULL_MULTIBYTE;
     /* Raw text dealt with by `ZBarcode_Encode_Segs()`, except for `eci` feedback */
     const int content_segs = symbol->output_options & BARCODE_CONTENT_SEGS;
 
@@ -1575,12 +1575,12 @@ static int qr_prep_data(struct zint_symbol *symbol, struct zint_seg segs[], cons
             if (segs[i].eci != 20 || seg_count > 1) { /* Unless ECI 20 (Shift JIS) or have multiple segments */
                 /* Try other encodings (ECI 0 defaults to ISO/IEC 8859-1) */
                 int error_number = zint_sjis_utf8_to_eci(segs[i].eci, segs[i].source, &segs[i].length, dd,
-                                                        full_multibyte);
+                                                            full_multibyte);
                 if (error_number == 0) {
                     done = 1;
                 } else if (segs[i].eci || seg_count > 1) {
                     return z_errtxtf(error_number, symbol, 575, "Invalid character in input for ECI '%d'",
-                                    segs[i].eci);
+                                        segs[i].eci);
                 }
             }
             if (!done) {
@@ -1843,7 +1843,7 @@ INTERNAL int zint_qrcode(struct zint_symbol *symbol, struct zint_seg segs[], con
                 z_set_module(symbol, i, j);
             }
         }
-        symbol->row_height[i] = 1;
+        symbol->row_height[i] = 1.0f;
     }
     symbol->height = size;
 
@@ -2329,7 +2329,7 @@ INTERNAL int zint_microqr(struct zint_symbol *symbol, unsigned char source[], in
                 z_set_module(symbol, i, j);
             }
         }
-        symbol->row_height[i] = 1;
+        symbol->row_height[i] = 1.0f;
     }
     symbol->height = size;
 
@@ -2447,7 +2447,7 @@ INTERNAL int zint_upnqr(struct zint_symbol *symbol, unsigned char source[], int 
                 z_set_module(symbol, i, j);
             }
         }
-        symbol->row_height[i] = 1;
+        symbol->row_height[i] = 1.0f;
     }
     symbol->height = size;
 
@@ -2758,7 +2758,7 @@ INTERNAL int zint_rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const
                 z_set_module(symbol, i, j);
             }
         }
-        symbol->row_height[i] = 1;
+        symbol->row_height[i] = 1.0f;
     }
     symbol->height = v_size;
 

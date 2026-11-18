@@ -513,7 +513,7 @@ static int dc_append_to_bin_buf(unsigned char *codeword_array, int ap, unsigned 
 static int dc_encode_message(struct zint_symbol *symbol, const unsigned char source[], const int length,
             const int eci, const int last_seg, const int last_EOT, const int last_RSEOT,
             int ap, unsigned char *codeword_array, char *p_encoding_mode, int *p_inside_macro,
-            uint64_t *p_bin_buf, int *p_bin_buf_size, unsigned char structapp_array[], int *p_structapp_size) {
+            uint64_t *p_bin_buf, int *p_bin_buf_size) {
     static const char lead_specials[] = "\x09\x1C\x1D\x1E"; /* HT, FS, GS, RS */
 
     int i;
@@ -940,33 +940,9 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
         } /* encoding_mode == 'X' */
     }
 
-    if (last_seg) {
-        if (encoding_mode == 'X' && bin_buf_size != 0) {
-            /* Empty binary buffer */
-            ap = dc_empty_bin_buf(codeword_array, ap, &bin_buf, &bin_buf_size);
-        }
-
-        if (symbol->structapp.count) {
-            int sp = 0;
-            /* Need Code Set A or B - choosing A here (TEC-IT chooses B) */
-            if (encoding_mode == 'C') {
-                structapp_array[sp++] = 101; /* Latch A */
-            } else if (encoding_mode == 'X') {
-                structapp_array[sp++] = 109; /* Terminate with Latch A */
-            }
-            if (symbol->structapp.index < 10) {
-                structapp_array[sp++] = 16 + symbol->structapp.index; /* '0' + index for 1-9 */
-            } else  {
-                structapp_array[sp++] = 33 + symbol->structapp.index - 10; /* 'A' + index for A-Z */
-            }
-            if (symbol->structapp.count < 10) {
-                structapp_array[sp++] = 16 + symbol->structapp.count; /* '0' + count for 1-9 */
-            } else  {
-                structapp_array[sp++] = 33 + symbol->structapp.count - 10; /* 'A' + count for A-Z */
-            }
-            structapp_array[sp++] = 108; /* FNC2 as last codeword */
-            *p_structapp_size = sp;
-        }
+    if (last_seg && encoding_mode == 'X' && bin_buf_size != 0) {
+        /* Empty binary buffer */
+        ap = dc_empty_bin_buf(codeword_array, ap, &bin_buf, &bin_buf_size);
     }
 
     if (debug_print) {
@@ -983,14 +959,12 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
 /* Call `dc_encode_message()` for each segment */
 static void dc_encode_message_segs(struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
-            unsigned char *codeword_array, int *p_binary_finish, int *p_data_length, unsigned char structapp_array[],
-            int *p_structapp_size) {
+                unsigned char *codeword_array, char *p_encoding_mode, int *p_data_length) {
     int i;
 
     int last_EOT = 0;
     int last_RSEOT = 0;
     int ap = 0;
-    char encoding_mode = 'C';
     int inside_macro = 0;
     uint64_t bin_buf = 0;
     int bin_buf_size = 0;
@@ -1008,15 +982,13 @@ static void dc_encode_message_segs(struct zint_symbol *symbol, const struct zint
 
     for (i = 0; i < seg_count; i++) {
         ap = dc_encode_message(symbol, segs[i].source, segs[i].length, segs[i].eci, i == seg_count - 1 /*last_seg*/,
-                last_EOT, last_RSEOT, ap, codeword_array, &encoding_mode, &inside_macro, &bin_buf, &bin_buf_size,
-                structapp_array, p_structapp_size);
+                last_EOT, last_RSEOT, ap, codeword_array, p_encoding_mode, &inside_macro, &bin_buf, &bin_buf_size);
         if (content_segs && segs[i].eci) {
             z_ct_set_seg_eci(symbol, i, segs[i].eci);
         }
     }
 
-    *p_binary_finish = encoding_mode == 'X';
-    *p_data_length = ap + *p_structapp_size;
+    *p_data_length = ap;
 }
 
 /* Convert codewords to binary data stream */
@@ -1037,7 +1009,7 @@ static int dc_make_dotstream(const unsigned char masked_array[], const int array
 
 /* Determines if a given dot is a reserved corner dot
    to be used by one of the last six bits */
-static int dc_is_corner(const int column, const int row, const int width, const int height) {
+static int dc_is_corner(const int column, const int row, const int height, const int width) {
 
     /* Top Left */
     if (column == 0 && row == 0) {
@@ -1075,7 +1047,7 @@ static int dc_is_corner(const int column, const int row, const int width, const 
 }
 
 /* Place the dots in the symbol*/
-static void dc_fold_dotstream(const char dot_stream[], const int width, const int height, char dot_array[]) {
+static void dc_fold_dotstream(const char dot_stream[], const int height, const int width, char dot_array[]) {
     int column, row;
     int position = 0;
 
@@ -1084,7 +1056,7 @@ static void dc_fold_dotstream(const char dot_stream[], const int width, const in
         for (row = 0; row < height; row++) {
             for (column = 0; column < width; column++) {
                 if (!((column + row) & 1)) {
-                    if (dc_is_corner(column, row, width, height)) {
+                    if (dc_is_corner(column, row, height, width)) {
                         dot_array[(row * width) + column] = 'C';
                     } else {
                         dot_array[((height - row - 1) * width) + column] = dot_stream[position++];
@@ -1107,7 +1079,7 @@ static void dc_fold_dotstream(const char dot_stream[], const int width, const in
         for (column = 0; column < width; column++) {
             for (row = 0; row < height; row++) {
                 if (!((column + row) & 1)) {
-                    if (dc_is_corner(column, row, width, height)) {
+                    if (dc_is_corner(column, row, height, width)) {
                         dot_array[(row * width) + column] = 'C';
                     } else {
                         dot_array[(row * width) + column] = dot_stream[position++];
@@ -1128,8 +1100,8 @@ static void dc_fold_dotstream(const char dot_stream[], const int width, const in
     }
 }
 
-static void dc_apply_mask(const int mask, const int data_length, unsigned char *masked_codeword_array,
-            const unsigned char *codeword_array, const int ecc_length) {
+static void dc_apply_mask(const int mask, unsigned char *masked_codeword_array, const int data_length,
+                const unsigned char *codeword_array, const int ecc_length) {
     int weight = 0;
     int j;
 
@@ -1169,7 +1141,7 @@ static void dc_apply_mask(const int mask, const int data_length, unsigned char *
 }
 
 /* Ensure corners are "lit" */
-static void dc_force_corners(const int width, const int height, char *dot_array) {
+static void dc_force_corners(const int height, const int width, char *dot_array) {
     if (width & 1) {
         /* "Vertical" symbol */
         dot_array[0] = '1';
@@ -1189,103 +1161,18 @@ static void dc_force_corners(const int width, const int height, char *dot_array)
     }
 }
 
-INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
-    int warn_number = 0;
-    int i, j, k;
-    int jc, n_dots;
-    int data_length, ecc_length;
-    int min_dots, min_area;
-    int height, width = 0;
-    int mask_score[8];
-    int user_mask;
-    int dot_stream_length;
-    int high_score, best_mask;
-    int binary_finish = 0;
-    unsigned char structapp_array[5];
-    int structapp_size = 0;
-    int padding_dots;
-    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
-    const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
-    /* Allow 4 codewords per input + 2 (FNC) + seg_count * 4 (ECI) + 2 (special char 1st position)
-       + 5 (Structured Append) + 52 (PAD - maximum probably 35, allowing for 468 dots / 9 == 52) */
-    const int codeword_array_len = z_segs_length(segs, seg_count) * 4 + 2 + seg_count * 4 + 2 + 5 + 52;
-    unsigned char *codeword_array = (unsigned char *) z_alloca(codeword_array_len);
-    char *dot_stream;
-    char *dot_array;
-    unsigned char *masked_codeword_array;
-
-    for (i = 0; i < seg_count; i++) {
-        if (segs[i].eci > 811799) {
-            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 525, "ECI code '%d' out of range (0 to 811799)",
-                            segs[i].eci);
-        }
-    }
-
-    if (symbol->option_2 > 0) {
-        if (symbol->option_2 < 5 || symbol->option_2 > 200) {
-            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 527,
-                                    "Number of columns '%d' is out of range (5 to 200)", symbol->option_2);
-        }
-        width = symbol->option_2;
-    }
-
-    user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is mask + 1, so >= 1 and <= 8 */
-    if (user_mask > 8) {
-        user_mask = 0; /* Ignore */
-    }
-
-    if (symbol->structapp.count) {
-        if (symbol->structapp.count < 2 || symbol->structapp.count > 35) {
-            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 730,
-                            "Structured Append count '%d' out of range (2 to 35)", symbol->structapp.count);
-        }
-        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 731,
-                                    "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                                    symbol->structapp.index, symbol->structapp.count);
-        }
-        if (symbol->structapp.id[0]) {
-            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 732, "Structured Append ID not available for DotCode");
-        }
-    }
-
-    /* GS1 General Specifications 22.0 section 5.8.2 says Structured Append and ECIs not supported
-       for GS1 DotCode so check and return ZINT_WARN_NONCOMPLIANT if either true */
-    if (gs1) {
-        for (i = 0; i < seg_count; i++) {
-            if (segs[i].eci) {
-                warn_number = z_errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 733,
-                                        "Using ECI in GS1 mode not supported by GS1 standards");
-                break;
-            }
-        }
-        if (warn_number == 0 && symbol->structapp.count) {
-            warn_number = z_errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 734,
-                                    "Using Structured Append in GS1 mode not supported by GS1 standards");
-        }
-    }
-
-    dc_encode_message_segs(symbol, segs, seg_count, codeword_array, &binary_finish, &data_length, structapp_array,
-                            &structapp_size);
-
-    /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.ArraySubscript
-     * warnings */
-    assert(data_length > 0);
-
-    ecc_length = 3 + (data_length / 2);
-
-    min_dots = 9 * (data_length + 3 + (data_length / 2)) + 2;
-    min_area = min_dots * 2;
-
-    assert(min_area >= 38); /* (9 * (1 + 3 + 0) + 2 = 19) * 2 */
+/* Determine height/width */
+static int dc_height_width(struct zint_symbol *symbol, const int min_area, int *p_height, int *p_width) {
+    int width = symbol->option_2;
+    int height;
 
     if (width == 0) {
         /* Automatic sizing */
         /* Following Rule 3 (Section 5.2.2) and applying a recommended width to height ratio 3:2 */
         /* Eliminates undersized symbols */
 
-        float h = (float) sqrt(min_area * 0.666);
-        float w = (float) sqrt(min_area * 1.5);
+        float h = sqrtf(min_area * 0.666f);
+        float w = sqrtf(min_area * 1.5f);
 
         height = (int) h;
         width = (int) w;
@@ -1332,7 +1219,7 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
     }
     assert(height >= 5 && width >= 5);
 
-    if (debug_print) {
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Width %d, Height %d\n", width, height);
     }
 
@@ -1346,54 +1233,182 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-    n_dots = (height * width) / 2;
+    *p_height = height;
+    *p_width = width;
 
-    dot_stream = (char *) z_alloca(height * width * 3);
-    dot_array = (char *) z_alloca(width * height);
+    return 0;
+}
 
-    /* Add pad characters */
-    padding_dots = n_dots - min_dots; /* Get the number of free dots available for padding */
+INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+    int warn_number = 0;
+    int i, j, k;
+    int data_length, ecc_length;
+    int min_dots, min_area;
+    int height, width;
+    int n_dots;
+    int padding;
+    int mask_score[8];
+    int user_mask;
+    int dot_stream_length;
+    int high_score, best_mask;
+    char encoding_mode = 'C';
+    int structapp_size = 0;
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
+    const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
+    /* Allow 4 codewords per input + 2 (FNC) + seg_count * 4 (ECI) + 2 (special char 1st position)
+       + 5 (Structured Append) + 52 (PAD - maximum probably 35, allowing for 468 dots / 9 == 52) */
+    const int codeword_array_len = z_segs_length(segs, seg_count) * 4 + 2 + seg_count * 4 + 2 + 5 + 52;
+    unsigned char *codeword_array = (unsigned char *) z_alloca(codeword_array_len);
+    char *dot_stream;
+    char *dot_array;
+    unsigned char *masked_codeword_array;
 
-    if (debug_print) printf("Padding dots: %d\n", padding_dots);
-
-    if (padding_dots >= 9) {
-        int is_first = 1; /* First padding character flag */
-        int padp = data_length - structapp_size;
-        while (padding_dots >= 9) {
-            if (padding_dots < 18 && (data_length & 1) == 0) {
-                padding_dots -= 9;
-            } else if (padding_dots >= 18) {
-                if ((data_length & 1) == 0) {
-                    padding_dots -= 9;
-                } else {
-                    padding_dots -= 18;
-                }
-            } else {
-                break; /* Not enough padding dots left for padding */
-            }
-            if (is_first && binary_finish) {
-                codeword_array[padp++] = 109;
-            } else {
-                codeword_array[padp++] = 106;
-            }
-
-            data_length++;
-            is_first = 0;
-        }
-        if (structapp_size) {
-            if (structapp_array[0] == 109) { /* Binary latch no longer valid */
-                structapp_array[0] = 106;
-            }
-            for (i = 0; i < structapp_size; i++) {
-                codeword_array[padp++] = structapp_array[i];
-            }
-        }
-    } else if (structapp_size) {
-        data_length -= structapp_size;
-        for (i = 0; i < structapp_size; i++) {
-            codeword_array[data_length++] = structapp_array[i];
+    for (i = 0; i < seg_count; i++) {
+        if (segs[i].eci > 811799) {
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 525, "ECI code '%d' out of range (0 to 811799)",
+                            segs[i].eci);
         }
     }
+
+    if (symbol->option_2 > 0) {
+        if (symbol->option_2 < 5 || symbol->option_2 > 200) {
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 527,
+                                    "Number of columns '%d' is out of range (5 to 200)", symbol->option_2);
+        }
+    }
+
+    user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is mask + 1, so >= 1 and <= 8 */
+    if (user_mask > 8) {
+        user_mask = 0; /* Ignore */
+    }
+
+    if (symbol->structapp.count) {
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 35) {
+            return z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 730,
+                            "Structured Append count '%d' out of range (2 to 35)", symbol->structapp.count);
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            return ZEXT z_errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 731,
+                                    "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                    symbol->structapp.index, symbol->structapp.count);
+        }
+        if (symbol->structapp.id[0]) {
+            return z_errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 732, "Structured Append ID not available for DotCode");
+        }
+        structapp_size = 3;
+    }
+
+    /* GS1 General Specifications 22.0 section 5.8.2 says Structured Append and ECIs not supported
+       for GS1 DotCode so check and return ZINT_WARN_NONCOMPLIANT if either true */
+    if (gs1) {
+        for (i = 0; i < seg_count; i++) {
+            if (segs[i].eci) {
+                warn_number = z_errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 733,
+                                        "Using ECI in GS1 mode not supported by GS1 standards");
+                break;
+            }
+        }
+        if (warn_number == 0 && symbol->structapp.count) {
+            warn_number = z_errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 734,
+                                    "Using Structured Append in GS1 mode not supported by GS1 standards");
+        }
+    }
+
+    dc_encode_message_segs(symbol, segs, seg_count, codeword_array, &encoding_mode, &data_length);
+
+    /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.ArraySubscript
+     * warnings */
+    assert(data_length > 0);
+
+    data_length += structapp_size; /* May need + 1 for Latch A/B - see below */
+
+    ecc_length = 3 + (data_length / 2);
+
+    min_dots = 9 * (data_length + ecc_length) + 2;
+    min_area = min_dots * 2;
+
+    assert(min_area >= 38); /* (9 * (1 + 3 + 0) + 2 = 19) * 2 */
+
+    if (dc_height_width(symbol, min_area, &height, &width)) {
+        return ZINT_ERROR_INVALID_OPTION; /* Only returns this error */
+    }
+
+    n_dots = (height * width) / 2;
+
+    for (i = data_length; 9 * (i + 1 + 3 + (i + 1) / 2) + 2 <= n_dots; i++);
+
+    /* See if need to recalc when have Structured Append and not in A/B and no padding */
+    if (structapp_size && encoding_mode != 'A' && encoding_mode != 'B'
+            && 9 * (data_length + 1 + 3 + (data_length + 1) / 2) + 2 > n_dots) {
+
+        structapp_size++;
+        data_length++;
+
+        ecc_length = 3 + (data_length / 2);
+
+        min_dots = 9 * (data_length + ecc_length) + 2;
+        min_area = min_dots * 2;
+
+        if (dc_height_width(symbol, min_area, &height, &width)) {
+            return ZINT_ERROR_INVALID_OPTION; /* Only returns this error */
+        }
+
+        n_dots = (height * width) / 2;
+    }
+
+    dot_stream = (char *) z_alloca(n_dots);
+    dot_array = (char *) z_alloca(height * width);
+
+    /* Add padding */
+    for (i = data_length; 9 * (i + 1 + 3 + (i + 1) / 2) + 2 <= n_dots; i++);
+
+    padding = i - data_length;
+
+    if (debug_print) printf("Padding: %d\n", padding);
+
+    if (padding) {
+        data_length -= structapp_size;
+        i = 0;
+        if (encoding_mode == 'X') {
+            codeword_array[data_length++] = 109;
+            encoding_mode = 'A';
+            i = 1;
+        }
+        for (; i < padding; i++) {
+            codeword_array[data_length++] = 106;
+            encoding_mode = encoding_mode == 'C' ? 'B' : 'C';
+        }
+    }
+    if (structapp_size) {
+        if (!padding) {
+            data_length -= structapp_size;
+        }
+        if (structapp_size == 4) {
+            if (encoding_mode == 'X') {
+                codeword_array[data_length++] = 109; /* Terminate with Latch to A */
+            } else if (encoding_mode == 'C') {
+                codeword_array[data_length++] = 106; /* Latch B */
+            } else {
+                codeword_array[data_length++] = 102; /* Latch B/A */
+            }
+        } else if (encoding_mode == 'C') {
+            assert(codeword_array[data_length - 1] == 106); /* Latch C */
+            codeword_array[data_length - 1] = 102; /* Switch to Latch B/A */
+        }
+        if (symbol->structapp.index < 10) {
+            codeword_array[data_length++] = 16 + symbol->structapp.index; /* '0' + index for 1-9 */
+        } else  {
+            codeword_array[data_length++] = 33 + symbol->structapp.index - 10; /* 'A' + index for A-Z */
+        }
+        if (symbol->structapp.count < 10) {
+            codeword_array[data_length++] = 16 + symbol->structapp.count; /* '0' + count for 1-9 */
+        } else  {
+            codeword_array[data_length++] = 33 + symbol->structapp.count - 10; /* 'A' + count for A-Z */
+        }
+        codeword_array[data_length++] = 108; /* FNC2 as last codeword */
+    }
+
+    ecc_length = 3 + (data_length / 2);
 
     if (debug_print) {
         printf("Codeword length %d, ECC length %d\n", data_length, ecc_length);
@@ -1409,8 +1424,6 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
     }
 #endif
 
-    ecc_length = 3 + (data_length / 2);
-
     masked_codeword_array = (unsigned char *) z_alloca(data_length + 1 + ecc_length);
 
     if (user_mask) {
@@ -1422,16 +1435,16 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
         /* Evaluate data mask options */
         for (i = 0; i < 4; i++) {
 
-            dc_apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length);
+            dc_apply_mask(i, masked_codeword_array, data_length, codeword_array, ecc_length);
 
-            dot_stream_length = dc_make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
+            dot_stream_length = dc_make_dotstream(masked_codeword_array, data_length + ecc_length + 1, dot_stream);
 
             /* Add pad bits */
-            for (jc = dot_stream_length; jc < n_dots; jc++) {
+            for (j = dot_stream_length; j < n_dots; j++) {
                 dot_stream[dot_stream_length++] = '1';
             }
 
-            dc_fold_dotstream(dot_stream, width, height, dot_array);
+            dc_fold_dotstream(dot_stream, height, width, dot_array);
 
             mask_score[i] = dc_score_array(dot_array, height, width);
 
@@ -1451,26 +1464,26 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
         }
 
         /* Re-evaluate using forced corners if needed */
-        if (high_score <= (height * width) / 2) {
+        if (high_score <= n_dots) {
             if (debug_print) {
-                printf("High score %d <= %d (height * width) / 2\n", high_score, (height * width) / 2);
+                printf("High score %d <= %d no. of dots\n", high_score, n_dots);
             }
 
             for (i = 0; i < 4; i++) {
 
-                dc_apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length);
+                dc_apply_mask(i, masked_codeword_array, data_length, codeword_array, ecc_length);
 
-                dot_stream_length = dc_make_dotstream(masked_codeword_array, (data_length + ecc_length + 1),
-                                        dot_stream);
+                dot_stream_length = dc_make_dotstream(masked_codeword_array, data_length + ecc_length + 1,
+                                                        dot_stream);
 
                 /* Add pad bits */
-                for (jc = dot_stream_length; jc < n_dots; jc++) {
+                for (j = dot_stream_length; j < n_dots; j++) {
                     dot_stream[dot_stream_length++] = '1';
                 }
 
-                dc_fold_dotstream(dot_stream, width, height, dot_array);
+                dc_fold_dotstream(dot_stream, height, width, dot_array);
 
-                dc_force_corners(width, height, dot_array);
+                dc_force_corners(height, width, dot_array);
 
                 mask_score[i + 4] = dc_score_array(dot_array, height, width);
 
@@ -1493,7 +1506,7 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
     }
 
     /* Apply best mask */
-    dc_apply_mask(best_mask % 4, data_length, masked_codeword_array, codeword_array, ecc_length);
+    dc_apply_mask(best_mask % 4, masked_codeword_array, data_length, codeword_array, ecc_length);
 
     /* Feedback options */
     symbol->option_2 = width;
@@ -1515,15 +1528,15 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
     dot_stream_length = dc_make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
     /* Add pad bits */
-    for (jc = dot_stream_length; jc < n_dots; jc++) {
+    for (j = dot_stream_length; j < n_dots; j++) {
         dot_stream[dot_stream_length++] = '1';
     }
     if (debug_print) printf("Binary (%d): %.*s\n", dot_stream_length, dot_stream_length, dot_stream);
 
-    dc_fold_dotstream(dot_stream, width, height, dot_array);
+    dc_fold_dotstream(dot_stream, height, width, dot_array);
 
     if (best_mask >= 4) {
-        dc_force_corners(width, height, dot_array);
+        dc_force_corners(height, width, dot_array);
     }
 
     /* Copy values to symbol */
@@ -1536,7 +1549,7 @@ INTERNAL int zint_dotcode(struct zint_symbol *symbol, struct zint_seg segs[], co
                 z_set_module(symbol, k, j);
             }
         }
-        symbol->row_height[k] = 1;
+        symbol->row_height[k] = 1.0f;
     }
     symbol->height = height;
 

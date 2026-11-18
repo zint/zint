@@ -139,7 +139,7 @@ static void test_bwipp_random(const testCtx *const p_ctx, const struct random_it
 }
 
 static int sqrt_width_func(const struct random_item *rdata, const int bwipp_len) {
-    const int width = (int) sqrt(bwipp_len);
+    const int width = (int) sqrtf(bwipp_len);
     const int sq = width * width;
     (void)rdata;
     if (sq != bwipp_len) {

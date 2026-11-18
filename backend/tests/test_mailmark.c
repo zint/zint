@@ -109,71 +109,79 @@ static void test_4s_input(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { "41038422416563762XY11     ", 0, 3, 155 },
-        /*  1*/ { "41038422416563762XY11      ", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { "4103842241656", ZINT_ERROR_TOO_LONG, -1, -1 }, /* Too short (< 14) */
-        /*  3*/ { "41038422416563", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  4*/ { "41038422416563762xy11     ", 0, 3, 155 }, /* Case insensitive */
-        /*  5*/ { "41038422416563762xy11    .", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  6*/ { "0100000000000AA000AA0A", 0, 3, 131, }, /* Length 22, Mailmark C (2 digit chain id) */
-        /*  7*/ { "5100000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* 1st char format 0-4 only */
-        /*  8*/ { "0000000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* 2nd char version id 1-4 only */
-        /*  9*/ { "01F0000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* 3rd char class 0-9A-E only */
-        /* 10*/ { "0100A00000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* 4-5th chars chain id 2 digits */
-        /* 11*/ { "010000000000AAA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* 6-13th chars item id 8 digits */
-        /* 12*/ { "0100000000000 A000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Remaining chars post code */
-        /* 13*/ { "0100000000000C1I2JQ3N ", 0, 3, 131, }, /* F N F N L L N L S */
-        /* 14*/ { "010000000000091I2JQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N F N L L N L S bad 1st F */
-        /* 15*/ { "0100000000000CAI2JQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N F N L L N L S bad 1st N */
-        /* 16*/ { "0100000000000C1I2IQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N F N L L N L S bad 1st L */
-        /* 17*/ { "0100000000000C1I2IQ3NA", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N F N L L N L S bad S */
-        /* 18*/ { "0100000000000KM12JQ3N ", 0, 3, 131, }, /* F F N N L L N L S */
-        /* 19*/ { "0100000000000K 12JQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N N L L N L S bad 2nd F (non-numeric otherwise matches last pattern) */
-        /* 20*/ { "0100000000000KM1AJQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N N L L N L S bad 2nd N */
-        /* 21*/ { "0100000000000KM12JO3N ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N N L L N L S bad 2nd L */
-        /* 22*/ { "0100000000000KM12JQ3NA", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N N L L N L S bad S */
-        /* 23*/ { "0100000000000OV123JQ4U", 0, 3, 131, }, /* F F N N N L L N L */
-        /* 24*/ { "01000000000009V123JQ4U", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N N N L L N L bad 1st F */
-        /* 25*/ { "0100000000000OV12AJQ4U", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N N N L L N L bad 3rd N */
-        /* 26*/ { "0100000000000OV123JQ4V", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N N N L L N L bad 3rd L */
-        /* 27*/ { "0100000000000CI1K3JQ4U", 0, 3, 131, }, /* F F N F N L L N L */
-        /* 28*/ { "0100000000000CI1 3JQ4U", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N F N L L N L bad 3rd F (non-numeric otherwise matches pattern above) */
-        /* 29*/ { "0100000000000CIAK3JQ4U", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N F N L L N L bad 1st N */
-        /* 30*/ { "0100000000000CI1K3CQ4U", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N F N L L N L bad 1st L */
-        /* 31*/ { "0100000000000C12JQ3U  ", 0, 3, 131, }, /* F N N L L N L S S */
-        /* 32*/ { "0100000000000912JQ3U  ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N L L N L S S bad F */
-        /* 33*/ { "0100000000000C1AJQ3U  ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N L L N L S S bad 2nd N */
-        /* 34*/ { "0100000000000C12JO3U  ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N L L N L S S bad 2nd L */
-        /* 35*/ { "0100000000000C12JQ3UA ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N L L N L S S bad 1st S */
-        /* 36*/ { "0100000000000C123JQ4U ", 0, 3, 131, }, /* F N N N L L N L S */
-        /* 37*/ { "01000000000009123JQ4U ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N N L L N L S bad F */
-        /* 38*/ { "0100000000000C12AJQ4U ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N N L L N L S bad 3rd N */
-        /* 39*/ { "0100000000000C123JQ4V ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N N L L N L S bad 3rd L */
-        /* 40*/ { "0100000000000C123JQ4U1", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N N L L N L S bad S */
-        /* 41*/ { "01000000000000000AA000AA0A", 0, 3, 155, }, /* Length 26, Mailmark L (6 digit chain id) */
-        /* 42*/ { "010A0000000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* 4-9th chars chain id 6 digits */
-        /* 43*/ { "010A0000000000000 A000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Post code */
-        /* 44*/ { "01000000000000000C1I2JQ3N ", 0, 3, 155, }, /* F N F N L L N L S */
-        /* 45*/ { "01000000000000000C1 2JQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N F N L L N L S bad 2nd F */
-        /* 46*/ { "01000000000000000KM12JQ3N ", 0, 3, 155, }, /* F F N N L L N L S */
-        /* 47*/ { "01000000000000000KM12JQAN ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N N L L N L S bad 3rd N */
-        /* 48*/ { "01000000000000000OV123JQ4U", 0, 3, 155, }, /* F F N N N L L N L */
-        /* 49*/ { "01000000000000000OV123IQ4U", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N N N L L N L bad 1st L */
-        /* 50*/ { "01000000000000000CI1K3JQ4U", 0, 3, 155, }, /* F F N F N L L N L */
-        /* 51*/ { "010000000000000009I1K3JQ4U", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F F N F N L L N L bad 1st F */
-        /* 52*/ { "01000000000000000C12JQ3U  ", 0, 3, 155, }, /* F N N L L N L S S */
-        /* 53*/ { "01000000000000000C12JQ3U A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N L L N L S S bad 2nd S */
-        /* 54*/ { "01000000000000000C123JQ4U ", 0, 3, 155, }, /* F N N N L L N L S */
-        /* 55*/ { "01000000000000000C 23JQ4U ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N N L L N L S bad 1st N (non-alpha otherwise matches 2nd pattern) */
-        /* 56*/ { "01000000000000000         ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* All spaces */
-        /* 57*/ { "41038422416563762XY1", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  0*/ { "41038422416563762XY11     ", 0, 3, 155, 1, "" },
+        /*  1*/ { "41038422416563762XY11      ", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /*  2*/ { "4103842241656", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" }, /* Too short (< 14) */
+        /*  3*/ { "41038422416563", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" },
+        /*  4*/ { "41038422416563762xy11     ", 0, 3, 155, 0, "BWIPP: case sensitve" }, /* Case insensitive */
+        /*  5*/ { "41038422416563762xy11    .", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" },
+        /*  6*/ { "0100000000000AA000AA0A", 0, 3, 131, 1, "" }, /* Length 22, Mailmark C (2 digit chain id) */
+        /*  7*/ { "5100000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* 1st char format 0-4 only */
+        /*  8*/ { "0000000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* 2nd char version id 1-4 only */
+        /*  9*/ { "01F0000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* 3rd char class 0-9A-E only */
+        /* 10*/ { "0100A00000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* 4-5th chars chain id 2 digits */
+        /* 11*/ { "010000000000AAA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* 6-13th chars item id 8 digits */
+        /* 12*/ { "0100000000000 A000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* Remaining chars post code */
+        /* 13*/ { "0100000000000C1I2JQ3N ", 0, 3, 131, 1, "" }, /* F N F N L L N L S */
+        /* 14*/ { "010000000000091I2JQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N F N L L N L S bad 1st F */
+        /* 15*/ { "0100000000000CAI2JQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N F N L L N L S bad 1st N */
+        /* 16*/ { "0100000000000C1I2IQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N F N L L N L S bad 1st L */
+        /* 17*/ { "0100000000000C1I2IQ3NA", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N F N L L N L S bad S */
+        /* 18*/ { "0100000000000KM12JQ3N ", 0, 3, 131, 1, "" }, /* F F N N L L N L S */
+        /* 19*/ { "0100000000000K 12JQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N N L L N L S bad 2nd F (non-numeric otherwise matches last pattern) */
+        /* 20*/ { "0100000000000KM1AJQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N N L L N L S bad 2nd N */
+        /* 21*/ { "0100000000000KM12JO3N ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N N L L N L S bad 2nd L */
+        /* 22*/ { "0100000000000KM12JQ3NA", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N N L L N L S bad S */
+        /* 23*/ { "0100000000000OV123JQ4U", 0, 3, 131, 1, "" }, /* F F N N N L L N L */
+        /* 24*/ { "01000000000009V123JQ4U", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N N N L L N L bad 1st F */
+        /* 25*/ { "0100000000000OV12AJQ4U", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N N N L L N L bad 3rd N */
+        /* 26*/ { "0100000000000OV123JQ4V", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N N N L L N L bad 3rd L */
+        /* 27*/ { "0100000000000CI1K3JQ4U", 0, 3, 131, 1, "" }, /* F F N F N L L N L */
+        /* 28*/ { "0100000000000CI1 3JQ4U", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N F N L L N L bad 3rd F (non-numeric otherwise matches pattern above) */
+        /* 29*/ { "0100000000000CIAK3JQ4U", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N F N L L N L bad 1st N */
+        /* 30*/ { "0100000000000CI1K3CQ4U", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N F N L L N L bad 1st L */
+        /* 31*/ { "0100000000000C12JQ3U  ", 0, 3, 131, 1, "" }, /* F N N L L N L S S */
+        /* 32*/ { "0100000000000912JQ3U  ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N L L N L S S bad F */
+        /* 33*/ { "0100000000000C1AJQ3U  ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N L L N L S S bad 2nd N */
+        /* 34*/ { "0100000000000C12JO3U  ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N L L N L S S bad 2nd L */
+        /* 35*/ { "0100000000000C12JQ3UA ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N L L N L S S bad 1st S */
+        /* 36*/ { "0100000000000C123JQ4U ", 0, 3, 131, 1, "" }, /* F N N N L L N L S */
+        /* 37*/ { "01000000000009123JQ4U ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N N L L N L S bad F */
+        /* 38*/ { "0100000000000C12AJQ4U ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N N L L N L S bad 3rd N */
+        /* 39*/ { "0100000000000C123JQ4V ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N N L L N L S bad 3rd L */
+        /* 40*/ { "0100000000000C123JQ4U1", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N N L L N L S bad S */
+        /* 41*/ { "01000000000000000AA000AA0A", 0, 3, 155, 1, "" }, /* Length 26, Mailmark L (6 digit chain id) */
+        /* 42*/ { "010A0000000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* 4-9th chars chain id 6 digits */
+        /* 43*/ { "010A0000000000000 A000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* Post code */
+        /* 44*/ { "01000000000000000C1I2JQ3N ", 0, 3, 155, 1, "" }, /* F N F N L L N L S */
+        /* 45*/ { "01000000000000000C1 2JQ3N ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N F N L L N L S bad 2nd F */
+        /* 46*/ { "01000000000000000KM12JQ3N ", 0, 3, 155, 1, "" }, /* F F N N L L N L S */
+        /* 47*/ { "01000000000000000KM12JQAN ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N N L L N L S bad 3rd N */
+        /* 48*/ { "01000000000000000OV123JQ4U", 0, 3, 155, 1, "" }, /* F F N N N L L N L */
+        /* 49*/ { "01000000000000000OV123IQ4U", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N N N L L N L bad 1st L */
+        /* 50*/ { "01000000000000000CI1K3JQ4U", 0, 3, 155, 1, "" }, /* F F N F N L L N L */
+        /* 51*/ { "010000000000000009I1K3JQ4U", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F F N F N L L N L bad 1st F */
+        /* 52*/ { "01000000000000000C12JQ3U  ", 0, 3, 155, 1, "" }, /* F N N L L N L S S */
+        /* 53*/ { "01000000000000000C12JQ3U A", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N L L N L S S bad 2nd S */
+        /* 54*/ { "01000000000000000C123JQ4U ", 0, 3, 155, 1, "" }, /* F N N N L L N L S */
+        /* 55*/ { "01000000000000000C 23JQ4U ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* F N N N L L N L S bad 1st N (non-alpha otherwise matches 2nd pattern) */
+        /* 56*/ { "01000000000000000         ", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" }, /* All spaces */
+        /* 57*/ { "41038422416563762XY1", ZINT_ERROR_INVALID_DATA, -1, -1, 1, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+
+    char cmp_buf[8192];
+    char cmp_msg[1024];
+
+    /* Only do BWIPP test if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -197,6 +205,27 @@ static void test_4s_input(const testCtx *const p_ctx) {
                         i, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
                         i, symbol->width, data[i].expected_width);
+
+            if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) {
+                        printf("i:%d %s not BWIPP compatible (%s)\n",
+                                i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    }
+                } else {
+                    char modules_dump[4096];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf),
+                                        NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
         }
 
         ZBarcode_Delete(symbol);
@@ -302,12 +331,22 @@ static void test_4s_encode(const testCtx *const p_ctx) {
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "00001000000000001000000000001000000000001000000000001000001010000000000010100000000000101010001000101000000010101000000010101000101"
                 },
+        /*  1*/ { "41038422416563762XY11     ", 0, 3, 155, "",
+                    "00101000100000000010101010101000101010001000101000000010100000001000000000101000101000000000101000000000100010001000000000101010000000000000000010001010101"
+                    "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "00001010001000101010001010001000000000100000000000101000100000000010000000001000000000101000000000101000000000100000100010000000001000101010001010101000000"
+                },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
+    char cmp_msg[1024];
+
+    /* Only do BWIPP test if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -344,6 +383,18 @@ static void test_4s_encode(const testCtx *const p_ctx) {
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n",
                             i, ret, width, row, data[i].data);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
+                    ret = testUtilBwipp(i, symbol, -1, -1, -1,
+                                        data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                   data[i].expected);
+                }
             }
         }
 
@@ -755,7 +806,7 @@ static void test_2d_encode(const testCtx *const p_ctx) {
     char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
     char cmp_msg[1024];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 

@@ -546,7 +546,8 @@ for this symbology to defaults</string>
                    <bool>false</bool>
                   </property>
                   <property name="toolTip">
-                   <string>Type of 2D component</string>
+                   <string>Type of 2D component
+May be overridden if data too large</string>
                   </property>
                   <property name="text">
                    <string>&amp;Type:</string>
@@ -563,12 +564,13 @@ for this symbology to defaults</string>
                   </property>
                   <property name="minimumSize">
                    <size>
-                    <width>140</width>
+                    <width>60</width>
                     <height>0</height>
                    </size>
                   </property>
                   <property name="toolTip">
-                   <string>Type of 2D component</string>
+                   <string>Type of 2D component
+May be overridden if data too large</string>
                   </property>
                   <item>
                    <property name="text">
@@ -592,6 +594,194 @@ for this symbology to defaults</string>
                   </item>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QLabel" name="lblCompCols">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Set number of columns for CC-C
+May be overridden depending on data
+(ignored if disabled)</string>
+                  </property>
+                  <property name="text">
+                   <string>CC&amp;-C Cols:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>cmbCompCols</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cmbCompCols">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Set number of columns for CC-C
+May be overridden depending on data
+(ignored if disabled)</string>
+                  </property>
+                  <property name="minimumContentsLength">
+                   <number>4</number>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Automatic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>5</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>6</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>7</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>8</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>9</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>10</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>11</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>12</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>13</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>14</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>15</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>16</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>17</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>18</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>19</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>20</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>21</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>22</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>23</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>24</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>25</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>26</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>27</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>28</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>29</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>30</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
                </layout>
               </item>
               <item>
@@ -608,7 +798,8 @@ for this symbology to defaults</string>
                     </property>
                     <property name="toolTip">
                      <string>Data to be encoded in 2D component
-Remember to place [square brackets] around AI identifiers</string>
+Remember to place [square brackets]
+around AI identifiers</string>
                     </property>
                     <property name="text">
                      <string>2D Co&amp;mponent Data</string>
@@ -658,7 +849,8 @@ Remember to place [square brackets] around AI identifiers</string>
                   </property>
                   <property name="toolTip">
                    <string>Data to be encoded in 2D component
-Remember to place [square brackets] around AI identifiers</string>
+Remember to place [square brackets]
+around AI identifiers</string>
                   </property>
                  </widget>
                 </item>

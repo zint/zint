@@ -631,7 +631,7 @@ const char *testUtilInputModeName(int input_mode) {
 
 /* Pretty name for option 3 */
 const char *testUtilOption3Name(int symbology, int option_3) {
-    static char buffer[64];
+    static char buffer[128];
 
     const char *name = NULL;
     const unsigned int high_byte = option_3 == -1 ? 0 : (option_3 >> 8) & 0xFF;
@@ -672,12 +672,23 @@ const char *testUtilOption3Name(int symbology, int option_3) {
             name = option_3 ? "-1" : "0";
         }
     } else if (symbology == BARCODE_QRCODE || symbology == BARCODE_HIBC_QR || symbology == BARCODE_MICROQR
-                || symbology == BARCODE_RMQR || symbology == BARCODE_UPNQR || symbology == BARCODE_GRIDMATRIX
-                || symbology == BARCODE_HANXIN) {
-        if ((option_3 & 0xFF) == ZINT_FULL_MULTIBYTE) {
+                || symbology == BARCODE_RMQR || symbology == BARCODE_UPNQR || symbology == BARCODE_GRIDMATRIX) {
+        if ((option_3 & 0xF8) == ZINT_FULL_MULTIBYTE) {
             name = "ZINT_FULL_MULTIBYTE";
         } else {
             name = (option_3 & 0xFF) ? "-1" : "0";
+        }
+    } else if (symbology == BARCODE_HANXIN) {
+        if (option_3 > 0) {
+            if ((option_3 & 0xF8) == ZINT_FULL_MULTIBYTE && (option_3 & HX_ALTERNATING_FILLER)) {
+                name = "HX_ALTERNATING_FILLER | ZINT_FULL_MULTIBYTE";
+            } else if ((option_3 & 0xF8) == ZINT_FULL_MULTIBYTE) {
+                name = "ZINT_FULL_MULTIBYTE";
+            } else if (option_3 & HX_ALTERNATING_FILLER) {
+                name = "HX_ALTERNATING_FILLER";
+            }
+        } else {
+            name = option_3 ? "-1" : "0";
         }
     } else if (symbology == BARCODE_ULTRA) {
         if ((option_3 & 0xFF) == ULTRA_COMPRESSION) {
@@ -2401,7 +2412,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "pharmacode", BARCODE_PHARMA, 51, 0, 0, 0, 1 /*linear_row_height*/, 0, },
         { "pzn", BARCODE_PZN, 52, 0, 1, 0, 0, 0, },
         { "pharmacode2", BARCODE_PHARMA_TWO, 53, 0, 0, 0, 0, 0, },
-        { "", BARCODE_CEPNET, 54, 0, 0, 0, 0, 0, },
+        { "cepnet", BARCODE_CEPNET, 54, 0, 0, 0, 0, 0, },
         { "pdf417", BARCODE_PDF417, 55, 1, 1, 1, 0, 0, },
         { "pdf417compact", BARCODE_PDF417COMP, 56, 1, 1, 1, 0, 0, },
         { "maxicode", BARCODE_MAXICODE, 57, 1, 1, 0, 0, 0, },
@@ -2424,7 +2435,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "codablockf", BARCODE_CODABLOCKF, 74, 1, 1, 0, 10 /*linear_row_height*/, 0, },
         { "sscc18", BARCODE_NVE18, 75, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
         { "japanpost", BARCODE_JAPANPOST, 76, 0, 0, 0, 0, 0, },
-        { "", BARCODE_KOREAPOST, 77, 0, 0, 0, 0, 0, },
+        { "koreapost", BARCODE_KOREAPOST, 77, 0, 0, 0, 0, 0, },
         { "", -1, 78, 0, 0, 0, 0, 0, },
         { "databarstacked", BARCODE_DBAR_STK, 79, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
         { "databarstackedomni", BARCODE_DBAR_OMNSTK, 80, 0, 0, 0, 33 /*linear_row_height*/, 1, },
@@ -2463,22 +2474,22 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", -1, 113, 0, 0, 0, 0, 0, },
         { "", -1, 114, 0, 0, 0, 0, 0, },
         { "dotcode", BARCODE_DOTCODE, 115, 0, 1, 1, 0, 0, },
-        { "hanxin", BARCODE_HANXIN, 116, 0, 0, 0, 0, 0, },
+        { "hanxin", BARCODE_HANXIN, 116, 1, 1, 1, 0, 0, },
         { "", -1, 117, 0, 0, 0, 0, 0, },
         { "", -1, 118, 0, 0, 0, 0, 0, },
         { "mailmark", BARCODE_MAILMARK_2D, 119, 1, 1, 1, 0, 0, },
         { "code128", BARCODE_UPU_S10, 120, 0, 0, 0, 0, 0, },
-        { "", BARCODE_MAILMARK_4S, 121, 0, 0, 0, 0, 0, }, /* Note BWIPP mailmark is BARCODE_MAILMARK_2D above */
+        { "mailmark4state", BARCODE_MAILMARK_4S, 121, 0, 0, 0, 0, 0, }, /* Note BWIPP mailmark is BARCODE_MAILMARK_2D above */
         { "", -1, 122, 0, 0, 0, 0, 0, },
         { "", -1, 123, 0, 0, 0, 0, 0, },
         { "", -1, 124, 0, 0, 0, 0, 0, },
         { "", -1, 125, 0, 0, 0, 0, 0, },
         { "", -1, 126, 0, 0, 0, 0, 0, },
-        { "", BARCODE_DXFILMEDGE, 127, 0, 0, 0, 0, 0, },
+        { "", -1, 127, 0, 0, 0, 0, 0, },
         { "aztecrune", BARCODE_AZRUNE, 128, 0, 0, 0, 0, 0, },
         { "code32", BARCODE_CODE32, 129, 0, 0, 0, 0, 0, },
         { "ean13composite", BARCODE_EANX_CC, 130, 1, 1, 0, 72 /*linear_row_height*/, 1 /*gs1_cvt*/, },
-        { "gs1-128composite", BARCODE_GS1_128_CC, 131, 1, 0, 1 /*GS1CARET*/, 36, 1, },
+        { "gs1-128composite", BARCODE_GS1_128_CC, 131, 1, 1, 1 /*GS1CARET*/, 36, 1, },
         { "databaromnicomposite", BARCODE_DBAR_OMN_CC, 132, 1, 0, 0, 33, 1, },
         { "databarlimitedcomposite", BARCODE_DBAR_LTD_CC, 133, 1, 0, 0, 10 /*linear_row_height*/, 1, },
         { "databarexpandedcomposite", BARCODE_DBAR_EXP_CC, 134, 1, 1, 1 /*GS1CARET*/, 34 /*linear_row_height*/, 1, },
@@ -2489,12 +2500,12 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "databarexpandedstackedcomposite", BARCODE_DBAR_EXPSTK_CC, 139, 1, 1, 1 /*GS1CARET*/, 34 /*lin_r_h*/, 1, },
         { "channelcode", BARCODE_CHANNEL, 140, 0, 0, 0, 0, 0, },
         { "codeone", BARCODE_CODEONE, 141, 0, 1, 0, 0, 0, },
-        { "", BARCODE_GRIDMATRIX, 142, 0, 0, 0, 0, 0, },
+        { "gridmatrix", BARCODE_GRIDMATRIX, 142, 1, 1, 1, 0, 0, },
         { "qrcode", BARCODE_UPNQR, 143, 0, 0, 1, 0, 0, },
         { "ultracode", BARCODE_ULTRA, 144, 1, 1, 0, 0, 0, },
         { "rectangularmicroqrcode", BARCODE_RMQR, 145, 1, 1, 1, 0, 0, },
         { "bc412", BARCODE_BC412, 146, 1, 1, 0, 0, 0, },
-        { "", BARCODE_DXFILMEDGE, 147, 0, 0, 0, 0, 0, },
+        { "dxfilmedge", BARCODE_DXFILMEDGE, 147, 0, 0, 0, 0, 0, },
         { "ean8composite", BARCODE_EAN8_CC, 148, 1, 1, 0, 72 /*linear_row_height*/, 1 /*gs1_cvt*/, },
         { "ean13composite", BARCODE_EAN13_CC, 149, 1, 1, 0, 72 /*linear_row_height*/, 1 /*gs1_cvt*/, },
     };
@@ -2528,7 +2539,9 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         }
         return NULL;
     }
-    if (symbol->structapp.count && symbology != BARCODE_MAXICODE) {
+    if (symbol->structapp.count && symbology != BARCODE_AZTEC && symbology != BARCODE_CODE16K
+            && symbology != BARCODE_DOTCODE && symbology != BARCODE_GRIDMATRIX && symbology != BARCODE_MAXICODE
+            && symbology != BARCODE_QRCODE) {
         if (debug & ZINT_DEBUG_TEST_PRINT) {
             printf("i:%d %s not BWIPP compatible, Structured Append not supported\n",
                     index, testUtilBarcodeName(symbology));
@@ -2552,6 +2565,14 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
             }
             return NULL;
         }
+    } else if (symbology == BARCODE_HANXIN) {
+        if (option_3 < 0 || !(option_3 & HX_ALTERNATING_FILLER)) {
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                printf("i:%d %s not BWIPP compatible, HX_ALTERNATING_FILLER (option_3) must be specified\n",
+                        index, testUtilBarcodeName(symbology));
+            }
+            return NULL;
+        }
     } else if (symbology == BARCODE_RMQR) {
         if (option_2 < 1) {
             if (debug & ZINT_DEBUG_TEST_PRINT) {
@@ -2571,6 +2592,14 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         if (option_2 < 1) {
             if (debug & ZINT_DEBUG_TEST_PRINT) {
                 printf("i:%d %s not BWIPP compatible, version (option_2) must be specified\n",
+                        index, testUtilBarcodeName(symbology));
+            }
+            return NULL;
+        }
+    } else if (symbology == BARCODE_ULTRA) {
+        if (option_2 == 2) {
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                printf("i:%d %s not BWIPP compatible, revision 2 not properly implemented by zint\n",
                         index, testUtilBarcodeName(symbology));
             }
             return NULL;
@@ -2671,8 +2700,23 @@ static char *testUtilBwippCvtGS1Data(char *bwipp_data, const int bwipp_data_size
             } else if (!parens_mode && *c == ']') {
                 *b = ')';
             } else if ((*c == '+' || *c == ' ') && upcean && !pipe) {
+                char *z = c + 1;
+                int d;
                 *b = ' ';
                 *addon_posn = (int) (b - bwipp_data);
+                while (*z && *z != '|') {
+                    z++;
+                }
+                /* Zero-fill if required */
+                d = (int) (z - (c + 1));
+                if (d < 2) {
+                    *++b = '0';
+                } else if (d == 3 || d == 4) {
+                    *++b = '0';
+                    if (d == 3) {
+                        *++b = '0';
+                    }
+                }
             } else {
                 *b = *c;
             }
@@ -2908,31 +2952,53 @@ static void testUtilISBNHyphenate(char *bwipp_data, int addon_posn) {
 }
 
 /* Helper to convert UTF-8 data */
-static char *testUtilBwippUtf8Convert(const int index, const int symbology, const int try_sjis, int *p_eci,
+static char *testUtilBwippUtf8Convert(const int index, const int symbology, const int try_alt, int *p_eci,
                         const unsigned char *data, int *p_data_len, unsigned char *converted) {
     int eci = *p_eci;
 
-    if (eci == 0 && try_sjis
-            && (symbology == BARCODE_QRCODE || symbology == BARCODE_MICROQR || symbology == BARCODE_RMQR
-                || symbology == BARCODE_UPNQR)) {
-        if (symbology == BARCODE_UPNQR) { /* Note need to add "force binary mode" to BWIPP for this to work */
-            if (zint_utf8_to_eci(4, data, converted, p_data_len) != 0) {
-                fprintf(stderr, "i:%d testUtilBwippUtf8Convert: failed to convert UTF-8 data for %s, ECI 4\n",
-                        index, testUtilBarcodeName(symbology));
-                return NULL;
-            }
-            *p_eci = 4;
-        } else {
-            if (zint_utf8_to_eci(0, data, converted, p_data_len) != 0) {
-                if (zint_utf8_to_eci(20, data, converted, p_data_len) != 0) {
-                    fprintf(stderr, "i:%d testUtilBwippUtf8Convert: failed to convert UTF-8 data for %s, ECI 0/20\n",
+    if (eci == 0) {
+        if (try_alt && (symbology == BARCODE_QRCODE || symbology == BARCODE_MICROQR || symbology == BARCODE_RMQR
+                            || symbology == BARCODE_UPNQR)) {
+            if (symbology == BARCODE_UPNQR) { /* Note need to add "force binary mode" to BWIPP for this to work */
+                if (zint_utf8_to_eci(4, data, converted, p_data_len) != 0) {
+                    fprintf(stderr, "i:%d testUtilBwippUtf8Convert: failed to convert UTF-8 data for %s, ECI 4\n",
                             index, testUtilBarcodeName(symbology));
                     return NULL;
                 }
-                /* NOTE: not setting *p_eci = 20 */
+                *p_eci = 4; /* Setting `p_eci` as ECI 4 only valid ECI for UPNQR */
+            } else {
+                if (zint_utf8_to_eci(0, data, converted, p_data_len) != 0) {
+                    if (zint_utf8_to_eci(20, data, converted, p_data_len) != 0) {
+                        fprintf(stderr, "i:%d testUtilBwippUtf8Convert: failed to convert UTF-8 data for %s, ECI 0/20\n",
+                                index, testUtilBarcodeName(symbology));
+                        return NULL;
+                    }
+                    /* NOTE: not setting *p_eci = 20 */
+                }
             }
+            return (char *) converted;
+
+        } else if (symbology == BARCODE_GRIDMATRIX) {
+            if (zint_utf8_to_eci(29, data, converted, p_data_len) == 0) {
+                /* NOTE: not setting *p_eci = 29 */
+                return (char *) converted;
+            }
+            eci = zint_get_best_eci(data, *p_data_len);
+            if (zint_utf8_to_eci(eci, data, converted, p_data_len) == 0) {
+                *p_eci = eci;
+                return (char *) converted;
+            }
+        } else if (try_alt && symbology == BARCODE_HANXIN) {
+            if (zint_utf8_to_eci(0, data, converted, p_data_len) != 0) {
+                if (zint_utf8_to_eci(32, data, converted, p_data_len) != 0) {
+                    fprintf(stderr, "i:%d testUtilBwippUtf8Convert: failed to convert UTF-8 data for %s, ECI 0/32\n",
+                            index, testUtilBarcodeName(symbology));
+                    return NULL;
+                }
+                /* NOTE: not setting *p_eci = 32 */
+            }
+            return (char *) converted;
         }
-        return (char *) converted;
     }
     if (ZBarcode_Cap(symbology, ZINT_CAP_ECI)) {
         if (zint_utf8_to_eci(eci, data, converted, p_data_len) != 0) {
@@ -2996,7 +3062,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     /* 4 AI prefix + primary + '|' + leading zero + escaped data + fudge */
     int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4 + 64;
 
-    int eci_length = zint_get_eci_length(symbol->eci, (const unsigned char *) data, data_len);
+    int eci_length = zint_get_eci_length(symbol->eci ? symbol->eci : 34 /*UTF-32 (max)*/, ZCUCP(data), data_len);
     char *converted = (char *) z_alloca(eci_length + 1);
     char *cmd = (char *) z_alloca(max_data_len + 1024);
     const char *bwipp_barcode = NULL;
@@ -3052,8 +3118,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     eci = symbol->eci >= 3 && ZBarcode_Cap(symbology, ZINT_CAP_ECI) ? symbol->eci : 0;
 
     if ((symbol->input_mode & 0x07) == UNICODE_MODE && zint_is_eci_convertible(eci)
-            && (data = testUtilBwippUtf8Convert(index, symbology, 1 /*try_sjis*/, &eci, (const unsigned char *) data,
-                                &data_len, (unsigned char *) converted)) == NULL) {
+            && (data = testUtilBwippUtf8Convert(index, symbology, 1 /*try_alt*/, &eci, ZCUCP(data),
+                                &data_len, ZUCP(converted))) == NULL) {
         fprintf(stderr, "i:%d %s:%d failed to convert UTF-8 data for %s\n",
                 index, fn, __LINE__, testUtilBarcodeName(symbology));
         return -1;
@@ -3103,8 +3169,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     strlen(bwipp_opts_buf) ? " " : "", option_1 == 1 ? 'a' : option_1 == 2 ? 'b' : 'c');
         }
         if (option_2 > 0) {
-            sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssegments=%d",
-                    strlen(bwipp_opts_buf) ? " " : "", option_2 * 2);
+            if (symbology == BARCODE_DBAR_EXPSTK || symbology == BARCODE_DBAR_EXPSTK_CC) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssegments=%d",
+                        strlen(bwipp_opts_buf) ? " " : "", option_2 * 2);
+            } else if (symbology == BARCODE_GS1_128_CC && option_1 == 3) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%scccolumns=%d",
+                        strlen(bwipp_opts_buf) ? " " : "", option_2);
+            }
         }
 
         if (symbol->input_mode & GS1NOCHECK_MODE) {
@@ -3364,6 +3435,15 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             strlen(bwipp_opts_buf) ? " " : "", compact ? "compact" : "full");
                     bwipp_opts = bwipp_opts_buf;
                 }
+                if (symbol->structapp.count) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssampos=%d samtotal=%d",
+                            strlen(bwipp_opts_buf) ? " " : "", symbol->structapp.index, symbol->structapp.count);
+                    if (symbol->structapp.id[0]) {
+                        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssamid=%.32s",
+                                strlen(bwipp_opts_buf) ? " " : "", symbol->structapp.id);
+                    }
+                    bwipp_opts = bwipp_opts_buf;
+                }
             } else if (symbology == BARCODE_CODEONE) {
                 if ((symbol->input_mode & 0x07) == GS1_MODE) { /* Hack pseudo-GS1 support */
                     int last_ai, ai_latch = 0;
@@ -3511,13 +3591,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             }
         }
 
-        if (symbology == BARCODE_CODE128 || symbology == BARCODE_CODE128AB || symbology == BARCODE_HIBC_128
-                || symbology == BARCODE_GS1_128 || symbology == BARCODE_GS1_128_CC || symbology == BARCODE_NVE18
-                || symbology == BARCODE_EAN14 || symbology == BARCODE_UPU_S10 || symbology == BARCODE_MAXICODE) {
-            sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%snewencoder", strlen(bwipp_opts_buf) ? " " : "");
-            bwipp_opts = bwipp_opts_buf;
-        }
-
         if (symbology == BARCODE_DATAMATRIX || symbology == BARCODE_HIBC_DM) {
             int added_dmre = 0;
             #include "../dmatrix.h"
@@ -3582,6 +3655,18 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     bwipp_opts = bwipp_opts_buf;
                 }
             }
+            if (option_3 != -1) {
+                bwipp_opts = bwipp_opts_buf;
+            }
+            if (symbol->structapp.count) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssampos=%d samtotal=%d",
+                        strlen(bwipp_opts_buf) ? " " : "", symbol->structapp.index, symbol->structapp.count);
+                bwipp_opts = bwipp_opts_buf;
+            }
+            if (symbol->output_options & READER_INIT) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sreaderinit", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
+            }
             /* Hack to place ECI after Macro header */
             if (eci && length > 5 && memcmp("[)>\036", data, 4) == 0) {
                 char macro_eci_buf[13];
@@ -3634,6 +3719,63 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     }
                 }
             }
+            if (symbol->structapp.count) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssampos=%d samtotal=%d",
+                        strlen(bwipp_opts_buf) ? " " : "", symbol->structapp.index, symbol->structapp.count);
+                if (symbol->structapp.id[0]) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssamparity=%s",
+                            strlen(bwipp_opts_buf) ? " " : "", symbol->structapp.id);
+                }
+                bwipp_opts = bwipp_opts_buf;
+            }
+        } else if (symbology == BARCODE_GRIDMATRIX) {
+            const int bwipp_option_1 = symbol->option_1; /* Use feedback options */
+            const int bwipp_option_2 = symbol->option_2;
+            if (bwipp_option_1 >= 1 && bwipp_option_1 <= 5) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=%d fixedeclevel",
+                        strlen(bwipp_opts_buf) ? " " : "", bwipp_option_1);
+                bwipp_opts = bwipp_opts_buf;
+            }
+            if (bwipp_option_2 >= 1 && bwipp_option_2 <= 13) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sversion=%d",
+                        strlen(bwipp_opts_buf) ? " " : "", bwipp_option_2);
+                bwipp_opts = bwipp_opts_buf;
+            }
+            /* BWIPP only allows READER_INIT in 1st structured append symbol */
+            if ((symbol->output_options & READER_INIT) && (symbol->structapp.count == 0 || symbol->structapp.index == 1)) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sreaderinit", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
+            }
+            if (symbol->structapp.count) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssampos=%d samtotal=%d",
+                        strlen(bwipp_opts_buf) ? " " : "", symbol->structapp.index, symbol->structapp.count);
+                if (symbol->structapp.id[0]) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssamid=%s",
+                            strlen(bwipp_opts_buf) ? " " : "", symbol->structapp.id);
+                }
+                bwipp_opts = bwipp_opts_buf;
+            }
+        } else if (symbology == BARCODE_HANXIN) {
+            const int bwipp_option_1 = symbol->option_1; /* Use feedback options */
+            const int bwipp_option_2 = symbol->option_2;
+            if (bwipp_option_1 >= 1 && bwipp_option_1 <= 4) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=L%d",
+                        strlen(bwipp_opts_buf) ? " " : "", bwipp_option_1);
+                bwipp_opts = bwipp_opts_buf;
+            }
+            if (bwipp_option_2 >= 1 && bwipp_option_2 <= 84) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sversion=%d",
+                        strlen(bwipp_opts_buf) ? " " : "", bwipp_option_2);
+                bwipp_opts = bwipp_opts_buf;
+            }
+            if (option_3 != -1) {
+                int mask = (symbol->option_3 >> 8) & 0x0F;
+                if (mask >= 1 && mask <= 4) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%smask=%d",
+                            strlen(bwipp_opts_buf) ? " " : "", mask);
+                    bwipp_opts = bwipp_opts_buf;
+                }
+            }
         } else if (symbology == BARCODE_ULTRA) {
             const int rev = option_2 == 2 ? 2 : 1;
             if (option_1 >= 1 && option_1 <= 6) {
@@ -3641,6 +3783,12 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                         strlen(bwipp_opts_buf) ? " " : "", option_1 - 1);
             }
             sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srev=%d", strlen(bwipp_opts_buf) ? " " : "", rev);
+            bwipp_opts = bwipp_opts_buf;
+        }
+
+        /* Add "dontlint" to all HIBC barcodes. TODO: implement HIBC data verification */
+        if (symbology >= BARCODE_HIBC_128 && symbology <= BARCODE_HIBC_AZTEC) {
+            sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
             bwipp_opts = bwipp_opts_buf;
         }
     }
@@ -3800,6 +3948,7 @@ int testUtilBwippSegs(int index, struct zint_symbol *symbol, int option_1, int o
     const int symbology = symbol->symbology;
     const int unicode_mode = (symbol->input_mode & 0x07) == UNICODE_MODE;
     const int symbol_eci = symbol->eci;
+    const int default_eci = symbol->symbology == BARCODE_GRIDMATRIX ? 29 : symbol->symbology == BARCODE_UPNQR ? 4 : 3;
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
     int total_len = 0;
     char *data, *d;
@@ -3825,15 +3974,16 @@ int testUtilBwippSegs(int index, struct zint_symbol *symbol, int option_1, int o
 
     for (i = 0; i < seg_count; i++) {
         if (unicode_mode && zint_is_eci_convertible(local_segs[i].eci)) {
-            char *converted = testUtilBwippUtf8Convert(index, symbology, 0 /*try_sjis*/, &local_segs[i].eci,
-                                local_segs[i].source, &local_segs[i].length, (unsigned char *) d);
+            char *converted = testUtilBwippUtf8Convert(index, symbology, 0 /*try_alt*/, &local_segs[i].eci,
+                                local_segs[i].source, &local_segs[i].length, ZUCP(d));
             if (converted == NULL) {
                 return -1;
             }
             if (converted == d) {
                 /* Ensure default ECI set if follows non-default ECI */
-                if (i != 0 && local_segs[i].eci == 0 && local_segs[i - 1].eci > 3) {
-                    local_segs[i].eci = 3;
+                if (i != 0 && local_segs[i].eci == 0 && local_segs[i - 1].eci != 0
+                        && local_segs[i - 1].eci != default_eci) {
+                    local_segs[i].eci = default_eci;
                 }
                 if (local_segs[i].eci) { /* Note this will fail if have DotCode macro */
                     char eci_str[10 + 1];
@@ -3845,8 +3995,9 @@ int testUtilBwippSegs(int index, struct zint_symbol *symbol, int option_1, int o
                 d += local_segs[i].length;
             } else {
                 /* Ensure default ECI set if follows non-default ECI */
-                if (i != 0 && local_segs[i].eci == 0 && local_segs[i - 1].eci > 3) {
-                    local_segs[i].eci = 3;
+                if (i != 0 && local_segs[i].eci == 0 && local_segs[i - 1].eci != 0
+                        && local_segs[i - 1].eci != default_eci) {
+                    local_segs[i].eci = default_eci;
                 }
                 if (local_segs[i].eci) {
                     d += sprintf(d, "^ECI%06d", local_segs[i].eci);
@@ -3856,8 +4007,9 @@ int testUtilBwippSegs(int index, struct zint_symbol *symbol, int option_1, int o
             }
         } else {
             /* Ensure default ECI set if follows non-default ECI */
-            if (i != 0 && local_segs[i].eci == 0 && local_segs[i - 1].eci > 3) {
-                local_segs[i].eci = 3;
+            if (i != 0 && local_segs[i].eci == 0 && local_segs[i - 1].eci != 0
+                    && local_segs[i - 1].eci != default_eci) {
+                local_segs[i].eci = default_eci;
             }
             if (local_segs[i].eci) {
                 d += sprintf(d, "^ECI%06d", local_segs[i].eci);
@@ -4289,7 +4441,7 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
             || symbol->eci >= 899) {
         const int eci = symbol->eci > 899 ? 3 : zxingcpp_cmp;
         int error_number;
-        const int eci_length = zint_get_eci_length(eci, (const unsigned char *) buffer, cnt);
+        const int eci_length = zint_get_eci_length(eci, ZCUCP(buffer), cnt);
         unsigned char *preprocessed = (unsigned char *) z_alloca(eci_length + 1);
 
         if (eci_length >= buffer_size) {
@@ -4297,7 +4449,7 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
                     index, buffer_size, eci_length, cmd);
             return -1;
         }
-        error_number = zint_utf8_to_eci(eci, (const unsigned char *) buffer, preprocessed, &cnt);
+        error_number = zint_utf8_to_eci(eci, ZCUCP(buffer), preprocessed, &cnt);
         if (error_number == 0) {
             memcpy(buffer, preprocessed, cnt);
         } else {
@@ -4308,7 +4460,7 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
             } else {
                 int i;
                 unsigned int *vals = (unsigned int *) z_alloca(sizeof(int) * (cnt + 1));
-                error_number = z_utf8_to_unicode(symbol, (const unsigned char *) buffer, vals, &cnt, 1);
+                error_number = z_utf8_to_unicode(symbol, ZCUCP(buffer), vals, &cnt, 1);
                 if (error_number != 0) {
                     fprintf(stderr, "i:%d testUtilZXingCPP: z_utf8_to_unicode == %d (%s)\n", index, error_number,
                             cmd);
@@ -4433,8 +4585,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     }
 
     if (is_escaped) {
-        ret = zint_test_escape_char_process(symbol, (unsigned char *) expected, &expected_len,
-                                        (unsigned char *) escaped);
+        ret = zint_test_escape_char_process(symbol, ZUCP(expected), &expected_len, ZUCP(escaped));
         if (ret != 0) {
             sprintf(msg, "escape_char_process %d != 0", ret);
             return 2;
@@ -4494,8 +4645,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         hibc[0] = '+';
         memcpy(hibc + 1, expected, expected_len);
         z_to_upper(ZUCP(hibc + 1), expected_len);
-        if (z_not_sane_lookup(TECHNETIUM, sizeof(TECHNETIUM) - 1, (unsigned char *) (hibc + 1), expected_len,
-                                posns)) {
+        if (z_not_sane_lookup(TECHNETIUM, sizeof(TECHNETIUM) - 1, ZCUCP(hibc + 1), expected_len, posns)) {
             sprintf(msg, "HIBC z_not_sane_lookup(TECHNETIUM) failed");
             return 4;
         }
@@ -4577,7 +4727,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                     memcpy(c25inter, expected, expected_len);
                 }
                 if (have_ccheckdigit) {
-                    c25inter[expected_len] = zint_gs1_check_digit((const unsigned char *) c25inter, expected_len);
+                    c25inter[expected_len] = zint_gs1_check_digit(ZCUCP(c25inter), expected_len);
                     expected_len++;
                 }
                 c25inter[expected_len] = '\0';
@@ -4597,7 +4747,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             expected = c25inter;
         } else if (symbology == BARCODE_ITF14) {
             expected_len += z_zero_fill(ZCUCP(expected), expected_len, ZUCP(c25inter), 13);
-            c25inter[expected_len] = zint_gs1_check_digit((const unsigned char *) c25inter, 13);
+            c25inter[expected_len] = zint_gs1_check_digit(ZCUCP(c25inter), 13);
             c25inter[++expected_len] = '\0';
             expected = c25inter;
         }
@@ -4689,7 +4839,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         ean14_nve18[0] = '0';
         ean14_nve18[1] = symbology == BARCODE_NVE18 ? '0' : '1';
         z_zero_fill(ZCUCP(expected), expected_len, ZUCP(ean14_nve18 + 2), len);
-        ean14_nve18[len + 2] = zint_gs1_check_digit((unsigned char *) (ean14_nve18 + 2), len);
+        ean14_nve18[len + 2] = zint_gs1_check_digit(ZCUCP(ean14_nve18 + 2), len);
         expected = ean14_nve18;
         expected_len = len + 3;
 

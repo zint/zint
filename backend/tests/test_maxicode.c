@@ -1752,7 +1752,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "010101101100001010110111001100"
                     "101011011010100110010010100111"
                 },
-        /* 12*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("\000\000\0009"), 4, 0 },{ TU("9999"), -1, 0 }, { TU("9999"), -1, 0 } }, "", 0, 33, 30, 1, "Digits spanning segments, 0 ECIs, ticket #361",
+        /* 12*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("\000\000\0009"), 4, 0 },{ TU("9999"), -1, 0 }, { TU("9999"), -1, 0 } }, "", 0, 33, 30, 0, "Digits spanning segments, 0 ECIs, ticket #361; BWIPP: just sees single digit runs, so uses NSs (shorter)",
                     "111111111111010101010101010111"
                     "010101010101000000000000000010"
                     "101010101010101010101010101000"
@@ -1787,7 +1787,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "111101011010111110100000101000"
                     "000011110000101001010000010101"
                 },
-        /* 13*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("12345678"), -1, 3 },{ TU("91234567901"), -1, 0 }, { TU("12345678"), -1, 0 } }, "", 0, 33, 30, 1, "Digits spanning segments",
+        /* 13*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("12345678"), -1, 3 },{ TU("91234567901"), -1, 0 }, { TU("12345678"), -1, 0 } }, "", 0, 33, 30, 0, "Digits spanning segments, 0 ECIs, ticket #361; BWIPP: just sees single digit runs, so uses NSs (shorter)",
                     "111111100011110110111111111111"
                     "010100111111000011000000101000"
                     "001010111001111110100111001000"

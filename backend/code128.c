@@ -571,7 +571,7 @@ INTERNAL int zint_gs1_128_cc(struct zint_symbol *symbol, unsigned char source[],
     /* If part of a composite symbol make room for the separator pattern */
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         separator_row = symbol->rows++;
-        symbol->row_height[separator_row] = 1;
+        symbol->row_height[separator_row] = 1.0f;
     }
 
     error_number = zint_gs1_verify(symbol, source, length, reduced, &reduced_length, 1 /*set_hrt*/);

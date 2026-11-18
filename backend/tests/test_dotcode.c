@@ -89,21 +89,31 @@ static void test_large(const testCtx *const p_ctx) {
 
         memset(data_buf, data[i].datum, data[i].length);
 
-        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/,
+                                    data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
                 if (!data[i].bwipp_cmp) {
-                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    if (debug & ZINT_DEBUG_TEST_PRINT) {
+                        printf("i:%d %s not BWIPP compatible (%s)\n",
+                                i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    }
                 } else {
                     char modules_dump[200 * 200 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data_buf, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data_buf, length, NULL, cmp_buf,
+                                        sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                     assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
@@ -112,7 +122,10 @@ static void test_large(const testCtx *const p_ctx) {
             }
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data_buf, length, debug)) {
                 if (!data[i].zxingcpp_cmp) {
-                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not zxing-cpp compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    if (debug & ZINT_DEBUG_TEST_PRINT) {
+                        printf("i:%d %s not zxing-cpp compatible (%s)\n",
+                                i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    }
                 } else {
                     int cmp_len, ret_len;
                     char modules_dump[200 * 200 + 1];
@@ -156,36 +169,49 @@ static void test_options(const testCtx *const p_ctx) {
         const char *expected_errtxt;
         int expected_option_2;
         int expected_option_3;
+        int bwipp_cmp;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 1 << 8 },
-        /*  1*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "", 19, 2 << 8 },
-        /*  2*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "", 19, 2 << 8 },
-        /*  3*/ { -1, -1, -1, 12, -1, { 0, 0, "" }, "1234567890", 0, 19, 12, "", 12, 2 << 8 },
-        /*  4*/ { -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", 0, 44, 5, "", 5, 6 << 8 },
-        /*  5*/ { -1, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 527: Number of columns '4' is out of range (5 to 200)", 4, 0 }, /* Cols < 5 */
-        /*  6*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890", 0, 5, 200, "", 200, 7 << 8 }, /* Note used to fail - now sets  height to at least 5 */
-        /*  7*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890123456789012345678901234567890", 0, 5, 200, "", 200, 7 << 8 }, /* Cols 200 max */
-        /*  8*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 7, 200, "", 200, 4 << 8 },
-        /*  9*/ { -1, -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 527: Number of columns '201' is out of range (5 to 200)", 201, 0 },
-        /* 10*/ { -1, -1, -1, -1, 10 << 8, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 1 << 8 }, /* Mask > 8 + 1 ignored */
-        /* 11*/ { -1, -1, -1, -1, 8 << 8, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 8 << 8 },
-        /* 12*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "ABCDE", 0, 12, 19, "", 19, 3 << 8 },
-        /* 13*/ { -1, -1, -1, 19, -1, { 35, 35, "" }, "ABCDE", 0, 16, 19, "", 19, 2 << 8 },
-        /* 14*/ { -1, -1, -1, 19, -1, { 1, 1, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '1' out of range (2 to 35)", 19, 0 },
-        /* 15*/ { -1, -1, -1, 19, -1, { 1, 36, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '36' out of range (2 to 35)", 19, 0 },
-        /* 16*/ { -1, -1, -1, 19, -1, { 3, 2, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 731: Structured Append index '3' out of range (1 to count 2)", 19, 0 },
-        /* 17*/ { -1, -1, -1, 19, -1, { 1, 2, "1" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 732: Structured Append ID not available for DotCode", 19, 0 },
-        /* 18*/ { GS1_MODE, 3, -1, -1, -1, { 0, 0, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 11, 16, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards", 16, 2 << 8 },
-        /* 19*/ { GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 12, 19, "Warning 734: Using Structured Append in GS1 mode not supported by GS1 standards", 19, 4 << 8 },
-        /* 20*/ { GS1_MODE, 3, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 14, 21, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards", 21, 3 << 8 }, /* ECI trumps Structured Append */
+        /*  0*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 1 << 8, 1, "" },
+        /*  1*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "", 19, 2 << 8, 1, "" },
+        /*  2*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "", 19, 2 << 8, 1, "" },
+        /*  3*/ { -1, -1, -1, 12, -1, { 0, 0, "" }, "1234567890", 0, 19, 12, "", 12, 2 << 8, 1, "" },
+        /*  4*/ { -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", 0, 44, 5, "", 5, 6 << 8, 1, "" },
+        /*  5*/ { -1, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 527: Number of columns '4' is out of range (5 to 200)", 4, 0, 1, "Cols < 5" },
+        /*  6*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890", 0, 5, 200, "", 200, 7 << 8, 1, "Note used to fail - now sets  height to at least 5" },
+        /*  7*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890123456789012345678901234567890", 0, 5, 200, "", 200, 7 << 8, 1, "Cols 200 max" },
+        /*  8*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 7, 200, "", 200, 4 << 8, 1, "" },
+        /*  9*/ { -1, -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 527: Number of columns '201' is out of range (5 to 200)", 201, 0, 1, "" },
+        /* 10*/ { -1, -1, -1, -1, 10 << 8, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 1 << 8, 1, "Mask > 8 + 1 ignored" },
+        /* 11*/ { -1, -1, -1, -1, 8 << 8, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 8 << 8, 1, "" },
+        /* 12*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "ABCDE", 0, 12, 19, "", 19, 3 << 8, 1, "" },
+        /* 13*/ { -1, -1, -1, 19, -1, { 35, 35, "" }, "ABCDE", 0, 16, 19, "", 19, 2 << 8, 1, "" },
+        /* 14*/ { -1, -1, -1, 19, -1, { 1, 1, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '1' out of range (2 to 35)", 19, 0, 1, "" },
+        /* 15*/ { -1, -1, -1, 19, -1, { 1, 36, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '36' out of range (2 to 35)", 19, 0, 1, "" },
+        /* 16*/ { -1, -1, -1, 19, -1, { 3, 2, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 731: Structured Append index '3' out of range (1 to count 2)", 19, 0, 1, "" },
+        /* 17*/ { -1, -1, -1, 19, -1, { 1, 2, "1" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 732: Structured Append ID not available for DotCode", 19, 0, 1, "" },
+        /* 18*/ { GS1_MODE, 3, -1, -1, -1, { 0, 0, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 11, 16, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards", 16, 2 << 8, 0, "BWIPP: does not support ECI in GS1 mode" },
+        /* 19*/ { GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 12, 19, "Warning 734: Using Structured Append in GS1 mode not supported by GS1 standards", 19, 1 << 8, 0, "BWIPP: does not support Structured Append in GS1 mode" },
+        /* 20*/ { GS1_MODE, 3, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 14, 21, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards", 21, 4 << 8, 0, "ECI trumps Structured Append; BWIPP: does not support ECI in GS1 mode" },
+        /* 21*/ { -1, -1, READER_INIT, -1, -1, { 0, 0, "" }, "12", 0, 9, 14, "", 14, 2 << 8, 1, "" },
+        /* 22*/ { -1, -1, READER_INIT, -1, -1, { 0, 0, "" }, "1", 0, 10, 13, "", 13, 8 << 8, 0, "BWIPP: uses mask 1' (4) instead of 3' (8), both score the same, see below" },
+        /* 23*/ { -1, -1, READER_INIT, -1, 5 << 8, { 0, 0, "" }, "1", 0, 10, 13, "", 13, 5 << 8, 1, "Same with forced mask" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char option_3_buf[64];
+    char option_3_buf[128];
+
+    char escaped[1024];
+    char cmp_buf[32768] ZINT_TESTUTIL_SANITIZEM_INIT;
+    char cmp_msg[1024];
+
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -196,25 +222,69 @@ static void test_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, data[i].eci, -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, data[i].eci,
+                                    -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options,
+                                    data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, symbol->errtxt);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, symbol->errtxt);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                            i, symbol->rows, data[i].expected_rows, symbol->errtxt);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, symbol->errtxt);
         }
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected_errtxt);
         assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
-                    i, symbol->option_2, data[i].expected_option_2);
+                        i, symbol->option_2, data[i].expected_option_2);
         strcpy(option_3_buf, testUtilOption3Name(BARCODE_DOTCODE, symbol->option_3)); /* Copy static buffer */
-        assert_equal(symbol->option_3, data[i].expected_option_3, "i:%d symbol->option_3 0x%04X (%s) != 0x%04X (%s)\n",
-                    i, symbol->option_3, option_3_buf,
-                    data[i].expected_option_3, testUtilOption3Name(BARCODE_DOTCODE, data[i].expected_option_3));
+        assert_equal(symbol->option_3, data[i].expected_option_3,
+                        "i:%d symbol->option_3 0x%04X (%s) != 0x%04X (%s)\n", i, symbol->option_3, option_3_buf,
+                        data[i].expected_option_3, testUtilOption3Name(BARCODE_DOTCODE, data[i].expected_option_3));
+        if (ret < ZINT_ERROR) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) {
+                        printf("i:%d %s not BWIPP compatible (%s)\n",
+                                i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    }
+                } else {
+                    char modules_dump[200 * 200 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL,
+                                        cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
+            if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                int cmp_len, ret_len;
+                char modules_dump[200 * 200 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1,
+                                        cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                            NULL /*primary*/, escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
+            }
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -239,6 +309,7 @@ static void test_input(const testCtx *const p_ctx) {
         int zxingcpp_cmp;
         const char *comment;
     };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, 13, -1, { 0, 0, "" }, "A", -1, 0, "66 21 6A", 1, 1, "" },
         /*  1*/ { UNICODE_MODE, 3, -1, -1, { 0, 0, "" }, "A", -1, 0, "6C 03 66 21", 1, 1, "" },
@@ -284,10 +355,21 @@ static void test_input(const testCtx *const p_ctx) {
         /* 41*/ { UNICODE_MODE, -1, 13, -1, { 0, 0, "" }, "00", -1, 0, "6B 00 6A", 1, 1, "" },
         /* 42*/ { UNICODE_MODE, -1, 200, -1, { 0, 0, "" }, "00", -1, 0, "(35) 6B 00 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A 6A", 1, 1, "" },
         /* 43*/ { DATA_MODE, -1, 50, -1, { 0, 0, "" }, "\354\202f", -1, 0, "70 05 4F 48 6E 46 6A", 1, 899, "" },
-        /* 44*/ { UNICODE_MODE, -1, -1, -1, { 35, 35, "" }, "ABCDE", -1, 0, "6A 21 22 23 24 25 3A 3A 6C", 1, 1, "LatchB (0x6A) A B C D E Z Z FNC2" },
-        /* 45*/ { UNICODE_MODE, -1, -1, -1, { 9, 10, "" }, "1234567890", -1, 0, "6B 0C 22 38 4E 5A 65 19 21 6C", 1, 1, "FNC1 (0x6B) 12 34 56 78 90 LatchA (0x65) 9 A FNC2" },
-        /* 46*/ { UNICODE_MODE, -1, -1, -1, { 2, 3, "" }, "\001\002\003\004", -1, 0, "65 41 42 43 44 6A 12 13 6C", 1, 1, "LatchA (0x65) <SOH> <STX> <ETX> <EOT> PAD 2 3 FNC2" },
-        /* 47*/ { DATA_MODE, -1, -1, -1, { 1, 34, "" }, "\200\201\202\203", -1, 0, "70 13 56 0A 59 2C 6D 11 39 6C", 1, 899, "BinaryLatch (0x70) (...) TermA (0x6D) 1 Y FNC2" },
+        /* 44*/ { UNICODE_MODE, -1, -1, -1, { 4, 11, "" }, "ABCDE", -1, 0, "6A 21 22 23 24 25 14 22 6C", 1, 1, "LatchB A B C D E 4 B FNC2, no padding" },
+        /* 45*/ { UNICODE_MODE, -1, -1, -1, { 4, 11, "" }, "1234", -1, 0, "6B 0C 22 6A 14 22 6C", 0, 1, "FNC1 12 34 LatchB 4 B FNC2, no padding, LatchB added for Structured Append; BWIPP: does 3SHIFTB instead of LatchB" },
+        /* 46*/ { DATA_MODE, -1, -1, -1, { 4, 11, "" }, "\200\201\202\203", -1, 0, "70 13 56 0A 59 2C 6D 14 22 6C", 0, 899, "BinaryLatch (...) TermA 4 B FNC2, no padding; BWIPP: does TermB instead" },
+        /* 47*/ { UNICODE_MODE, -1, 30, -1, { 35, 35, "" }, "abcde", -1, 0, "6A 41 42 43 44 45 66 3A 3A 6C", 0, 1, "LatchB A B C D E PAD(LatchA) Z Z FNC2, single pad (LatchC) changed to LatchA; BWIPP: puts padding after FNC2" },
+        /* 48*/ { UNICODE_MODE, -1, 30, -1, { 35, 35, "" }, "1234567890", -1, 0, "6B 0C 22 38 4E 5A 6A 3A 3A 6C", 0, 1, "LatchB 1..0 PAD(LatchB) Z Z FNC2, single pad (LatchB) unchanged; BWIPP: does 3SHIFTB instead of LatchB" },
+        /* 49*/ { DATA_MODE, -1, 30, -1, { 35, 35, "" }, "\200\201\202\203", -1, 0, "70 13 56 0A 59 2C 6D 3A 3A 6C", 0, 899, "BinaryLatch (...) PAD(TermA) Z Z FNC2, single pad TermA; BWIPP: does TermB instead" },
+        /* 50*/ { UNICODE_MODE, -1, 40, -1, { 35, 35, "" }, "abcde", -1, 0, "6A 41 42 43 44 45 6A 6A 3A 3A 6C", 0, 1, "LatchB A B C D E PAD(LatchC) PAD(LatchB) Z Z FNC2, 2 pads unchanged; BWIPP: puts padding after FNC2" },
+        /* 51*/ { UNICODE_MODE, -1, 40, -1, { 35, 35, "" }, "1234567890", -1, 0, "6B 0C 22 38 4E 5A 6A 66 3A 3A 6C", 0, 1, "LatchB 1..0 PAD(LatchB) PAD(LatchA) Z Z FNC2, 2 pads, last changed to LatchA; BWIPP: does 3SHIFTB instead of LatchB, & puts padding after FNC2" },
+        /* 52*/ { DATA_MODE, -1, 40, -1, { 35, 35, "" }, "\200\201\202\203", -1, 0, "70 13 56 0A 59 2C 6D 66 3A 3A 6C", 0, 899, "BinaryLatch (...) PAD(TermA) PAD(LatchB) Z Z FNC2, 2 pads, last changed to LatchB; BWIPP: does TermB instead of TermA & puts padding after FNC2" },
+        /* 53*/ { UNICODE_MODE, -1, 58, -1, { 1, 35, "" }, "abcdefghijklmn", -1, 0, "6A 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 6A 6A 66 11 3A 6C", 0, 1, "LatchB a..n PAD(LatchC) PAD(LatchB) PAD(LatchA) 1 Z FNC2, 3 pads, last (LatchC) turned into LatchA; BWIPP: puts padding after FNC2" },
+        /* 54*/ { UNICODE_MODE, -1, 58, -1, { 1, 35, "" }, "12345678901234567890", -1, 0, "6B 0C 22 38 4E 5A 0C 22 38 4E 5A 6A 6A 6A 11 3A 6C", 0, 1, "LatchB 1..0 PAD(LatchB) PAD(LatchC) PAD(LatchB) 1 Z FNC2, 3 pads unchanged; BWIPP: does 3SHIFTB & puts padding after FNC2" },
+        /* 55*/ { DATA_MODE, -1, 58, -1, { 1, 35, "" }, "\200\201\202\203\200\201\202\203", -1, 0, "70 31 5A 35 21 5A 5B 07 61 58 18 6D 6A 6A 11 3A 6C", 0, 899, "BinaryLatch (...) PAD(TermA) PAD(LatchC) PAD(LatchB) Z Z FNC2, 3 pads unchanged; BWIPP: does TermB & puts padding after FNC2" },
+        /* 56*/ { UNICODE_MODE, -1, -1, -1, { 9, 10, "" }, "1234567890", -1, 0, "6B 0C 22 38 4E 5A 6A 19 21 6C", 0, 1, "FNC1 12 34 56 78 90 LatchA 9 A FNC2; BWIPP: does 3SHIFTB instead of LatchA" },
+        /* 57*/ { UNICODE_MODE, -1, -1, -1, { 2, 3, "" }, "\001\002\003\004", -1, 0, "65 41 42 43 44 66 12 13 6C", 0, 1, "LatchA <SOH> <STX> <ETX> <EOT> PAD 2 3 FNC2, single pad changed to LatchB; BWIPP: puts padding after FNC2" },
+        /* 58*/ { UNICODE_MODE, -1, -1, -1, { 1, 2, "" }, "1234\011\034\035\036", -1, 0, "6B 0C 22 69 61 62 63 64 6A 66 11 12 6C", 0, 1, "FNC1 12 34 4SHIFTB <HT>...<RS> LatchB PAD(LatchA) 1 2 FNC2, originally no pads then 1 due to being in C & adding a LatchB; BWIPP: does LatchB instead of 4SHIFTB so doesn't need PAD" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -313,34 +395,44 @@ static void test_input(const testCtx *const p_ctx) {
         debug |= ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, data[i].eci,
-                    -1 /*option_1*/, data[i].option_2, data[i].option_3, -1 /*output_options*/,
-                    data[i].data, data[i].length, debug);
+                                    -1 /*option_1*/, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %d, { %d, %d, \"%s\" }, \"%s\", %d, %s, \"%s\", %d, %d, \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_2, data[i].option_3,
+            printf("        /*%3d*/ { %s, %d, %d, %s, { %d, %d, \"%s\" }, \"%s\", %d, %s, \"%s\", %d, %d,"
+                    " \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_2,
+                    testUtilOption3Name(BARCODE_DOTCODE, data[i].option_3),
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     data[i].length, testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp,
                     data[i].zxingcpp_cmp, data[i].comment);
         } else {
-            assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected);
 
             if (ret < ZINT_ERROR) {
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
                         char modules_dump[200 * 200 + 1];
-                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                        "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length,
+                                            NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
@@ -352,14 +444,14 @@ static void test_input(const testCtx *const p_ctx) {
                     char modules_dump[200 * 200 + 1];
                     assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
                     assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
-                                "i:%d testUtilModulesDump == -1\n", i);
+                                    "i:%d testUtilModulesDump == -1\n", i);
                     ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
-                                cmp_buf, sizeof(cmp_buf), &cmp_len);
+                                            cmp_buf, sizeof(cmp_buf), &cmp_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
                                 i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
-                                NULL /*primary*/, escaped, &ret_len);
+                                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
                                 i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
                                 escaped);
@@ -634,7 +726,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0001010001010001000100000001010100010001"
                     "1000100010001000100010100010001010001000"
                 },
-        /* 17*/ { GS1_MODE, 18, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 17, 18, 1, 1, "ISS DotCode Rev 4.0 Figure 8 top-right 17x18 **NOT SAME** no matter what mask; but same as BWIPP and verified manually against tec-it",
+        /* 17*/ { GS1_MODE, 18, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 17, 18, 1, 1, "ISS DotCode Rev 4.0 Figure 8 top-right 17x18 **NOT SAME** no matter what mask; but same as BWIPP and verified manually against TEC-IT",
                     "101000001000101010"
                     "010100000101010001"
                     "000000101000001010"
@@ -663,7 +755,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10000010101010101010000010000010001"
                     "01000001000101000100010100010001000"
                 },
-        /* 19*/ { GS1_MODE, 17, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 18, 17, 1, 1, "ISS DotCode Rev 4.0 Figure 8 bottom-right 18x17 **NOT SAME** no matter what mask; same as BWIPP; verified manually against tec-it",
+        /* 19*/ { GS1_MODE, 17, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 18, 17, 1, 1, "ISS DotCode Rev 4.0 Figure 8 bottom-right 18x17 **NOT SAME** no matter what mask; same as BWIPP; verified manually against TEC-IT",
                     "10101000001000001"
                     "01000001010100010"
                     "00000000100010001"
@@ -683,7 +775,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10101010101010101"
                     "01010101000101010"
                 },
-        /* 20*/ { UNICODE_MODE, 35, -1, { 0, 0, "" }, "Dots can be Square!", -1, 0, 18, 35, 1, 1, "ISS DotCode Rev 4.0 Figure 11 **NOT SAME**; same as BWIPP; verified manually against tec-it",
+        /* 20*/ { UNICODE_MODE, 35, -1, { 0, 0, "" }, "Dots can be Square!", -1, 0, 18, 35, 1, 1, "ISS DotCode Rev 4.0 Figure 11 **NOT SAME**; same as BWIPP; verified manually against TEC-IT",
                     "10000010101000000000000000101010101"
                     "01010101000101000100010100000001000"
                     "00001000000010101000101010101010000"
@@ -811,7 +903,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010000000101"
                     "0101000101010"
                 },
-        /* 30*/ { UNICODE_MODE, 6, -1, { 0, 0, "" }, "A", -1, 0, 19, 6, 1, 1, "ISS DotCode Rev 4.0 5.2.1.4 2) Table 4, 1 padding dot available; verified manually against tec-it",
+        /* 30*/ { UNICODE_MODE, 6, -1, { 0, 0, "" }, "A", -1, 0, 19, 6, 1, 1, "ISS DotCode Rev 4.0 5.2.1.4 2) Table 4, 1 padding dot available; verified manually against TEC-IT",
                     "101000"
                     "000101"
                     "101010"
@@ -832,7 +924,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "010000"
                     "101000"
                 },
-        /* 31*/ { UNICODE_MODE, 94, -1, { 0, 0, "" }, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS", -1, 0, 37, 94, 1, 1, "Interleaved R-S; verified manually against tec-it",
+        /* 31*/ { UNICODE_MODE, 94, -1, { 0, 0, "" }, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS", -1, 0, 37, 94, 1, 1, "Interleaved R-S; verified manually against TEC-IT",
                     "1000001010000000100010000010101010101000001000100000001010101000001000001000101010001000101010"
                     "0101010000000101000001010001010001010100010001000001000000010101010000000101010100010001010100"
                     "0010101000100010000010101010000000101010000010101000001000100010100000100010100010001000101000"
@@ -1185,13 +1277,16 @@ static void test_encode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, -1 /*eci*/, -1, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, -1 /*eci*/,
+                                    -1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %s, { %d, %d, \"%s\" }, \"%s\", %d, %s, %d, %d, %d, %d, \"%s\",\n",
@@ -1199,46 +1294,59 @@ static void test_encode(const testCtx *const p_ctx) {
                     testUtilOption3Name(BARCODE_DOTCODE, data[i].option_3),
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].zxingcpp_cmp, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp,
+                    data[i].zxingcpp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
                 int width, row;
 
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                                i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                                i, symbol->width, data[i].expected_width, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n",
+                            i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
-                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length,
+                                            NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                       data[i].expected);
                     }
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     if (!data[i].zxingcpp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not ZXing-C++ compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
                         int cmp_len, ret_len;
                         char modules_dump[16384];
                         assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
-                                    "i:%d testUtilModulesDump == -1\n", i);
+                                        "i:%d testUtilModulesDump == -1\n", i);
                         ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
-                                    cmp_buf, sizeof(cmp_buf), &cmp_len);
+                                                cmp_buf, sizeof(cmp_buf), &cmp_len);
                         assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
                                     i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
-                                    NULL /*primary*/, escaped, &ret_len);
+                                                    NULL /*primary*/, escaped, &ret_len);
                         assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
                                     i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
                                     ret_len, escaped);
@@ -1526,26 +1634,26 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "01010001000001010001010001010101010"
                 },
         /* 11*/ { UNICODE_MODE, -1, -1, { 35, 35, "" }, { { TU("Τεχτ"), -1, 9 }, { TU("กขฯ"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 20, 29, 0, 1, "Structured Append with Terminate Latch A replaced",
-                    "10101000001010000000001000101"
-                    "01010101010101000000000100000"
-                    "00101010001010100010101010001"
-                    "01000100010000000101010100010"
-                    "10000010100010001000100000000"
-                    "00010000010101010100000101010"
-                    "10100010101010101010001000001"
-                    "00010101000000010101010001000"
-                    "10000000100000101000101000101"
-                    "01010000010001010001000100010"
-                    "00101000000000100010001010101"
-                    "01000001000101010001000001010"
-                    "00001010000000000000100010101"
-                    "00000101010101000100010001000"
-                    "00101000001010001000001010101"
-                    "01010101010100000100010001000"
-                    "10000000101000100010100010001"
-                    "00000000000000010001010101000"
-                    "10101010001010101010100000001"
-                    "01000101000001010100000100010"
+                    "10101000101010001000001010001"
+                    "01010100010101010101000100010"
+                    "10000000100010001010001010101"
+                    "01000000000100000000010000000"
+                    "00100000100010000000100000001"
+                    "00000001010100010101000101010"
+                    "10000010001000101010101010101"
+                    "01010001010000000000010001000"
+                    "10101010000010101000101010101"
+                    "00010101000101010100010100010"
+                    "00100000100010001000101000000"
+                    "00010101010001010000000101000"
+                    "00001010001000100010001010101"
+                    "01000000000000000101000001010"
+                    "00101010000010101010000000101"
+                    "00000101000101000001010101000"
+                    "10101000101000101010000010001"
+                    "01000100010101000101010001000"
+                    "10001010100000100000100000001"
+                    "01010100010001000101000000010"
                 },
         /* 12*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 811800 }, { TU(""), 0, 0 } }, ZINT_ERROR_INVALID_OPTION, -1, -1, 1, 1, "", "" },
     };
@@ -1557,8 +1665,9 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     char cmp_buf[8192];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -1570,75 +1679,98 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, -1 /*eci*/,
-                    -1 /* option_1*/, data[i].option_2, data[i].option_3, -1 /*output_options*/, NULL, 0, debug);
+                            -1 /* option_1*/, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                            NULL, 0, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
         for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
 
         ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
-            int length = data[i].segs[0].length == -1 ? (int) z_ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
-            int length1 = data[i].segs[1].length == -1 ? (int) z_ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
-            int length2 = data[i].segs[2].length == -1 ? (int) z_ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
-            printf("        /*%3d*/ { %s, %d, %s, { %d, %d, \"%s\" }, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, %d, \"%s\",\n",
+            int length = data[i].segs[0].length == -1 ? (int) z_ustrlen(data[i].segs[0].source)
+                                                        : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1 ? (int) z_ustrlen(data[i].segs[1].source)
+                                                        : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1 ? (int) z_ustrlen(data[i].segs[2].source)
+                                                        : data[i].segs[2].length;
+            printf("        /*%3d*/ { %s, %d, %s, { %d, %d, \"%s\" }, { { TU(\"%s\"), %d, %d },"
+                    " { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_2,
                     testUtilOption3Name(BARCODE_DOTCODE, data[i].option_3),
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
-                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)), data[i].segs[0].length, data[i].segs[0].eci,
-                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)), data[i].segs[1].length, data[i].segs[1].eci,
-                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)), data[i].segs[2].length, data[i].segs[2].eci,
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].zxingcpp_cmp, data[i].comment);
+                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)),
+                    data[i].segs[0].length, data[i].segs[0].eci,
+                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)),
+                    data[i].segs[1].length, data[i].segs[1].eci,
+                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)),
+                    data[i].segs[2].length, data[i].segs[2].eci,
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp,
+                    data[i].zxingcpp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
                 int width, row;
 
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                                i, symbol->rows, data[i].expected_rows);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                                i, symbol->width, data[i].expected_width);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
-                        ret = testUtilBwippSegs(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].segs, seg_count, NULL, cmp_buf, sizeof(cmp_buf));
-                        assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        ret = testUtilBwippSegs(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].segs,
+                                                seg_count, NULL, cmp_buf, sizeof(cmp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                       data[i].expected);
                     }
                 }
-                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source, data[i].segs[0].length, debug)) {
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source,
+                                                        data[i].segs[0].length, debug)) {
                     if (!data[i].zxingcpp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not ZXing-C++ compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else if (data[i].input_mode == DATA_MODE) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) {
-                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for ZXing-C++ testing\n",
-                                    i, testUtilBarcodeName(symbol->symbology));
+                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for zxing-cpp"
+                                    " testing\n", i, testUtilBarcodeName(symbol->symbology));
                         }
                     } else {
                         int cmp_len, ret_len;
                         char modules_dump[16384];
                         assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
-                                    "i:%d testUtilModulesDump == -1\n", i);
+                                        "i:%d testUtilModulesDump == -1\n", i);
                         ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source,
-                                    data[i].segs[0].length, modules_dump, data[i].zxingcpp_cmp, cmp_buf,
-                                    sizeof(cmp_buf), &cmp_len);
+                                                data[i].segs[0].length, modules_dump, data[i].zxingcpp_cmp, cmp_buf,
+                                                sizeof(cmp_buf), &cmp_len);
                         assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
                                     i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilZXingCPPCmpSegs(symbol, cmp_msg, cmp_buf, cmp_len, data[i].segs, seg_count,
-                                    NULL /*primary*/, escaped, &ret_len);
-                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                                        NULL /*primary*/, escaped, &ret_len);
+                        assert_zero(ret,
+                                    "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
                                     i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
                                     ret_len, escaped);
                     }
@@ -1709,7 +1841,8 @@ static void test_rt(const testCtx *const p_ctx) {
         expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
@@ -1718,17 +1851,17 @@ static void test_rt(const testCtx *const p_ctx) {
                 assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
                 assert_nonnull(symbol->content_segs[0].source, "i:%d content_segs[0].source NULL\n", i);
                 assert_equal(symbol->content_segs[0].length, expected_length,
-                            "i:%d content_segs[0].length %d != expected_length %d\n",
-                            i, symbol->content_segs[0].length, expected_length);
+                                "i:%d content_segs[0].length %d != expected_length %d\n",
+                                i, symbol->content_segs[0].length, expected_length);
                 assert_zero(memcmp(symbol->content_segs[0].source, data[i].expected, expected_length),
                             "i:%d content_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
-                            testUtilEscape((const char *) symbol->content_segs[0].source, symbol->content_segs[0].length,
-                                            escaped, sizeof(escaped)),
+                            testUtilEscape((const char *) symbol->content_segs[0].source,
+                                            symbol->content_segs[0].length, escaped, sizeof(escaped)),
                             testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
                             expected_length);
                 assert_equal(symbol->content_segs[0].eci, data[i].expected_content_eci,
-                            "i:%d content_segs[0].eci %d != expected_content_eci %d\n",
-                            i, symbol->content_segs[0].eci, data[i].expected_content_eci);
+                                "i:%d content_segs[0].eci %d != expected_content_eci %d\n",
+                                i, symbol->content_segs[0].eci, data[i].expected_content_eci);
             } else {
                 assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
             }
@@ -1795,8 +1928,9 @@ static void test_rt_segs(const testCtx *const p_ctx) {
         assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
                     i, symbol->width, data[i].expected_width);
 
-        assert_equal(symbol->content_seg_count, data[i].expected_content_seg_count, "i:%d symbol->content_seg_count %d != %d\n",
-                    i, symbol->content_seg_count, data[i].expected_content_seg_count);
+        assert_equal(symbol->content_seg_count, data[i].expected_content_seg_count,
+                        "i:%d symbol->content_seg_count %d != %d\n",
+                        i, symbol->content_seg_count, data[i].expected_content_seg_count);
         if (symbol->output_options & BARCODE_CONTENT_SEGS) {
             assert_nonnull(symbol->content_segs, "i:%d content_segs NULL\n", i);
             for (j = 0; j < symbol->content_seg_count; j++) {
@@ -1807,7 +1941,8 @@ static void test_rt_segs(const testCtx *const p_ctx) {
                 assert_equal(symbol->content_segs[j].length, expected_length,
                             "i:%d content_segs[%d].length %d != expected_length %d\n",
                             i, j, symbol->content_segs[j].length, expected_length);
-                assert_zero(memcmp(symbol->content_segs[j].source, data[i].expected_content_segs[j].source, expected_length),
+                assert_zero(memcmp(symbol->content_segs[j].source, data[i].expected_content_segs[j].source,
+                                    expected_length),
                             "i:%d content_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
                             testUtilEscape((const char *) symbol->content_segs[j].source, expected_length, escaped,
                                             sizeof(escaped)),
@@ -1815,8 +1950,8 @@ static void test_rt_segs(const testCtx *const p_ctx) {
                                             escaped2, sizeof(escaped2)),
                             expected_length);
                 assert_equal(symbol->content_segs[j].eci, data[i].expected_content_segs[j].eci,
-                            "i:%d content_segs[%d].eci %d != expected_content_segs.eci %d\n",
-                            i, j, symbol->content_segs[j].eci, data[i].expected_content_segs[j].eci);
+                                "i:%d content_segs[%d].eci %d != expected_content_segs.eci %d\n",
+                                i, j, symbol->content_segs[j].eci, data[i].expected_content_segs[j].eci);
             }
         } else {
             assert_null(symbol->content_segs, "i:%d content_segs not NULL\n", i);
@@ -1876,10 +2011,13 @@ static void test_fuzz(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
 
         ZBarcode_Delete(symbol);
     }

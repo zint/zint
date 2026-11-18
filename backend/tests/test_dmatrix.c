@@ -364,7 +364,7 @@ static void test_large(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do zxing-cpp test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
     testStartSymbol(p_ctx->func_name, &symbol);
@@ -520,7 +520,7 @@ static void test_buffer(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -737,7 +737,7 @@ static void test_options(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -872,7 +872,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -1284,7 +1284,7 @@ static void test_input(const testCtx *const p_ctx) {
         /*299*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEF\\^1GHIJK\\^1LM\\^1", 0, 0, 12, 26, 0, 1, "E6 59 E9 6D 24 0A 8D 86 C8 FE 4C E8 4D 4E E8 81 49 98 C6 DD DA A6 89 B1 83 08 56 71 C1 51", "BWIPP: same as FAST_MODE", 0 },
         /*300*/ { UNICODE_MODE | FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, -1, -1, { 0, 0, "" }, "?\\^1123456ABC\\^1\\^^DEXY\\^11234\\^^\\^1", 0, 0, 20, 20, 1, 1, "(40) 40 E8 8E A4 BA 42 43 44 E8 5D 5F 45 46 59 5A E8 8E A4 5D 5F E8 81 F9 B4 2C 94 C0 29", "", 0 },
         /*301*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, -1, -1, { 0, 0, "" }, "?\\^1123456ABC\\^1\\^^DEXY\\^11234\\^^\\^1", 0, 0, 20, 20, 1, 1, "(40) 40 E8 8E A4 BA 42 43 44 E8 5D 5F 45 46 59 5A E8 8E A4 5D 5F E8 81 F9 B4 2C 94 C0 29", "", 0 },
-        /*302*/ { UNICODE_MODE | FAST_MODE | EXTRA_ESCAPE_MODE, 4, -1, -1, -1, -1, { 0, 0, "" }, "\\^1ABCD\\^1", 0, 4, 14, 14, 1, 1, "E8 F1 05 42 43 44 45 E8 B0 05 33 74 B3 6E 79 FB 4F D2", "", 0 },
+        /*302*/ { UNICODE_MODE | FAST_MODE | EXTRA_ESCAPE_MODE, 4, -1, -1, -1, -1, { 0, 0, "" }, "\\^1ABCD\\^1", 0, 4, 14, 14, 0, 1, "E8 F1 05 42 43 44 45 E8 B0 05 33 74 B3 6E 79 FB 4F D2", "BWIPP: no longer allows ECIs with FNC1 in 1st/2nd position", 0 },
         /*303*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, 4, -1, -1, -1, -1, { 0, 0, "" }, "\\^1ABCD\\^1", 0, 4, 14, 14, 0, 1, "E8 F1 05 F0 04 20 C4 E8 C8 58 2A 5C 98 0A 7B C6 2B 65", "BWIPP: same as FAST_MODE", 1 },
         /*304*/ { UNICODE_MODE | FAST_MODE | EXTRA_ESCAPE_MODE, 5, -1, -1, -1, -1, { 0, 0, "" }, "A\\^112\\^1Ħ", 0, 5, 14, 14, 1, 1, "42 E8 F1 06 8E E8 EB 22 94 9C C7 17 9E 51 80 CB 86 1A", "", 0 },
         /*305*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, 5, -1, -1, -1, -1, { 0, 0, "" }, "A\\^112\\^1Ħ", 0, 5, 14, 14, 1, 1, "42 E8 F1 06 8E E8 EB 22 94 9C C7 17 9E 51 80 CB 86 1A", "", 0 },
@@ -1301,7 +1301,7 @@ static void test_input(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -6012,7 +6012,7 @@ static void test_encode(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -6656,7 +6656,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    /* Only do BWIPP/zxing-cpp tests if asked, too slow otherwise */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
@@ -6740,7 +6740,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                                                         data[i].segs[0].length, debug)) {
                     if (data[i].input_mode == DATA_MODE) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) {
-                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for ZXing-C++ testing\n",
+                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for zxing-cpp testing\n",
                                     i, testUtilBarcodeName(symbol->symbology));
                         }
                     } else {

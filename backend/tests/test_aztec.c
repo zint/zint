@@ -6510,7 +6510,49 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11111010111101011001001001001000000000110100010101011110101011001010101011000101010010100111110010111001110100001111110111011"
                     "10011001010011111111011111100010010011110010001010100100000110100111000110011010110111001010011011101001111100110010110010011"
                 },
-        /*184*/ { BARCODE_AZTEC, GS1_MODE, 0, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, 1, "GS1 with Structured Append",
+        /*184*/ { BARCODE_AZTEC, UNICODE_MODE, 0, -1, -1, 1, -1, { 1, 2, "" }, "ABCDEFG", -1, 0, 15, 15, 1, 1, "Structured Append",
+                    "000111111000011"
+                    "110111000110001"
+                    "101100001000111"
+                    "111111111111100"
+                    "111100000001100"
+                    "010101111101101"
+                    "000101000101101"
+                    "011101010101001"
+                    "001101000101011"
+                    "000101111101011"
+                    "110100000001011"
+                    "000111111111111"
+                    "010001100010010"
+                    "001000110101100"
+                    "001010000100110"
+                },
+        /*185*/ { BARCODE_AZTEC, UNICODE_MODE, 0, -1, -1, 6, -1, { 1, 2, "12345678901234567890123456789012" }, "ABC", -1, 0, 23, 23, 1, 1, "Structured Append with ID",
+                    "11100110011000010001000"
+                    "10000110000110101111010"
+                    "11001010111010110011011"
+                    "11010110010110101001011"
+                    "01101100001000000011100"
+                    "11001111111111111110011"
+                    "11101100000000000101001"
+                    "00000101111111110110001"
+                    "00011101000000010111100"
+                    "10101101011111010110001"
+                    "01011101010001010101001"
+                    "01010101010101010101010"
+                    "10000101010001010111010"
+                    "10111101011111010110000"
+                    "00011101000000010100010"
+                    "10100101111111110100001"
+                    "10001100000000000111110"
+                    "11110111111111111111110"
+                    "00110010011011000001010"
+                    "11111001001111100001111"
+                    "11100011100001001111100"
+                    "01011110101100000101110"
+                    "00010001000011011101100"
+                },
+        /*186*/ { BARCODE_AZTEC, GS1_MODE, 0, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, 1, "GS1 with Structured Append",
                     "000101100111111"
                     "111010110110110"
                     "101100001000110"
@@ -6527,7 +6569,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000001000010110"
                     "100000001000000"
                 },
-        /*185*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, 0, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, 1, "Same as above",
+        /*187*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, 0, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, 1, "Same as above",
                     "000101100111111"
                     "111010110110110"
                     "101100001000110"
@@ -6544,7 +6586,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000001000010110"
                     "100000001000000"
                 },
-        /*186*/ { BARCODE_AZTEC, GS1_MODE, 3, -1, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, 1, "GS1 with Structured Append, ECI",
+        /*188*/ { BARCODE_AZTEC, GS1_MODE, 3, -1, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, 1, "GS1 with Structured Append, ECI",
                     "1101000010101111110"
                     "1011110100011111110"
                     "1100110110010100001"
@@ -6565,7 +6607,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0011010001100001010"
                     "1011000010110000000"
                 },
-        /*187*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, 3, -1, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, 1, "Same as above",
+        /*189*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, 3, -1, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, 1, "Same as above",
                     "1101000010101111110"
                     "1011110100011111110"
                     "1100110110010100001"
@@ -6586,7 +6628,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0011010001100001010"
                     "1011000010110000000"
                 },
-        /*188*/ { BARCODE_AZTEC, GS1_MODE, 0, -1, -1, 6, -1, { 2, 4, { '1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2' } }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, 1, "GS1 with Structured Append, full symbol",
+        /*190*/ { BARCODE_AZTEC, GS1_MODE, 0, -1, -1, 6, -1, { 2, 4, { '1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2' } }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, 1, "GS1 with Structured Append, full symbol",
                     "11100110011000010001000"
                     "10100110000110101111010"
                     "11001110000000001101011"
@@ -6611,7 +6653,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01011110101100000101110"
                     "00010001000011011101100"
                 },
-        /*189*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, 0, -1, -1, 6, -1, { 2, 4, { '1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2' } }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, 1, "Same as above",
+        /*191*/ { BARCODE_AZTEC, GS1_MODE | FAST_MODE, 0, -1, -1, 6, -1, { 2, 4, { '1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2' } }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, 1, "Same as above",
                     "11100110011000010001000"
                     "10100110000110101111010"
                     "11001110000000001101011"
@@ -6636,7 +6678,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01011110101100000101110"
                     "00010001000011011101100"
                 },
-        /*190*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "j>\350\255\362\357\027\231: S\224\237\303\035\207", -1, 0, 19, 19, 1, 899, "BWIP-JS #354 1st example",
+        /*192*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "j>\350\255\362\357\027\231: S\224\237\303\035\207", -1, 0, 19, 19, 1, 899, "BWIP-JS #354 1st example",
                     "1101010010011101000"
                     "1100111010011110011"
                     "1001101000000110101"
@@ -6657,7 +6699,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110110001011011110"
                     "0001111011111000101"
                 },
-        /*191*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "j>\350\255\362\357\027\231: S\224\237\303\035\207", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 1st example; BWIPP different encodation, 3 codewords shorter (see above)",
+        /*193*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "j>\350\255\362\357\027\231: S\224\237\303\035\207", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 1st example; BWIPP different encodation, 3 codewords shorter (see above)",
                     "1111001111001101001"
                     "1011001011010001101"
                     "0010010101011000011"
@@ -6678,7 +6720,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0000111100101101101"
                     "1011101101111100011"
                 },
-        /*192*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\035\316\244. D\004\275\031}\244\311\030\035>t", -1, 0, 19, 19, 1, 899, "BWIP-JS #354 2nd example",
+        /*194*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\035\316\244. D\004\275\031}\244\311\030\035>t", -1, 0, 19, 19, 1, 899, "BWIP-JS #354 2nd example",
                     "1110110111000100010"
                     "1110111001100010100"
                     "1010011100101001011"
@@ -6699,7 +6741,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0111010000000000111"
                     "0001000001010001010"
                 },
-        /*193*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\035\316\244. D\004\275\031}\244\311\030\035>t", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 2nd example; BWIPP same as above",
+        /*195*/ { BARCODE_AZTEC, FAST_MODE, -1, -1, -1, 2, -1, { 0, 0, "" }, "\035\316\244. D\004\275\031}\244\311\030\035>t", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 2nd example; BWIPP same as above",
                     "1110001010011101111"
                     "1001010010100100110"
                     "1100010011111011111"
@@ -6720,7 +6762,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0001011110011100101"
                     "0000001100111001111"
                 },
-        /*194*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "DE\\^1\\^1XY", -1, 0, 19, 19, 1, 3, "",
+        /*196*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "DE\\^1\\^1XY", -1, 0, 19, 19, 1, 3, "",
                     "0011011011000000101"
                     "1001000001100111010"
                     "1000110010011111110"
@@ -6741,7 +6783,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001010011101100011"
                     "0001011111101011110"
                 },
-        /*195*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "DE\\^1\\^1XY", -1, 0, 19, 19, 1, 3, "",
+        /*197*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "DE\\^1\\^1XY", -1, 0, 19, 19, 1, 3, "",
                     "0011011011000000101"
                     "1001000001100111010"
                     "1000110010011111110"
@@ -6762,7 +6804,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001010011101100011"
                     "0001011111101011110"
                 },
-        /*196*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: different encodation, same no. of codewords (does ML after FNC1 in 1st position)",
+        /*198*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: different encodation, same no. of codewords (does ML after FNC1 in 1st position)",
                     "000001101000001"
                     "001101110001001"
                     "001100000110101"
@@ -6779,7 +6821,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110110001011011"
                     "101110000011010"
                 },
-        /*197*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
+        /*199*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
                     "000111010010000"
                     "000001010100001"
                     "001100000110110"
@@ -6796,7 +6838,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110001001011101"
                     "101000000001010"
                 },
-        /*198*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^11234\\^1", -1, 0, 15, 15, 1, 3, "",
+        /*200*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^11234\\^1", -1, 0, 15, 15, 1, 3, "",
                     "001000011111101"
                     "111011011010111"
                     "111100001000111"
@@ -6813,7 +6855,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000010001001111"
                     "101110000000011"
                 },
-        /*199*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^11234\\^1", -1, 0, 15, 15, 1, 3, "",
+        /*201*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^11234\\^1", -1, 0, 15, 15, 1, 3, "",
                     "001000011111101"
                     "111011011010111"
                     "111100001000111"
@@ -6830,7 +6872,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000010001001111"
                     "101110000000011"
                 },
-        /*200*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1B", -1, 0, 15, 15, 1, 3, "",
+        /*202*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1B", -1, 0, 15, 15, 1, 3, "",
                     "000101010011000"
                     "000000010110101"
                     "011100000100111"
@@ -6847,7 +6889,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110111101110101"
                     "111111001000100"
                 },
-        /*201*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1B", -1, 0, 15, 15, 1, 3, "",
+        /*203*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1B", -1, 0, 15, 15, 1, 3, "",
                     "000101010011000"
                     "000000010110101"
                     "011100000100111"
@@ -6864,7 +6906,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110111101110101"
                     "111111001000100"
                 },
-        /*202*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1B", -1, 0, 15, 15, 1, 3, "",
+        /*204*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1B", -1, 0, 15, 15, 1, 3, "",
                     "001011000011111"
                     "111101100001111"
                     "101100000100110"
@@ -6881,7 +6923,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110011101011000"
                     "010001110101101"
                 },
-        /*203*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1B", -1, 0, 15, 15, 1, 3, "",
+        /*205*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1B", -1, 0, 15, 15, 1, 3, "",
                     "001011000011111"
                     "111101100001111"
                     "101100000100110"
@@ -6898,7 +6940,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110011101011000"
                     "010001110101101"
                 },
-        /*204*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1@", -1, 0, 15, 15, 0, 3, "BWIPP: different encodation, same no. of codewords (does ML before FNC1 in 2nd position)",
+        /*206*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1@", -1, 0, 15, 15, 0, 3, "BWIPP: different encodation, same no. of codewords (does ML before FNC1 in 2nd position)",
                     "001010010000000"
                     "001101011111000"
                     "011100000100101"
@@ -6915,7 +6957,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110101110010111"
                     "100110011001111"
                 },
-        /*205*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1@", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
+        /*207*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1@", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
                     "001010010000000"
                     "001101011111000"
                     "011100000100101"
@@ -6932,7 +6974,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110101110010111"
                     "100110011001111"
                 },
-        /*206*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1@", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
+        /*208*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1@", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
                     "000011011111101"
                     "111010001110011"
                     "101100000100111"
@@ -6949,7 +6991,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111001111001011"
                     "010110011111000"
                 },
-        /*207*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1@", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
+        /*209*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1@", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
                     "000011011111101"
                     "111010001110011"
                     "101100000100111"
@@ -6966,7 +7008,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111001111001011"
                     "010110011111000"
                 },
-        /*208*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1+", -1, 0, 15, 15, 1, 3, "",
+        /*210*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1+", -1, 0, 15, 15, 1, 3, "",
                     "000010100100101"
                     "001101110110001"
                     "011100000100100"
@@ -6983,7 +7025,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000111011011001"
                     "010011000011101"
                 },
-        /*209*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1+", -1, 0, 15, 15, 1, 3, "",
+        /*211*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1+", -1, 0, 15, 15, 1, 3, "",
                     "000010100100101"
                     "001101110110001"
                     "011100000100100"
@@ -7000,7 +7042,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000111011011001"
                     "010011000011101"
                 },
-        /*210*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1+", -1, 0, 15, 15, 1, 3, "",
+        /*212*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1+", -1, 0, 15, 15, 1, 3, "",
                     "001101010011111"
                     "111010111101101"
                     "101100000100111"
@@ -7017,7 +7059,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001100011001001"
                     "000000011000010"
                 },
-        /*211*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1+", -1, 0, 15, 15, 1, 3, "",
+        /*213*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1+", -1, 0, 15, 15, 1, 3, "",
                     "001101010011111"
                     "111010111101101"
                     "101100000100111"
@@ -7034,7 +7076,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001100011001001"
                     "000000011000010"
                 },
-        /*212*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^10", -1, 0, 15, 15, 1, 3, "",
+        /*214*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^10", -1, 0, 15, 15, 1, 3, "",
                     "000101010011110"
                     "001101000010001"
                     "011100000100111"
@@ -7051,7 +7093,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001001100111001"
                     "011001000110000"
                 },
-        /*213*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^10", -1, 0, 15, 15, 1, 3, "",
+        /*215*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^10", -1, 0, 15, 15, 1, 3, "",
                     "000101010011110"
                     "001101000010001"
                     "011100000100111"
@@ -7068,7 +7110,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001001100111001"
                     "011001000110000"
                 },
-        /*214*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^10", -1, 0, 15, 15, 1, 3, "",
+        /*216*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^10", -1, 0, 15, 15, 1, 3, "",
                     "001101110011111"
                     "110010100011001"
                     "101100000100110"
@@ -7085,7 +7127,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001111000010111"
                     "000001001000000"
                 },
-        /*215*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^10", -1, 0, 15, 15, 1, 3, "",
+        /*217*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^10", -1, 0, 15, 15, 1, 3, "",
                     "001101110011111"
                     "110010100011001"
                     "101100000100110"
@@ -7102,7 +7144,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001111000010111"
                     "000001001000000"
                 },
-        /*216*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: different encodation, same no. of codewords (does ML before FNC1 in 2nd position)",
+        /*218*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: different encodation, same no. of codewords (does ML before FNC1 in 2nd position)",
                     "001110100001001"
                     "001000110000000"
                     "011100001000100"
@@ -7119,7 +7161,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111011100001111"
                     "100110110000011"
                 },
-        /*217*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
+        /*219*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
                     "000000011101000"
                     "001101101100100"
                     "011100001000100"
@@ -7136,7 +7178,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111010001001011"
                     "100110000000011"
                 },
-        /*218*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
+        /*220*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
                     "000001010000101"
                     "110011110111110"
                     "101100001000101"
@@ -7153,7 +7195,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111001101100010"
                     "010111011100000"
                 },
-        /*219*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
+        /*221*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^1\\^^\\^1", -1, 0, 15, 15, 0, 3, "BWIPP: see above",
                     "000000001101000"
                     "110110001101011"
                     "101100001000101"
@@ -7170,7 +7212,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111001100001010"
                     "010111010000000"
                 },
-        /*220*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^112\\^134", -1, 0, 15, 15, 1, 3, "",
+        /*222*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^112\\^134", -1, 0, 15, 15, 1, 3, "",
                     "001011000011101"
                     "000001000001011"
                     "011100001000111"
@@ -7187,7 +7229,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011001001001011"
                     "010000000000101"
                 },
-        /*221*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^112\\^134", -1, 0, 15, 15, 1, 3, "",
+        /*223*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "A\\^112\\^134", -1, 0, 15, 15, 1, 3, "",
                     "001011000011101"
                     "000001000001011"
                     "011100001000111"
@@ -7204,7 +7246,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011001001001011"
                     "010000000000101"
                 },
-        /*222*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^112\\^134", -1, 0, 15, 15, 1, 3, "",
+        /*224*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^112\\^134", -1, 0, 15, 15, 1, 3, "",
                     "000101111010100"
                     "110111011000010"
                     "101100001000111"
@@ -7221,7 +7263,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001100001001001"
                     "000011000000000"
                 },
-        /*223*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^112\\^134", -1, 0, 15, 15, 1, 3, "",
+        /*225*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "a\\^112\\^134", -1, 0, 15, 15, 1, 3, "",
                     "000101111010100"
                     "110111011000010"
                     "101100001000111"
@@ -7238,7 +7280,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001100001001001"
                     "000011000000000"
                 },
-        /*224*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "12\\^112", -1, 0, 15, 15, 1, 3, "",
+        /*226*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "12\\^112", -1, 0, 15, 15, 1, 3, "",
                     "001011011111110"
                     "110010001011001"
                     "111100000100101"
@@ -7255,7 +7297,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001110101010101"
                     "000100101111000"
                 },
-        /*225*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "12\\^112", -1, 0, 15, 15, 1, 3, "",
+        /*227*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "12\\^112", -1, 0, 15, 15, 1, 3, "",
                     "001011011111110"
                     "110010001011001"
                     "111100000100101"
@@ -7272,7 +7314,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001110101010101"
                     "000100101111000"
                 },
-        /*226*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "1\\^112", -1, 0, 15, 15, 1, 3, "",
+        /*228*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "1\\^112", -1, 0, 15, 15, 1, 3, "",
                     "000100100101100"
                     "111010110101101"
                     "111100000100100"
@@ -7289,7 +7331,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100111001101111"
                     "011011101011110"
                 },
-        /*227*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "1\\^112", -1, 0, 15, 15, 1, 3, "",
+        /*229*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "1\\^112", -1, 0, 15, 15, 1, 3, "",
                     "000100100101100"
                     "111010110101101"
                     "111100000100100"
@@ -7306,7 +7348,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100111001101111"
                     "011011101011110"
                 },
-        /*228*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 6, -1, { 0, 0, "" }, "?\\^1123456ABC\\^1\\^^DEXY\\^11234\\^^\\^1", -1, 0, 23, 23, 0, 3, "BWIPP: different encodation, same no. of codewords",
+        /*230*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 6, -1, { 0, 0, "" }, "?\\^1123456ABC\\^1\\^^DEXY\\^11234\\^^\\^1", -1, 0, 23, 23, 0, 3, "BWIPP: different encodation, same no. of codewords",
                     "11111011000000000011111"
                     "11100000101100100011001"
                     "00010100111001011100000"
@@ -7331,7 +7373,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10110010010101000001010"
                     "01011011000001010000000"
                 },
-        /*229*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 6, -1, { 0, 0, "" }, "?\\^1123456ABC\\^1\\^^DEXY\\^11234\\^^\\^1", -1, 0, 23, 23, 0, 3, "BWIPP: different encodation, 1 less codeword",
+        /*231*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 6, -1, { 0, 0, "" }, "?\\^1123456ABC\\^1\\^^DEXY\\^11234\\^^\\^1", -1, 0, 23, 23, 0, 3, "BWIPP: different encodation, 1 less codeword",
                     "00000101100000000011101"
                     "00101100111100100000101"
                     "01011010100011111010001"
@@ -7356,7 +7398,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00101101100100101001010"
                     "11101100100010010000000"
                 },
-        /*230*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, 6, -1, { 0, 0, "" }, "\\^1\241\\^1\\^1\241\241\\^1\241\\^1", -1, 0, 23, 23, 1, 3, "",
+        /*232*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, 6, -1, { 0, 0, "" }, "\\^1\241\\^1\\^1\241\241\\^1\241\\^1", -1, 0, 23, 23, 0, 3, "BWIPP: no longer allows ECIs with FNC1 in 1st/2nd position",
                     "00000000010000100111000"
                     "00101000000101100011100"
                     "01110111101010010110110"
@@ -7381,7 +7423,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00110000010101001001010"
                     "00100010000000000000000"
                 },
-        /*231*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 3, -1, -1, 6, -1, { 0, 0, "" }, "\\^1\241\\^1\\^1\241\241\\^1\241\\^1", -1, 0, 23, 23, 1, 3, "",
+        /*233*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 3, -1, -1, 6, -1, { 0, 0, "" }, "\\^1\241\\^1\\^1\241\241\\^1\241\\^1", -1, 0, 23, 23, 0, 3, "BWIPP: no longer allows ECIs with FNC1 in 1st/2nd position",
                     "00000000010000100111000"
                     "00101000000101100011100"
                     "01110111101010010110110"
@@ -7406,7 +7448,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00110000010101001001010"
                     "00100010000000000000000"
                 },
-        /*232*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 4, -1, -1, 6, -1, { 0, 0, "" }, "A\\^1123456\\^1\\^^\241\\^1", -1, 0, 23, 23, 0, 4, "BWIPP: different encodation (final PS instead of PL) - see below",
+        /*234*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 4, -1, -1, 6, -1, { 0, 0, "" }, "A\\^1123456\\^1\\^^\241\\^1", -1, 0, 23, 23, 0, 4, "BWIPP: different encodation (final PS instead of PL) - see below",
                     "00100010011010011100001"
                     "01000010101111101100000"
                     "01111010101010000110011"
@@ -7431,7 +7473,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00110111011100001001001"
                     "10100000101010000000011"
                 },
-        /*233*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 4, -1, -1, 6, -1, { 0, 0, "" }, "A\\^1123456\\^1\\^^\241\\^1", -1, 0, 23, 23, 1, 4, "",
+        /*235*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 4, -1, -1, 6, -1, { 0, 0, "" }, "A\\^1123456\\^1\\^^\241\\^1", -1, 0, 23, 23, 1, 4, "",
                     "00000110100010001000000"
                     "01000001001100010100100"
                     "01101111010000001101000"
@@ -7456,7 +7498,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00110111011100001001001"
                     "10100000101010000000011"
                 },
-        /*234*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 4, -1, -1, 6, -1, { 0, 0, "" }, "a\\^1123456\\^1\\^^\241\\^1", -1, 0, 23, 23, 0, 4, "BWIPP: different encodation (final PS instead of PL) - see below",
+        /*236*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 4, -1, -1, 6, -1, { 0, 0, "" }, "a\\^1123456\\^1\\^^\241\\^1", -1, 0, 23, 23, 0, 4, "BWIPP: different encodation (final PS instead of PL) - see below",
                     "11000110001010100000110"
                     "10000110011100100100111"
                     "00010110011000000001000"
@@ -7481,7 +7523,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10101000001101100001010"
                     "01100110111001100000000"
                 },
-        /*235*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 4, -1, -1, 6, -1, { 0, 0, "" }, "a\\^1123456\\^1\\^^\241\\^1", -1, 0, 23, 23, 1, 4, "",
+        /*237*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 4, -1, -1, 6, -1, { 0, 0, "" }, "a\\^1123456\\^1\\^^\241\\^1", -1, 0, 23, 23, 1, 4, "",
                     "11101100110010100000000"
                     "10000100011110100100001"
                     "00011100011000100100100"
@@ -7506,7 +7548,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10101000001101100001010"
                     "01100110111001100000000"
                 },
-        /*236*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 5, -1, -1, 2, -1, { 0, 0, "" }, "12\\^1ABCD\\^1\\^^\\^1\241\\^1", -1, 0, 19, 19, 0, 5, "BWIPP: different encodation",
+        /*238*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 5, -1, -1, 2, -1, { 0, 0, "" }, "12\\^1ABCD\\^1\\^^\\^1\241\\^1", -1, 0, 19, 19, 0, 5, "BWIPP: different encodation",
                     "1111000100110000000"
                     "1111001100111100100"
                     "0010101111110110000"
@@ -7527,7 +7569,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000110001001000100"
                     "0001111100001010010"
                 },
-        /*237*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 5, -1, -1, 2, -1, { 0, 0, "" }, "12\\^1ABCD\\^1\\^^\\^1\241\\^1", -1, 0, 19, 19, 0, 5, "BWIPP: different encodation",
+        /*239*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 5, -1, -1, 2, -1, { 0, 0, "" }, "12\\^1ABCD\\^1\\^^\\^1\241\\^1", -1, 0, 19, 19, 0, 5, "BWIPP: different encodation",
                     "1101000100110000000"
                     "1100001100111100100"
                     "0000001000010100000"
@@ -7548,7 +7590,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000110001001000100"
                     "0001111100001010010"
                 },
-        /*238*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "\\^112\\^134", -1, 0, 19, 19, 1, 3, "",
+        /*240*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "\\^112\\^134", -1, 0, 19, 19, 0, 3, "BWIPP: no longer allows ECIs with FNC1 in 1st/2nd position",
                     "1101101101001111011"
                     "1001010000110010001"
                     "1110001110010110101"
@@ -7569,7 +7611,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001001000001000010"
                     "0000000001110110000"
                 },
-        /*239*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "\\^112\\^134", -1, 0, 19, 19, 1, 3, "",
+        /*241*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "\\^112\\^134", -1, 0, 19, 19, 0, 3, "BWIPP: no longer allows ECIs with FNC1 in 1st/2nd position",
                     "1101101101001111011"
                     "1001010000110010001"
                     "1110001110010110101"
@@ -7590,7 +7632,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001001000001000010"
                     "0000000001110110000"
                 },
-        /*240*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "A\\^112\\^134", -1, 0, 19, 19, 1, 3, "",
+        /*242*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "A\\^112\\^134", -1, 0, 19, 19, 0, 3, "BWIPP: no longer allows ECIs with FNC1 in 1st/2nd position",
                     "1100111111000011101"
                     "1010110010100001110"
                     "1101110111111000111"
@@ -7611,7 +7653,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001001001011101100"
                     "0000000000000001000"
                 },
-        /*241*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "A\\^112\\^134", -1, 0, 19, 19, 1, 3, "",
+        /*243*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "A\\^112\\^134", -1, 0, 19, 19, 0, 3, "BWIPP: no longer allows ECIs with FNC1 in 1st/2nd position",
                     "1100111111000011101"
                     "1010110010100001110"
                     "1101110111111000111"
@@ -7632,7 +7674,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001001001011101100"
                     "0000000000000001000"
                 },
-        /*242*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "a\\^112\\^134", -1, 0, 19, 19, 1, 3, "",
+        /*244*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "a\\^112\\^134", -1, 0, 19, 19, 0, 3, "BWIPP: no longer allows ECIs with FNC1 in 1st/2nd position",
                     "1111000000000010011"
                     "1001000001000001100"
                     "1100100011000001011"
@@ -7653,7 +7695,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001001001001000010"
                     "1000000000000001101"
                 },
-        /*243*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "a\\^112\\^134", -1, 0, 19, 19, 1, 3, "",
+        /*245*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 3, -1, -1, -1, -1, { 1, 2, "" }, "a\\^112\\^134", -1, 0, 19, 19, 0, 3, "BWIPP: no longer allows ECIs with FNC1 in 1st/2nd position",
                     "1111000000000010011"
                     "1001000001000001100"
                     "1100100011000001011"
@@ -7674,7 +7716,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001001001001000010"
                     "1000000000000001101"
                 },
-        /*244*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^1", -1, 0, 15, 15, 1, 3, "",
+        /*246*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^1", -1, 0, 15, 15, 1, 3, "",
                     "000110111000001"
                     "000110001100100"
                     "001100000010110"
@@ -7691,7 +7733,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001010011100100"
                     "100111010100000"
                 },
-        /*245*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^1", -1, 0, 15, 15, 1, 3, "",
+        /*247*/ { BARCODE_AZTEC, FAST_MODE | EXTRA_ESCAPE_MODE, 0, -1, -1, 1, -1, { 0, 0, "" }, "\\^1", -1, 0, 15, 15, 1, 3, "",
                     "000110111000001"
                     "000110001100100"
                     "001100000010110"
@@ -7708,7 +7750,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001010011100100"
                     "100111010100000"
                 },
-        /*246*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "A\\^1[", -1, 0, 19, 19, 1, 3, "",
+        /*248*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "A\\^1[", -1, 0, 19, 19, 1, 3, "",
                     "0010011011101010000"
                     "0100000111101011001"
                     "0001011011100010010"
@@ -7729,7 +7771,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0010011010011101111"
                     "1001101101110011101"
                 },
-        /*247*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "a\\^1[", -1, 0, 19, 19, 1, 3, "",
+        /*249*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "a\\^1[", -1, 0, 19, 19, 1, 3, "",
                     "1110010010110000111"
                     "1011010101110011010"
                     "0000111011110010101"
@@ -7750,7 +7792,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011001001011110001"
                     "1111111111000011110"
                 },
-        /*248*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "A\\^1[!", -1, 0, 19, 19, 1, 3, "",
+        /*250*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "A\\^1[!", -1, 0, 19, 19, 1, 3, "",
                     "0001010011111110000"
                     "0100000111110011001"
                     "0101011011110001101"
@@ -7771,7 +7813,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111000000010101001"
                     "1010111101111100001"
                 },
-        /*249*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "a\\^1[!", -1, 0, 19, 19, 1, 3, "",
+        /*251*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 0, -1, -1, 2, -1, { 0, 0, "" }, "a\\^1[!", -1, 0, 19, 19, 1, 3, "",
                     "1110100000101010100"
                     "1001000101010000011"
                     "0000000100101010010"
@@ -7792,7 +7834,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011001011010001111"
                     "0111000111000000001"
                 },
-        /*250*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, 2, -1, { 0, 0, "" }, "A\\^1[", -1, 0, 19, 19, 1, 3, "",
+        /*252*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, 2, -1, { 0, 0, "" }, "A\\^1[", -1, 0, 19, 19, 1, 3, "",
                     "0000101101110101100"
                     "0101011010010110111"
                     "0111100110100101101"
@@ -7813,7 +7855,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0101011110011001111"
                     "1111001110010011000"
                 },
-        /*251*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, 2, -1, { 0, 0, "" }, "a\\^1[", -1, 0, 19, 19, 1, 3, "",
+        /*253*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, 2, -1, { 0, 0, "" }, "a\\^1[", -1, 0, 19, 19, 1, 3, "",
                     "1100111110110011001"
                     "1000001010111010100"
                     "0011010110001010001"
@@ -7834,7 +7876,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111111001111010111"
                     "0000101100100100011"
                 },
-        /*252*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, 2, -1, { 0, 0, "" }, "12\\^1[", -1, 0, 19, 19, 0, 3, "BWIPP: different encodation, same no. of codewords (uses PS instead of PL)",
+        /*254*/ { BARCODE_AZTEC, EXTRA_ESCAPE_MODE, 3, -1, -1, 2, -1, { 0, 0, "" }, "12\\^1[", -1, 0, 19, 19, 0, 3, "BWIPP: different encodation, same no. of codewords (uses PS instead of PL)",
                     "1100100011110010111"
                     "1111001011101100001"
                     "0000101010011001010"
@@ -7855,7 +7897,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001000101001010011"
                     "0000011111100011011"
                 },
-        /*253*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "0", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (1st)",
+        /*255*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "0", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (1st)",
                     "11101010101"
                     "11111111111"
                     "01000000010"
@@ -7868,7 +7910,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00101010100"
                 },
-        /*254*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "25", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (2nd)",
+        /*256*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "25", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (2nd)",
                     "11101100101"
                     "11111111111"
                     "01000000011"
@@ -7881,7 +7923,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100100000"
                 },
-        /*255*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "125", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (3rd)",
+        /*257*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "125", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (3rd)",
                     "11110101101"
                     "11111111111"
                     "11000000011"
@@ -7894,7 +7936,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111101000"
                 },
-        /*256*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "255", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (4th)",
+        /*258*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "255", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (4th)",
                     "11010101001"
                     "11111111111"
                     "01000000011"
@@ -7907,7 +7949,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110011100"
                 },
-        /*257*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 11, 11, 1, 1, "",
+        /*259*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 11, 11, 1, 1, "",
                     "11101010101"
                     "11111111111"
                     "11000000011"
@@ -7920,7 +7962,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100110100"
                 },
-        /*258*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "15", -1, 0, 11, 11, 1, 1, "",
+        /*260*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "15", -1, 0, 11, 11, 1, 1, "",
                     "11101001001"
                     "11111111111"
                     "11000000011"
@@ -7933,7 +7975,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00001111100"
                 },
-        /*259*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "16", -1, 0, 11, 11, 1, 1, "",
+        /*261*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "16", -1, 0, 11, 11, 1, 1, "",
                     "11101110101"
                     "11111111111"
                     "11000000010"
@@ -7946,7 +7988,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111100100"
                 },
-        /*260*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "63", -1, 0, 11, 11, 1, 1, "",
+        /*262*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "63", -1, 0, 11, 11, 1, 1, "",
                     "11100101001"
                     "11111111111"
                     "11000000011"
@@ -7959,7 +8001,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00101010000"
                 },
-        /*261*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "64", -1, 0, 11, 11, 1, 1, "",
+        /*263*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "64", -1, 0, 11, 11, 1, 1, "",
                     "11111010101"
                     "11111111111"
                     "01000000010"
@@ -7972,7 +8014,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111011100"
                 },
-        /*262*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "65", -1, 0, 11, 11, 1, 1, "",
+        /*264*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "65", -1, 0, 11, 11, 1, 1, "",
                     "11111010101"
                     "11111111111"
                     "11000000011"
@@ -7985,7 +8027,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110111100"
                 },
-        /*263*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "126", -1, 0, 11, 11, 1, 1, "",
+        /*265*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "126", -1, 0, 11, 11, 1, 1, "",
                     "11110101001"
                     "11111111111"
                     "01000000010"
@@ -7998,7 +8040,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110111000"
                 },
-        /*264*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "127", -1, 0, 11, 11, 1, 1, "",
+        /*266*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "127", -1, 0, 11, 11, 1, 1, "",
                     "11110101001"
                     "11111111111"
                     "11000000011"
@@ -8011,7 +8053,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111011000"
                 },
-        /*265*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "128", -1, 0, 11, 11, 1, 1, "",
+        /*267*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "128", -1, 0, 11, 11, 1, 1, "",
                     "11001010101"
                     "11111111111"
                     "11000000010"
@@ -8024,7 +8066,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100010000"
                 },
-        /*266*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "191", -1, 0, 11, 11, 1, 1, "",
+        /*268*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "191", -1, 0, 11, 11, 1, 1, "",
                     "11000101001"
                     "11111111111"
                     "01000000011"
@@ -8037,7 +8079,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100010100"
                 },
-        /*267*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "192", -1, 0, 11, 11, 1, 1, "",
+        /*269*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "192", -1, 0, 11, 11, 1, 1, "",
                     "11011010101"
                     "11111111111"
                     "11000000010"
@@ -8050,7 +8092,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110011000"
                 },
-        /*268*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "225", -1, 0, 11, 11, 1, 1, "",
+        /*270*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "225", -1, 0, 11, 11, 1, 1, "",
                     "11010010101"
                     "11111111111"
                     "11000000011"
@@ -8063,7 +8105,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00001100100"
                 },
-        /*269*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "254", -1, 0, 11, 11, 1, 1, "",
+        /*271*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, -1, { 0, 0, "" }, "254", -1, 0, 11, 11, 1, 1, "",
                     "11010101001"
                     "11111111111"
                     "11000000010"
