@@ -120,7 +120,7 @@ jobs:
     - name: Install Qt6
       uses: jurplel/install-qt-action@v4
       with:
-        version: 6.12.*
+        version: 6.12.0
         dir: .
 
     - name: Create Build Environment
