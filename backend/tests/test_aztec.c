@@ -10004,6 +10004,58 @@ static void test_fuzz(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_fuzz_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int option_1;
+        int option_2;
+        struct zint_seg segs[3];
+        int ret;
+        const char *expected_errtxt;
+    };
+    /* s/\v(\/\*)[ 0-9]*(\*\/)/\=printf("%s%3d%s", submatch(1), (@z+setreg('z',@z+1)), submatch(2))/ | let @z=0: */
+    static const struct item data[] = {
+        /*  0*/ { DATA_MODE, 1, 36, {
+                    { TU("AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAAAAAAAaaaaaaaaaa@@@@@@@@@@++++++++++1234567890AAAAA"), -1, 0 }, /* Binary String (19931), passes check < `AZTEC_BIN_CAPACITY` 19932 */
+                    { TU("AAAAAaaaaaaaaaa@@@@@"), -1, 0 }, /* Bit count 110, 19931 + 110 = 20041, `binary_string` buffer size 20040 */
+                    { TU(""), 0, 0 } },
+                    ZINT_ERROR_TOO_LONG, "Error 502: Input too long, requires too many codewords (maximum 1661)", /* Ticket #363, not adding previous segs bit count to overflow check, props Alex J. */
+                },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol = NULL;
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, BARCODE_AZTEC, data[i].input_mode, -1 /*eci*/,
+                            data[i].option_1, data[i].option_2, -1 /*option_3*/,
+                            -1 /*output_options*/, NULL, 0, debug);
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret,
+                        symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                        i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n",
+                        i, symbol->errtxt, data[i].expected_errtxt);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 INTERNAL void zint_test_az_set_fail(const int id, const int at);
 
 /* TODO: put these & above def in "aztec.h" (& rename existing "aztec.h" to "aztec_tabs.h" */
@@ -10094,6 +10146,7 @@ int main(int argc, char *argv[]) {
         { "test_ct", test_ct },
         { "test_ct_segs", test_ct_segs },
         { "test_fuzz", test_fuzz },
+        { "test_fuzz_segs", test_fuzz_segs },
         { "test_alloc", test_alloc },
     };
 

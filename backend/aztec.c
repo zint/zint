@@ -1037,10 +1037,10 @@ static int az_binary_string(const unsigned char source[], const int length, int 
         return az_state_list_free(list); /* Returns 0 */
     }
 
-    if (stateEnd.bitCount > AZTEC_BIN_CAPACITY) {
+    if (bp + stateEnd.bitCount > AZTEC_BIN_CAPACITY) {
         az_state_free(&stateEnd);
         (void) az_state_list_free(list);
-        return stateEnd.bitCount;
+        return bp + stateEnd.bitCount;
     }
 
     for (i = 0; i < stateEnd.tokens.used; i++) {
