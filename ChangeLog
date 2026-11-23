@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-11-18)
+Version 2.16.0.9 (dev) not released yet (2026-11-23)
 ====================================================
 
 **Incompatible changes**
@@ -19,6 +19,7 @@ Version 2.16.0.9 (dev) not released yet (2026-11-18)
 - No. of columns/rows of CC-C composites adjusted to follow standard ratio
   (may cause symbol size change)
 - DPD now warns if Destination Country Code is not ISO 3166-1
+- Rectangles in EPS now outputted with 4 decimal places (previously 2)
 
 Changes
 -------
@@ -57,6 +58,9 @@ Changes
   HX_ALTERNATING_FILLER`) to add filler pattern to unused function information
   modules (standard is unclear on this)
 - DPD: now warns if Destination Country Code is not ISO 3166-1
+- EPS: add "%%HiResBoundingBox" comment with 4dp dims to allow more precise
+  layout in apps that recognize it, and use 4dp not 2dp for rectangles similarly
+  (ticket #364, props York Micha)
 
 Bugs
 ----

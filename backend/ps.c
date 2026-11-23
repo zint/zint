@@ -131,12 +131,14 @@ static void ps_put_cmykcolor(const float cyan, const float magenta, const float 
 /* Helper to output rectangle */
 static void ps_put_rect(const struct zint_symbol *symbol, const struct zint_vector_rect *rect, const int type,
                 struct filemem *const fmp) {
+    /* Now using 4dp for rectangles to improve representation of such X-dims as EAN/UPC 0.33mm = 0.935433pt
+       (ticket #364, props York Micha) */
     if (type == 0 || type == 1) {
-        zint_fm_putsf("", 2, rect->height, fmp);
-        zint_fm_putsf(" ", 2, (symbol->vector->height - rect->y) - rect->height, fmp);
+        zint_fm_putsf("", 4, rect->height, fmp);
+        zint_fm_putsf(" ", 4, (symbol->vector->height - rect->y) - rect->height, fmp);
     }
-    zint_fm_putsf(type == 0 ? " " : type == 1 ? " I " : type == 2 ? "I " : "", 2, rect->x, fmp);
-    zint_fm_putsf(" ", 2, rect->width, fmp);
+    zint_fm_putsf(type == 0 ? " " : type == 1 ? " I " : type == 2 ? "I " : "", 4, rect->x, fmp);
+    zint_fm_putsf(" ", 4, rect->width, fmp);
     zint_fm_puts(" R\n", fmp);
 }
 
@@ -276,7 +278,11 @@ INTERNAL int zint_ps_plot(struct zint_symbol *symbol) {
                 "%%Pages: 0\n"
                 "%%BoundingBox: 0 0 ", fmp);
     zint_fm_printf(fmp, "%d %d\n", (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
-    zint_fm_puts("%%EndComments\n", fmp);
+    /* Layout applications prefer the exact (fractional) dimensions if present */
+    zint_fm_puts("%%HiResBoundingBox: 0 0 ", fmp);
+    zint_fm_putsf("", 4, symbol->vector->width, fmp);
+    zint_fm_putsf(" ", 4, symbol->vector->height, fmp);
+    zint_fm_puts("\n%%EndComments\n", fmp);
 
     /* Definitions */
     if (have_circles_without_width) {
@@ -323,8 +329,9 @@ INTERNAL int zint_ps_plot(struct zint_symbol *symbol) {
             ps_put_cmykcolor(cyan_paper, magenta_paper, yellow_paper, black_paper, fmp);
         }
 
-        zint_fm_putsf("", 2, symbol->vector->height, fmp);
-        zint_fm_putsf(" 0 0 ", 2, symbol->vector->width, fmp); /* y x w */
+        /* Now using 4dp */
+        zint_fm_putsf("", 4, symbol->vector->height, fmp);
+        zint_fm_putsf(" 0 0 ", 4, symbol->vector->width, fmp); /* y x w */
         zint_fm_puts(" R\n", fmp);
     }
 
