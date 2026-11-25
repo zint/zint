@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2022-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2026 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@ ScaleWindow::~ScaleWindow()
 
 void ScaleWindow::size_msg_ui_set()
 {
-    msgPrintingScale->setText(QString::asprintf("%.2f", m_bc->bc.scale()));
+    msgPrintingScale->setText(QString::asprintf("%.4f", m_bc->bc.scale()));
     float width_x_dim, height_x_dim;
     if (m_bc->bc.getWidthHeightXdim((float) m_vars.x_dim, width_x_dim, height_x_dim)) {
         const char *fmt = cmbXdimUnits->currentIndex() == 1 ? "%.3f x %.3f in" : "%.2f x %.2f mm";

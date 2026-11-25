@@ -1508,7 +1508,8 @@ void MainWindow::size_msg_ui_set()
         } else {
             // Scale trumps stored X-dimension
             double x_dim_mm = vars->x_dim_units == 1 ? vars->x_dim * 25.4 : vars->x_dim;
-            if (m_bc.bc.getScaleFromXdimDp((float) x_dim_mm, get_dpmm(vars), getFileType(vars)) != scale) {
+            if (fabsf(m_bc.bc.getScaleFromXdimDp((float) x_dim_mm, get_dpmm(vars), getFileType(vars)) - scale)
+                    > 0.00005f) { /* Epsilon: half the resolution of `spnScale` (4 decimals) */
                 x_dim_mm = std::min(m_bc.bc.getXdimDpFromScale(scale, get_dpmm(vars), getFileType(vars)), 10.0f);
                 vars->x_dim = vars->x_dim_units == 1 ? x_dim_mm / 25.4 : x_dim_mm;
             }

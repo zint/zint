@@ -1,4 +1,4 @@
-Version 2.16.0.9 (dev) not released yet (2026-11-23)
+Version 2.16.0.9 (dev) not released yet (2026-11-25)
 ====================================================
 
 **Incompatible changes**
@@ -101,6 +101,9 @@ Bugs
   BWIPP)
 - HANXIN/QRCODE: fix mask evaluation for finder patterns (must have at least
   1 white space both before & after)
+- GUI: use 4dp for scale spin box & epsilon to compare to stored value to avoid
+  rounding error causing it to ratchet away from user's input on each compute
+  (ticket #366, props York Micha)
 
 
 Version 2.16.0 (2025-12-19)

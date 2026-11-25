@@ -2248,7 +2248,7 @@ the barcode in X-dimensions</string>
                 <string/>
                </property>
                <property name="decimals">
-                <number>2</number>
+                <number>4</number>
                </property>
                <property name="minimum">
                 <double>0.100000000000000</double>
